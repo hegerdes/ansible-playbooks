@@ -1,0 +1,15 @@
+version: '3.7'
+
+services:
+  sql-exporter:
+    image: prom/mysqld-exporter:latest
+    container_name: sql-exporter
+    environment:
+      - TZ=Europe/Berlin
+      - DATA_SOURCE_NAME="root:yes@host:3306"
+    networks:
+      - mgmt_net
+
+networks:
+  mgmt_net:
+    external: true

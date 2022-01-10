@@ -1,0 +1,5 @@
+# Main Docker deploy
+---
+
+- name: Install app via Docker
+  include_tasks: install-app-stack.yml

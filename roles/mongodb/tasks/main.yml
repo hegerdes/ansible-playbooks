@@ -1,0 +1,48 @@
+# Main MongoDB Setup
+---
+- name: Install Role dependencies
+  become: false
+  command: ansible-galaxy collection install community.mongodb
+  delegate_to: 127.0.0.1
+
+- name: Install MongoDB dependencies
+  apt:
+    name: python3-pymongo
+    state: latest
+
+- name: Run docker install
+  when: mongodb_use_docker | bool
+  include_role:
+    name: docker
+
+- name: Install MongoDB
+  when: mongodb_use_docker | bool
+  include_tasks: install-mongodb-docker.yml
+
+- name: Install MongoDB
+  when: mongodb_use_docker | bool == false
+  include_role:
+    name: '{{ mytask }}'
+  loop:
+    - 'community.mongodb.mongodb_linux'
+    - 'community.mongodb.mongodb_repository'
+    - 'community.mongodb.mongodb_install'
+    - 'community.mongodb.mongodb_mongod'
+    - 'community.mongodb.mongodb_auth'
+  loop_control:
+    loop_var: mytask
+
+- name: Set init pw
+  when: mongodb_use_docker | bool == false
+  mongodb_user:
+    database: admin
+    user: '{{ mongodb_root_user }}'
+    password: '{{ mongodb_root_pw }}'
+    state: present
+    update_password: always
+
+- name: Init MongoDB
+  include_tasks: init-mongodb.yml
+
+- name: Setup cron jobs
+  include_tasks: shared/install-cron-jobs.yml

@@ -1,0 +1,19 @@
+# Main mgmt setup
+---
+- name: Setup sshd
+  include_tasks: setup-sshd.yml
+
+- name: Run docker install
+  include_role:
+    name: docker
+
+- name: Install mgmt stack
+  include_tasks: install-mgmt-stack.yml
+
+- name: Setup portainer
+  when: mgmt_setup_portainer | bool
+  include_tasks: setup-protainer.yml
+
+- name: Setup grafana
+  when: mgmt_setup_grafana | bool
+  include_tasks: setup-grafana.yml

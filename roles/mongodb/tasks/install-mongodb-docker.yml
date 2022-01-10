@@ -1,0 +1,22 @@
+
+
+- name: Ensue config folder exists
+  file:
+    path: /srv/mongodb
+    state: directory
+
+- name: Copy mongodb compose file
+  template:
+    src: mongodb-docker-compose.yml.j2
+    dest: /srv/mongodb/mongodb-docker-compose.yml
+    mode: '0644'
+
+- name: Deploy mongodb via compose
+  docker_compose:
+    project_src: /srv/mongodb
+    state: present
+    remove_orphans: yes
+    project_name: service
+    files:
+      - mongodb-docker-compose.yml
+

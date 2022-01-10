@@ -1,0 +1,25 @@
+---
+# Nginx settings
+nginx_src_config_dir: nginx/
+nginx_metrics_server_addr: '{{ ansible_default_ipv4.address }}:80'
+
+# Certbot setting
+nginx_install_hosts: yes
+nginx_hosts_src_config_dir: example-nginx-hosts/
+nginx_hosts_listen_addr: '{{ ansible_default_ipv4.address }}'
+nginx_hosts_upstream_target: 'localhost:5000'
+nginx_run_certbot: yes
+nginx_certbot_mail: info@example.com
+
+# Domain settings
+nginx_domains:
+  - example.123preview.com
+nginx_domains_string: '{{ nginx_domains | join(" ") }}'
+
+# Floating IPs
+nginx_floating_ips: []
+
+# Update promtail
+nginx_update_promtail: yes
+promtail_config_src_path: promtail-config.yml
+promtail_config_dst_path: /srv/promtail/promtail-config.yml

@@ -1,0 +1,30 @@
+---
+##### general #####
+
+# Install extra packages
+extra_packages: []
+# Install additional ssh_keys
+install_ssh_keys: true
+# List of key_paths
+ssh_key_list: []
+# Set hostnames to /etc/hosts
+set_internal_hostnames: true
+# Key value pairs of hostname: ip
+# Default is ansibe_host: ansible_ip
+internal_hostnames: []
+# Install cron jobs
+install_corn_jobs: true
+# List of cron jobs
+cron_jobs: []
+# Example structure
+# cron_jobs:
+#   - name: Ping Google
+#     job: ping google.de
+#     weekday: '*'
+#     month: '*'
+#     minute: '*'
+#     hour: '*'
+#     day: '24'
+#     state: present
+#     user: null
+

@@ -1,0 +1,28 @@
+# Create users
+
+- name: Create users
+  mongodb_user:
+    database: '{{ item.db }}'
+    login_user: '{{ mongodb_root_user }}'
+    login_password : '{{ mongodb_root_pw }}'
+    name: '{{ item.user }}'
+    password: '{{ item.pw }}'
+    state: present
+  loop: "{{ mongodb_user_setups }}"
+
+# - name: Create backup directory if it does not exist
+#   file:
+#     path: /db_dumps
+#     state: directory
+#     mode: '0755'
+#     owner: root
+#     group: root
+
+# - name: Copy backup script
+#   copy:
+#     src: '{{ sql_db_backup_script }}'
+#     dest: /db_dumps/backup_db.sh
+#     owner: root
+#     group: root
+#     mode: '0744'
+

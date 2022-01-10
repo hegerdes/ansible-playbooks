@@ -1,0 +1,16 @@
+# Main Nginx Setup
+---
+- name: Install nginx
+  include_tasks: install-nginx.yml
+
+- name: Set floating IPs
+  when: nginx_floating_ips | length > 0
+  include_tasks: set-floting-ip.yml
+
+- name: Update Promtail config
+  when: nginx_update_promtail | bool
+  include_tasks: update-promtail.yml
+
+- name: Install nginx hosts
+  when: nginx_install_hosts | bool
+  include_tasks: install-nginx-hosts.yml

@@ -1,0 +1,28 @@
+version: '3.7'
+
+services:
+  wireguard:
+    image: linuxserver/wireguard:latest
+    container_name: wireguard
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+      - SERVERPORT=51820
+      - PEERDNS=auto
+      - PEERS=1 # number of list of client names
+      # - SERVERURL=wireguard.domain.com #optional
+      # - INTERNAL_SUBNET=10.13.13.0 #optional
+    volumes:
+      - wireguard-data:/config
+      - /lib/modules:/lib/modules
+    ports:
+      - 5120:51820/udp
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+
+volumes:
+  wireguard-data:

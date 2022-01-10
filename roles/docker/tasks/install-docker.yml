@@ -1,0 +1,78 @@
+# Install docker
+---
+- name: Install needed packages
+  apt:
+    name: '{{ item }}'
+    state: present
+    update_cache: yes
+    install_recommends: no
+  loop: [ 'ca-certificates', 'curl', 'gnupg', 'lsb-release']
+
+- name: Add Docker GPG apt Key
+  apt_key:
+    url: https://download.docker.com/linux/debian/gpg
+    state: present
+
+- name: Add Docker repository
+  apt_repository:
+    repo: 'deb https://download.docker.com/linux/debian {{ ansible_facts.lsb.codename }} stable'
+    update_cache: yes
+    state: present
+
+- name: Install docker
+  apt:
+    name: '{{ item }}'
+    state: present
+    install_recommends: no
+  loop:
+    - 'containerd.io'
+    - 'docker-{{ docker_edition }}'
+    - 'docker-{{ docker_edition }}-cli'
+    - 'python3-setuptools'
+    - 'python3-jsondiff'
+    - 'python3-docker'
+    - 'python3-yaml'
+    - 'gnupg2'
+    - 'pass'
+
+- name: Test Docker
+  docker_host_info:
+    verbose_output: yes
+  register: docker_facts
+
+- name: Install Loki log driver
+  when: docker_install_loki_log_plugin | bool
+  community.docker.docker_plugin:
+    plugin_name: grafana/loki-docker-driver:latest
+    state: present
+    alias: loki
+
+- name: Enable Loki log driver
+  when: docker_install_loki_log_plugin | bool
+  community.docker.docker_plugin:
+    plugin_name: loki
+    state: enable
+
+- name: Ensure /etc/docker/ directory exists
+  file:
+    path: /etc/docker
+    state: directory
+    mode: 0755
+  when: docker_daemon_options.keys() | length > 0
+
+- name: Configure Docker daemon options
+  copy:
+    content: "{{ docker_daemon_options | to_nice_json }}"
+    dest: /etc/docker/daemon.json
+    mode: 0644
+  when: docker_daemon_options.keys() | length > 0
+  notify: restart docker
+
+- name: Ensure Docker is started and enabled at boot
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Ensure handlers are notified now to avoid firewall conflicts
+  meta: flush_handlers

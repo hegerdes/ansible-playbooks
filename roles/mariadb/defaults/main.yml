@@ -1,0 +1,25 @@
+---
+# SQL settings
+
+# Install via docker
+sql_use_docker: no
+mariadb_docker_version: 10.7
+
+# Init
+sql_root_user: root
+sql_root_pw: null
+sql_db_socket: "{{'' if (sql_use_docker) else '/var/run/mysqld/mysqld.sock'}}"
+
+sql_db_backup_script: "{{'backup_db-docker.sh' if (sql_use_docker) else 'backup_db-docker.sh'}}"
+
+# DB setup
+sql_setups:
+  - db: test1
+    user: user1
+    pw: mysecurepw1
+  - db: test2
+    user: user2
+    pw: mysecurepw2
+
+# For backup
+cron_jobs: []

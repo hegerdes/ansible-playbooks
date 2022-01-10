@@ -1,0 +1,32 @@
+# Install nginx
+---
+- name: Install php packages
+  apt:
+    name: '{{ item }}'
+    state: latest
+    update_cache: yes
+  loop: ['php-fpm', php-mysql]
+
+- name: Create log directory if it does not exist
+  file:
+    path: /var/log/php
+    state: directory
+    mode: '0755'
+    owner: root
+    group: adm
+
+- name: Set log settings in php-fpm
+  lineinfile:
+    path: '/etc/php/{{ php_version }}/fpm/pool.d/www.conf'
+    line: '{{ item }}'
+  loop:
+    - 'access.log = /var/log/php/$pool.access.log'
+    - 'access.format = "%R - %u %t \"%m %r%Q%q\" %s %f %{mili}d %{kilo}M %C%%"'
+    - 'slowlog = /var/log/php/$pool.slow.log'
+
+- name: Copy logrotate conf file
+  template:
+    src: '{{ php_src_logrotate }}'
+    dest: /etc/logrotate.d/php
+    mode: '0644'
+

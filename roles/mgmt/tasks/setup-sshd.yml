@@ -1,0 +1,30 @@
+# Reconfig sshd
+---
+- name: Add ssh port 2223
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    line: 'Port {{ item }}'
+  loop: '{{ ssh_listen_ports | default(["22", "2223"])}}'
+
+- name: Adding JumpHost user {{ mgmt_jumphost_user }}
+  user:
+    name: '{{ mgmt_jumphost_user }}'
+    comment: '{{ mgmt_jumphost_user_comment | default("JumpHost user")}}'
+    shell: /usr/bin/bash
+    create_home: no
+    state: present
+
+- name: Add CI ssh key to {{ mgmt_jumphost_user }} user
+  authorized_key:
+    user: '{{ mgmt_jumphost_user }}'
+    state: present
+    key_options: 'no-X11-forwarding'
+    key: "{{ lookup('file', item) }}"
+  loop: '{{ ssh_key_list }}'
+
+- name: Restart SSHD
+  service:
+    name: sshd
+    enabled: yes
+    state: reloaded
+

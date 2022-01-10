@@ -1,0 +1,59 @@
+# Install portainer agent
+---
+- name: Get the swarm info
+  docker_swarm_info:
+  ignore_errors: yes
+  register: swarm_info
+  failed_when: 'not swarm_info.can_talk_to_docker'
+
+- name: Ensue config folder exists
+  when: docker_install_portainer | bool
+  file:
+    path: '{{ docker_portainer_dst_stack | dirname }}'
+    state: directory
+
+- name: Copy portainer stack files
+  when: docker_install_portainer and docker_init_swarm | bool
+  copy:
+    src: '{{ docker_portainer_src_compose }}'
+    dest: '{{ docker_portainer_dst_stack }}'
+    owner: root
+    group: docker
+
+- name: Copy portainer compose files
+  when: docker_install_portainer and not docker_init_swarm | bool
+  copy:
+    src: '{{ docker_portainer_src_compose }}'
+    dest: '{{ docker_portainer_dst_stack }}'
+    owner: root
+    group: docker
+
+- name: Deploy portainer via stack from a compose file
+  when: docker_install_portainer and docker_init_swarm | bool
+  docker_stack:
+    state: present
+    name: portainer
+    resolve_image: always
+    with_registry_auth: yes
+    compose:
+      - '{{ docker_portainer_dst_stack }}'
+
+- name: Install pip3
+  when: docker_install_portainer and not docker_init_swarm | bool
+  apt:
+    name: python3-pip
+    state: latest
+
+- name: Install docker-compose pip package
+  when: docker_install_portainer and not docker_init_swarm | bool
+  pip:
+    name: docker-compose
+
+- name: Deploy portainer via compose
+  when: docker_install_portainer and not docker_init_swarm | bool
+  docker_compose:
+    project_src: '{{ docker_portainer_dst_stack | dirname }}'
+    state: present
+    project_name: portainer
+    files:
+      - '{{ docker_portainer_dst_stack }}'

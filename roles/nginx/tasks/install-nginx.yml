@@ -1,0 +1,52 @@
+# Install nginx
+---
+- name: Add nginx GPG apt Key
+  apt_key:
+    url: https://nginx.org/keys/nginx_signing.key
+    state: present
+
+- name: Add nginx repository
+  apt_repository:
+    repo: deb http://nginx.org/packages/debian/ {{ ansible_facts.lsb.codename }} nginx
+    update_cache: yes
+    state: present
+
+- name: Install nginx
+  apt:
+    name: nginx
+    state: latest
+
+- name: Start nginx
+  service:
+    name: nginx
+    state: started
+
+- name: Remove default nginx config
+  file:
+    name: /etc/nginx/sites-enabled/default
+    state: absent
+
+- name: Copy NGINX conf files
+  copy:
+    src: '{{ nginx_src_config_dir }}'
+    dest: /etc/nginx/
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Create nginx metrics status page
+  template:
+    src: internal-status.conf.j2
+    dest: /etc/nginx/conf.d/internal-status.conf
+    mode: '0644'
+
+- name: Check nginx syntax
+  command: nginx -t
+  register: res
+  changed_when: false
+  failed_when: '"warn" is in res.stderr_lines or "emerg" is in res.stderr_lines or res.rc != 0'
+
+- name: Restart nginx
+  service:
+    name: nginx
+    state: restarted

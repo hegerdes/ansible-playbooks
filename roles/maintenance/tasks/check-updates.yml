@@ -1,0 +1,13 @@
+# List pending updates
+---
+- name: Update apt cache
+  apt:
+   update_cache: yes
+
+- name: List upgradable
+  command: apt list --upgradable
+  register: main_updates
+
+- name: Print upgradable packages
+  debug:
+    var: main_updates.stdout_lines

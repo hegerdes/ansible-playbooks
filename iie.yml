@@ -1,0 +1,31 @@
+# IIE
+# - hosts: all
+#   become: true
+#   gather_facts: True
+#   roles:
+#     - common
+#     - promtail
+#     - node-exporter
+
+# - hosts: gateways
+#   become: true
+#   gather_facts: True
+#   roles:
+#     - nginx
+
+# - hosts: mgmt_hosts
+#   become: true
+#   gather_facts: True
+#   roles:
+#     - docker
+#     - mgmt
+
+- hosts: docker_hosts
+  become: true
+  gather_facts: True
+  roles:
+    - common
+    - promtail
+    - node-exporter
+    - docker
+    - docker-deploy

@@ -1,0 +1,19 @@
+# Install floating ips
+---
+- name: Add floting ip
+  blockinfile:
+    path: /etc/network/interfaces.d/60-my-floating-ip.cfg
+    create: yes
+    block: |
+      auto eth0:{{ item_index + 1 }}
+       iface eth0:{{ item_index }} inet static
+       address {{ item }}
+       netmask 32
+  loop: '{{ nginx_floating_ips }}'
+  loop_control:
+    index_var: item_index
+
+- name: restart network service
+  service:
+    name: networking
+    state: restarted

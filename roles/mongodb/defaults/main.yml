@@ -1,0 +1,25 @@
+---
+# SQL settings
+
+# Install via docker
+mongodb_use_docker: no
+mongodb_docker_version: 4.4-focal
+
+# Init
+mongodb_root_user: root
+mongodb_root_pw: MySuperSecurePW
+
+# Backup
+mongodb_db_backup_script: "{{'backup_db-docker.sh' if (sql_use_docker) else 'backup_db-docker.sh'}}"
+
+# DB setup
+mongodb_user_setups:
+  - db: admin
+    user: user1
+    pw: mysecurepw1
+  - db: admin
+    user: user2
+    pw: mysecurepw2
+
+# For backup
+cron_jobs: []

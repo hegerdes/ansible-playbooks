@@ -1,0 +1,19 @@
+# Use root/example as user/password credentials
+version: '3.7'
+
+services:
+  mariadb:
+    image: mongo:{{ mongodb_docker_version }}
+    container_name: mongodb
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: {{ mongodb_root_user }}
+      MONGO_INITDB_ROOT_PASSWORD: {{ mongodb_root_pw }}
+      TZ: Europe/Berlin
+    ports:
+      - 27017:27017
+    volumes:
+      - db_mongo_data:/data/db
+
+volumes:
+  db_mongo_data:

@@ -1,0 +1,36 @@
+# Setup portainer
+---
+- name: Set Portainer Admin-PW
+  uri:
+    url: 'http://{{ mgmt_portainer_host }}/api/users/admin/init'
+    method: POST
+    body: "{\"Username\":\"admin\",\"Password\":\"{{ mgmt_portainer_pw }}\"}"
+    body_format: json
+    headers:
+      Content-Type: "application/json"
+  register: mgmt_portainer_api_res
+  failed_when: "mgmt_portainer_api_res.status != 200 and mgmt_portainer_api_res.status != 409"
+
+- name: Get Portainer Token
+  uri:
+    url: 'http://{{ mgmt_portainer_host }}/api/auth'
+    method: POST
+    body: "{\"Username\":\"admin\",\"Password\":\"{{ mgmt_portainer_pw }}\"}"
+    body_format: json
+    headers:
+      Content-Type: "application/json"
+  register: mgmt_portainer_api_res
+
+# - name: Add portainer nodes
+#   uri:
+#     url: 'http://{{ mgmt_portainer_host }}/api/endpoints'
+#     method: POST
+#     body_format: form-multipart
+#     body:
+#       Name: '{{ item.key }}'
+#       EndpointCreationType: '2'
+#       URL: '{{ item.value }}'
+#     headers:
+#       Content-Type: "multipart/form-data; boundary=<calculated when request is sent>"
+#       Authorization: 'Bearer {{ mgmt_portainer_api_res.json.jwt }}'
+#   with_dict: "{{ mgmt_portainer_nodes }}"

@@ -1,0 +1,19 @@
+# Install cron jobs
+
+- name: Verify cron is installed
+  apt:
+    name: cron
+    state: latest
+
+- name: Create cron jobs
+  cron:
+    name: '{{ item.name }}'
+    weekday: '{{ item.weekday | default("*") }}'
+    minute: '{{ item.minute | default("*") }}'
+    month: '{{ item.month | default("*") }}'
+    hour: '{{ item.hour | default("*") }}'
+    day: '{{ item.day | default("*") }}'
+    job: '{{ item.job | default("*") }}'
+    state: '{{ item.state | default("present") }}'
+    user: '{{ item.user | default(ansible_user) }}'
+  loop: '{{ cron_jobs }}'

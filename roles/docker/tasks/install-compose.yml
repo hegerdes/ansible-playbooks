@@ -1,0 +1,66 @@
+# Install docker-compose
+---
+- name: Install Compose binary
+  block:
+  - name: Check current docker-compose version
+    command: "docker-compose --version"
+    register: docker_compose_current_version
+    check_mode: no
+    changed_when: false
+    failed_when: false
+
+  - name: Delete existing docker-compose version if it differs to version {{ docker_compose_version }}
+    file:
+      path: /usr/local/bin/docker-compose
+      state: absent
+    when: >
+      docker_compose_current_version.stdout is defined
+      and docker_compose_version not in docker_compose_current_version.stdout
+
+  - name: Get docker-compose {{ docker_compose_version }} version
+    environment:
+      COMPOSE_VERSION: '{{ docker_compose_version }}'
+    shell: |
+      if [ "$COMPOSE_VERSION" = "latest" ]; then
+        curl -s https://api.github.com/repos/docker/compose/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep linux-$(uname -m | rev | cut -c 2- | rev ) | head -n 1
+      else
+        curl -s https://api.github.com/repos/docker/compose/releases?per_page=100 | grep browser_download_url | cut -d '"' -f 4 | grep v{{ docker_compose_version }}/docker-compose-linux-$(uname -m | rev | cut -c 2- | rev ) | head -n 1
+      fi
+    changed_when: false
+    register: docker_compose_url
+
+  - name: Install docker-compose {{ docker_compose_version }}
+    get_url:
+      url: "{{ docker_compose_url.stdout }}"
+      dest: /usr/local/bin/docker-compose
+      mode: 0755
+    when: >
+      docker_compose_current_version.stdout is not defined
+      or docker_compose_version not in docker_compose_current_version.stdout
+
+  - name: Create docker-compose symbolic link
+    file:
+      src: /usr/local/bin/docker-compose
+      dest: /usr/bin/docker-compose
+      state: link
+
+  - name: Check current docker-compose version
+    command: "docker-compose --version"
+    changed_when: false
+
+  rescue:
+    - name: Error Handler
+      debug:
+        msg: 'Error while installing compose, using fallback with pip'
+        var: ansible_failed_result
+
+    - name: Ensure needed packages are installed
+      apt:
+        name: 'python3-pip'
+        state: present
+        install_recommends: no
+
+    - name: Install compose
+      pip:
+        name: docker-compose
+        state: present

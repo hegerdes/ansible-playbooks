@@ -1,0 +1,43 @@
+# Install nginx-hosts
+---
+- name: Check nginx is installed
+  command: nginx -V
+  changed_when: false
+
+- name: Copy NGINX conf files
+  copy:
+    src: '{{ php_nginx_src_config_dir }}'
+    dest: /etc/nginx/
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Copy default nginx server conf file
+  when: php_nginx_use_default_server | bool
+  template:
+    src: nginx-default-server.j2
+    dest: /etc/nginx/conf.d/default.conf
+    mode: '0644'
+
+- name: Copy Hosts to nginx
+  when: php_nginx_use_default_server | bool != true
+  copy:
+    src: '{{ php_nginx_hosts_src_config_dir }}'
+    dest: /etc/nginx/conf.d/
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Check nginx syntax
+  command: nginx -t
+  register: res
+  changed_when: false
+  failed_when: '"warn" is in res.stderr_lines or "emerg" is in res.stderr_lines or res.rc != 0'
+
+- name: Reload nginx
+  command: nginx -s reload
+
+- name: Verify Nginx is started
+  service:
+    name: nginx
+    state: started

@@ -1,0 +1,16 @@
+---
+# SQL settings
+
+# For backup
+cron_jobs:
+  - name: Dump DB as backup
+    job: bash /db_dumps/backup_db.sh
+    weekday: '*'
+    month: '*'
+    minute: '*'
+    hour: '22'
+    day: '*'
+    state: present
+    user: null
+
+docker_init_swarm: false

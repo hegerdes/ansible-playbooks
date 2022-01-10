@@ -1,0 +1,13 @@
+version: '3.7'
+
+services:
+####### Database services #######
+  db:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password --bind-address=0.0.0.0
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Berlin
+      - MYSQL_ROOT_HOST=%
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+      - MYSQL_ROOT_PASSWORD=yes

@@ -1,0 +1,19 @@
+# Use root/example as user/password credentials
+version: '3.7'
+
+services:
+  mariadb:
+    image: mariadb:{{ mariadb_docker_version }}
+    container_name: mariadb
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: {{ sql_root_pw }}
+    ports:
+      - 3306:3306
+    volumes:
+      - maria_db_data:/var/lib/mysql
+    cap_add:
+      - SYS_NICE  # CAP_SYS_NICE
+
+volumes:
+  maria_db_data:

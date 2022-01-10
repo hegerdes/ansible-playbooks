@@ -1,0 +1,58 @@
+# Install Node-Exporter
+---
+- name: Check if node-exporter is installed
+  command: 'node_exporter --version'
+  register: node_exporter_check_result
+  changed_when: false
+  failed_when: false
+
+- name: Get node-exporter URL
+  when: node_exporter_check_result.stdout == ""
+  shell: |
+    curl --silent https://api.github.com/repos/prometheus/node_exporter/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep linux-amd64
+  register: node_exporter_url
+
+- name: Download and un-tar node-exporter
+  when: node_exporter_check_result.stdout == ""
+  unarchive:
+    src: '{{ node_exporter_url.stdout }}'
+    dest: /tmp
+    remote_src: yes
+
+- name: Install node-exporter
+  when: node_exporter_check_result.stdout == ""
+  shell: |
+    mv /tmp/node_exporter-*/node_exporter /usr/local/bin/node_exporter
+
+- name: Test node-exporter
+  command: "node_exporter --version"
+  changed_when: "false"
+
+- name: Add node-exporter user
+  user:
+    name: node-exporter
+    shell: /usr/sbin/nologin
+    create_home: no
+    group: adm
+    system: yes
+    state: present
+
+- name: Copy node-exporter service config
+  template:
+    src: node-exporter.service.j2
+    dest: /etc/systemd/system/node-exporter.service
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Enable node-exporter service
+  systemd:
+    name: node-exporter.service
+    state: started
+    daemon_reload: yes
+    enabled: yes
+
+- name: Verify node-exporter status
+  service:
+    name: node-exporter.service
+    state: restarted

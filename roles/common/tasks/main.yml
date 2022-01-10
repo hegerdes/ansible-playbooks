@@ -1,0 +1,47 @@
+# Role common main
+---
+- name: Install aptitude using apt
+  apt:
+    name: aptitude
+    state: latest
+    update_cache: yes
+    force_apt_get: yes
+
+- name: install required system packages
+  apt:
+    name: '{{ item }}'
+    state: latest
+    install_recommends: no
+  loop:
+    - 'apt-transport-https'
+    - 'ca-certificates'
+    - 'curl'
+    - 'software-properties-common'
+    - 'gnupg'
+    - 'lsb-release'
+    - 'python3-pip'
+    - 'python3-requests'
+    - 'python3-jsondiff'
+    - 'python3-yaml'
+    - 'unzip'
+    - 'wget'
+    - 'git'
+
+- name: install additional packages
+  apt:
+    name: '{{ item }}'
+    state: latest
+    install_recommends: no
+  loop: '{{ extra_packages }}'
+
+- name: set hostnames
+  include_tasks: install-hostnames.yml
+  when: set_internal_hostnames | bool
+
+- name: add ssh keys
+  include_tasks: install-ssh-keys.yml
+  when: install_ssh_keys | bool
+
+- name: install cron jobs
+  include_tasks: shared/install-cron-jobs.yml
+  when: install_corn_jobs | bool

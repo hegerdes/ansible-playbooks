@@ -1,0 +1,27 @@
+# Setup grafana
+---
+- name: Create loki datasource
+  grafana_datasource:
+    name: Loki
+    grafana_url: 'http://{{ mgmt_grafana_host }}'
+    grafana_user: admin
+    grafana_password: '{{ mgmt_grafana_pw }}'
+    ds_type: loki
+    ds_url: http://loki:3100
+
+- name: Create prometheus datasource
+  grafana_datasource:
+    name: Prometheus
+    grafana_url: 'http://{{ mgmt_grafana_host }}'
+    grafana_user: admin
+    grafana_password: '{{ mgmt_grafana_pw }}'
+    ds_type: prometheus
+    ds_url: http://prometheus:9090
+
+- name: Import Grafana dashboards
+  grafana_dashboard:
+    grafana_url: 'http://{{ mgmt_grafana_host }}'
+    grafana_user: admin
+    grafana_password: '{{ mgmt_grafana_pw }}'
+    dashboard_id: '{{ item }}'
+  loop: '{{ mgmt_grafana_dashbord_ids }}'

@@ -1,2 +1,2 @@
-# symbic-playbooks
+# Symbic Ansible Playbooks
 

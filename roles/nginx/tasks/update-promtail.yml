@@ -1,0 +1,21 @@
+# Update promtail
+---
+- name: Copy Promtail config
+  copy:
+    src: '{{ promtail_config_src_path }}'
+    dest: '{{ promtail_config_dst_path }}'
+    owner: root
+    group: root
+    mode: '0666'
+
+- name: Enable Promtail service
+  systemd:
+    name: promtail.service
+    state: started
+    daemon_reload: yes
+    enabled: yes
+
+- name: Verify promtail status
+  service:
+    name: node-exporter.service
+    state: restarted

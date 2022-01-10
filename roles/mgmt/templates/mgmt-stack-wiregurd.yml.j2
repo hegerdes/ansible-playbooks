@@ -1,0 +1,28 @@
+version: '3.7'
+
+services:
+  wireguard:
+    image: linuxserver/wireguard:latest
+    container_name: wireguard
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+      - SERVERPORT={{ mgmt_wireguard_port }}
+      - PEERDNS=auto
+      - PEERS={{ mgmt_wireguard_clients }}
+      - SERVERURL={{ mgmt_wireguard_public_ip }}
+      # - INTERNAL_SUBNET=10.13.13.0 #optional
+    volumes:
+      - wireguard-data:/config
+      - /lib/modules:/lib/modules
+    ports:
+      - {{ mgmt_wireguard_port }}:{{ mgmt_wireguard_port }}/udp
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+
+volumes:
+  wireguard-data:

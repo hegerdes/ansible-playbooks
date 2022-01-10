@@ -1,0 +1,17 @@
+---
+# PHP settings
+
+php_version: 7.4
+php_src_logrotate: logrotate-php.j2
+
+php_nginx_use_default_server: yes
+php_nginx_html_root: /var/www/
+php_nginx_server_name: _
+php_nginx_hosts_src_config_dir: nginx/conf.d
+php_nginx_src_config_dir: nginx
+
+php_nginx_additional_default_server_settings: |
+  # My settings here
+  # location /status {
+  #              try_files $uri $uri/ /404.php;
+  # }

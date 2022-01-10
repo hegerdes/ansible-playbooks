@@ -1,0 +1,14 @@
+version: '3.7'
+
+services:
+  phpmyadmin:
+    image: phpmyadmin:latest
+    environment:
+      - {{ mgmt_sql_taget_host_template }}
+      - TZ=Europe/Berlin
+      - UPLOAD_LIMIT=2G
+    ports:
+      - target: 80
+        published: 8080
+        protocol: tcp
+        mode: host

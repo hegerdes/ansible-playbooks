@@ -1,0 +1,52 @@
+---
+# ssh setup
+
+# JumpHost user
+mgmt_jumphost_user: gitlab
+# List of ssh key_paths for mgmt_jumphost_user
+ssh_key_list: []
+# Comment
+mgmt_jumphost_user_comment: Used to deploy from CI
+# Ports for sshd
+ssh_listen_ports:
+  - 22
+  - 2223
+
+# Use stack deploy mode or compose mode
+mgmt_use_swarm_mode: yes
+mgmt_src_config_files: srv/
+mgmt_dst_config_files: /srv/
+
+mgmt_services_to_install:
+  - mgmt-stack.yml
+  - mgmt-stack-db-mongo-express.yml
+  - mgmt-stack-db-phpmyadmin.yml
+  - mgmt-stack-heimdall.yml
+
+mgmt_waf_target_host: null
+mgmt_mongodb_target_host: null
+mgmt_sql_taget_host: null
+mgmt_sql_exporter_connection_string: root:yes@host:3306
+mgmt_sql_taget_host_template: '{{ "PMA_HOST=" + mgmt_sql_taget_host if (mgmt_sql_taget_host) else "PMA_ARBITRARY=1" }}'
+mgmt_wireguard_public_ip: '{{ ansible_default_ipv4.address }}'
+mgmt_wireguard_clients: 2
+mgmt_wireguard_port: 51820
+
+# Grafana and Portainer setup
+mgmt_setup_portainer: yes
+mgmt_portainer_pw: MySecretRootPW
+mgmt_portainer_host: localhost:9000
+mgmt_portainer_nodes: {}
+
+mgmt_setup_grafana: yes
+mgmt_grafana_pw: mySuperSecureAdminPW
+mgmt_grafana_host: localhost:3000
+mgmt_grafana_dashbord_ids:
+  - 12708   # Zabbix
+  - 1860    # Node_exporter
+  - 12135   # USE Method / Cluster
+  - 12136   # USE Method / Node
+  - 12708   # NGINX exporter
+  - 9614    # NGINX Ingress controller
+  - 7362    # SQL Metrics
+

@@ -1,0 +1,16 @@
+version: '3.7'
+
+services:
+  phpmyadmin:
+    image: phpmyadmin:latest
+    environment:
+      - PMA_ARBITRARY=1
+      - TZ=Europe/Berlin
+      - UPLOAD_LIMIT=2G
+      - PMA_HOST=SQL_HOST
+    ports:
+      - target: 80
+        published: 8080
+        protocol: tcp
+        mode: host
+

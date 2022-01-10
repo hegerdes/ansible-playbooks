@@ -1,0 +1,5 @@
+# Role maintenance
+---
+
+- name: Check updates
+  include_tasks: check-updates.yml

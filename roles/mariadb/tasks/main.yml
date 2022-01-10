@@ -1,0 +1,21 @@
+# Main Mariadb Setup
+---
+
+- name: Run docker install
+  when: sql_use_docker | bool
+  include_role:
+    name: docker
+
+- name: Install MariaDB
+  when: sql_use_docker | bool
+  include_tasks: install-mariadb-docker.yml
+
+- name: Install MariaDB
+  when: sql_use_docker == false
+  include_tasks: install-mariadb.yml
+
+- name: Init MariaDB
+  include_tasks: init-mariadb.yml
+
+- name: Setup cron jobs
+  include_tasks: shared/install-cron-jobs.yml

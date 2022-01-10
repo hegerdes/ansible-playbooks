@@ -1,0 +1,29 @@
+
+
+- name: Ensue config folder exists
+  file:
+    path: /srv/mariadb
+    state: directory
+
+- name: Copy mariadb compose file
+  template:
+    src: mariadb-docker-compose.yml.j2
+    dest: /srv/mariadb/mariadb-docker-compose.yml
+    mode: '0644'
+
+- name: Deploy mariadb via compose
+  docker_compose:
+    project_src: /srv/mariadb
+    state: present
+    remove_orphans: yes
+    # state: absent
+    project_name: service
+    files:
+      - mariadb-docker-compose.yml
+
+- name: Collect all possible information of DB
+  mysql_info:
+    login_user: '{{ sql_root_user }}'
+    login_password : '{{ sql_root_pw }}'
+    login_host: localhost
+

@@ -1,0 +1,31 @@
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+  ANSIBLE_DOACKER_IMAGE: python:3.9-bullseye
+
+stages:
+  - test
+  - maintenance
+
+# TEST STAGE
+test:
+  stage: test
+  image: $ANSIBLE_DOACKER_IMAGE
+  before_script:
+    - python3 -m pip install ansible paramiko jsondiff
+  script:
+    - echo ok
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+
+create-hetzner-snapshot:
+  stage: maintenance
+  image: $ANSIBLE_DOACKER_IMAGE
+  before_script:
+    - python3 -m pip install ansible paramiko jsondiff
+  script:
+    - ansible-playbook -i $TARGET_INVENTORY maintenance.yml
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "api"'
+    - if: '$PROJECT_TOKEN_NAME == ""'
+      when: never
