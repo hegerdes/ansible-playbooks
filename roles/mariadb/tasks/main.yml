@@ -1,5 +1,9 @@
 # Main Mariadb Setup
 ---
+- name: Install needed packages
+  apt:
+    name: python3-pymysql
+    state: latest
 
 - name: Run docker install
   when: sql_use_docker | bool
@@ -11,7 +15,7 @@
   include_tasks: install-mariadb-docker.yml
 
 - name: Install MariaDB
-  when: sql_use_docker == false
+  when: sql_use_docker | bool == false
   include_tasks: install-mariadb.yml
 
 - name: Init MariaDB

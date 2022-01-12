@@ -1,0 +1,22 @@
+# Hetzner Demo
+
+- hosts: all
+  become: true
+  gather_facts: True
+  roles:
+    - common
+    - promtail
+    - node-exporter
+
+- hosts: service-mariadb
+  become: true
+  gather_facts: True
+  roles:
+    - mariadb
+
+- hosts: service-mongodb
+  become: true
+  gather_facts: True
+  roles:
+    - mongodb
+

@@ -25,6 +25,7 @@ mgmt_services_to_install:
 
 mgmt_waf_target_host: null
 mgmt_mongodb_target_host: null
+mgmt_mongodb_root_user: root
 mgmt_sql_taget_host: null
 mgmt_sql_exporter_connection_string: root:yes@host:3306
 mgmt_sql_taget_host_template: '{{ "PMA_HOST=" + mgmt_sql_taget_host if (mgmt_sql_taget_host) else "PMA_ARBITRARY=1" }}'

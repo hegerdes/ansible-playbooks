@@ -12,6 +12,10 @@
     state: started
     enabled: yes
 
+- name: Sleep for 15 seconds and continue with play
+  wait_for:
+    timeout: 15
+
 - name: Check if root password is set
   shell: |
     mysqladmin -u root status

@@ -16,10 +16,13 @@
     project_src: /srv/mariadb
     state: present
     remove_orphans: yes
-    # state: absent
     project_name: service
     files:
       - mariadb-docker-compose.yml
+
+- name: Sleep for 15 seconds and continue with play
+  wait_for:
+    timeout: 15
 
 - name: Collect all possible information of DB
   mysql_info:
