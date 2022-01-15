@@ -17,5 +17,5 @@
 
 - name: Verify promtail status
   service:
-    name: node-exporter.service
+    name: promtail
     state: restarted

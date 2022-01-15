@@ -6,20 +6,86 @@
     name: nginx
     state: started
 
-- name: Copy Hosts to nginx
-  when: nginx_install_hosts | bool
+- name: Creating hosts for nginx
+  template:
+    src: 'site.conf.j2'
+    dest: '/etc/nginx/conf.d/{{ nginx_domain }}.conf'
+    mode: '0644'
+  loop: '{{ nginx_domains }}'
+  loop_control:
+    loop_var: nginx_domain
+
+- name: "Check for dummy certs [fullchain.pem]"
+  lineinfile:
+    name: '/etc/letsencrypt/live/{{ nginx_domain }}/fullchain.pem'
+    line: "# Dummy"
+    state: absent
+  check_mode: yes
+  register: fullchain_cert_res
+  loop: '{{ nginx_domains }}'
+  loop_control:
+    loop_var: nginx_domain
+
+# - name: test1
+#   debug:
+#     msg: 'domain {{ item.nginx_domain }}, changed {{ item.changed }},'
+#   with_items: '{{ fullchain_cert_res.results }}'
+
+# - name: debug
+#   debug:
+#     var: fullchain_cert_res.results
+
+- name: Creates directory
+  file:
+    path: '/etc/letsencrypt/live/{{ item.nginx_domain }}'
+    state: directory
+  with_items: '{{ fullchain_cert_res.results }}'
+
+- name: Copy dummy certs 1
+  when: item.msg == "file not present" or item.changed == true
   copy:
-    src: '{{ nginx_hosts_src_config_dir }}'
-    dest: /etc/nginx/conf.d/
+    src: fullchain.pem
+    dest: '/etc/letsencrypt/live/{{ item.nginx_domain }}/fullchain.pem'
+    owner: root
+    group: root
+    mode: '0777'
+  with_items: '{{ fullchain_cert_res.results }}'
+
+- name: "Check for dummy certs [privkey.pem]"
+  lineinfile:
+    name: '/etc/letsencrypt/live/{{ nginx_domain }}/privkey.pem'
+    line: "# Dummy"
+    state: absent
+  check_mode: yes
+  register: privkey_cert_res
+  loop: '{{ nginx_domains }}'
+  loop_control:
+    loop_var: nginx_domain
+
+- name: Copy dummy certs 2
+  when: item.msg == "file not present" or item.changed == true
+  copy:
+    src: privkey.pem
+    dest: '/etc/letsencrypt/live/{{ item.nginx_domain }}/privkey.pem'
+    owner: root
+    group: root
+    mode: '0777'
+  with_items: '{{ privkey_cert_res.results }}'
+
+- name: Copy ssl-nginx.conf
+  copy:
+    src: options-ssl-nginx.conf
+    dest: /etc/letsencrypt/options-ssl-nginx.conf
     owner: root
     group: root
     mode: '0644'
 
-- name: Creating example host for nginx
-  when: nginx_install_hosts and nginx_hosts_src_config_dir == "example-nginx-hosts/"
-  template:
-    src: 'site.conf.j2'
-    dest: /etc/nginx/conf.d/site.conf
+- name: Copy ssl-dhparams.pem
+  copy:
+    src: ssl-dhparams.pem
+    dest: /etc/letsencrypt/ssl-dhparams.pem
+    owner: root
+    group: root
     mode: '0644'
 
 - name: Verify Certbot Installation
@@ -31,7 +97,10 @@
 
 - name: Run Certbot
   when: nginx_run_certbot | bool
-  command: 'certbot --nginx -d {{ nginx_domains | join(",") }} --agree-tos -m {{ nginx_certbot_mail }} -q'
+  command: 'certbot --nginx -d {{ nginx_domain }} --agree-tos --non-interactive -m {{ nginx_certbot_mail }}'
+  loop: '{{ nginx_domains }}'
+  loop_control:
+    loop_var: nginx_domain
 
 - name: Check nginx syntax
   when: nginx_run_certbot | bool

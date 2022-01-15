@@ -14,7 +14,6 @@ nginx_certbot_mail: info@example.com
 # Domain settings
 nginx_domains:
   - example.123preview.com
-nginx_domains_string: '{{ nginx_domains | join(" ") }}'
 
 # Floating IPs
 nginx_floating_ips: []

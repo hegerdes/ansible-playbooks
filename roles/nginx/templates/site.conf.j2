@@ -1,28 +1,9 @@
-upstream target_server {
+upstream {{ nginx_domain }}_upstream {
     server {{ nginx_hosts_upstream_target }};
 }
 
 server {
-    listen                  {{ nginx_hosts_listen_addr }}:443 ssl http2;
-    listen                  [::]:443 ssl http2;
-    server_name             {{ nginx_domains_string }};
-
-    # security
-    include                 shared.conf/security.conf;
-
-    # reverse proxy
-    location / {
-        proxy_pass http://target_server;
-        include    shared.conf/proxy.conf;
-    }
-}
-
-
-# HTTP redirect
-server {
-    listen      {{ nginx_hosts_listen_addr }}:80;
-    listen      [::]:80;
-    server_name {{ nginx_domains_string }};
+    server_name {{ nginx_domain }};
 
     # ACME-challenge
     location ^~ /.well-known/acme-challenge/ {
@@ -30,6 +11,29 @@ server {
     }
 
     location / {
-        return 301 https://example.com$request_uri;
+        return 404;
+    }
+
+    listen {{ nginx_hosts_listen_addr }}:443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/{{ nginx_domain }}/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/{{ nginx_domain }}/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+}
+
+# HTTP redirect
+server {
+    listen      {{ nginx_hosts_listen_addr }}:80;
+    listen      [::]:80;
+    server_name {{ nginx_domain }};
+
+    # ACME-challenge
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/www/_letsencrypt;
+    }
+
+    location / {
+        return 301 https://{{ nginx_domain }}$request_uri;
     }
 }
