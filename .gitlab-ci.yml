@@ -17,7 +17,7 @@ test:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "push"'
 
-create-hetzner-snapshot:
+list-hetzner-updates:
   stage: maintenance
   image: $ANSIBLE_DOACKER_IMAGE
   before_script:

@@ -7,6 +7,7 @@
     owner: root
     group: root
     mode: '0666'
+  notify: Verify promtail status
 
 - name: Enable Promtail service
   systemd:
@@ -15,7 +16,3 @@
     daemon_reload: yes
     enabled: yes
 
-- name: Verify promtail status
-  service:
-    name: promtail
-    state: restarted

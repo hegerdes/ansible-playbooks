@@ -7,8 +7,8 @@ cron_jobs:
     job: bash /db_dumps/backup_db.sh
     weekday: '*'
     month: '*'
-    minute: '*'
-    hour: '22'
+    minute: '30'
+    hour: '02'
     day: '*'
     state: present
     user: null

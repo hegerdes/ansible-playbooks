@@ -74,5 +74,5 @@
     state: started
     enabled: yes
 
-- name: Ensure handlers are notified now to avoid firewall conflicts
+- name: Ensure handlers are notified now
   meta: flush_handlers

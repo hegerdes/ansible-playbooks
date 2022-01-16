@@ -5,7 +5,6 @@
     name: aptitude
     state: latest
     update_cache: yes
-    force_apt_get: yes
 
 - name: install required system packages
   apt:

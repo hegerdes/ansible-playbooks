@@ -5,6 +5,7 @@
     path: /etc/ssh/sshd_config
     line: 'Port {{ item }}'
   loop: '{{ ssh_listen_ports | default(["22", "2223"])}}'
+  notify: Restart SSHD
 
 - name: Adding JumpHost user {{ mgmt_jumphost_user }}
   user:
@@ -22,9 +23,4 @@
     key: "{{ lookup('file', item) }}"
   loop: '{{ ssh_key_list }}'
 
-- name: Restart SSHD
-  service:
-    name: sshd
-    enabled: yes
-    state: reloaded
 
