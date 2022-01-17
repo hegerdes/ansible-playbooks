@@ -7,8 +7,6 @@ extra_packages: []
 install_ssh_keys: true
 # List of key_paths
 ssh_key_list: []
-# Set hostnames to /etc/hosts
-set_internal_hostnames: true
 # Key value pairs of hostname: ip
 # Default is ansibe_host: ansible_ip
 internal_hostnames: []

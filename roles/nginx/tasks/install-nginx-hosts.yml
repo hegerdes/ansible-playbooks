@@ -6,71 +6,45 @@
     name: nginx
     state: started
 
+- name: Create directory for dummy certs
+  file:
+    path: /etc/letsencrypt/dummy
+    state: directory
+
+- name: Copy dummy cert 1
+  copy:
+    src: fullchain-dummy.pem
+    dest: '/etc/letsencrypt/dummy/fullchain.pem'
+    owner: root
+    group: root
+    mode: '0777'
+
+- name: Copy dummy cert 2
+  copy:
+    src: privkey-dummy.pem
+    dest: '/etc/letsencrypt/dummy/privkey.pem'
+    owner: root
+    group: root
+    mode: '0777'
+
+- name: Find all nginx hosts
+  shell: |
+    cd /etc/nginx/conf.d
+    ls *.conf
+  register: nginx_deployed_hosts
+  changed_when: false
+
 - name: Creating hosts for nginx
+  when: nginx_vhost.host + ".conf" not in nginx_deployed_hosts.stdout_lines
   template:
     src: 'site.conf.j2'
-    dest: '/etc/nginx/conf.d/{{ nginx_domain }}.conf'
+    dest: '/etc/nginx/conf.d/{{ nginx_vhost.host }}.conf'
     mode: '0644'
-  loop: '{{ nginx_domains }}'
+  loop: '{{ nginx_vhosts }}'
   loop_control:
-    loop_var: nginx_domain
-
-- name: "Check for dummy certs [fullchain.pem]"
-  lineinfile:
-    name: '/etc/letsencrypt/live/{{ nginx_domain }}/fullchain.pem'
-    line: "# Dummy"
-    state: absent
-  check_mode: yes
-  register: fullchain_cert_res
-  loop: '{{ nginx_domains }}'
-  loop_control:
-    loop_var: nginx_domain
-
-# - name: test1
-#   debug:
-#     msg: 'domain {{ item.nginx_domain }}, changed {{ item.changed }},'
-#   with_items: '{{ fullchain_cert_res.results }}'
-
-# - name: debug
-#   debug:
-#     var: fullchain_cert_res.results
-
-- name: Creates directory
-  file:
-    path: '/etc/letsencrypt/live/{{ item.nginx_domain }}'
-    state: directory
-  with_items: '{{ fullchain_cert_res.results }}'
-
-- name: Copy dummy certs 1
-  when: item.msg == "file not present" or item.changed == true
-  copy:
-    src: fullchain.pem
-    dest: '/etc/letsencrypt/live/{{ item.nginx_domain }}/fullchain.pem'
-    owner: root
-    group: root
-    mode: '0777'
-  with_items: '{{ fullchain_cert_res.results }}'
-
-- name: "Check for dummy certs [privkey.pem]"
-  lineinfile:
-    name: '/etc/letsencrypt/live/{{ nginx_domain }}/privkey.pem'
-    line: "# Dummy"
-    state: absent
-  check_mode: yes
-  register: privkey_cert_res
-  loop: '{{ nginx_domains }}'
-  loop_control:
-    loop_var: nginx_domain
-
-- name: Copy dummy certs 2
-  when: item.msg == "file not present" or item.changed == true
-  copy:
-    src: privkey.pem
-    dest: '/etc/letsencrypt/live/{{ item.nginx_domain }}/privkey.pem'
-    owner: root
-    group: root
-    mode: '0777'
-  with_items: '{{ privkey_cert_res.results }}'
+    loop_var: nginx_vhost
+  notify: Reload nginx
+  register: nginx_created_hosts
 
 - name: Copy ssl-nginx.conf
   copy:
@@ -96,11 +70,11 @@
   loop: [ 'certbot', 'python3-certbot', 'python3-certbot-nginx']
 
 - name: Run Certbot
-  when: nginx_run_certbot | bool
-  command: 'certbot --nginx -d {{ nginx_domain }} --agree-tos --non-interactive -m {{ nginx_certbot_mail }}'
-  loop: '{{ nginx_domains }}'
+  when: nginx_run_certbot | bool and nginx_created_hosts.changed
+  command: 'certbot --nginx -d {{ nginx_vhost.host }} --agree-tos --non-interactive -m {{ nginx_certbot_mail }}'
+  loop: '{{ nginx_vhosts }}'
   loop_control:
-    loop_var: nginx_domain
+    loop_var: nginx_vhost
 
 - name: Check nginx syntax
   when: nginx_run_certbot | bool
@@ -108,6 +82,3 @@
   register: res
   changed_when: false
   failed_when: '"warn" is in res.stderr_lines or "emerg" is in res.stderr_lines or res.rc != 0'
-
-- name: Reload nginx
-  command: nginx -s reload

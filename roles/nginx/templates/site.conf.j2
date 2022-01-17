@@ -1,22 +1,20 @@
-upstream {{ nginx_domain }}_upstream {
+upstream {{ nginx_vhost.host }}_upstream {
     server {{ nginx_hosts_upstream_target }};
 }
 
 server {
-    server_name {{ nginx_domain }};
+    server_name {{ nginx_vhost.host }};
 
     # ACME-challenge
     location ^~ /.well-known/acme-challenge/ {
         root /var/www/_letsencrypt;
     }
 
-    location / {
-        return 404;
-    }
+    {{ nginx_vhost.locations | indent( width=4) }}
 
-    listen {{ nginx_hosts_listen_addr }}:443 ssl; # managed by Certbot
-    ssl_certificate /etc/letsencrypt/live/{{ nginx_domain }}/fullchain.pem; # managed by Certbot
-    ssl_certificate_key /etc/letsencrypt/live/{{ nginx_domain }}/privkey.pem; # managed by Certbot
+    listen {{ nginx_vhost.ip }}:443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/dummy/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/dummy/privkey.pem; # managed by Certbot
     include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
 
@@ -24,9 +22,9 @@ server {
 
 # HTTP redirect
 server {
-    listen      {{ nginx_hosts_listen_addr }}:80;
+    listen      {{ nginx_vhost.ip }}:80;
     listen      [::]:80;
-    server_name {{ nginx_domain }};
+    server_name {{ nginx_vhost.host }};
 
     # ACME-challenge
     location ^~ /.well-known/acme-challenge/ {
@@ -34,6 +32,6 @@ server {
     }
 
     location / {
-        return 301 https://{{ nginx_domain }}$request_uri;
+        return 301 https://{{ nginx_vhost.host }}$request_uri;
     }
 }

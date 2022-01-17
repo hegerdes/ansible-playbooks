@@ -12,8 +12,13 @@ nginx_run_certbot: yes
 nginx_certbot_mail: info@example.com
 
 # Domain settings
-nginx_domains:
-  - example.123preview.com
+nginx_vhosts:
+  - host: example.123preview.com
+    ip: '{{ nginx_hosts_listen_addr }}'
+    locations: |
+      location / {
+        return 404;
+      }
 
 # Floating IPs
 nginx_floating_ips: []
@@ -22,3 +27,5 @@ nginx_floating_ips: []
 nginx_update_promtail: yes
 promtail_config_src_path: promtail-config.yml
 promtail_config_dst_path: /srv/promtail/promtail-config.yml
+
+

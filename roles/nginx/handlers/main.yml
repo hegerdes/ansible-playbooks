@@ -1,5 +1,13 @@
 ---
-- name: restart network service
+- name: Restart network service
   service:
     name: networking
     state: restarted
+
+- name: Verify promtail status
+  service:
+    name: promtail
+    state: restarted
+
+- name: Reload nginx
+  command: nginx -s reload

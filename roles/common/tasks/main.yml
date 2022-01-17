@@ -35,7 +35,6 @@
 
 - name: set hostnames
   include_tasks: install-hostnames.yml
-  when: set_internal_hostnames | bool
 
 - name: add ssh keys
   include_tasks: install-ssh-keys.yml
