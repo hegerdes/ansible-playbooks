@@ -23,7 +23,7 @@ services:
     environment:
       - TZ=Europe/Berlin
       - GF_SECURITY_ADMIN_PASSWORD__FILE=/mnt/config/admin_password
-      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource,grafana-piechart-panel,digrich-bubblechart-panel,alexanderzobnin-zabbix-app,grafana-worldmap-panel
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource,grafana-piechart-panel,alexanderzobnin-zabbix-app,grafana-worldmap-panel
     networks:
       - mgmt_net
     ports:
@@ -44,9 +44,8 @@ services:
       - mgmt_net
 
   prometheus:
-    image: prom/prometheus:latest
-    environment:
-      - TZ=Europe/Berlin
+    image: bitnami/prometheus:latest
+    command: --storage.tsdb.retention.time 30d --config.file=/etc/prometheus/prometheus.yml
     networks:
       - mgmt_net
     ports:
@@ -59,7 +58,6 @@ services:
 
   portainer:
     image: portainer/portainer-ce:latest
-#    command: --tlsskipverify
     environment:
       - TZ=Europe/Berlin
     networks:
@@ -81,19 +79,15 @@ services:
       - portainer-data:/data
       - /var/run/docker.sock:/var/run/docker.sock
     deploy:
-      replicas: 1
       placement:
         constraints: [node.role == manager]
 
 configs:
   loki-conf:
-    # file: ./mgmt-loki/loki-config.yml
     file: /srv/mgmt-loki/loki-config.yml
   grafana-admin-pw:
-    # file: ./mgmt-grafana/grafana_admin_pw.txt
     file: /srv/mgmt-grafana/grafana_admin_pw.txt
   prometheus-conf:
-    # file: ./mgmt-prometheus/prometheus.yml
     file: /srv/mgmt-prometheus/prometheus.yml
 volumes:
   loki-data:

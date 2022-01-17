@@ -28,7 +28,7 @@
     owner: root
     group: docker
 
-- name: Deploy portainer via stack from a compose file
+- name: Deploy portainer via docker stack
   when: docker_install_portainer and docker_init_swarm | bool
   docker_stack:
     state: present
@@ -49,7 +49,7 @@
   pip:
     name: docker-compose
 
-- name: Deploy portainer via compose
+- name: Deploy portainer via docker-compose
   when: docker_install_portainer and not docker_init_swarm | bool
   docker_compose:
     project_src: '{{ docker_portainer_dst_stack | dirname }}'

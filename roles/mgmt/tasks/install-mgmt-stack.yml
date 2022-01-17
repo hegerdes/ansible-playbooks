@@ -1,5 +1,16 @@
 # Install mgmt stack
 ---
+- name: Install pip3
+  when: mgmt_use_swarm_mode
+  apt:
+    name: python3-pip
+    state: latest
+
+- name: Install compose package
+  when: mgmt_use_swarm_mode
+  pip:
+    name: docker-compose
+
 - name: Copy MGMT compose|stack base files
   copy:
     src: 'srv/'
@@ -22,28 +33,14 @@
   loop: '{{ mgmt_services_to_install }}'
 
 - name: Setting Grafana password
+  no_log: true
   template:
     src: 'grafana.j2'
     dest: '{{ mgmt_dst_config_files }}/mgmt-grafana/grafana_admin_pw.txt'
     mode: '0644'
 
-- name: Install pip3
+- name: Deploy mgmt-stack [via docker-compose]
   when: mgmt_use_swarm_mode | bool != true
-  apt:
-    name: python3-pip
-    state: latest
-
-- name: Install compose package
-  when: mgmt_use_swarm_mode | bool != true
-  pip:
-    name: docker-compose
-
-- name: Deploy mgmt-services via compose
-  when: mgmt_use_swarm_mode | bool != true
-  environment:
-    MONGODB_SERVER: '{{ mgmt_mongodb_target_host }}'
-    WAF_HOST: '{{ mgmt_waf_target_host }}'
-    SQL_HOST: '{{ mgmt_sql_taget_host }}'
   docker_compose:
     project_name: monitor-stack
     remove_orphans: yes
@@ -62,18 +59,29 @@
     mgmt_compose_files_stack: '{{ mgmt_compose_files_stack | default([]) + ["".join((mgmt_dst_config_files,item))] }}'
   loop: "{{ mgmt_services_to_install | list}}"
 
-- name: Deploy mgmt-stack from a compose file
+- name: Deploy mgmt-stack [via docker stack]
   when: mgmt_use_swarm_mode | bool
-  environment:
-    MONGODB_SERVER: '{{ mgmt_mongodb_target_host }}'
-    WAF_HOST: '{{ mgmt_waf_target_host }}'
-    SQL_HOST: '{{ mgmt_sql_taget_host }}'
   docker_stack:
     state: present
     name: monitor-stack
     resolve_image: always
     with_registry_auth: yes
     compose: '{{ mgmt_compose_files_stack | list }}'
+
+- name: Copy wireguard config
+  when: mgmt_use_wireguard | bool
+  template:
+    src: mgmt-stack-wiregurd.yml.j2
+    dest: '{{ mgmt_dst_config_files }}/mgmt-stack-wiregurd.yml'
+    mode: '0644'
+
+- name: Deploy wireguard-stack
+  when: mgmt_use_wireguard | bool
+  docker_compose:
+    project_name: monitor-stack
+    remove_orphans: yes
+    project_src: '{{ mgmt_dst_config_files }}'
+    files: ['mgmt-stack-wiregurd.yml']
 
 - name: Sleep for 45 seconds and continue with play
   wait_for:

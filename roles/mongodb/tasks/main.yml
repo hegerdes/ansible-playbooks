@@ -54,7 +54,7 @@
 
 - name: Copy backup script
   copy:
-    src: '{{ sql_db_backup_script }}'
+    src: '{{ mongodb_db_backup_script }}'
     dest: /db_dumps/backup_db.sh
     owner: root
     group: root

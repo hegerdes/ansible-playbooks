@@ -7,6 +7,9 @@
   include_role:
     name: docker
 
+- name: Ensure handlers are notified now
+  meta: flush_handlers
+
 - name: Install mgmt stack
   include_tasks: install-mgmt-stack.yml
 

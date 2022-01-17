@@ -3,13 +3,12 @@ version: '3.7'
 services:
   sql-exporter:
     image: prom/mysqld-exporter:latest
-    container_name: sql-exporter
     environment:
       - TZ=Europe/Berlin
-      - DATA_SOURCE_NAME="{{ mgmt_sql_exporter_connection_string }}"
+      - DATA_SOURCE_NAME="{{ mgmt_sql_exporter_connection_string }}/"
     networks:
       - mgmt_net
 
 networks:
-  mgmt_net:
+  monitor-stack_mgmt_net:
     external: true

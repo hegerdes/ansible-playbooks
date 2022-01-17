@@ -10,19 +10,4 @@
     state: present
   loop: "{{ mongodb_user_setups }}"
 
-# - name: Create backup directory if it does not exist
-#   file:
-#     path: /db_dumps
-#     state: directory
-#     mode: '0755'
-#     owner: root
-#     group: root
-
-# - name: Copy backup script
-#   copy:
-#     src: '{{ sql_db_backup_script }}'
-#     dest: /db_dumps/backup_db.sh
-#     owner: root
-#     group: root
-#     mode: '0744'
 

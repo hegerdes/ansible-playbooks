@@ -25,12 +25,14 @@ mgmt_services_to_install:
 
 mgmt_waf_target_host: null
 mgmt_mongodb_target_host: null
-mgmt_mongodb_root_user: root
+mongodb_root_user: root
 mgmt_sql_taget_host: null
-mgmt_sql_exporter_connection_string: root:yes@host:3306
+mgmt_sql_exporter_connection_string: null
 mgmt_sql_taget_host_template: '{{ "PMA_HOST=" + mgmt_sql_taget_host if (mgmt_sql_taget_host) else "PMA_ARBITRARY=1" }}'
+
+mgmt_use_wireguard: no
 mgmt_wireguard_public_ip: '{{ ansible_default_ipv4.address }}'
-mgmt_wireguard_clients: 2
+mgmt_wireguard_clients: 1
 mgmt_wireguard_port: 51820
 
 # Grafana and Portainer setup
@@ -45,8 +47,6 @@ mgmt_grafana_host: localhost:3000
 mgmt_grafana_dashbord_ids:
   - 12708   # Zabbix
   - 1860    # Node_exporter
-  - 12135   # USE Method / Cluster
-  - 12136   # USE Method / Node
   - 12708   # NGINX exporter
   - 9614    # NGINX Ingress controller
   - 7362    # SQL Metrics

@@ -3,19 +3,21 @@ version: '3.7'
 services:
   wireguard:
     image: linuxserver/wireguard:latest
-    container_name: wireguard
     cap_add:
       - NET_ADMIN
       - SYS_MODULE
+    networks:
+      - wireguard-net
     environment:
       - PUID=1000
       - PGID=1000
       - TZ=Europe/London
+      - ALLOWEDIPS=0.0.0.0/0
       - SERVERPORT={{ mgmt_wireguard_port }}
-      - PEERDNS=auto
+      - PEERDNS=8.8.8.8
       - PEERS={{ mgmt_wireguard_clients }}
       - SERVERURL={{ mgmt_wireguard_public_ip }}
-      # - INTERNAL_SUBNET=10.13.13.0 #optional
+      - INTERNAL_SUBNET=10.13.13.0
     volumes:
       - wireguard-data:/config
       - /lib/modules:/lib/modules
@@ -26,3 +28,10 @@ services:
 
 volumes:
   wireguard-data:
+
+networks:
+  wireguard-net:
+    driver: bridge
+    attachable: true
+    driver_opts:
+      com.docker.network.driver.mtu: 1450
