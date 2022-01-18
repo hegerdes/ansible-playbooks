@@ -1,0 +1,31 @@
+---
+# Influx settings
+
+# Install via docker
+influx_use_docker: yes
+influx_docker_version: 2.1-alpine
+
+# Init
+influx_root_user: root
+influx_organization: example-org
+influx_root_bucket: example-bucket
+influx_root_pw: mySuperSecureAdminPW
+influx_root_token: my-super-secret-auth-token
+# influx_bind_hostname: '{{ ansible_default_ipv4.address }}'
+influx_bind_hostname: 10.10.0.8
+influx_listen_port: 8086
+influx_listen_addr: '{{ influx_bind_hostname }}:{{ influx_listen_port }}'
+
+influx_db_backup_script: "{{'backup_db-docker.sh' if (influx_use_docker) else 'backup_db-docker.sh'}}"
+
+# DB setup
+influx_setups:
+  - db: test1
+    user: user1
+    pw: mysecurepw1
+  - db: test2
+    user: user2
+    pw: mysecurepw2
+
+# For backup
+cron_jobs: []

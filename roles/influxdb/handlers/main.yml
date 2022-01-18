@@ -1,0 +1,9 @@
+---
+- name: Reboot
+  reboot:
+
+- name: Reload
+  service:
+    name: influxdb
+    state: restarted
+    enabled: yes

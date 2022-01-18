@@ -1,0 +1,34 @@
+
+
+- name: Ensue config folder exists
+  file:
+    path: /srv/influxdb
+    state: directory
+
+- name: Copy influx compose file
+  template:
+    src: influx-docker-compose.yml.j2
+    dest: /srv/influxdb/influx-docker-compose.yml
+    mode: '0644'
+
+- name: Deploy influxdb via compose
+  docker_compose:
+    project_src: /srv/influxdb
+    state: present
+    remove_orphans: yes
+    project_name: service
+    files:
+      - influx-docker-compose.yml
+
+- name: Sleep for 15 seconds and continue with play
+  wait_for:
+    timeout: 15
+
+- name: Run Influx init
+  community.docker.docker_container_exec:
+    container: influxdb
+    command: "influx setup --org {{ influx_organization }} --bucket {{ influx_root_bucket }} --username {{ influx_root_user }} --password {{ influx_root_pw }} --host http://{{ influx_listen_addr }} --force"
+  register: influx_setup_res
+  ignore_errors: yes
+  no_log: true
+

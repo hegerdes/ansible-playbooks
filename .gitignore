@@ -1,3 +1,2 @@
 wireguard.conf
-roles/influxdb
 prometheus.yml

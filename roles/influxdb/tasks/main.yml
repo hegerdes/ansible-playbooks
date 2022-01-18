@@ -1,0 +1,28 @@
+# Main InfluxDB Setup
+---
+- name: Install needed packages
+  apt:
+    name: python3-influxdb
+    state: latest
+
+- name: Run Docker install
+  when: influx_use_docker | bool
+  include_role:
+    name: docker
+
+- name: Install Influxdb
+  when: influx_use_docker | bool
+  include_tasks: install-influxdb-docker.yml
+
+- name: Install Influxdb
+  when: influx_use_docker | bool == false
+  include_tasks: install-influxdb.yml
+
+- name: Ensure handlers are notified now
+  meta: flush_handlers
+
+- name: Init Influxdb
+  include_tasks: init-influxdb.yml
+
+- name: Setup cron jobs
+  include_tasks: shared/install-cron-jobs.yml

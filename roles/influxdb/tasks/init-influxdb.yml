@@ -1,0 +1,36 @@
+
+
+- name: Create a new databases
+  influxdb_database:
+    database_name: '{{ item.db }}'
+    state: present
+    username: '{{ influx_root_user }}'
+    password: '{{ influx_root_pw }}'
+  loop: '{{ influx_setups }}'
+
+- name: Create a user on localhost using default login credentials
+  influxdb_user:
+    user_name: '{{ item.user }}'
+    user_password: '{{ item.pw }}'
+    state: present
+    login_username: '{{ influx_root_user }}'
+    login_password: '{{ influx_root_pw }}'
+  loop: '{{ influx_setups }}'
+
+
+- name: Create backup directory if it does not exist
+  file:
+    path: /db_dumps
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Copy backup script
+  copy:
+    src: '{{ influx_db_backup_script }}'
+    dest: /db_dumps/backup_db.sh
+    owner: root
+    group: root
+    mode: '0744'
+

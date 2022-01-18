@@ -1,0 +1,27 @@
+version: '3.7'
+services:
+
+  influxdb:
+    image: influxdb:{{ influx_docker_version }}
+    container_name: influxdb
+    ports:
+      - 8086:8086
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+    environment:
+      - DOCKER_INFLUXDB_INIT_USERNAME={{ influx_root_user }}
+      - DOCKER_INFLUXDB_INIT_PASSWORD={{ influx_root_pw }}
+      - DOCKER_INFLUXDB_INIT_ORG={{ influx_organization }}
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN={{ influx_root_token }}
+      - DOCKER_INFLUXDB_INIT_BUCKET={{ influx_root_bucket }}
+
+  # chronograf:
+  #   image: chronograf:1.9-alpine
+  #   ports:
+  #     - 8888:8888
+  #   volumes:
+  #     - chronograf-data:/var/lib/chronograf
+
+volumes:
+  influxdb-data:
+  chronograf-data:

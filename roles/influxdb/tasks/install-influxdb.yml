@@ -1,0 +1,57 @@
+
+---
+- name: Add influx GPG apt Key
+  apt_key:
+    url: https://repos.influxdata.com/influxdb.key
+    state: present
+
+- name: Add influx repository
+  apt_repository:
+    repo: deb https://repos.influxdata.com/{{ ansible_distribution | lower }} {{ ansible_facts.lsb.codename }} stable
+    update_cache: yes
+    state: present
+
+- name: Ensure /etc/influxdb2/ directory exists
+  file:
+    path: /etc/influxdb2/
+    state: directory
+    mode: 0755
+
+- name: Set Influx conf location
+  lineinfile:
+     path: /etc/environment
+     line: INFLUXD_CONFIG_PATH=/etc/influxdb2
+     create: yes
+  notify: Reboot
+
+- name: Copy influxdb-conf
+  template:
+    src: influxdb.toml.j2
+    dest: /etc/influxdb2/influx.toml
+    mode: '0644'
+  notify: Reload
+
+- name: Ensure handlers are notified now
+  meta: flush_handlers
+
+- name: Install Influxdb
+  apt:
+    name: '{{ item }}'
+    state: latest
+  loop: ['influxdb2', 'influxdb2-cli']
+
+- name: Ensure service is started
+  service:
+    name: influxdb
+    state: started
+    enabled: yes
+
+- name: Sleep for 15 seconds and continue with play
+  wait_for:
+    timeout: 15
+
+- name: Run Influx init
+  command: "influx setup --org {{ influx_organization }} --bucket {{ influx_root_bucket }} --username {{ influx_root_user }} --password {{ influx_root_pw }} --host http://{{ influx_listen_addr }} --force"
+  register: influx_setup_res
+  ignore_errors: yes
+  no_log: true
