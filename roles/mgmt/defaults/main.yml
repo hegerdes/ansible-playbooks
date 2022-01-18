@@ -37,7 +37,7 @@ mgmt_wireguard_port: 51820
 
 # Grafana and Portainer setup
 mgmt_setup_portainer: yes
-mgmt_portainer_pw: MySecretRootPW
+mgmt_portainer_pw: mySuperSecureAdminPW
 mgmt_portainer_host: localhost:9000
 mgmt_portainer_nodes: {}
 

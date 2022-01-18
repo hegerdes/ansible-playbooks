@@ -20,3 +20,8 @@
   roles:
     - mongodb
 
+- hosts: service-influxdb
+  become: true
+  gather_facts: True
+  roles:
+    - influxdb

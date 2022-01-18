@@ -77,7 +77,6 @@ services:
         mode: host
     volumes:
       - portainer-data:/data
-      - /var/run/docker.sock:/var/run/docker.sock
     deploy:
       placement:
         constraints: [node.role == manager]

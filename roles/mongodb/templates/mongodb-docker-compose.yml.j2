@@ -4,6 +4,7 @@ version: '3.7'
 services:
   mariadb:
     image: mongo:{{ mongodb_docker_version }}
+    container_name: mongodb
     restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: {{ mongodb_root_user }}

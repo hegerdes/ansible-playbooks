@@ -7,7 +7,15 @@
 - name: List upgradable
   command: apt list --upgradable
   register: main_updates
+  changed_when: false
 
 - name: Print upgradable packages
   debug:
     var: main_updates.stdout_lines
+
+- name: Upgrade packages
+  when: maintenance_run_upgrades | bool
+  apt:
+    name: '{{ item.split("/")[0] }}'
+    state: latest
+  loop: '{{ main_updates.stdout_lines[1:] }}'

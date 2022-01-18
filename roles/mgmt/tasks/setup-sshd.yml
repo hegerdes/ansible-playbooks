@@ -1,6 +1,6 @@
 # Reconfig sshd
 ---
-- name: Add ssh port 2223
+- name: Setup ssh ports
   lineinfile:
     path: /etc/ssh/sshd_config
     line: 'Port {{ item }}'

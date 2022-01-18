@@ -4,6 +4,7 @@ version: '3.7'
 services:
   mariadb:
     image: mariadb:{{ mariadb_docker_version }}
+    container_name: mariadb
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: {{ sql_root_pw }}
