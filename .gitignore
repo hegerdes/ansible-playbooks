@@ -1,2 +1,4 @@
 wireguard.conf
 prometheus.yml
+influx-docker-compose.yml
+notes.txt

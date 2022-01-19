@@ -51,8 +51,8 @@
   rescue:
     - name: Error Handler
       debug:
-        msg: 'Error while installing compose, using fallback with pip'
-        var: ansible_failed_result
+        msg: Error while installing compose, using fallback with pip
+        var: docker_compose_url
 
     - name: Ensure needed packages are installed
       apt:

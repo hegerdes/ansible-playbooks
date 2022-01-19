@@ -23,6 +23,7 @@ mgmt_services_to_install:
   - mgmt-stack-db-phpmyadmin.yml
   - mgmt-stack-heimdall.yml
 
+
 mgmt_waf_target_host: null
 mgmt_mongodb_target_host: null
 mongodb_root_user: root
@@ -34,6 +35,10 @@ mgmt_use_wireguard: no
 mgmt_wireguard_public_ip: '{{ ansible_default_ipv4.address }}'
 mgmt_wireguard_clients: 1
 mgmt_wireguard_port: 51820
+
+# Chronograph
+mgmt_chronograf_version: 1.9-alpine
+mgmt_chronograf_port: 8888
 
 # Grafana and Portainer setup
 mgmt_setup_portainer: yes
@@ -48,6 +53,5 @@ mgmt_grafana_dashbord_ids:
   - 12708   # Zabbix
   - 1860    # Node_exporter
   - 12708   # NGINX exporter
-  - 9614    # NGINX Ingress controller
   - 7362    # SQL Metrics
 

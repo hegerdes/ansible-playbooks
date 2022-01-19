@@ -44,3 +44,12 @@ scrape_configs:
       job: dpkg
       shipper: promtail
       __path__: /var/log/dpkg.log
+
+- job_name: cronlog
+  static_configs:
+  - targets:
+      - localhost
+    labels:
+      job: cronlog
+      shipper: promtail
+      __path__: /var/log/cron.log

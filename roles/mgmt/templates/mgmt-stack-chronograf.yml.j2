@@ -1,0 +1,14 @@
+version: '3.7'
+
+services:
+  chronograf:
+    image: chronograf:{{ mgmt_chronograf_version }}
+    environment:
+      - TZ=Europe/Berlin
+    ports:
+      - {{ mgmt_chronograf_port }}:8888
+    volumes:
+      - chronograf-data:/var/lib/chronograf
+
+volumes:
+  chronograf-data:

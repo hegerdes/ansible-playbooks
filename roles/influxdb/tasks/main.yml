@@ -9,6 +9,8 @@
   when: influx_use_docker | bool
   include_role:
     name: docker
+  vars:
+    docker_init_swarm: false
 
 - name: Install Influxdb
   when: influx_use_docker | bool
@@ -26,3 +28,5 @@
 
 - name: Setup cron jobs
   include_tasks: shared/install-cron-jobs.yml
+  vars:
+    cron_jobs: '{{ influx_cron_jobs }}'

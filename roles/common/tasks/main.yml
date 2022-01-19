@@ -12,18 +12,20 @@
     state: latest
     install_recommends: no
   loop:
+    - 'software-properties-common'
     - 'apt-transport-https'
     - 'ca-certificates'
+    - 'wget'
     - 'curl'
-    - 'software-properties-common'
     - 'gnupg'
+    - 'gnupg2'
+    - 'pass'
     - 'lsb-release'
     - 'python3-pip'
     - 'python3-requests'
     - 'python3-jsondiff'
     - 'python3-yaml'
     - 'unzip'
-    - 'wget'
     - 'git'
 
 - name: install additional packages
@@ -40,6 +42,14 @@
   include_tasks: install-ssh-keys.yml
   when: install_ssh_keys | bool
 
+- name: Ensure logfile for cron exists
+  lineinfile:
+    path: /var/log/cron.log
+    line: \#Cron Log file
+    create: yes
+    mode: '0644'
+
 - name: install cron jobs
   include_tasks: shared/install-cron-jobs.yml
-  when: install_corn_jobs | bool
+  vars:
+    cron_jobs: '{{ common_cron_jobs }}'

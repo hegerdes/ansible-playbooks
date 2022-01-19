@@ -28,4 +28,13 @@ influx_setups:
     pw: mysecurepw2
 
 # For backup
-cron_jobs: []
+influx_cron_jobs:
+  - name: Dump DB as backup
+    job: bash /db_dumps/backup_db.sh
+    weekday: '*'
+    month: '*'
+    minute: '30'
+    hour: '02'
+    day: '*'
+    state: present
+    user: null

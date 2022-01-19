@@ -19,14 +19,21 @@
     project_name: service
     files:
       - mariadb-docker-compose.yml
+  register: mariadb_install_res
 
 - name: Sleep for 15 seconds and continue with play
+  when: mariadb_install_res.changed
   wait_for:
     timeout: 15
 
-- name: Collect all possible information of DB
+- name: Collect all possible DB information
   mysql_info:
     login_user: '{{ sql_root_user }}'
     login_password : '{{ sql_root_pw }}'
     login_host: localhost
+  register: mariadb_info_res
+
+- name: Print DB infomation
+  debug:
+    msg: 'Version: {{ mariadb_info_res.version.full }}; Faild: {{ mariadb_info_res.failed }}; DBs: {{ mariadb_info_res.databases }}'
 

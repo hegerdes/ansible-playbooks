@@ -14,6 +14,8 @@
   when: mongodb_use_docker | bool
   include_role:
     name: docker
+  vars:
+    docker_init_swarm: false
 
 - name: Install MongoDB
   when: mongodb_use_docker | bool
@@ -62,3 +64,5 @@
 
 - name: Setup cron jobs
   include_tasks: shared/install-cron-jobs.yml
+  vars:
+    cron_jobs: '{{ mongodb_cron_jobs }}'
