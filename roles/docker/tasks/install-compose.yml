@@ -3,7 +3,7 @@
 - name: Install Compose binary
   block:
   - name: Check current docker-compose version
-    command: "docker-compose --version"
+    command: docker-compose --version
     register: docker_compose_current_version
     check_mode: no
     changed_when: false
@@ -31,7 +31,7 @@
 
   - name: Install docker-compose {{ docker_compose_version }}
     get_url:
-      url: "{{ docker_compose_url.stdout }}"
+      url: '{{ docker_compose_url.stdout }}'
       dest: /usr/local/bin/docker-compose
       mode: 0755
     when: >
@@ -45,7 +45,7 @@
       state: link
 
   - name: Check current docker-compose version
-    command: "docker-compose --version"
+    command: docker-compose --version
     changed_when: false
 
   rescue:

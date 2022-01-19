@@ -50,14 +50,14 @@
 - name: Init a new swarm
   when: mgmt_use_swarm_mode | bool
   docker_swarm:
-    advertise_addr: "{{ ansible_host }}"
+    advertise_addr: '{{ ansible_host }}'
     state: present
 
 - name: Create absolut paths for stack files
   when: mgmt_use_swarm_mode | bool
   set_fact:
     mgmt_compose_files_stack: '{{ mgmt_compose_files_stack | default([]) + ["".join((mgmt_dst_config_files,item))] }}'
-  loop: "{{ mgmt_services_to_install | list}}"
+  loop: '{{ mgmt_services_to_install | list}}'
 
 - name: Deploy mgmt-stack [via docker stack]
   when: mgmt_use_swarm_mode | bool

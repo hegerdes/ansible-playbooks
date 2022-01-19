@@ -28,14 +28,14 @@
     - 'unzip'
     - 'git'
 
-- name: install additional packages
+- name: Install additional packages
   apt:
     name: '{{ item }}'
     state: latest
     install_recommends: no
   loop: '{{ extra_packages }}'
 
-- name: set hostnames
+- name: Set hostnames
   include_tasks: install-hostnames.yml
 
 - name: add ssh keys

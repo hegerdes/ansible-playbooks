@@ -8,6 +8,6 @@
     name: '{{ item.user }}'
     password: '{{ item.pw }}'
     state: present
-  loop: "{{ mongodb_user_setups }}"
+  loop: '{{ mongodb_user_setups }}'
 
 

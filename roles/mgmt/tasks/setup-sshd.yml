@@ -20,7 +20,7 @@
     user: '{{ mgmt_jumphost_user }}'
     state: present
     key_options: 'no-X11-forwarding'
-    key: "{{ lookup('file', item) }}"
+    key: '{{ lookup('file', item) }}'
   loop: '{{ ssh_key_list }}'
 
 
