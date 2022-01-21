@@ -14,15 +14,15 @@
 #   roles:
 #     - docker
 
-# - hosts: mgmt_hosts
-#   become: true
-#   gather_facts: True
-#   roles:
-#     - mgmt
-
-- hosts: gateways
+- hosts: mgmt_hosts
   become: true
   gather_facts: True
   roles:
-    - nginx
+    - mgmt
+
+# - hosts: gateways
+#   become: true
+#   gather_facts: True
+#   roles:
+#     - nginx
 

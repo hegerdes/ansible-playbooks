@@ -5,8 +5,6 @@
 mgmt_jumphost_user: gitlab
 # List of ssh key_paths for mgmt_jumphost_user
 ssh_key_list: []
-# Comment
-mgmt_jumphost_user_comment: Used to deploy from CI
 # Ports for sshd
 ssh_listen_ports:
   - 22
@@ -16,13 +14,13 @@ ssh_listen_ports:
 mgmt_use_swarm_mode: yes
 mgmt_src_config_files: srv/
 mgmt_dst_config_files: /srv/
+mgmt_docker_stack_name: monitor-stack
 
 mgmt_services_to_install:
   - mgmt-stack.yml
   - mgmt-stack-db-mongo-express.yml
   - mgmt-stack-db-phpmyadmin.yml
   - mgmt-stack-heimdall.yml
-
 
 mgmt_waf_target_host: null
 mgmt_mongodb_target_host: null
@@ -54,4 +52,5 @@ mgmt_grafana_dashbord_ids:
   - 1860    # Node_exporter
   - 12708   # NGINX exporter
   - 7362    # SQL Metrics
+  - 1229    # Docker metrics
 

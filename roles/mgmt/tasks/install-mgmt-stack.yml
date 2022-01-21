@@ -3,8 +3,9 @@
 - name: Install pip3
   when: mgmt_use_swarm_mode
   apt:
-    name: python3-pip
+    name: '{{ item }}'
     state: latest
+  loop: ['python3-pip', 'libffi-dev']
 
 - name: Install compose package
   when: mgmt_use_swarm_mode
@@ -63,7 +64,7 @@
   when: mgmt_use_swarm_mode | bool
   docker_stack:
     state: present
-    name: monitor-stack
+    name: '{{ mgmt_docker_stack_name }}'
     resolve_image: always
     with_registry_auth: yes
     compose: '{{ mgmt_compose_files_stack | list }}'

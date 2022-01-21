@@ -19,3 +19,14 @@
     name: '{{ item.split("/")[0] }}'
     state: latest
   loop: '{{ main_updates.stdout_lines[1:] }}'
+
+- name: Check for reboot
+  when: maintenance_run_upgrades | bool
+  stat:
+    path: /var/run/reboot-required
+  register: main_reboot_needed
+
+- name: Print upgradable packages
+  when: maintenance_run_upgrades | bool
+  debug:
+    msg: 'Reboot needed: {{ main_reboot_needed.stat.exists }}'

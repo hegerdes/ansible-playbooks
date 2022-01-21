@@ -10,7 +10,7 @@
 - name: Adding JumpHost user {{ mgmt_jumphost_user }}
   user:
     name: '{{ mgmt_jumphost_user }}'
-    comment: '{{ mgmt_jumphost_user_comment | default("JumpHost user")}}'
+    comment: '{{ mgmt_user_comment | default("JumpHost user")}}'
     shell: /usr/bin/bash
     create_home: no
     state: present
@@ -20,7 +20,7 @@
     user: '{{ mgmt_jumphost_user }}'
     state: present
     key_options: 'no-X11-forwarding'
-    key: '{{ lookup('file', item) }}'
+    key: '{{ lookup("file", item) }}'
   loop: '{{ ssh_key_list }}'
 
 
