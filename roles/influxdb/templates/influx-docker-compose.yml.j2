@@ -14,6 +14,7 @@ services:
       - DOCKER_INFLUXDB_INIT_ORG={{ influx_organization }}
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN={{ influx_root_token }}
       - DOCKER_INFLUXDB_INIT_BUCKET={{ influx_root_bucket }}
+      {{ influx_gen_root_token | default("") }}
 
   # chronograf:
   #   image: chronograf:1.9-alpine

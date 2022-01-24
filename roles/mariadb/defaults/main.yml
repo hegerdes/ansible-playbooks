@@ -2,7 +2,7 @@
 # SQL settings
 
 # Install via docker
-sql_use_docker: no
+sql_use_docker: yes
 mariadb_docker_version: 10.7
 
 # Init

@@ -1,28 +1,30 @@
 # Hetzner Demo
 
-# - hosts: all
-#   become: true
-#   gather_facts: True
-#   roles:
-#     - common
-#     - promtail
-#     - node-exporter
+- hosts: all
+  become: true
+  gather_facts: True
+  roles:
+    - common
+    - promtail
+    - node-exporter
 
-# - hosts: docker_hosts
-#   become: true
-#   gather_facts: True
-#   roles:
-#     - docker
+- hosts: docker_hosts
+  become: true
+  gather_facts: True
+  roles:
+    - docker
 
 - hosts: mgmt_hosts
   become: true
   gather_facts: True
+  vars_files:
+    - '{{ inventory_dir }}/vaults/vault.yml'
   roles:
     - mgmt
 
-# - hosts: gateways
-#   become: true
-#   gather_facts: True
-#   roles:
-#     - nginx
+- hosts: gateways
+  become: true
+  gather_facts: True
+  roles:
+    - nginx
 

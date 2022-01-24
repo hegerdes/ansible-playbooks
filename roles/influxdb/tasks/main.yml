@@ -1,16 +1,16 @@
 # Main InfluxDB Setup
 ---
-- name: Install needed packages
-  apt:
-    name: python3-influxdb
-    state: latest
+# - name: Install needed packages
+#   apt:
+#     name: python3-influxdb
+#     state: latest
 
-- name: Run Docker install
-  when: influx_use_docker | bool
-  include_role:
-    name: docker
-  vars:
-    docker_init_swarm: false
+# - name: Run Docker install
+#   when: influx_use_docker | bool
+#   include_role:
+#     name: docker
+#   vars:
+#     docker_init_swarm: false
 
 - name: Install Influxdb
   when: influx_use_docker | bool
@@ -23,8 +23,25 @@
 - name: Ensure handlers are notified now
   meta: flush_handlers
 
-- name: Init Influxdb
-  include_tasks: init-influxdb.yml
+# Broken right now because influx 2.0
+# - name: Init Influxdb
+#   include_tasks: init-influxdb.yml
+
+- name: Create backup directory if it does not exist
+  file:
+    path: /db_dumps
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Copy backup script
+  copy:
+    src: '{{ influx_db_backup_script }}'
+    dest: /db_dumps/backup_db.sh
+    owner: root
+    group: root
+    mode: '0744'
 
 - name: Setup cron jobs
   include_tasks: shared/install-cron-jobs.yml

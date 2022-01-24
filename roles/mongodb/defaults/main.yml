@@ -2,7 +2,7 @@
 # SQL settings
 
 # Install via docker
-mongodb_use_docker: no
+mongodb_use_docker: yes
 mongodb_docker_version: 4.4-focal
 
 # Init
@@ -10,7 +10,7 @@ mongodb_root_user: root
 mongodb_root_pw: MySuperSecurePW
 
 # Backup
-mongodb_db_backup_script: "{{'backup_db-docker.sh' if (sql_use_docker) else 'backup_db-docker.sh'}}"
+mongodb_db_backup_script: "{{'backup_db-docker.sh' if (mongodb_use_docker) else 'backup_db-docker.sh'}}"
 
 # DB setup
 mongodb_user_setups:
@@ -22,7 +22,7 @@ mongodb_user_setups:
     pw: mysecurepw2
 
 # For backup
-mariadb_cron_jobs:
+mongodb_cron_jobs:
   - name: Dump DB as backup
     job: bash /db_dumps/backup_db.sh
     weekday: '*'

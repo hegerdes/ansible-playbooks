@@ -5,6 +5,30 @@
     path: /srv/influxdb
     state: directory
 
+- name: Check if container exists
+  community.docker.docker_container_exec:
+    container: influxdb
+    command: 'influx setup --org {{ influx_organization }} --bucket {{ influx_root_bucket }} --username {{ influx_root_user }} --password {{ influx_root_pw }} --host http://{{ influx_listen_addr }} --force'
+  register: influx_setup_check
+  failed_when: false
+  changed_when: false
+
+- name: Get Token
+  when: '"stderr" in influx_setup_check.keys() and "instance has already been set up" in influx_setup_check.stderr'
+  community.docker.docker_container_exec:
+    container: influxdb
+    command: 'influx auth ls --user root --json'
+  register: influx_setup_auth_res
+  ignore_errors: yes
+  changed_when: false
+  ignore_errors: yes
+
+- name: Setting token
+  when: '"stderr" in influx_setup_check.keys() and "instance has already been set up" in influx_setup_check.stderr'
+
+  set_fact:
+    influx_gen_root_token: '- TOKEN={{ (influx_setup_auth_res.stdout | replace("\n", "") | replace("\t", "") | from_json)[0].token }}'
+
 - name: Copy influx compose file
   template:
     src: influx-docker-compose.yml.j2
@@ -19,6 +43,7 @@
     project_name: service
     files:
       - influx-docker-compose.yml
+  register: influx_deploy_res
 
 - name: Sleep for 15 seconds and continue with play
   wait_for:
@@ -29,6 +54,35 @@
     container: influxdb
     command: 'influx setup --org {{ influx_organization }} --bucket {{ influx_root_bucket }} --username {{ influx_root_user }} --password {{ influx_root_pw }} --host http://{{ influx_listen_addr }} --force'
   register: influx_setup_res
-  ignore_errors: yes
-  no_log: true
+  changed_when: 'influx_setup_res.stderr != "Error: instance has already been set up"'
+  failed_when: 'influx_setup_res.stderr != "Error: instance has already been set up" and influx_setup_res.rc != 0'
 
+- name: Get Token
+  when: influx_deploy_res.changed
+  community.docker.docker_container_exec:
+    container: influxdb
+    command: 'influx auth ls --json'
+  register: influx_setup_auth_res
+  ignore_errors: yes
+
+- name: Setting token
+  when: influx_deploy_res.changed and influx_setup_auth_res.stdout
+  set_fact:
+    influx_gen_root_token: '- TOKEN={{ (influx_setup_auth_res.stdout | replace("\n", "") | replace("\t", "") | from_json)[0].token }}'
+
+- name: Copy influx compose file
+  when: influx_deploy_res.changed
+  template:
+    src: influx-docker-compose.yml.j2
+    dest: /srv/influxdb/influx-docker-compose.yml
+    mode: '0644'
+
+- name: Deploy influxdb via compose
+  when: influx_deploy_res.changed
+  docker_compose:
+    project_src: /srv/influxdb
+    state: present
+    remove_orphans: yes
+    project_name: service
+    files:
+      - influx-docker-compose.yml
