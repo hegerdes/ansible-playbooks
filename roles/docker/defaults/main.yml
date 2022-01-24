@@ -46,8 +46,8 @@ docker_swarm_worker_mapping: {}
 
 # Portainer
 docker_install_portainer: true
-docker_portainer_src_stack: portainer-agent-stack.yml
-docker_portainer_src_compose: portainer-agent.yml
+
+docker_portainer_src: "{{'portainer-agent-stack.yml' if (docker_init_swarm) else 'portainer-agent.yml'}}"
 docker_portainer_dst_stack: /srv/portainer/portainer-agent-stack.yml
 
 # Clean docker host every 03:30 on Saturday

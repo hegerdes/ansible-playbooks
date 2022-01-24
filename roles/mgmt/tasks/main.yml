@@ -3,6 +3,9 @@
 - name: Setup sshd
   include_tasks: setup-sshd.yml
 
+- name: Setup fail2ban
+  include_tasks: setup-fail2ban.yml
+
 - name: Run docker install
   include_role:
     name: docker

@@ -5,9 +5,8 @@ nginx_metrics_server_addr: '{{ ansible_default_ipv4.address }}:80'
 
 # Certbot setting
 nginx_install_hosts: yes
-nginx_hosts_src_config_dir: example-nginx-hosts/
+nginx_force_reinstall_hosts: no
 nginx_hosts_listen_addr: '{{ ansible_default_ipv4.address }}'
-nginx_hosts_upstream_target: 'localhost:5000'
 nginx_run_certbot: yes
 nginx_certbot_mail: info@example.com
 
@@ -15,6 +14,10 @@ nginx_certbot_mail: info@example.com
 nginx_vhosts:
   - host: example.123preview.com
     ip: '{{ nginx_hosts_listen_addr }}'
+    upstream: |
+      upstream my_upstream {
+        server localhost:500;
+      }
     locations: |
       location / {
         return 404;
@@ -28,4 +31,14 @@ nginx_update_promtail: yes
 promtail_config_src_path: promtail-config.yml
 promtail_config_dst_path: /srv/promtail/promtail-config.yml
 
-
+# For cert renew
+nginx_cron_jobs:
+  - name: Certbot renew
+    job: echo "certbot renew" >> /var/log/cron.log && certbot renew >> /var/log/cron.log
+    weekday: '2'
+    month: '*'
+    minute: '30'
+    hour: '02'
+    day: '*'
+    state: present
+    user: null

@@ -11,3 +11,8 @@
 
 - name: Reload nginx
   command: nginx -s reload
+
+- name: Restart nginx
+  service:
+    name: nginx
+    state: restarted

@@ -16,10 +16,22 @@
     name: nginx
     state: latest
 
+- name: Ensue nginx user
+  user:
+    name: nginx
+    group: nginx
+    groups: [nginx, www-data]
+    shell: /bin/false
+    create_home: no
+    append: yes
+    system: yes
+    state: present
+
 - name: Start nginx
   service:
     name: nginx
     state: started
+    enabled: yes
 
 - name: Remove default nginx config
   file:
@@ -33,12 +45,23 @@
     owner: root
     group: root
     mode: '0644'
+  notify: Restart nginx
+
+- name: Check for dhparam.pem
+  stat:
+    path: /etc/nginx/dhparam.pem
+  register: nginx_dhparam_result
+
+- name: Creating dhparam.pem
+  when: not nginx_dhparam_result.stat.exists
+  command: openssl dhparam -out /etc/nginx/dhparam.pem 2048
 
 - name: Create nginx metrics status page
   template:
     src: internal-status.conf.j2
     dest: /etc/nginx/conf.d/internal-status.conf
     mode: '0644'
+  notify: Restart nginx
 
 - name: Check nginx syntax
   command: nginx -t
@@ -46,7 +69,6 @@
   changed_when: false
   failed_when: '"warn" is in res.stderr_lines or "emerg" is in res.stderr_lines or res.rc != 0'
 
-- name: Restart nginx
-  service:
-    name: nginx
-    state: restarted
+- name: Ensure handlers are notified now
+  meta: flush_handlers
+

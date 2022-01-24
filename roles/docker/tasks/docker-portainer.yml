@@ -15,7 +15,7 @@
 - name: Copy portainer stack files
   when: docker_install_portainer and docker_init_swarm | bool
   copy:
-    src: '{{ docker_portainer_src_compose }}'
+    src: '{{ docker_portainer_src }}'
     dest: '{{ docker_portainer_dst_stack }}'
     owner: root
     group: docker
@@ -23,7 +23,7 @@
 - name: Copy portainer compose files
   when: docker_install_portainer and not docker_init_swarm | bool
   copy:
-    src: '{{ docker_portainer_src_compose }}'
+    src: '{{ docker_portainer_src }}'
     dest: '{{ docker_portainer_dst_stack }}'
     owner: root
     group: docker

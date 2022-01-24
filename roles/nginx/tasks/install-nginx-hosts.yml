@@ -1,6 +1,5 @@
 # Install nginx-hosts and run certbot
 ---
-
 - name: Verify Nginx is started
   service:
     name: nginx
@@ -11,21 +10,14 @@
     path: /etc/letsencrypt/dummy
     state: directory
 
-- name: Copy dummy cert 1
+- name: Copy dummy certs
   copy:
-    src: fullchain-dummy.pem
-    dest: '/etc/letsencrypt/dummy/fullchain.pem'
+    src: '{{ item }}.dummy'
+    dest: '/etc/letsencrypt/dummy/{{ item }}'
     owner: root
     group: root
     mode: '0777'
-
-- name: Copy dummy cert 2
-  copy:
-    src: privkey-dummy.pem
-    dest: '/etc/letsencrypt/dummy/privkey.pem'
-    owner: root
-    group: root
-    mode: '0777'
+  loop: ['fullchain.pem', 'privkey.pem']
 
 - name: Find all nginx hosts
   shell: |
@@ -35,7 +27,7 @@
   changed_when: false
 
 - name: Creating hosts for nginx
-  when: nginx_vhost.host + ".conf" not in nginx_deployed_hosts.stdout_lines
+  when: nginx_vhost.host + ".conf" not in nginx_deployed_hosts.stdout_lines or nginx_force_reinstall_hosts
   template:
     src: 'site.conf.j2'
     dest: '/etc/nginx/conf.d/{{ nginx_vhost.host }}.conf'
@@ -46,21 +38,14 @@
   notify: Reload nginx
   register: nginx_created_hosts
 
-- name: Copy ssl-nginx.conf
+- name: Copy ssl-nginx.conf|ssl-dhparams.pem
   copy:
-    src: options-ssl-nginx.conf
-    dest: /etc/letsencrypt/options-ssl-nginx.conf
+    src: '{{ item }}'
+    dest: '/etc/letsencrypt/{{ item }}'
     owner: root
     group: root
     mode: '0644'
-
-- name: Copy ssl-dhparams.pem
-  copy:
-    src: ssl-dhparams.pem
-    dest: /etc/letsencrypt/ssl-dhparams.pem
-    owner: root
-    group: root
-    mode: '0644'
+  loop: ['options-ssl-nginx.conf', 'ssl-dhparams.pem']
 
 - name: Verify Certbot Installation
   when: nginx_run_certbot | bool
@@ -69,12 +54,19 @@
     state: latest
   loop: [ 'certbot', 'python3-certbot', 'python3-certbot-nginx']
 
+- name: Check nginx syntax
+  command: nginx -t
+  register: res
+  changed_when: false
+  failed_when: '"warn" is in res.stderr_lines or "emerg" is in res.stderr_lines or res.rc != 0'
+
 - name: Run Certbot
-  when: nginx_run_certbot | bool and nginx_created_hosts.changed
+  when: nginx_run_certbot | bool and (nginx_created_hosts.changed or nginx_force_reinstall_hosts)
   command: 'certbot --nginx -d {{ nginx_vhost.host }} --agree-tos --non-interactive -m {{ nginx_certbot_mail }}'
   loop: '{{ nginx_vhosts }}'
   loop_control:
     loop_var: nginx_vhost
+  notify: Reload nginx
 
 - name: Check nginx syntax
   when: nginx_run_certbot | bool
@@ -82,3 +74,6 @@
   register: res
   changed_when: false
   failed_when: '"warn" is in res.stderr_lines or "emerg" is in res.stderr_lines or res.rc != 0'
+
+- name: Ensure handlers are notified now
+  meta: flush_handlers
