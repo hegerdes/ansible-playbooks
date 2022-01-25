@@ -11,7 +11,7 @@ docker cp influxdb:/db_dumps/$(date '+%Y-%m-%d')-service-influxdb /db_dumps/$(da
 
 docker exec influxdb bash -c 'rm -r /db_dumps/$(date '+%Y-%m-%d')-service-influxdb'
 
-tar -czvf $(date '+%Y-%m-%d')-${HOSTNAME}.tar.gz.dump /db_dumps/$(date '+%Y-%m-%d')-${HOSTNAME}/ >> $LOGFILE
+tar -cvf $(date '+%Y-%m-%d')-${HOSTNAME}.tar.dump /db_dumps/$(date '+%Y-%m-%d')-${HOSTNAME}/ >> $LOGFILE
 
 rm -r /db_dumps/$(date '+%Y-%m-%d')-${HOSTNAME}
 

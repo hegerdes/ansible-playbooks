@@ -26,7 +26,7 @@
     path: /var/run/reboot-required
   register: main_reboot_needed
 
-- name: Print upgradable packages
+- name: Reoot needed?
   when: maintenance_run_upgrades | bool
   debug:
     msg: 'Reboot needed: {{ main_reboot_needed.stat.exists }}'

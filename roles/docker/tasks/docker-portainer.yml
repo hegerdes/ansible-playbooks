@@ -20,6 +20,12 @@
     owner: root
     group: docker
 
+- name: Get info on Docker Swarm
+  when: docker_install_portainer and docker_init_swarm | bool
+  docker_swarm_info:
+  ignore_errors: yes
+  register: docker_swarm_result
+
 - name: Copy portainer compose files
   when: docker_install_portainer and not docker_init_swarm | bool
   copy:
@@ -29,7 +35,7 @@
     group: docker
 
 - name: Deploy portainer via docker stack
-  when: docker_install_portainer and docker_init_swarm | bool
+  when: docker_install_portainer and docker_init_swarm and docker_swarm_result.docker_swarm_manager | bool
   docker_stack:
     state: present
     name: portainer

@@ -10,6 +10,12 @@
   include_role:
     name: docker
 
+- name: Install aws-cli
+  apt:
+    name: awscli
+    state: latest
+    install_recommends: no
+
 - name: Ensure handlers are notified now
   meta: flush_handlers
 

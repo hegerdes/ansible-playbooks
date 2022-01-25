@@ -46,6 +46,15 @@ scrape_configs:
       shipper: promtail
       __path__: /var/log/dpkg.log
 
+- job_name: cronlog
+  static_configs:
+  - targets:
+      - localhost
+    labels:
+      job: cronlog
+      shipper: promtail
+      __path__: /var/log/cron.log
+
 - job_name: nginx
   static_configs:
   - targets:
@@ -65,7 +74,6 @@ scrape_configs:
           expressions:
             nginx_status: status
             nginx_server_name: server_name
-            nginx_upstream_addr: upstream_addr
             http_user_agent: http_user_agent
             request:
       # Further disassemble the http request
@@ -79,10 +87,13 @@ scrape_configs:
           nginx_upstream_addr:
           nginx_method:
 
-      # Drop zabbix requests & nginx prometheus exporter requests
+      # Drop zabbix, nginx prometheus exporter, and health requests
       - drop:
           source:     "nginx_request"
           value:      "/nginx_status"
       - drop:
+          source:     "nginx_request"
+          value:      "/1.0.0/health"
+      - drop:
           source:     "nginx_http_user_agent"
-          value:      "Zabbix"
+          regex: ".*Zabbix.*"
