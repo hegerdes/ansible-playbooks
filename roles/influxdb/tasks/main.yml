@@ -1,16 +1,16 @@
 # Main InfluxDB Setup
 ---
-# - name: Install needed packages
-#   apt:
-#     name: python3-influxdb
-#     state: latest
+- name: Install needed packages
+  apt:
+    name: python3-influxdb
+    state: latest
 
-# - name: Run Docker install
-#   when: influx_use_docker | bool
-#   include_role:
-#     name: docker
-#   vars:
-#     docker_init_swarm: false
+- name: Run Docker install
+  when: influx_use_docker | bool
+  include_role:
+    name: docker
+  vars:
+    docker_init_swarm: false
 
 - name: Install Influxdb
   when: influx_use_docker | bool
@@ -23,7 +23,7 @@
 - name: Ensure handlers are notified now
   meta: flush_handlers
 
-# Broken right now because influx 2.0
+# Broken right now because influx 2.x
 # - name: Init Influxdb
 #   include_tasks: init-influxdb.yml
 

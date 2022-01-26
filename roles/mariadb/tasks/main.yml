@@ -6,18 +6,18 @@
     state: latest
 
 - name: Run docker install
-  when: sql_use_docker | bool
+  when: mariadb_use_docker | bool
   include_role:
     name: docker
   vars:
     docker_init_swarm: false
 
 - name: Install MariaDB
-  when: sql_use_docker | bool
+  when: mariadb_use_docker | bool
   include_tasks: install-mariadb-docker.yml
 
 - name: Install MariaDB
-  when: sql_use_docker | bool == false
+  when: mariadb_use_docker | bool == false
   include_tasks: install-mariadb.yml
 
 - name: Init MariaDB

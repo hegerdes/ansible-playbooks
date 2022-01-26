@@ -17,9 +17,6 @@ mongodb_user_setups:
   - db: admin
     user: user1
     pw: mysecurepw1
-  - db: admin
-    user: user2
-    pw: mysecurepw2
 
 # For backup
 mongodb_cron_jobs:

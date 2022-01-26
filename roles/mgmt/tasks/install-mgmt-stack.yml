@@ -19,7 +19,7 @@
     owner: root
     group: root
 
-- name: Copy MGMT compose|stack extra files
+- name: Copy MGMT compose|stack custom files
   copy:
     src: '{{ mgmt_src_config_files }}'
     dest: '{{ mgmt_dst_config_files }}'

@@ -6,14 +6,14 @@ nginx_metrics_server_addr: '{{ ansible_default_ipv4.address }}:80'
 # Certbot setting
 nginx_install_hosts: yes
 nginx_force_reinstall_hosts: no
-nginx_hosts_listen_addr: '{{ ansible_default_ipv4.address }}'
+nginx_hosts_default_listen_addr: '{{ ansible_default_ipv4.address }}'
 nginx_run_certbot: yes
 nginx_certbot_mail: info@example.com
 
 # Domain settings
 nginx_vhosts:
   - host: example.123preview.com
-    ip: '{{ nginx_hosts_listen_addr }}'
+    ip: '{{ nginx_hosts_default_listen_addr }}'
     upstream: |
       upstream my_upstream {
         server localhost:500;

@@ -2,15 +2,15 @@
 # SQL settings
 
 # Install via docker
-sql_use_docker: yes
+mariadb_use_docker: yes
 mariadb_docker_version: 10.7
 
 # Init
 sql_root_user: root
 sql_root_pw: null
-sql_db_socket: "{{'' if (sql_use_docker) else '/var/run/mysqld/mysqld.sock'}}"
+sql_db_socket: "{{'' if (mariadb_use_docker) else '/var/run/mysqld/mysqld.sock'}}"
 
-sql_db_backup_script: "{{'backup_db-docker.sh' if (sql_use_docker) else 'backup_db-docker.sh'}}"
+sql_db_backup_script: "{{'backup_db-docker.sh' if (mariadb_use_docker) else 'backup_db-docker.sh'}}"
 
 # DB setup
 sql_setups:

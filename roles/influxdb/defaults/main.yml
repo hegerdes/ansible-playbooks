@@ -11,8 +11,7 @@ influx_organization: example-org
 influx_root_bucket: example-bucket
 influx_root_pw: mySuperSecureAdminPW
 influx_root_token: my-super-secret-auth-token
-# influx_bind_hostname: '{{ ansible_default_ipv4.address }}'
-influx_bind_hostname: 10.10.0.8
+influx_bind_hostname: '{{ ansible_default_ipv4.address }}'
 influx_listen_port: 8086
 influx_listen_addr: '{{ influx_bind_hostname }}:{{ influx_listen_port }}'
 
@@ -23,9 +22,7 @@ influx_setups:
   - db: test1
     user: user1
     pw: mysecurepw1
-  - db: test2
-    user: user2
-    pw: mysecurepw2
+
 
 # For backup
 influx_cron_jobs:
