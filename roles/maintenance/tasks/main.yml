@@ -1,16 +1,8 @@
 # Role maintenance
 ---
 
-# - name: Check updates
-#   include_tasks: check-updates.yml
-
-- name: Vault test1
-  debug:
-    var: portainer_pw
-
-- name: Vault test2
-  debug:
-    var: vault_portainer_pw
+- name: Check updates
+  include_tasks: check-updates.yml
 
 - name: Check for DB Backup folder
   stat:
@@ -22,7 +14,7 @@
   find:
     paths: /db_dumps
     patterns: '*.dump,'
-    # age: 1d
+    age: 1d
     recurse: yes
   register: main_db_files
 
@@ -34,3 +26,11 @@
 - name: Run DB backup script
   when: main_db_dir.stat.exists
   shell: bash /db_dumps/backup_db.sh
+
+# - name: Vault test1
+#   debug:
+#     var: portainer_pw
+
+# - name: Vault test2
+#   debug:
+#     var: vault_portainer_pw

@@ -28,7 +28,7 @@
 
 - name: Collect all possible DB information
   mysql_info:
-    login_user: '{{ sql_root_user }}'
+    login_user: '{{ mariadb_root_user }}'
     login_password : '{{ mariadb_root_pw }}'
     login_host: localhost
   register: mariadb_info_res

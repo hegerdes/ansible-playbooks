@@ -6,7 +6,7 @@ mariadb_use_docker: yes
 mariadb_docker_version: 10.7
 
 # Init
-sql_root_user: root
+mariadb_root_user: root
 mariadb_root_pw: null
 sql_db_socket: "{{'' if (mariadb_use_docker) else '/var/run/mysqld/mysqld.sock'}}"
 

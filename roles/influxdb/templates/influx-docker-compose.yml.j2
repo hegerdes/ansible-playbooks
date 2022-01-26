@@ -4,6 +4,7 @@ services:
   influxdb:
     image: influxdb:{{ influx_docker_version }}
     container_name: influxdb
+    restart: always
     ports:
       - 8086:8086
     volumes:
@@ -18,6 +19,7 @@ services:
 
   # chronograf:
   #   image: chronograf:1.9-alpine
+  #   restart: unless-stopped
   #   ports:
   #     - 8888:8888
   #   volumes:
