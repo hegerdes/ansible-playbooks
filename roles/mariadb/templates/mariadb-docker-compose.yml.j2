@@ -7,7 +7,7 @@ services:
     container_name: mariadb
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: {{ sql_root_pw }}
+      MYSQL_ROOT_PASSWORD: {{ mariadb_root_pw }}
     ports:
       - 3306:3306
     volumes:

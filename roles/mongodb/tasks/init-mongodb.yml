@@ -3,7 +3,7 @@
 - name: Create users
   mongodb_user:
     database: '{{ item.db }}'
-    login_user: '{{ mongodb_root_user }}'
+    login_user: '{{ mongodb_root_user | default("root") }}'
     login_password : '{{ mongodb_root_pw }}'
     name: '{{ item.user }}'
     password: '{{ item.pw }}'

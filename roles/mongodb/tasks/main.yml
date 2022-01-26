@@ -38,7 +38,7 @@
   when: mongodb_use_docker | bool == false
   mongodb_user:
     database: admin
-    user: '{{ mongodb_root_user }}'
+    user: '{{ mongodb_root_user | default("root") }}'
     password: '{{ mongodb_root_pw }}'
     state: present
     update_password: always

@@ -26,7 +26,7 @@
 - name: Set MariaDB root password for the first time
   mysql_user:
     name: '{{ sql_root_user }}'
-    password: "{{ sql_root_pw }}"
+    password: "{{ mariadb_root_pw }}"
     state: present
     login_unix_socket: '{{ sql_db_socket }}'
   when: root_pwd_check.rc == 0

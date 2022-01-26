@@ -30,7 +30,7 @@
     project_name: '{{ docker_deploy_app_name }}'
     remove_orphans: yes
     project_src: '{{ docker_deploy_dst_config_files }}'
-    files: '{{ mgmt_services_to_install | list }}'
+    files: '{{ docker_deploy_services_to_install | list }}'
 
 - name: Init a new swarm
   when: docker_deploy_use_swarm_mode | bool and not swarm_info.docker_swarm_manager
@@ -41,8 +41,8 @@
 - name: Create absolut paths for stack files
   when: docker_deploy_use_swarm_mode | bool
   set_fact:
-    mgmt_compose_files_stack: '{{ mgmt_compose_files_stack | default([]) + ["".join((docker_deploy_dst_config_files,item))] }}'
-  loop: '{{ mgmt_services_to_install | list}}'
+    compose_files_stack: '{{ compose_files_stack | default([]) + ["".join((docker_deploy_dst_config_files,item))] }}'
+  loop: '{{ docker_deploy_services_to_install | list}}'
 
 - name: Deploy mgmt-stack from a compose file
   when: docker_deploy_use_swarm_mode | bool and swarm_info.docker_swarm_manager
@@ -51,7 +51,7 @@
     name: '{{ docker_deploy_app_name }}'
     resolve_image: always
     with_registry_auth: yes
-    compose: '{{ mgmt_compose_files_stack | list }}'
+    compose: '{{ compose_files_stack | list }}'
 
 - name: Sleep for 45 seconds and continue with play
   wait_for:
@@ -72,7 +72,7 @@
     nodes: yes
     services: yes
     tasks: yes
-    ignore_errors: yes
+  ignore_errors: yes
   register: mgmt_docker_swarm_info
 
 - name: Inform about swarm

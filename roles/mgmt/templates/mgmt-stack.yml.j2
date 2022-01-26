@@ -22,7 +22,7 @@ services:
     image: grafana/grafana:latest
     environment:
       - TZ=Europe/Berlin
-      - GF_SECURITY_ADMIN_PASSWORD__FILE=/mnt/config/admin_password
+      - GF_SECURITY_ADMIN_PASSWORD__FILE=/run/secrets/grafana_admin_password
       - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource,grafana-piechart-panel,alexanderzobnin-zabbix-app,grafana-worldmap-panel
     networks:
       - mgmt_net
@@ -33,9 +33,8 @@ services:
         mode: host
     volumes:
       - grafana-data:/var/lib/grafana
-    configs:
-      - source: grafana-admin-pw
-        target: /mnt/config/admin_password
+    secrets:
+      - grafana_admin_password
 
   nginx-prometheus-exporter:
     image: nginx/nginx-prometheus-exporter:latest
@@ -46,10 +45,15 @@ services:
   prometheus:
     image: bitnami/prometheus:latest
     command: --storage.tsdb.retention.time 30d --config.file=/etc/prometheus/prometheus.yml
+    environment:
+      - TZ=Europe/Berlin
     networks:
       - mgmt_net
     ports:
-      - 9090:9090
+      - target: 9090
+        published: 9090
+        protocol: tcp
+        mode: host
     volumes:
       - prometheus-data:/data
     configs:
@@ -63,18 +67,9 @@ services:
     networks:
       - mgmt_net
     ports:
-      - target: 8000
-        published: 8000
-        protocol: tcp
-        mode: host
-      - target: 9000
-        published: 9000
-        protocol: tcp
-        mode: host
-      - target: 9443
-        published: 9443
-        protocol: tcp
-        mode: host
+      - "8000:8000"
+      - "9000:9000"
+      - "9443:9443"
     volumes:
       - portainer-data:/data
     deploy:
@@ -84,10 +79,13 @@ services:
 configs:
   loki-conf:
     file: /srv/mgmt-loki/loki-config.yml
-  grafana-admin-pw:
-    file: /srv/mgmt-grafana/grafana_admin_pw.txt
   prometheus-conf:
     file: /srv/mgmt-prometheus/prometheus.yml
+
+secrets:
+  grafana_admin_password:
+    file: /srv/mgmt-grafana/grafana_admin_pw.txt
+
 volumes:
   loki-data:
   grafana-data:

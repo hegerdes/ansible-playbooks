@@ -6,8 +6,8 @@ services:
     environment:
       - TZ=Europe/Berlin
       - ME_CONFIG_MONGODB_SERVER={{ mgmt_mongodb_target_host }}
-      - ME_CONFIG_MONGODB_AUTH_USERNAME={{ mongodb_root_user }}
-      - ME_CONFIG_BASICAUTH_USERNAME={{ mongodb_root_user }}
+      - ME_CONFIG_MONGODB_AUTH_USERNAME={{ mongodb_root_user | default("root") }}
+      - ME_CONFIG_BASICAUTH_USERNAME={{ mongodb_root_user | default("root") }}
       - ME_CONFIG_MONGODB_AUTH_PASSWORD={{ mongodb_root_pw }}
       - ME_CONFIG_BASICAUTH_PASSWORD={{ mongodb_root_pw }}
     ports:

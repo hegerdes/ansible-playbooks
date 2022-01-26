@@ -3,13 +3,13 @@
 - name: Collect all possible information of DB
   mysql_info:
     login_user: '{{ sql_root_user }}'
-    login_password : '{{ sql_root_pw }}'
+    login_password : '{{ mariadb_root_pw }}'
     login_unix_socket: '{{ sql_db_socket }}'
 
 - name: Create a new databases
   mysql_db:
     login_user: '{{ sql_root_user }}'
-    login_password : '{{ sql_root_pw }}'
+    login_password : '{{ mariadb_root_pw }}'
     name: '{{ item.db }}'
     state: present
     login_unix_socket: '{{ sql_db_socket }}'
@@ -20,7 +20,7 @@
 - name: Create Users.
   mysql_user:
     login_user: '{{ sql_root_user }}'
-    login_password : '{{ sql_root_pw }}'
+    login_password : '{{ mariadb_root_pw }}'
     name: '{{ item.user }}'
     password: '{{ item.pw }}'
     state: present

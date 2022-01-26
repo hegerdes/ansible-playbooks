@@ -18,7 +18,7 @@
   become: true
   gather_facts: True
   vars_files:
-    - '{{ inventory_dir }}/vaults/vault.yml'
+    - '{{ inventory_dir }}/secrets/vault.yml'
   roles:
     - mgmt
 
@@ -27,4 +27,10 @@
   gather_facts: True
   roles:
     - nginx
+
+- hosts: docker-worker-staging
+  become: true
+  gather_facts: True
+  roles:
+    - docker-deploy
 

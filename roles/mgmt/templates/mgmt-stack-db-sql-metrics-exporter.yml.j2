@@ -5,7 +5,7 @@ services:
     image: prom/mysqld-exporter:latest
     environment:
       - TZ=Europe/Berlin
-      - DATA_SOURCE_NAME="{{ mgmt_sql_exporter_connection_string }}/"
+      - DATA_SOURCE_NAME={{ mgmt_sql_exporter_connection_string }}/
     networks:
       - mgmt_net
 
