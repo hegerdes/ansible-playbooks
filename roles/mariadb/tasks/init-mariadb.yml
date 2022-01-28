@@ -14,7 +14,6 @@
     state: present
     login_unix_socket: '{{ sql_db_socket }}'
     login_host: localhost
-
   loop: '{{ sql_setups }}'
 
 - name: Create Users.

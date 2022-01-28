@@ -1,0 +1,3 @@
+[submodule "inventories/lemken/files"]
+	path = inventories/lemken/files
+	url = ../../servermgmt/lemken.git
