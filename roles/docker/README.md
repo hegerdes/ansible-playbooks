@@ -1,3 +1,11 @@
+# Role docker
+
+## Purpose
+This role installs the latest Docker ce|ee - version. Can configure the daemon, setup swarm mode and install portainer. 
+
+
+## Defaults
+```yml
 ---
 # Docker edition
 # Choice: ce|ee
@@ -71,3 +79,5 @@ docker_cron_jobs:
     day: '*'
     state: present
     user: root
+
+```

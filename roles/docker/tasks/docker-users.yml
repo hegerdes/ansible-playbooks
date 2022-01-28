@@ -1,8 +1,9 @@
 # Add users to docker group
 ---
-- name: Ensure docker users are added to the docker group.
+- name: Create users are added to the docker group.
   user:
     name: '{{ item }}'
     groups: [docker]
     append: true
+    state: present
   with_items: '{{ docker_users }}'

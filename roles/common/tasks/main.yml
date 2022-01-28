@@ -41,7 +41,6 @@
 
 - name: add ssh keys
   include_tasks: install-ssh-keys.yml
-  when: install_ssh_keys | bool
 
 - name: Ensure logfile for cron exists
   lineinfile:

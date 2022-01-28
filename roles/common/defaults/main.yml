@@ -4,9 +4,6 @@
 # Install extra packages
 extra_packages: []
 
-# Install additional ssh_keys
-install_ssh_keys: true
-
 # List of key_paths
 ssh_key_list: []
 

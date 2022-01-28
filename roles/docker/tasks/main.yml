@@ -13,7 +13,6 @@
 
 - name: Docker user setup
   include_tasks: docker-users.yml
-  when: docker_users | length > 0
 
 - name: Setup SWARM
   include_tasks: docker-swarm.yml

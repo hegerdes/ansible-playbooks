@@ -7,7 +7,7 @@
     login_password : '{{ mongodb_root_pw }}'
     name: '{{ item.user }}'
     password: '{{ item.pw }}'
-    state: present
+    state: '{{ item.state | default("present") }}'
   loop: '{{ mongodb_user_setups }}'
 
 
