@@ -6,15 +6,18 @@
 - name: Setup fail2ban
   include_tasks: setup-fail2ban.yml
 
-- name: Run docker install
-  include_role:
-    name: docker
-
 - name: Install aws-cli
   apt:
     name: awscli
     state: latest
     install_recommends: no
+
+- name: Install azcopy
+  include_tasks: install-azcopy.yml
+
+- name: Run docker install
+  include_role:
+    name: docker
 
 - name: Ensure handlers are notified now
   meta: flush_handlers

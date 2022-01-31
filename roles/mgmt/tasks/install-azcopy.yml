@@ -1,0 +1,22 @@
+# Install Node-Exporter
+---
+- name: Check if azcopy is installed
+  command: 'azcopy --version'
+  register: azcopy_check_result
+  changed_when: false
+  failed_when: false
+
+- name: Unarchive a file that needs to be downloaded (added in 2.0)
+  unarchive:
+    src: https://aka.ms/downloadazcopy-v10-linux
+    dest: /tmp
+    remote_src: yes
+
+- name: Install azcopy
+  when: azcopy_check_result.stdout == ""
+  shell: |
+    mv /tmp/azcopy_linux*/azcopy /usr/local/bin/azcopy
+
+- name: Test azcopy
+  command: "azcopy --version"
+  changed_when: "false"

@@ -8,7 +8,7 @@
   loop: ['python3-pip', 'libffi-dev']
 
 - name: Install compose package
-  when: mgmt_use_swarm_mode
+  when: mgmt_use_swarm_mode | bool != true
   pip:
     name: docker-compose
 
