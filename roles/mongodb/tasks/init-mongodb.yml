@@ -9,5 +9,6 @@
     password: '{{ item.pw }}'
     state: '{{ item.state | default("present") }}'
   loop: '{{ mongodb_user_setups }}'
-
+  loop_control:
+    label: '{{ item.user }}'
 

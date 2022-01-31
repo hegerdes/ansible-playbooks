@@ -7,6 +7,8 @@
     username: '{{ influx_root_user }}'
     password: '{{ influx_root_pw }}'
   loop: '{{ influx_setups }}'
+  loop_control:
+    label: '{{ item.db }}'
 
 - name: Create a user on localhost using default login credentials
   influxdb_user:
@@ -16,7 +18,8 @@
     login_username: '{{ influx_root_user }}'
     login_password: '{{ influx_root_pw }}'
   loop: '{{ influx_setups }}'
-
+  loop_control:
+    label: '{{ item.user }}'
 
 - name: Create backup directory if it does not exist
   file:

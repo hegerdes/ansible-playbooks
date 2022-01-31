@@ -15,6 +15,8 @@
     login_unix_socket: '{{ sql_db_socket }}'
     login_host: localhost
   loop: '{{ sql_setups }}'
+  loop_control:
+    label: '{{ item.db }}'
 
 - name: Create Users.
   mysql_user:
@@ -25,6 +27,8 @@
     state: '{{ item.state | default("present") }}'
     login_unix_socket: '{{ sql_db_socket }}'
   loop: '{{ sql_setups }}'
+  loop_control:
+    label: '{{ item.user }}'
 
 - name: Create backup directory if it does not exist
   file:

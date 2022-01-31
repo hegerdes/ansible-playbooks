@@ -2,7 +2,7 @@
 
 - hosts: all
   become: true
-  gather_facts: false
+  gather_facts: true
   # serial: 1
   roles:
     - maintenance

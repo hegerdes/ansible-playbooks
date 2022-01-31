@@ -4,29 +4,47 @@
   apt:
    update_cache: yes
 
-- name: List upgradable
+- name: Get upgradable list
   command: apt list --upgradable
   register: main_updates
   changed_when: false
 
-- name: Print upgradable packages
+- name: Format update string I
+  set_fact:
+    updates: '{{ [item | replace("[","") | replace("]","") | replace(",","") ] + updates | default([]) }}'
+  loop: '{{ main_updates.stdout_lines[1:] }}'
+
+- name: Format update string II
+  run_once: yes
+  set_fact:
+    all_updates: '{{ all_updates | default({}) | combine({item: hostvars[item].updates}) }}'
+  with_items: '{{ groups.all }}'
+
+- name: Print updates
+  run_once: yes
   debug:
-    var: main_updates.stdout_lines
+    var: hostvars[item].updates
+  with_items: '{{ groups.all }}'
+
+- name: Save update file to ...
+  run_once: yes
+  copy:
+    content: "{{ all_updates }}"
+    dest: /tmp/foobar.txt
+  delegate_to: localhost
 
 - name: Upgrade packages
   when: maintenance_run_upgrades | bool
   apt:
     name: '{{ item.split("/")[0] }}'
     state: latest
-  loop: '{{ main_updates.stdout_lines[1:] }}'
+  loop: '{{ updates }}'
 
 - name: Check for reboot
-  when: maintenance_run_upgrades | bool
   stat:
     path: /var/run/reboot-required
   register: main_reboot_needed
 
 - name: Reoot needed?
-  when: maintenance_run_upgrades | bool
   debug:
     msg: 'Reboot needed: {{ main_reboot_needed.stat.exists }}'
