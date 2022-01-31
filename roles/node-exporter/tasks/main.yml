@@ -56,3 +56,18 @@
   service:
     name: node-exporter.service
     state: restarted
+
+- name: Check is ufw installed
+  shell: command -v ufw >/dev/null 2>&1
+  register: ufw_installed
+  ignore_errors: yes
+  changed_when: false
+
+- name: Allow metrics-traffic from subnet
+  when: ufw_installed.rc == 0
+  ufw:
+    rule: allow
+    state: enabled
+    proto: tcp
+    from: '{{ ansible_facts.default_ipv4.network }}/24'
+    port: '9100'

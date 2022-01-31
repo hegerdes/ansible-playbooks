@@ -15,7 +15,7 @@ services:
     volumes:
       - loki-data:/loki
     configs:
-      - source: loki-conf
+      - source: loki-conf-{{ mgmt_conf_counter | default("1") }}
         target: /mnt/config/loki-config.yml
 
   grafana:
@@ -55,9 +55,9 @@ services:
         protocol: tcp
         mode: host
     volumes:
-      - prometheus-data:/data
+      - prometheus-data:/opt/bitnami/prometheus/data
     configs:
-      - source: prometheus-conf
+      - source: prometheus-conf-{{ mgmt_conf_counter | default("1") }}
         target: /etc/prometheus/prometheus.yml
 
   portainer:
@@ -77,9 +77,9 @@ services:
         constraints: [node.role == manager]
 
 configs:
-  loki-conf:
+  loki-conf-{{ mgmt_conf_counter | default("1") }}:
     file: /srv/mgmt-loki/loki-config.yml
-  prometheus-conf:
+  prometheus-conf-{{ mgmt_conf_counter | default("1") }}:
     file: /srv/mgmt-prometheus/prometheus.yml
 
 secrets:
