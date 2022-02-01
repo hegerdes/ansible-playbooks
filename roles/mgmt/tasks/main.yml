@@ -15,6 +15,13 @@
 - name: Install azcopy
   include_tasks: install-azcopy.yml
 
+- name: Copy script for backup archival
+  copy:
+    src: 'srv/archive-db-backups.sh'
+    dest: '{{ mgmt_dst_config_files }}'
+    owner: root
+    group: root
+
 - name: Run docker install
   include_role:
     name: docker

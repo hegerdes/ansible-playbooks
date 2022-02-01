@@ -3,6 +3,10 @@
 - name: Check updates
   include_tasks: check-updates.yml
 
+- name: Post updates to GitLab
+  when: maintenance_post_to_git | bool
+  include_tasks: post-updates.yml
+
 - name: Check for DB Backup folder
   stat:
     path: /db_dumps/backup_db.sh
