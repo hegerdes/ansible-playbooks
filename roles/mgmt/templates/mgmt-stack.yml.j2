@@ -15,7 +15,7 @@ services:
     volumes:
       - loki-data:/loki
     configs:
-      - source: loki-conf-{{ mgmt_conf_counter | default("1") }}
+      - source: loki-conf-{{ mgmt_conf_counter | default(ansible_date_time.date) }}
         target: /mnt/config/loki-config.yml
 
   grafana:
@@ -57,7 +57,7 @@ services:
     volumes:
       - prometheus-data:/opt/bitnami/prometheus/data
     configs:
-      - source: prometheus-conf-{{ mgmt_conf_counter | default("1") }}
+      - source: prometheus-conf-{{ mgmt_conf_counter | default(ansible_date_time.date) }}
         target: /etc/prometheus/prometheus.yml
 
   portainer:
@@ -77,9 +77,9 @@ services:
         constraints: [node.role == manager]
 
 configs:
-  loki-conf-{{ mgmt_conf_counter | default("1") }}:
+  loki-conf-{{ mgmt_conf_counter | default(ansible_date_time.date) }}:
     file: /srv/mgmt-loki/loki-config.yml
-  prometheus-conf-{{ mgmt_conf_counter | default("1") }}:
+  prometheus-conf-{{ mgmt_conf_counter | default(ansible_date_time.date) }}:
     file: /srv/mgmt-prometheus/prometheus.yml
 
 secrets:

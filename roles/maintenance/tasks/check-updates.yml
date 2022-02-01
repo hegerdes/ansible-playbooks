@@ -36,10 +36,11 @@
 
 - name: Save update file to ...
   when: all_updates is defined
+  become: false
   run_once: yes
   copy:
     content: "{{ all_updates }}"
-    dest: /tmp/foobar.txt
+    dest: "/tmp/{{ inventory_dir | basename + lookup('pipe', 'date +\"-%Y-%m-%d\"') }}.json"
   delegate_to: localhost
 
 - name: Upgrade packages

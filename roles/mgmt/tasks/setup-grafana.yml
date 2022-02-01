@@ -2,7 +2,6 @@
 ---
 - name: Create loki datasource
   grafana_datasource:
-  no_log: true
     name: Loki
     grafana_url: 'http://{{ mgmt_grafana_host }}'
     grafana_user: admin
@@ -11,7 +10,6 @@
     ds_url: http://loki:3100
 
 - name: Create prometheus datasource
-  no_log: true
   grafana_datasource:
     name: Prometheus
     grafana_url: 'http://{{ mgmt_grafana_host }}'
