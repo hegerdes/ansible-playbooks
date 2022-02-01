@@ -6,3 +6,4 @@ roles/hetzner
 *.retry
 *.log
 **/files/srv
+inventories
