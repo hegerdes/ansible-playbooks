@@ -9,24 +9,33 @@
   register: main_updates
   changed_when: false
 
+- name: No updates
+  when: main_updates.stdout_lines | length == 1
+  debug:
+    msg: 'No updates found'
+
 - name: Format update string I
+  when: main_updates.stdout_lines | length > 1
   set_fact:
-    updates: '{{ [item | replace("[","") | replace("]","") | replace(",","") ] + updates | default([]) }}'
+    updates: '{{ [item | replace("[","") | replace("]","") | replace(","," ") ] + updates | default([]) }}'
   loop: '{{ main_updates.stdout_lines[1:] }}'
 
 - name: Format update string II
+  when: hostvars[item].updates is defined
   run_once: yes
   set_fact:
     all_updates: '{{ all_updates | default({}) | combine({item: hostvars[item].updates}) }}'
   with_items: '{{ groups.all }}'
 
 - name: Print updates
+  when: hostvars[item].updates is defined
   run_once: yes
   debug:
     var: hostvars[item].updates
   with_items: '{{ groups.all }}'
 
 - name: Save update file to ...
+  when: all_updates is defined
   run_once: yes
   copy:
     content: "{{ all_updates }}"
@@ -38,7 +47,7 @@
   apt:
     name: '{{ item.split("/")[0] }}'
     state: latest
-  loop: '{{ updates }}'
+  loop: '{{ updates | default([]) }}'
 
 - name: Check for reboot
   stat:
