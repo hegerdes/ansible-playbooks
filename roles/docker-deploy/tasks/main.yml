@@ -1,5 +1,16 @@
 # Main Docker deploy
 ---
 
+- name: Log into docker registries
+  no_log: yes
+  docker_login:
+    registry_url: '{{ item.regestry | default("https://index.docker.io/v1/") }}'
+    username: '{{ item.username }}'
+    password: '{{ item.password }}'
+    reauthorize: yes
+  loop: '{{ docker_regesties }}'
+  loop_control:
+    label: '{{ item.regestry | default("https://index.docker.io/v1/") }}'
+
 - name: Install app via Docker
   include_tasks: install-app-stack.yml

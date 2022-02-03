@@ -9,3 +9,10 @@ docker_deploy_app_name: myapp
 
 docker_deploy_services_to_install:
   - docker-compose.yml
+
+docker_regesties: []
+# Example
+# docker_regesties:
+#   - regestry: index.docker.io/v1/
+#     username: MyUser
+#     password: MySuperSecurPW

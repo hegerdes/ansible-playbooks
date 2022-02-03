@@ -28,7 +28,7 @@
   roles:
     - nginx
 
-- hosts: docker-worker-staging
+- hosts: cci-dm-docker-dev-api
   become: true
   gather_facts: True
   roles:
