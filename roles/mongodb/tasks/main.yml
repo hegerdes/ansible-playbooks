@@ -60,7 +60,7 @@
     dest: /db_dumps/backup_db.sh
     owner: root
     group: root
-    mode: '0744'
+    mode: '0755'
 
 - name: Setup cron jobs
   include_tasks: shared/install-cron-jobs.yml

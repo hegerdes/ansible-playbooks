@@ -11,17 +11,23 @@
 - hosts: service-mariadb
   become: true
   gather_facts: True
+  vars_files:
+    - '{{ inventory_dir }}/secrets/vault.yml'
   roles:
     - mariadb
 
 - hosts: service-mongodb
   become: true
   gather_facts: True
+  vars_files:
+    - '{{ inventory_dir }}/secrets/vault.yml'
   roles:
     - mongodb
 
 - hosts: service-influxdb
   become: true
   gather_facts: True
+  vars_files:
+    - '{{ inventory_dir }}/secrets/vault.yml'
   roles:
     - influxdb

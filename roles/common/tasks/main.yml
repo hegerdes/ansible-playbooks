@@ -17,6 +17,8 @@
     - 'ca-certificates'
     - 'wget'
     - 'curl'
+    - 'tar'
+    - 'gzip'
     - 'pass'
     - 'gnupg'
     - 'gnupg2'
