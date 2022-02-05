@@ -17,3 +17,5 @@
     state: '{{ item.state | default("present") }}'
     user: '{{ item.user | default(ansible_user) }}'
   loop: '{{ cron_jobs }}'
+  loop_control:
+    label: '{{ item.name }}'

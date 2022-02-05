@@ -3,12 +3,13 @@
 nginx_src_config_dir: nginx/
 nginx_metrics_server_addr: '{{ ansible_default_ipv4.address }}:80'
 
-# Certbot setting
+# Nginx host & Certbot setting
 nginx_install_hosts: yes
 nginx_force_reinstall_hosts: no
 nginx_hosts_default_listen_addr: '{{ ansible_default_ipv4.address }}'
 nginx_run_certbot: yes
-nginx_certbot_mail: info@example.com
+nginx_certbot_mail: info@xyz.com
+nginx_testing_certbot: no # if yes use letsencrypt staging (no rate limit)
 
 # Domain settings
 nginx_vhosts:

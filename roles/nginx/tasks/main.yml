@@ -1,28 +1,35 @@
 # Main Nginx Setup
 ---
 - name: Install nginx
-  include_tasks: install-nginx.yml
+  import_tasks: install-nginx.yml
+  tags: ingress
 
 - name: Set floating IPs
   when: nginx_floating_ips | length > 0
-  include_tasks: set-floting-ip.yml
+  import_tasks: set-floting-ip.yml
+  tags: [ingress, ingress-ip]
 
 - name: Update Promtail config
   when: nginx_update_promtail | bool
-  include_tasks: update-promtail.yml
+  import_tasks: update-promtail.yml
+  tags: [ingress, ingress-logs]
 
 - name: Ensure handlers are notified now
   meta: flush_handlers
+  tags: ingress
 
 - name: Install nginx hosts
   when: nginx_install_hosts | bool
-  include_tasks: install-nginx-hosts.yml
+  import_tasks: install-nginx-hosts.yml
+  tags: [ingress, ingress-hosts]
 
 - name: Setup cron jobs
   when: nginx_run_certbot | bool
-  include_tasks: shared/install-cron-jobs.yml
+  import_tasks: shared/install-cron-jobs.yml
+  tags: [ingress, cron]
   vars:
     cron_jobs: '{{ nginx_cron_jobs }}'
 
 - name: Ensure handlers are notified now
   meta: flush_handlers
+  tags: ingress

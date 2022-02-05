@@ -6,7 +6,7 @@
     state: latest
     update_cache: yes
 
-- name: install required system packages
+- name: Install required system packages
   apt:
     name: '{{ item }}'
     state: latest
@@ -38,10 +38,16 @@
     install_recommends: no
   loop: '{{ extra_packages }}'
 
+- name: Remove specified packages
+  apt:
+    name: '{{ item }}'
+    state: absent
+  loop: '{{ delete_packages }}'
+
 - name: Set hostnames
   include_tasks: install-hostnames.yml
 
-- name: add ssh keys
+- name: Add ssh keys
   include_tasks: install-ssh-keys.yml
 
 - name: Ensure logfile for cron exists
@@ -51,7 +57,7 @@
     create: yes
     mode: '0644'
 
-- name: install cron jobs
+- name: Install cron jobs
   include_tasks: shared/install-cron-jobs.yml
   vars:
     cron_jobs: '{{ common_cron_jobs }}'
