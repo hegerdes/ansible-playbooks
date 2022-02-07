@@ -25,6 +25,7 @@
   hcloud_server:
     api_token: '{{ hetzner_api_key }}'
     name: '{{ item.name }}'
+    labels: '{{ item.labels | default({}) | combine({"ansible": "True"}) }}'
     server_type: '{{ item.size | default(hetzner_default_server_size) }}'
     location: '{{ item.location | default(hetzner_default_server_location) }}'
     image: '{{ item.image | default(hetzner_default_server_image) }}'
@@ -35,13 +36,21 @@
 - name: Attatching VMs to vnet
   hcloud_server_network:
     api_token: '{{ hetzner_api_key }}'
-    network: my-network
-    server: waf
+    network: '{{ hetzner_default_vnet_name }}'
+    server: '{{ item.name }}'
     ip: '{{ item.intern_ipintern_ip | default("10.10.0." + (ansible_loop.index + 1) | string )}}'
     state: present
   loop: '{{ hetzner_vms }}'
   loop_control:
     extended: yes
+
+- name: Assign a Floating IPs to a server
+  hcloud_floating_ip:
+    api_token: '{{ hetzner_api_key }}'
+    name: '{{ item.floting_ip_name }}'
+    server: '{{ item.server_name }}'
+    state: present
+  loop: '{{ hetzner_floating_ip_mapping }}'
 
 - name: Gather hcloud server infos
   hcloud_server_info:

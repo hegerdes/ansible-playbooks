@@ -17,3 +17,10 @@ hetzner_vms: []
 #     state: present
 #     ssh_keys:
 #       - <Key_name>
+
+# Floting IP mapping
+hetzner_floating_ip_mapping: []
+# Example
+# hetzner_floating_ip_mapping:
+#   - server_name: waf
+#     floting_ip_name: ingres-ip
