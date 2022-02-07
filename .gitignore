@@ -2,7 +2,6 @@ wireguard.conf
 prometheus.yml
 influx-docker-compose.yml
 notes.txt
-roles/hetzner
 *.retry
 *.log
 **/files/srv

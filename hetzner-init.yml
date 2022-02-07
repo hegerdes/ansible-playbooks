@@ -1,0 +1,6 @@
+# Maintenance
+
+- hosts: localhost
+  gather_facts: False
+  roles:
+    - hetzner

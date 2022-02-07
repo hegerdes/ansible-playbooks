@@ -1,0 +1,55 @@
+# Main Hetzner Setup
+---
+- name: Gather hcloud sshkey infos
+  hcloud_ssh_key_info:
+    api_token: '{{ hetzner_api_key }}'
+  register: hetzner_ssh_keys
+
+- name: Create a basic network
+  hcloud_network:
+    api_token: '{{ hetzner_api_key }}'
+    name: '{{ hetzner_default_vnet_name }}'
+    ip_range: 10.10.0.0/16
+    state: present
+
+- name: Create a basic subnetwork
+  hcloud_subnetwork:
+    api_token: '{{ hetzner_api_key }}'
+    network: '{{ hetzner_default_vnet_name }}'
+    ip_range: 10.10.0.0/24
+    network_zone: eu-central
+    type: cloud
+    state: present
+
+- name: Creating/Deleting VMs
+  hcloud_server:
+    api_token: '{{ hetzner_api_key }}'
+    name: '{{ item.name }}'
+    server_type: '{{ item.size | default(hetzner_default_server_size) }}'
+    location: '{{ item.location | default(hetzner_default_server_location) }}'
+    image: '{{ item.image | default(hetzner_default_server_image) }}'
+    ssh_keys: '{{ item.ssh_keys | default(hetzner_ssh_keys.hcloud_ssh_key_info | map(attribute="name")) }}'
+    state: '{{ item.state | default("present") }}'
+  loop: '{{ hetzner_vms }}'
+
+- name: Attatching VMs to vnet
+  hcloud_server_network:
+    api_token: '{{ hetzner_api_key }}'
+    network: my-network
+    server: waf
+    ip: '{{ item.intern_ipintern_ip | default("10.10.0." + (ansible_loop.index + 1) | string )}}'
+    state: present
+  loop: '{{ hetzner_vms }}'
+  loop_control:
+    extended: yes
+
+- name: Gather hcloud server infos
+  hcloud_server_info:
+    api_token: '{{ hetzner_api_key }}'
+  register: output
+
+- name: Print the gathered infos
+  debug:
+    var: output.hcloud_server_info
+
+- meta: refresh_inventory
