@@ -1,0 +1,40 @@
+# Install Backup script
+---
+- name: Create directory for db dumps
+  file:
+    path: /db_dumps
+    state: directory
+
+- name: Check for backup ssl key
+  become: false
+  stat:
+    path: '{{ inventory_dir }}/secrets/db-backup.key'
+  register: mgmt_backup_key
+  delegate_to: localhost
+
+- name: Creating backup key
+  when: not mgmt_backup_key.stat.exists
+  delegate_to: localhost
+  become: false
+  run_once: yes
+  environment:
+    KEY_FILE: '{{ inventory_dir }}/secrets/db-backup.key'
+    KEY_PASS: '{{ lookup("file", inventory_dir + "/secrets/db-backup.key.pass") }}'
+  shell: |
+    openssl genrsa -aes256 -out $KEY_FILE -passout pass:$KEY_PASS 2048
+    openssl rsa -in $KEY_FILE -passin pass:$KEY_PASS -pubout > $KEY_FILE.pub
+
+- name: Copy public key
+  copy:
+    src: '{{ inventory_dir }}/secrets/db-backup.key.pub'
+    dest: /db_dumps
+    owner: root
+    group: root
+
+- name: Copy script for backup archiveal
+  template:
+    src: archive-db-backups.sh.j2
+    dest: /db_dumps/archive-db-backups.sh
+    owner: root
+    group: root
+    mode: '0655'

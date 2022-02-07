@@ -1,26 +1,20 @@
 # Main mgmt setup
 ---
 - name: Setup sshd
-  include_tasks: setup-sshd.yml
+  import_tasks: setup-sshd.yml
+  tags: ["mgmt", "ssh"]
 
 - name: Setup fail2ban
-  include_tasks: setup-fail2ban.yml
+  import_tasks: setup-fail2ban.yml
+  tags: ["mgmt", "ssh", "secririty"]
 
-- name: Install aws-cli
-  apt:
-    name: awscli
-    state: latest
-    install_recommends: no
+- name: Install backup tools
+  import_tasks: install-backup-tools.yml
+  tags: ["mgmt", "backup"]
 
-- name: Install azcopy
-  include_tasks: install-azcopy.yml
-
-- name: Copy script for backup archival
-  copy:
-    src: 'archive-db-backups.sh'
-    dest: '{{ mgmt_dst_config_files }}'
-    owner: root
-    group: root
+- name: Install backup script
+  import_tasks: install-backup-script.yml
+  tags: ["mgmt", "backup"]
 
 - name: Run docker install
   include_role:
@@ -28,14 +22,18 @@
 
 - name: Ensure handlers are notified now
   meta: flush_handlers
+  tags: ["mgmt"]
 
 - name: Install mgmt stack
-  include_tasks: install-mgmt-stack.yml
+  import_tasks: install-mgmt-stack.yml
+  tags: ["mgmt", "mgmt-stack"]
 
 - name: Setup portainer
   when: mgmt_setup_portainer | bool
   include_tasks: setup-protainer.yml
+  tags: ["mgmt", "portainer"]
 
 - name: Setup grafana
   when: mgmt_setup_grafana | bool
   include_tasks: setup-grafana.yml
+  tags: ["mgmt", "grafaa"]

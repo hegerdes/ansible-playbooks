@@ -1,5 +1,11 @@
-# Install Node-Exporter
+# Install aws-cli & azcopy
 ---
+- name: Install aws-cli
+  apt:
+    name: awscli
+    state: latest
+    install_recommends: no
+
 - name: Check if azcopy is installed
   command: 'azcopy --version'
   register: azcopy_check_result
