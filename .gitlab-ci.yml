@@ -11,6 +11,8 @@ test:
   stage: test
   image: $ANSIBLE_DOACKER_IMAGE
   before_script:
+    - apt update
+    - apt install -y rsync
     - python3 -m pip install -r requirements.txt
   script:
     - echo ok

@@ -10,6 +10,12 @@ docker_deploy_app_name: myapp
 docker_deploy_services_to_install:
   - docker-compose.yml
 
+docker_deploy_file_permissions: []
+# Example
+# docker_deploy_file_permissions:
+#   - name: application.json
+#     mode: 0666
+
 docker_regesties: []
 # Example
 # docker_regesties:

@@ -6,12 +6,29 @@
   register: swarm_info
   failed_when: 'not swarm_info.can_talk_to_docker'
 
-- name: Copy application compose|stack files
-  copy:
+# - name: Copy application compose|stack files
+#   copy:
+#     src: '{{ docker_deploy_src_config_files }}'
+#     dest: '{{ docker_deploy_dst_config_files }}'
+#     owner: root
+#     group: root
+
+- name: Synchronization of application compose|stack files
+  synchronize:
     src: '{{ docker_deploy_src_config_files }}'
     dest: '{{ docker_deploy_dst_config_files }}'
+    recursive: yes
+    use_ssh_args: yes
+    mode: push
+    checksum: yes
+
+- name: Fix permissions
+  file:
+    path: '{{ docker_deploy_dst_config_files + item.name }}'
     owner: root
     group: root
+    mode: '{{ item.mode | default("0644") }}'
+  loop: '{{ docker_deploy_file_permissions }}'
 
 - name: Install pip3
   when: docker_deploy_use_swarm_mode | bool != true
