@@ -19,6 +19,7 @@
     ds_url: http://prometheus:9090
 
 - name: Import Grafana dashboards
+  ignore_errors: yes
   grafana_dashboard:
     grafana_url: 'http://{{ mgmt_grafana_host }}'
     grafana_user: admin

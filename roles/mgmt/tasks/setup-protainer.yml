@@ -1,6 +1,7 @@
 # Setup portainer
 ---
 - name: Set Portainer Admin-PW
+  ignore_errors: yes
   uri:
     url: 'http://{{ mgmt_portainer_host }}/api/users/admin/init'
     method: POST
@@ -12,6 +13,7 @@
   failed_when: "mgmt_portainer_api_res.status != 200 and mgmt_portainer_api_res.status != 409"
 
 - name: Get Portainer Token
+  ignore_errors: yes
   uri:
     url: 'http://{{ mgmt_portainer_host }}/api/auth'
     method: POST

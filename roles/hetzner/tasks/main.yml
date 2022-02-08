@@ -5,6 +5,34 @@
     api_token: '{{ hetzner_api_key }}'
   register: hetzner_ssh_keys
 
+- name: Gather hcloud server infos
+  hcloud_server_info:
+    api_token: '{{ hetzner_api_key }}'
+  register: hetzner_server_info
+
+- name: Inspecting server differences...
+  no_log: yes
+  when: item[0].server_type != item[1].size | default(hetzner_default_server_size)
+  set_fact:
+    rescale: '{{ rescale | default({}) | combine({item[0].name: item[1].size | default(hetzner_default_server_size)}) }}'
+  loop: '{{ hetzner_server_info.hcloud_server_info | sort(attribute="name") | zip(hetzner_vms | sort(attribute="name")) }}'
+
+- name: Rescale VMs - shutdown
+  hcloud_server:
+    api_token: '{{ hetzner_api_key }}'
+    name: '{{ item.key }}'
+    state: 'stopped'
+  with_dict: '{{ rescale | default({}) }}'
+
+- name: Rescale VMs - rescale
+  hcloud_server:
+    api_token: '{{ hetzner_api_key }}'
+    name: '{{ item.key }}'
+    state: 'stopped'
+    server_type: '{{ item.value }}'
+    state: 'present'
+  with_dict: '{{ rescale | default({}) }}'
+
 - name: Create a basic network
   hcloud_network:
     api_token: '{{ hetzner_api_key }}'
@@ -30,8 +58,11 @@
     location: '{{ item.location | default(hetzner_default_server_location) }}'
     image: '{{ item.image | default(hetzner_default_server_image) }}'
     ssh_keys: '{{ item.ssh_keys | default(hetzner_ssh_keys.hcloud_ssh_key_info | map(attribute="name")) }}'
-    state: '{{ item.state | default("present") }}'
+    state: '{{ item.state | default(hetzner_default_server_state) }}'
   loop: '{{ hetzner_vms }}'
+  loop_control:
+    label: "{{ item.name }}"
+  register: hetzner_servers
 
 - name: Attatching VMs to vnet
   hcloud_server_network:
@@ -42,7 +73,9 @@
     state: present
   loop: '{{ hetzner_vms }}'
   loop_control:
+    label: "{{ item.name }}"
     extended: yes
+  register: hetzner_vnet_res
 
 - name: Assign a Floating IPs to a server
   hcloud_floating_ip:
@@ -52,13 +85,50 @@
     state: present
   loop: '{{ hetzner_floating_ip_mapping }}'
 
-- name: Gather hcloud server infos
-  hcloud_server_info:
-    api_token: '{{ hetzner_api_key }}'
-  register: output
+- name: Creating inventory[I]...
+  # no_log: yes
+  set_fact:
+    hetzner_inventory: '{{ hetzner_inventory | combine({"all": {"hosts":{item.hcloud_server_network.server: {"ansible_host": item.hcloud_server_network.ip, "ansible_port": ansible_default_port, "ansible_user": ansible_default_user }}}},recursive=True) }}'
+  loop: '{{ hetzner_vnet_res.results }}'
 
-- name: Print the gathered infos
+- name: Creating inventory[II]...
+  # no_log: yes
+  set_fact:
+    servers: '{{ servers | default({}) | combine({item.hcloud_server.name: item.hcloud_server}) }}'
+  loop: '{{ hetzner_servers.results }}'
+
+- name: Creating inventory[III] ...
+  # no_log: yes
+  set_fact:
+    hetzner_inventory_tmp:
+      all:
+        vars:
+          ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o ProxyCommand="ssh -W %h:%p -q root@{{ servers.mgmt.ipv4_address }}"'
+
+- name: Creating inventory[IV]...
+  # no_log: yes
+  set_fact:
+    hetzner_inventory: '{{ hetzner_inventory | combine(hetzner_inventory_tmp, recursive=True) }}'
+
+- name: Creating inventory[V]...
+  # no_log: yes
+  set_fact:
+    hetzner_inventory: '{{ hetzner_inventory | combine(hetzner_inventory_tmp, recursive=True) }}'
+  loop: '{{ hetzner_vms }}'
+
+- name: Creating inventory[VI]...
+  # no_log: yes
+  set_fact:
+    hetzner_inventory: '{{ hetzner_inventory | combine({"all": {"children": {item[1]: hetzner_inventory.all.children[item[1]] | combine({"hosts": {item[0].name: {} }})} }}, recursive=True) }}'
+  loop: '{{ hetzner_vms | subelements("groups", skip_missing=True) }}'
+
+- name: Print generated inventroy
   debug:
-    var: output.hcloud_server_info
+    var: hetzner_inventory
+
+- name: Save inventory
+  copy:
+    content: '{{ hetzner_inventory | to_nice_yaml(indent=2) }}'
+    dest: '{{ playbook_dir }}/../hetzner-inventory.yml'
 
 - meta: refresh_inventory
