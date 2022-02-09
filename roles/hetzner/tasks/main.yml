@@ -5,6 +5,16 @@
     api_token: '{{ hetzner_api_key }}'
   register: hetzner_ssh_keys
 
+- name: Create a firewall with labels
+  hetzner.hcloud.hcloud_firewall:
+    api_token: '{{ hetzner_api_key }}'
+    name: '{{ item.name }}'
+    state: present
+    rules: '{{ item.rules | default([]) }}'
+  loop: '{{ hetzner_firewalls }}'
+  loop_control:
+    label: "{{ item.name }}"
+
 - name: Gather hcloud server infos
   hcloud_server_info:
     api_token: '{{ hetzner_api_key }}'
@@ -53,7 +63,7 @@
   hcloud_server:
     api_token: '{{ hetzner_api_key }}'
     name: '{{ item.name }}'
-    labels: '{{ item.labels | default({}) | combine({"ansible": "True"}) }}'
+    labels: '{{ item.labels | default({}) | combine({"ansible": "True", "all": "True"}) }}'
     server_type: '{{ item.size | default(hetzner_default_server_size) }}'
     location: '{{ item.location | default(hetzner_default_server_location) }}'
     image: '{{ item.image | default(hetzner_default_server_image) }}'
@@ -86,38 +96,38 @@
   loop: '{{ hetzner_floating_ip_mapping }}'
 
 - name: Creating inventory[I]...
-  # no_log: yes
+  no_log: yes
   set_fact:
     hetzner_inventory: '{{ hetzner_inventory | combine({"all": {"hosts":{item.hcloud_server_network.server: {"ansible_host": item.hcloud_server_network.ip, "ansible_port": ansible_default_port, "ansible_user": ansible_default_user }}}},recursive=True) }}'
   loop: '{{ hetzner_vnet_res.results }}'
 
 - name: Creating inventory[II]...
-  # no_log: yes
+  no_log: yes
   set_fact:
     servers: '{{ servers | default({}) | combine({item.hcloud_server.name: item.hcloud_server}) }}'
   loop: '{{ hetzner_servers.results }}'
 
 - name: Creating inventory[III] ...
-  # no_log: yes
+  no_log: yes
   set_fact:
     hetzner_inventory_tmp:
       all:
         vars:
-          ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o ProxyCommand="ssh -W %h:%p -q root@{{ servers.mgmt.ipv4_address }}"'
+          ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o ProxyCommand="ssh -W %h:%p -q root@{{ servers.mgmt.ipv4_address }} -p {{ ansible_default_port }}"'
 
 - name: Creating inventory[IV]...
-  # no_log: yes
+  no_log: yes
   set_fact:
     hetzner_inventory: '{{ hetzner_inventory | combine(hetzner_inventory_tmp, recursive=True) }}'
 
 - name: Creating inventory[V]...
-  # no_log: yes
+  no_log: yes
   set_fact:
     hetzner_inventory: '{{ hetzner_inventory | combine(hetzner_inventory_tmp, recursive=True) }}'
   loop: '{{ hetzner_vms }}'
 
 - name: Creating inventory[VI]...
-  # no_log: yes
+  no_log: yes
   set_fact:
     hetzner_inventory: '{{ hetzner_inventory | combine({"all": {"children": {item[1]: hetzner_inventory.all.children[item[1]] | combine({"hosts": {item[0].name: {} }})} }}, recursive=True) }}'
   loop: '{{ hetzner_vms | subelements("groups", skip_missing=True) }}'

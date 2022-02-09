@@ -12,6 +12,20 @@
   register: mgmt_backup_key
   delegate_to: localhost
 
+- name: Check for backup ssl key passphrase
+  become: false
+  stat:
+    path: '{{ inventory_dir }}/secrets/db-backup.key.pass'
+  register: mgmt_backup_key_pass
+  delegate_to: localhost
+
+- name: SSL key passphrase not found
+  fail:
+    msg: |
+      No passphrase for SSL backup key found.
+      Please create it under {{ inventory_dir }}/secrets/db-backup.key.pass
+  when: not mgmt_backup_key_pass.stat.exists
+
 - name: Creating backup key
   when: not mgmt_backup_key.stat.exists
   delegate_to: localhost

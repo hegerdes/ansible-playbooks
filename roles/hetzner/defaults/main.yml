@@ -67,3 +67,38 @@ hetzner_inventory:
 #     mgmt_hosts: []
 #     gateways: []
 #     databases: []
+
+hetzner_firewalls:
+  - name: block-all
+  - name: ssh-only
+    rules:
+    - direction: in
+      description: ssh own
+      protocol: tcp
+      port: 2223
+      source_ips:
+        - 0.0.0.0/0
+        - ::/0
+    - direction: in
+      description: ssh default
+      protocol: tcp
+      port: 22
+      source_ips:
+        - 0.0.0.0/0
+        - ::/0
+  - name: http/https
+    rules:
+    - direction: in
+      protocol: tcp
+      port: 80
+      description: allow http
+      source_ips:
+        - 0.0.0.0/0
+        - ::/0
+    - direction: in
+      protocol: tcp
+      port: 443
+      description: allow https
+      source_ips:
+        - 0.0.0.0/0
+        - ::/0
