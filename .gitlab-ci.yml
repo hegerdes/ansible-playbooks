@@ -2,32 +2,24 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive
   ANSIBLE_DOACKER_IMAGE: python:3.9-bullseye
 
+include:
+  - project: 'symbic-intern/symbic-templates'
+    file: '/GitlabCI/kaniko-build.yml'
+
 stages:
-  - test
-  - maintenance
+  - build
 
-# TEST STAGE
-test:
-  stage: test
-  image: $ANSIBLE_DOACKER_IMAGE
-  before_script:
-    - apt update
-    - apt install -y rsync
-    - python3 -m pip install -r requirements.txt
-  script:
-    - echo ok
+build_tags:
+  extends: .build_template
+  variables:
+    COMMIT_TAG: $CI_COMMIT_TAG
+    BUILD_IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: $CI_COMMIT_TAG
 
-list-hetzner-updates:
-  stage: maintenance
-  image: $ANSIBLE_DOACKER_IMAGE
-  before_script:
-    - python3 -m pip install -r requirements.txt
-  script:
-    - ansible-playbook -i $TARGET_INVENTORY maintenance.yml
+build_branch:
+  extends: .build_template
+  variables:
+    BUILD_IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_BRANCH
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "schedule"'
-    - if: '$CI_PIPELINE_SOURCE == "api"'
-    - if: '$PROJECT_TOKEN_NAME == ""'
-      when: never
+    - if: $CI_COMMIT_BRANCH
