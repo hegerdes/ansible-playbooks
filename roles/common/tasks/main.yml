@@ -1,16 +1,19 @@
 # Role common main
 ---
 - name: Getting all hostkeys
+  when: hostvars[item].ansible_facts.ens10 is defined
   run_once: yes
   set_fact:
     all_hostkeys: "{{ all_hostkeys | default([]) + [hostvars[item].ansible_facts.ens10.ipv4.address + ' ssh-rsa ' + hostvars[item].ansible_facts.ssh_host_key_rsa_public] + [hostvars[item].ansible_facts.ens10.ipv4.address + ' ssh-ed25519 ' + hostvars[item].ansible_facts.ssh_host_key_ed25519_public] + [hostvars[item].ansible_facts.ens10.ipv4.address + ' ecdsa-sha2-nistp256 ' + hostvars[item].ansible_facts.ssh_host_key_ecdsa_public] }}"
   with_items: '{{ groups.all }}'
+  tags: common
 
 - name: Install aptitude using apt
   apt:
     name: aptitude
     state: latest
     update_cache: yes
+  tags: common
 
 - name: Install required system packages
   apt:
@@ -36,6 +39,7 @@
     - 'python3-yaml'
     - 'unzip'
     - 'git'
+  tags: [common, apt]
 
 - name: Install additional packages
   apt:
@@ -43,18 +47,22 @@
     state: latest
     install_recommends: no
   loop: '{{ extra_packages }}'
+  tags: [common, apt]
 
 - name: Remove specified packages
   apt:
     name: '{{ item }}'
     state: absent
   loop: '{{ delete_packages }}'
+  tags: [common, apt]
 
 - name: Set hostnames
   include_tasks: install-hostnames.yml
+  tags: common
 
 - name: Add ssh keys
   include_tasks: install-ssh-keys.yml
+  tags: [common, ssh]
 
 - name: Ensure logfile for cron exists
   lineinfile:
@@ -62,8 +70,10 @@
     line: \#Cron Log file
     create: yes
     mode: '0644'
+  tags: [common, cron]
 
 - name: Install cron jobs
   include_tasks: shared/install-cron-jobs.yml
   vars:
     cron_jobs: '{{ common_cron_jobs }}'
+  tags: [common, cron]

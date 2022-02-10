@@ -75,6 +75,7 @@
   register: hetzner_servers
 
 - name: Attatching VMs to vnet
+  when: item.state | default("present") == "present"
   hcloud_server_network:
     api_token: '{{ hetzner_api_key }}'
     network: '{{ hetzner_default_vnet_name }}'
