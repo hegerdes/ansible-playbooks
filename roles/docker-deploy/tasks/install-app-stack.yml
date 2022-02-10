@@ -6,13 +6,6 @@
   register: swarm_info
   failed_when: 'not swarm_info.can_talk_to_docker'
 
-# - name: Copy application compose|stack files
-#   copy:
-#     src: '{{ docker_deploy_src_config_files }}'
-#     dest: '{{ docker_deploy_dst_config_files }}'
-#     owner: root
-#     group: root
-
 - name: Synchronization of application compose|stack files
   synchronize:
     src: '{{ docker_deploy_src_config_files }}'
@@ -21,6 +14,13 @@
     use_ssh_args: yes
     mode: push
     checksum: yes
+
+- name: Configuring compose|stack files
+  template:
+    src: '{{ docker_deploy_src_config_files + item }}.j2'
+    dest: '{{ docker_deploy_dst_config_files + item }}'
+    mode: '0644'
+  loop: '{{ docker_deploy_services_to_install }}'
 
 - name: Fix permissions
   file:
