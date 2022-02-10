@@ -1,4 +1,4 @@
-# Hetzner Demo
+# Main Playbook
 
 - hosts: all
   become: true
@@ -27,10 +27,3 @@
   gather_facts: True
   roles:
     - nginx
-
-- hosts: cci-dm-docker-dev-api
-  become: true
-  gather_facts: True
-  roles:
-    - docker-deploy
-

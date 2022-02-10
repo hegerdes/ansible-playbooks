@@ -1,0 +1,8 @@
+# Deploy playbook
+
+- hosts: cci-dm-docker-dev-api
+  become: true
+  gather_facts: True
+  roles:
+    - docker-deploy
+
