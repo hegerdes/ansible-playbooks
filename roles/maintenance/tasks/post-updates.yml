@@ -17,6 +17,7 @@
   run_once: yes
   ignore_errors: yes
   register: main_reop_logs_res
+  tags: [maintenance, updates]
 
 - name: Create Git issue for updates
   when: all_updates is defined
@@ -39,15 +40,4 @@
   run_once: yes
   ignore_errors: yes
   register: main_reop_issue_res
-
-# - name: Create Git issue for updates
-#   when: all_updates is defined
-#   uri:
-#     url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/issues?title={{ansible_date_time.date}}%20System%20Updates&labels=maintenance&assignee_id={{ maintenance_git_maintainer }}&description=Updates%3A%0A{{all_updates | to_nice_yaml | urlencode }}'
-#     method: POST
-#     body_format: json
-#     headers:
-#       PRIVATE-TOKEN: '{{ maintenance_git_token }}'
-#     status_code: 201
-#   run_once: yes
-#   register: main_reop_issue_res
+  tags: [maintenance, updates]

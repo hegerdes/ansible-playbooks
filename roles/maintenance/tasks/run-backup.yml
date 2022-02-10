@@ -1,0 +1,35 @@
+# Role maintenance
+---
+- name: Check for DB Backup folder
+  stat:
+    path: /db_dumps/backup_db.sh
+  register: main_db_dir
+  tags: [maintenance, backup, db-backup]
+
+- name: List DB dump files older 1 day
+  when: main_db_dir.stat.exists
+  find:
+    paths: /db_dumps
+    patterns: '*.dump,'
+    age: 1d
+    recurse: yes
+  register: main_db_files
+  tags: [maintenance, backup, db-backup]
+
+- name: DB Files
+  when: main_db_dir.stat.exists and main_db_files
+  debug:
+    var: main_db_files
+  tags: [maintenance, backup, db-backup]
+
+- name: Run DB backup script
+  when: main_db_dir.stat.exists
+  shell: bash /db_dumps/backup_db.sh
+  register: main_backup_res
+  tags: [maintenance, backup, db-backup]
+
+- name: Print DB backup script res
+  debug:
+    var: main_backup_res
+  tags: [maintenance, backup, db-backup]
+

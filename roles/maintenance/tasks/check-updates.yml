@@ -3,22 +3,26 @@
 - name: Update apt cache
   apt:
    update_cache: yes
+  tags: [maintenance, updates]
 
 - name: Get upgradable list
   command: apt list --upgradable
   register: main_updates
   changed_when: false
+  tags: [maintenance, updates]
 
 - name: No updates
   when: main_updates.stdout_lines | length == 1
   debug:
     msg: 'No updates found'
+  tags: [maintenance, updates]
 
 - name: Format update string I
   when: main_updates.stdout_lines | length > 1
   set_fact:
     updates: '{{ [item | replace("[","") | replace("]","") | replace(","," ") ] + updates | default([]) }}'
   loop: '{{ main_updates.stdout_lines[1:] }}'
+  tags: [maintenance, updates]
 
 - name: Format update string II
   when: hostvars[item].updates is defined
@@ -26,6 +30,7 @@
   set_fact:
     all_updates: '{{ all_updates | default({}) | combine({item: hostvars[item].updates}) }}'
   with_items: '{{ groups.all }}'
+  tags: [maintenance, updates]
 
 - name: Print updates
   when: hostvars[item].updates is defined
@@ -33,6 +38,7 @@
   debug:
     var: hostvars[item].updates
   with_items: '{{ groups.all }}'
+  tags: [maintenance, updates]
 
 - name: Save update file to ...
   when: all_updates is defined
@@ -42,6 +48,7 @@
     content: "{{ all_updates }}"
     dest: "/tmp/{{ inventory_dir | basename + lookup('pipe', 'date +\"-%Y-%m-%d\"') }}.json"
   delegate_to: localhost
+  tags: [maintenance, updates]
 
 - name: Upgrade packages
   when: maintenance_run_upgrades | bool
@@ -49,12 +56,15 @@
     name: '{{ item.split("/")[0] }}'
     state: latest
   loop: '{{ updates | default([]) }}'
+  tags: [maintenance, updates]
 
 - name: Check for reboot
   stat:
     path: /var/run/reboot-required
   register: main_reboot_needed
+  tags: [maintenance, updates]
 
 - name: Reoot needed?
   debug:
     msg: 'Reboot needed: {{ main_reboot_needed.stat.exists }}'
+  tags: [maintenance, updates]
