@@ -7,4 +7,19 @@ include:
     file: '/GitlabCI/kaniko-build.yml'
 
 stages:
-  - test
+  - build
+
+build_tags:
+  extends: .build_template
+  variables:
+    COMMIT_TAG: $CI_COMMIT_TAG
+    BUILD_IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG
+  rules:
+    - if: $CI_COMMIT_TAG
+
+build_branch:
+  extends: .build_template
+  variables:
+    BUILD_IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_BRANCH
+  rules:
+    - if: $CI_COMMIT_BRANCH
