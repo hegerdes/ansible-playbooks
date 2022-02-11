@@ -57,12 +57,12 @@
   tags: [common, apt]
 
 - name: Set hostnames
-  include_tasks: install-hostnames.yml
+  import_tasks: install-hostnames.yml
   tags: common
 
 - name: Add ssh keys
-  include_tasks: install-ssh-keys.yml
-  tags: [common, ssh]
+  import_tasks: install-ssh-keys.yml
+  tags: [common, ssh, ssh-keys]
 
 - name: Ensure logfile for cron exists
   lineinfile:
@@ -73,7 +73,7 @@
   tags: [common, cron]
 
 - name: Install cron jobs
-  include_tasks: shared/install-cron-jobs.yml
+  import_tasks: shared/install-cron-jobs.yml
   vars:
     cron_jobs: '{{ common_cron_jobs }}'
   tags: [common, cron]
