@@ -32,6 +32,14 @@
   with_items: '{{ groups.all }}'
   tags: [maintenance, updates]
 
+- name: Format update string III
+  when: hostvars[item].updates is defined
+  run_once: yes
+  set_fact:
+    all_updates: '{{ all_updates | default({}) | combine({"failed_hosts": ansible_play_hosts_all | difference(ansible_play_batch) | default([])}) }}'
+  with_items: '{{ groups.all }}'
+  tags: [maintenance, updates]
+
 - name: Print updates
   when: hostvars[item].updates is defined
   run_once: yes
