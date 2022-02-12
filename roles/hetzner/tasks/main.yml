@@ -40,7 +40,6 @@
     name: '{{ item.key }}'
     state: 'stopped'
     server_type: '{{ item.value }}'
-    state: 'present'
   with_dict: '{{ rescale | default({}) }}'
 
 - name: Create a basic network
@@ -117,7 +116,7 @@
   loop: '{{ hetzner_servers.results }}'
 
 - name: Creating inventory[III] ...
-  when: hetzner_server_info.hcloud_server_info | length > 0
+  when: hetzner_server_info.hcloud_server_info | length > 0 and servers.mgmt is defined
   no_log: yes
   set_fact:
     hetzner_inventory_tmp:
@@ -126,19 +125,12 @@
           ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o ProxyCommand="ssh -W %h:%p -q root@{{ servers.mgmt.ipv4_address }} -p {{ ansible_default_port }}"'
 
 - name: Creating inventory[IV]...
-  when: hetzner_server_info.hcloud_server_info | length > 0
+  when: hetzner_server_info.hcloud_server_info | length > 0 and hetzner_inventory_tmp is defined
   no_log: yes
   set_fact:
     hetzner_inventory: '{{ hetzner_inventory | combine(hetzner_inventory_tmp, recursive=True) }}'
 
 - name: Creating inventory[V]...
-  when: hetzner_server_info.hcloud_server_info | length > 0
-  no_log: yes
-  set_fact:
-    hetzner_inventory: '{{ hetzner_inventory | combine(hetzner_inventory_tmp, recursive=True) }}'
-  loop: '{{ hetzner_vms }}'
-
-- name: Creating inventory[VI]...
   when: hetzner_server_info.hcloud_server_info | length > 0
   no_log: yes
   set_fact:
@@ -152,6 +144,6 @@
 - name: Save inventory
   copy:
     content: '{{ hetzner_inventory | to_nice_yaml(indent=2) }}'
-    dest: '{{ playbook_dir }}/../hetzner-inventory.yml'
+    dest: '{{ hetzner_inventroy_dst }}'
 
 - meta: refresh_inventory

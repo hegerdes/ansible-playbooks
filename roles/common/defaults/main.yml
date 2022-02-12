@@ -11,6 +11,11 @@ ssh_key_list: []
 # Key value pairs of hostname: ip
 # Default is ansibe_host: ansible_ip
 internal_hostnames: []
+# Example
+# internal_hostnames:
+#   - name: waf-gateway
+#     ips:
+#       - '10.10.0.2'
 
 # List of cron jobs
 common_cron_jobs: []

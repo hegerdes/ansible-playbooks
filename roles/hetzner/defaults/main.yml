@@ -5,6 +5,7 @@ hetzner_default_server_location: nbg1
 hetzner_default_server_image: debian-11
 hetzner_default_server_state: present
 hetzner_default_vnet_name: my-network
+hetzner_inventroy_dst: '{{ inventory_file | default(playbook_dir + "/../hetzner-inventory.yml") }}'
 ansible_default_port: 22
 ansible_default_user: root
 
