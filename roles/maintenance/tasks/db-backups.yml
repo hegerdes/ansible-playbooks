@@ -28,7 +28,7 @@
   register: main_backup_res
   tags: [maintenance, backup, db-backup]
 
-- name: Print DB backup script res
+- name: Print DB backup script result
   debug:
     var: main_backup_res
   tags: [maintenance, backup, db-backup]

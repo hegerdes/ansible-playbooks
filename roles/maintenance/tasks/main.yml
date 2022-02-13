@@ -1,7 +1,7 @@
 # Role maintenance
 ---
-- name: Check updates
-  include_tasks: check-updates.yml
+- name: System Updates Task
+  include_tasks: system-updates.yml
   tags: [maintenance, updates]
 
 - name: Post updates to GitLab
@@ -10,6 +10,11 @@
   tags: [maintenance, updates]
 
 - name: Run backup scripts
+  when: maintenance_run_hcloud_snapshot | bool
+  include_tasks: hcloud-snapshot.yml
+  tags: [maintenance, backup, db-backup, host-backup, hetzner-snapshot]
+
+- name: Run backup scripts
   when: maintenance_run_backup | bool
-  include_tasks: run-backup.yml
+  include_tasks: db-backups.yml
   tags: [maintenance, backup, db-backup]

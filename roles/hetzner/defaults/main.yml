@@ -1,5 +1,5 @@
 ---
-hetzner_api_key: '{{ lookup("env","HETZNER_KEY") }}'
+hetzner_api_key: '{{ lookup("env","HETZNER_API_KEY") }}'
 hetzner_default_server_size: cx11
 hetzner_default_server_location: nbg1
 hetzner_default_server_image: debian-11

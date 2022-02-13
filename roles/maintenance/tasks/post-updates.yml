@@ -1,4 +1,4 @@
-- name: Post updates to GitRepo
+- name: Post Log to GitRepo
   when: all_updates is defined
   uri:
     url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/host-updates%2F{{ansible_date_time.iso8601}}-updates.txt'
@@ -19,7 +19,7 @@
   register: main_reop_logs_res
   tags: [maintenance, updates]
 
-- name: Create Git issue for updates
+- name: Create Git issue
   when: all_updates is defined
   uri:
     url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/issues'
