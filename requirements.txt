@@ -2,3 +2,4 @@ ansible
 paramiko
 jsondiff
 hcloud
+hetzner
