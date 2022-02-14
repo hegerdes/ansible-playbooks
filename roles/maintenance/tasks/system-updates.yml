@@ -118,7 +118,7 @@
   tags: [maintenance, os-updates]
 
 - name: Post update log to GitLab
-  when: all_performed_updates is defined maintenance_post_to_git | bool
+  when: all_performed_updates is defined and maintenance_post_to_git | bool
   import_tasks: shared/gitlab-post-log.yml
   run_once: yes
   vars:
