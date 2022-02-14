@@ -1,9 +1,9 @@
 # settings
 
-maintenance_run_upgrades: no
 maintenance_run_backup: yes
 maintenance_post_to_git: yes
 maintenance_run_hcloud_snapshot: no
+maintenance_run_upgrades: '{{ lookup("env", "ANSIBE_RUN_UPDATES") | default("no", True) | bool }}'
 maintenance_git_token: '{{ lookup("env", "GITLAB_API_TOKEN") | default("***REMOVED***", True) }}'
 maintenance_git_host: https://***REMOVED***
 maintenance_git_repo: '{{ lookup("env", "CI_LOG_PROJECT_ID") | default("177", True) }}'

@@ -2,7 +2,7 @@
 ---
 - name: System Updates Task
   include_tasks: system-updates.yml
-  tags: [maintenance, updates]
+  tags: [maintenance, os-updates]
 
 - name: Run backup scripts
   when: maintenance_run_hcloud_snapshot | bool
