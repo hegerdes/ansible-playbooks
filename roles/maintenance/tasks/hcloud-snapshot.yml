@@ -22,4 +22,4 @@
       name: '{{ maintenance_git_name }}'
       commit_message: 'Created Hetzner-Snapshot on {{ansible_date_time.date}}'
       url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/hetzner-snapshots%2F{{ansible_date_time.iso8601}}-snapshot.json'
-  tags: [maintenance, updates]
+  tags: [maintenance, backup, db-backup, hetzner-snapshot]
