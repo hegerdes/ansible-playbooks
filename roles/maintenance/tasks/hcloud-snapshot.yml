@@ -4,8 +4,22 @@
   when: maintenance_run_hcloud_snapshot | bool
   command: 'node {{ role_path }}/files/hcloude-snapshot.js'
   run_once: yes
+  become: no
   delegate_to: localhost
   register: main_snapshot_res
   tags: [maintenance, backup, db-backup, hetzner-snapshot]
 
-
+- name: Post update log to GitLab
+  when: maintenance_post_to_git | bool
+  import_tasks: shared/gitlab-post-log.yml
+  run_once: yes
+  vars:
+    gitlab_conf:
+      branch: '{{ maintenance_git_branch }}'
+      token: '{{ maintenance_git_token }}'
+      content: '{{ main_snapshot_res.stdout_lines }}'
+      email: '{{ maintenance_git_mail }}'
+      name: '{{ maintenance_git_name }}'
+      commit_message: 'Created Hetzner-Snapshot on {{ansible_date_time.date}}'
+      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/hetzner-snapshots%2F{{ansible_date_time.iso8601}}-snapshot.json'
+  tags: [maintenance, updates]

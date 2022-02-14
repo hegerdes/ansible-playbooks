@@ -4,11 +4,6 @@
   include_tasks: system-updates.yml
   tags: [maintenance, updates]
 
-- name: Post updates to GitLab
-  when: maintenance_post_to_git | bool
-  include_tasks: post-updates.yml
-  tags: [maintenance, updates]
-
 - name: Run backup scripts
   when: maintenance_run_hcloud_snapshot | bool
   include_tasks: hcloud-snapshot.yml

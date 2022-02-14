@@ -25,17 +25,3 @@ build_branch:
     - if: $CI_COMMIT_BRANCH
       changes:
         - Dockerfile
-
-# create-hetzner-snapshot:
-#   stage: backup
-#   image: $DOCKER_IMAGE_NODE
-#   retry: 2
-#   script:
-#     - cd hetzner-snapshots
-#     - export HETZNER_API_KEY=$(printenv | grep ${PROJECT_TOKEN_NAME}= | awk -F "=" '{print $2}' | tr -d '\n')
-#     - node snapshot.js
-#   rules:
-#     - if: '$CI_PIPELINE_SOURCE == "schedule"'
-#     - if: '$CI_PIPELINE_SOURCE == "api"'
-#     - if: '$PROJECT_TOKEN_NAME == ""'
-#       when: never

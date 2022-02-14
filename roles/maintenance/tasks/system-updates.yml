@@ -58,12 +58,78 @@
   delegate_to: localhost
   tags: [maintenance, updates]
 
+- name: Post update log to GitLab
+  when: all_updates is defined and maintenance_post_to_git | bool
+  import_tasks: shared/gitlab-post-log.yml
+  run_once: yes
+  vars:
+    gitlab_conf:
+      branch: '{{ maintenance_git_branch }}'
+      token: '{{ maintenance_git_token }}'
+      content: '{{ all_updates }}'
+      email: '{{ maintenance_git_mail }}'
+      name: '{{ maintenance_git_name }}'
+      commit_message: 'Added pending updates on {{ansible_date_time.date}}'
+      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/host-updates%2F{{ansible_date_time.iso8601}}-updates.json'
+  tags: [maintenance, updates]
+
+- name: Post update issue to GitLab
+  when: maintenance_post_to_git and not maintenance_run_upgrades
+  import_tasks: shared/gitlab-post-issue.yml
+  run_once: yes
+  vars:
+    gitlab_conf:
+      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/issues'
+      labels: 'maintenance'
+      title: '{{ ansible_date_time.date }} System Updates'
+      assignee_id: '{{ maintenance_git_assignee_id }}'
+      token: '{{ maintenance_git_token }}'
+      description: |
+        Updates:
+        ```yml
+        {{ all_updates | to_nice_yaml(width=512) }}
+        ```
+  tags: [maintenance, updates]
+
 - name: Upgrade packages
   when: maintenance_run_upgrades | bool
   apt:
     name: '{{ item.split("/")[0] }}'
     state: latest
   loop: '{{ updates | default([]) }}'
+  register: main_updated_packages
+  tags: [maintenance, updates]
+
+- name: Format update result string I
+  when: maintenance_run_upgrades | bool
+  set_fact:
+    performed_updates: '{{ performed_updates | default({}) | combine({item.item.split("/")[0]: item.stdout_lines[3:]})}}'
+  loop: '{{ main_updated_packages.results }}'
+  loop_control:
+    label: '{{ item.item.split("/")[0] }}'
+  tags: [maintenance, updates]
+
+- name: Format update result string II
+  when: hostvars[item].performed_updates is defined
+  run_once: yes
+  set_fact:
+    all_performed_updates: '{{ all_performed_updates | default({}) | combine({item: hostvars[item].performed_updates}) }}'
+  with_items: '{{ groups.all }}'
+  tags: [maintenance, updates]
+
+- name: Post update log to GitLab
+  when: all_performed_updates is defined maintenance_post_to_git | bool
+  import_tasks: shared/gitlab-post-log.yml
+  run_once: yes
+  vars:
+    gitlab_conf:
+      branch: '{{ maintenance_git_branch }}'
+      token: '{{ maintenance_git_token }}'
+      content: '{{ all_performed_updates }}'
+      email: '{{ maintenance_git_mail }}'
+      name: '{{ maintenance_git_name }}'
+      commit_message: 'Installed the following updates on {{ansible_date_time.date}}'
+      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/host-updates%2F{{ansible_date_time.iso8601}}-performed-updates.json'
   tags: [maintenance, updates]
 
 - name: Check for reboot
