@@ -59,9 +59,8 @@
   tags: [maintenance, os-updates]
 
 - name: Post update log to GitLab
-  when: all_updates is defined and maintenance_post_to_git | bool
+  when: ansible_play_hosts_all | last == inventory_hostname and all_updates is defined and maintenance_post_to_git | bool
   import_tasks: shared/gitlab-post-log.yml
-  run_once: yes
   vars:
     gitlab_conf:
       branch: '{{ maintenance_git_branch }}'
@@ -70,13 +69,12 @@
       email: '{{ maintenance_git_mail }}'
       name: '{{ maintenance_git_name }}'
       commit_message: 'Added pending updates on {{ansible_date_time.date}}'
-      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/host-updates%2F{{ansible_date_time.iso8601}}-updates.json'
+      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/host-updates%2F{{ansible_date_time.data + "-" + ansible_date_time.hour + "-" + ansible_date_time.minute }}-updates.json'
   tags: [maintenance, os-updates]
 
 - name: Post update issue to GitLab
-  when: maintenance_post_to_git and not maintenance_run_upgrades
+  when: ansible_play_hosts_all | last == inventory_hostname and maintenance_post_to_git and not maintenance_run_upgrades
   import_tasks: shared/gitlab-post-issue.yml
-  run_once: yes
   vars:
     gitlab_conf:
       url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/issues'
@@ -118,9 +116,8 @@
   tags: [maintenance, os-updates]
 
 - name: Post update log to GitLab
-  when: all_performed_updates is defined and maintenance_post_to_git | bool
+  when: ansible_play_hosts_all | last == inventory_hostname and all_performed_updates is defined and maintenance_post_to_git | bool
   import_tasks: shared/gitlab-post-log.yml
-  run_once: yes
   vars:
     gitlab_conf:
       branch: '{{ maintenance_git_branch }}'
@@ -129,7 +126,7 @@
       email: '{{ maintenance_git_mail }}'
       name: '{{ maintenance_git_name }}'
       commit_message: 'Installed the following updates on {{ansible_date_time.date}}'
-      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/host-updates%2F{{ansible_date_time.iso8601}}-performed-updates.json'
+      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/host-updates%2F{{ansible_date_time.data + "-" + ansible_date_time.hour + "-" + ansible_date_time.minute }}-performed-updates.json'
   tags: [maintenance, os-updates]
 
 - name: Check for reboot
