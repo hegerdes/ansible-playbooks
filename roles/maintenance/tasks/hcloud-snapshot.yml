@@ -10,9 +10,9 @@
   tags: [maintenance, backup, db-backup, hetzner-snapshot]
 
 - name: Post update log to GitLab
+  when: ansible_play_hosts_all | last == inventory_hostname and maintenance_post_to_git | bool
   when: maintenance_post_to_git | bool
   import_tasks: shared/gitlab-post-log.yml
-  run_once: yes
   vars:
     gitlab_conf:
       branch: '{{ maintenance_git_branch }}'
@@ -21,5 +21,5 @@
       email: '{{ maintenance_git_mail }}'
       name: '{{ maintenance_git_name }}'
       commit_message: 'Created Hetzner-Snapshot on {{ansible_date_time.date}}'
-      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/hetzner-snapshots%2F{{ansible_date_time.iso8601}}-snapshot.json'
+      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/hetzner-snapshots%2F{{ ansible_date_time.date + "-" + ansible_date_time.hour + "-" + ansible_date_time.minute }}-snapshot.json'
   tags: [maintenance, backup, db-backup, hetzner-snapshot]
