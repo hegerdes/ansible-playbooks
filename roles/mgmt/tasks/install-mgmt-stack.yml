@@ -43,7 +43,7 @@
 - name: Deploy mgmt-stack [via docker-compose]
   when: mgmt_use_swarm_mode | bool != true
   docker_compose:
-    project_name: monitor-stack
+    project_name: '{{ mgmt_docker_stack_name }}'
     remove_orphans: yes
     project_src: '{{ mgmt_dst_config_files }}'
     files: '{{ mgmt_services_to_install | list }}'
