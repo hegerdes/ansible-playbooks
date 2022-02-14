@@ -69,7 +69,7 @@
       email: '{{ maintenance_git_mail }}'
       name: '{{ maintenance_git_name }}'
       commit_message: 'Added pending updates on {{ansible_date_time.date}}'
-      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/host-updates%2F{{ansible_date_time.data + "-" + ansible_date_time.hour + "-" + ansible_date_time.minute }}-updates.json'
+      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/host-updates%2F{{ansible_date_time.date + "-" + ansible_date_time.hour + "-" + ansible_date_time.minute }}-updates.json'
   tags: [maintenance, os-updates]
 
 - name: Post update issue to GitLab
@@ -98,6 +98,17 @@
   register: main_updated_packages
   tags: [maintenance, os-updates]
 
+- name: Check for reboot
+  stat:
+    path: /var/run/reboot-required
+  register: main_reboot_needed
+  tags: [maintenance, os-updates]
+
+- name: Reoot needed?
+  debug:
+    msg: 'Reboot needed: {{ main_reboot_needed.stat.exists }}'
+  tags: [maintenance, os-updates]
+
 - name: Format update result string I
   when: maintenance_run_upgrades | bool
   set_fact:
@@ -111,7 +122,7 @@
   when: hostvars[item].performed_updates is defined
   run_once: yes
   set_fact:
-    all_performed_updates: '{{ all_performed_updates | default({}) | combine({item: hostvars[item].performed_updates}) }}'
+    all_performed_updates: '{{ all_performed_updates | default({}) | combine({item: hostvars[item].performed_updates, "reboots": {item: hostvars[item].main_reboot_needed.stat.exists}}, recursive=True) }}'
   with_items: '{{ groups.all }}'
   tags: [maintenance, os-updates]
 
@@ -126,16 +137,5 @@
       email: '{{ maintenance_git_mail }}'
       name: '{{ maintenance_git_name }}'
       commit_message: 'Installed the following updates on {{ansible_date_time.date}}'
-      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/host-updates%2F{{ansible_date_time.data + "-" + ansible_date_time.hour + "-" + ansible_date_time.minute }}-performed-updates.json'
-  tags: [maintenance, os-updates]
-
-- name: Check for reboot
-  stat:
-    path: /var/run/reboot-required
-  register: main_reboot_needed
-  tags: [maintenance, os-updates]
-
-- name: Reoot needed?
-  debug:
-    msg: 'Reboot needed: {{ main_reboot_needed.stat.exists }}'
+      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/host-updates%2F{{ansible_date_time.date + "-" + ansible_date_time.hour + "-" + ansible_date_time.minute }}-performed-updates.json'
   tags: [maintenance, os-updates]

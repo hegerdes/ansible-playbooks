@@ -14,7 +14,6 @@
       content: '{{ gitlab_conf.content | to_nice_json }}'
       commit_message: '{{ gitlab_conf.commit_message }}'
     status_code: 201
-  run_once: yes
   ignore_errors: yes
   register: main_reop_logs_res
   tags: [maintenance, updates]

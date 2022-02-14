@@ -12,7 +12,6 @@
       assignee_id: '{{ gitlab_conf.assignee_id | default("") | string }}'
       description: '{{ gitlab_conf.description }}'
     status_code: 201
-  run_once: yes
   ignore_errors: yes
   register: main_reop_issue_res
   tags: [maintenance, updates]
