@@ -81,13 +81,8 @@
       token: '{{ maintenance_git_token }}'
   tags: [maintenance, os-updates]
 
-- name: Debug
-  debug:
-    var: main_reop_get_issue_res
-  tags: [maintenance, os-updates]
-
 - name: Post new update issue to GitLab
-  when: ansible_play_hosts_all | last == inventory_hostname and maintenance_post_to_git and not maintenance_run_upgrades and not main_reop_get_issue_res.skipped and all_updates is defined and main_reop_get_issue_res.json | length == 0
+  when: ansible_play_hosts_all | last == inventory_hostname and maintenance_post_to_git and not maintenance_run_upgrades and main_reop_get_issue_res.json is defined and all_updates is defined and main_reop_get_issue_res.json | length == 0
   import_tasks: shared/gitlab-post-issue.yml
   vars:
     gitlab_conf:
@@ -105,11 +100,12 @@
   tags: [maintenance, os-updates]
 
 - name: Update issue on GitLab
-  when: ansible_play_hosts_all | last == inventory_hostname and maintenance_post_to_git and not maintenance_run_upgrades and not main_reop_get_issue_res.skipped and all_updates is defined and main_reop_get_issue_res.json | length > 0
+  when: ansible_play_hosts_all | last == inventory_hostname and maintenance_post_to_git and not maintenance_run_upgrades and main_reop_get_issue_res.json is defined and all_updates is defined and main_reop_get_issue_res.json | length > 0
   import_tasks: shared/gitlab-post-issue.yml
   vars:
     gitlab_conf:
       url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/issues/{{ main_reop_get_issue_res.json | json_query("[0].iid") }}'
+      method: PUT
       labels: 'maintenance,aptPendingUpdates'
       title: '{{ ansible_date_time.date }} System Updates'
       assignee_id: '{{ maintenance_git_assignee_id }}'
