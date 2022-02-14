@@ -72,16 +72,49 @@
       url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/host-updates%2F{{ ansible_date_time.date + "-" + ansible_date_time.hour + "-" + ansible_date_time.minute }}-updates.json'
   tags: [maintenance, os-updates]
 
-- name: Post update issue to GitLab
-  when: ansible_play_hosts_all | last == inventory_hostname and maintenance_post_to_git and not maintenance_run_upgrades
+- name: Get issue on GitLab
+  when: maintenance_post_to_git and not maintenance_run_upgrades and all_updates is defined
+  import_tasks: shared/gitlab-get-issue.yml
+  vars:
+    gitlab_conf:
+      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/issues?labels=aptPendingUpdates&state=opened'
+      token: '{{ maintenance_git_token }}'
+  tags: [maintenance, os-updates]
+
+- name: Debug
+  debug:
+    var: main_reop_get_issue_res
+  tags: [maintenance, os-updates]
+
+- name: Post new update issue to GitLab
+  when: ansible_play_hosts_all | last == inventory_hostname and maintenance_post_to_git and not maintenance_run_upgrades and not main_reop_get_issue_res.skipped and all_updates is defined and main_reop_get_issue_res.json | length == 0
   import_tasks: shared/gitlab-post-issue.yml
   vars:
     gitlab_conf:
       url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/issues'
-      labels: 'maintenance'
+      labels: 'maintenance,aptPendingUpdates'
       title: '{{ ansible_date_time.date }} System Updates'
       assignee_id: '{{ maintenance_git_assignee_id }}'
       token: '{{ maintenance_git_token }}'
+      response_status: 201
+      description: |
+        Updates:
+        ```yml
+        {{ all_updates | to_nice_yaml(width=512) }}
+        ```
+  tags: [maintenance, os-updates]
+
+- name: Update issue on GitLab
+  when: ansible_play_hosts_all | last == inventory_hostname and maintenance_post_to_git and not maintenance_run_upgrades and not main_reop_get_issue_res.skipped and all_updates is defined and main_reop_get_issue_res.json | length > 0
+  import_tasks: shared/gitlab-post-issue.yml
+  vars:
+    gitlab_conf:
+      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/issues/{{ main_reop_get_issue_res.json | json_query("[0].iid") }}'
+      labels: 'maintenance,aptPendingUpdates'
+      title: '{{ ansible_date_time.date }} System Updates'
+      assignee_id: '{{ maintenance_git_assignee_id }}'
+      token: '{{ maintenance_git_token }}'
+      response_status: 200
       description: |
         Updates:
         ```yml

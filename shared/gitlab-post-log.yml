@@ -1,4 +1,4 @@
-- name: Post result to GitRepo
+- name: Post update log to GitLab
   when: gitlab_conf.content is defined
   uri:
     url: '{{ gitlab_conf.url }}'
@@ -16,4 +16,4 @@
     status_code: 201
   ignore_errors: yes
   register: main_reop_logs_res
-  tags: [maintenance, updates]
+  tags: [maintenance, os-updates]

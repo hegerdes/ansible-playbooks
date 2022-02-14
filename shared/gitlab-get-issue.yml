@@ -1,0 +1,10 @@
+- name: Get GitLab issue
+  uri:
+    url: '{{ gitlab_conf.url }}'
+    method: GET
+    headers:
+      PRIVATE-TOKEN: '{{ gitlab_conf.token }}'
+    status_code: 200
+  ignore_errors: yes
+  register: main_reop_get_issue_res
+  tags: [maintenance, os-updates]
