@@ -1,8 +1,4 @@
-wireguard.conf
-prometheus.yml
-influx-docker-compose.yml
 notes.txt
 *.retry
 *.log
-**/files/srv
 inventories

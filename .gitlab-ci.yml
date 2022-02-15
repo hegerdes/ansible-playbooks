@@ -23,6 +23,4 @@ build_branch:
     BUILD_IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_BRANCH
   rules:
     - if: $CI_COMMIT_BRANCH
-      changes:
-        - Dockerfile
-        - requirements.txt
+

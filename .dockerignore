@@ -1,0 +1,8 @@
+*.retry
+*.log
+.git
+.gitlab-ci.yml
+.gitmodules
+Dockerfile
+inventories
+notes.txt

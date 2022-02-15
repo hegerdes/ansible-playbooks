@@ -12,6 +12,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl gpg \
     ssh-client jq rsync nodejs && rm -rf /var/lib/apt/lists/* \
     && pip3 install --no-cache-dir -r requirements.txt
 
+COPY . /app/playbooks
+
 ARG COMMIT_HASH="none"
 ARG COMMIT_TAG="none"
 ENV COMMIT_HASH=$COMMIT_HASH
