@@ -9,11 +9,13 @@
   tags: ["mgmt", "ssh", "secririty"]
 
 - name: Install backup tools
-  import_tasks: install-backup-tools.yml
+  when: mgmt_init_backup | bool
+  include_tasks: install-backup-tools.yml
   tags: ["mgmt", "backup"]
 
 - name: Install backup script
-  import_tasks: install-backup-script.yml
+  when: mgmt_init_backup | bool
+  include_tasks: install-backup-script.yml
   tags: ["mgmt", "backup"]
 
 - name: Run docker install

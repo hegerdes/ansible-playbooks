@@ -1,11 +1,22 @@
 # Setup grafana
 ---
+- name: Wait for Grafana to start
+  wait_for:
+    port: 3000
+    delay: 5
+    timeout: 45
+
+- name: Get Grafana remote pw
+  slurp:
+    src: '{{ mgmt_dst_config_files }}mgmt-grafana/grafana_admin_pw.txt'
+  register: grafana_remote_pw
+
 - name: Create loki datasource
   grafana_datasource:
     name: Loki
     grafana_url: 'http://{{ mgmt_grafana_host }}'
     grafana_user: admin
-    grafana_password: '{{ mgmt_grafana_pw }}'
+    grafana_password: '{{ grafana_remote_pw.content  | b64decode }}'
     ds_type: loki
     ds_url: http://loki:3100
 
@@ -14,15 +25,15 @@
     name: Prometheus
     grafana_url: 'http://{{ mgmt_grafana_host }}'
     grafana_user: admin
-    grafana_password: '{{ mgmt_grafana_pw }}'
+    grafana_password: '{{ grafana_remote_pw.content | b64decode }}'
     ds_type: prometheus
     ds_url: http://prometheus:9090
 
 - name: Import Grafana dashboards
-  ignore_errors: yes
   grafana_dashboard:
     grafana_url: 'http://{{ mgmt_grafana_host }}'
     grafana_user: admin
-    grafana_password: '{{ mgmt_grafana_pw }}'
+    grafana_password: '{{ grafana_remote_pw.content | b64decode }}'
     dashboard_id: '{{ item }}'
+  ignore_errors: yes
   loop: '{{ mgmt_grafana_dashbord_ids }}'

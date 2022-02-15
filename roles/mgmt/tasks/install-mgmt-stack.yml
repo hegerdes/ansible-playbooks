@@ -84,8 +84,10 @@
     project_src: '{{ mgmt_dst_config_files }}'
     files: ['mgmt-stack-wiregurd.yml']
 
-- name: Sleep for 45 seconds and continue with play
+- name: Wait for portainer to start
   wait_for:
+    port: 9000
+    delay: 5
     timeout: 45
 
 - name: Shows stack info

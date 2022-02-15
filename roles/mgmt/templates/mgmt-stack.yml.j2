@@ -1,22 +1,35 @@
 version: '3.7'
 
 services:
-  loki:
-    image: grafana/loki:latest
+  portainer:
+    image: portainer/portainer-ce:latest
     environment:
       - TZ=Europe/Berlin
     networks:
       - mgmt_net
     ports:
-      - target: 3100
-        published: 3100
-        protocol: tcp
-        mode: host
+      - "8000:8000"
+      - "9000:9000"
+      - "9443:9443"
     volumes:
-      - loki-data:/loki
+      - portainer-data:/data
+      {{ mgmt_portainer_agentless_opts | indent(width=6) if (mgmt_portainer_included_agent) }}
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+  prometheus:
+    image: bitnami/prometheus:latest
+    command: --storage.tsdb.retention.time 30d --config.file=/etc/prometheus/prometheus.yml
+    environment:
+      - TZ=Europe/Berlin
+    networks:
+      - mgmt_net
+    volumes:
+      - prometheus-data:/opt/bitnami/prometheus/data
     configs:
-      - source: loki-conf-{{ mgmt_conf_counter | default(ansible_date_time.date) }}
-        target: /mnt/config/loki-config.yml
+      - source: prometheus-conf-{{ mgmt_conf_counter | default(ansible_date_time.date) }}
+        target: /etc/prometheus/prometheus.yml
 
   grafana:
     image: grafana/grafana:latest
@@ -36,45 +49,28 @@ services:
     secrets:
       - grafana_admin_password
 
+  loki:
+    image: grafana/loki:latest
+    environment:
+      - TZ=Europe/Berlin
+    networks:
+      - mgmt_net
+    ports:
+      - target: 3100
+        published: 3100
+        protocol: tcp
+        mode: host
+    volumes:
+      - loki-data:/loki
+    configs:
+      - source: loki-conf-{{ mgmt_conf_counter | default(ansible_date_time.date) }}
+        target: /mnt/config/loki-config.yml
+
   nginx-prometheus-exporter:
     image: nginx/nginx-prometheus-exporter:latest
     command: -nginx.scrape-uri=http://{{ mgmt_waf_target_host }}/nginx_status
     networks:
       - mgmt_net
-
-  prometheus:
-    image: bitnami/prometheus:latest
-    command: --storage.tsdb.retention.time 30d --config.file=/etc/prometheus/prometheus.yml
-    environment:
-      - TZ=Europe/Berlin
-    networks:
-      - mgmt_net
-    ports:
-      - target: 9090
-        published: 9090
-        protocol: tcp
-        mode: host
-    volumes:
-      - prometheus-data:/opt/bitnami/prometheus/data
-    configs:
-      - source: prometheus-conf-{{ mgmt_conf_counter | default(ansible_date_time.date) }}
-        target: /etc/prometheus/prometheus.yml
-
-  portainer:
-    image: portainer/portainer-ce:latest
-    environment:
-      - TZ=Europe/Berlin
-    networks:
-      - mgmt_net
-    ports:
-      - "8000:8000"
-      - "9000:9000"
-      - "9443:9443"
-    volumes:
-      - portainer-data:/data
-    deploy:
-      placement:
-        constraints: [node.role == manager]
 
 configs:
   loki-conf-{{ mgmt_conf_counter | default(ansible_date_time.date) }}:

@@ -15,6 +15,12 @@
     create_home: no
     state: present
 
+- name: Ensure .ssh directory exists
+  file:
+    path: '/home/{{ mgmt_jumphost_user }}/.ssh'
+    state: directory
+    mode: 0600
+
 - name: Add CI ssh key to {{ mgmt_jumphost_user }} user
   authorized_key:
     user: '{{ mgmt_jumphost_user }}'

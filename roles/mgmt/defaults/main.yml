@@ -5,6 +5,7 @@
 mgmt_jumphost_user: gitlab
 # List of ssh key_paths for mgmt_jumphost_user
 ssh_key_list: []
+mgmt_init_backup: yes
 # Ports for sshd
 ssh_listen_ports:
   - 22
@@ -48,7 +49,11 @@ mgmt_chronograf_port: 8888
 mgmt_setup_portainer: yes
 mgmt_portainer_pw: mySuperSecureAdminPW
 mgmt_portainer_host: localhost:9000
+mgmt_portainer_included_agent: no
 mgmt_portainer_nodes: {}
+mgmt_portainer_agentless_opts: |
+  - /var/run/docker.sock:/var/run/docker.sock
+  - /var/lib/docker/volumes:/var/lib/docker/volumes
 
 mgmt_setup_grafana: yes
 mgmt_grafana_pw: mySuperSecureAdminPW
