@@ -28,6 +28,28 @@
   register: main_backup_res
   tags: [maintenance, backup, db-backup]
 
+- name: Format log string
+  when: hostvars[item].main_backup_res.changed
+  run_once: yes
+  set_fact:
+    all_main_backup_res: '{{ all_main_backup_res | default({}) | combine({item: {stdout: hostvars[item].main_backup_res.stdout_lines, stderr: hostvars[item].main_backup_res.stderr_lines }}, recursive=True) }}'
+  with_items: '{{ groups.all }}'
+  tags: [maintenance, backup, db-backup]
+
+- name: Post backup log to GitLab
+  when: ansible_play_hosts_all | last == inventory_hostname and all_main_backup_res is defined and maintenance_post_to_git | bool
+  import_tasks: shared/gitlab-post-log.yml
+  vars:
+    gitlab_conf:
+      branch: '{{ maintenance_git_branch }}'
+      token: '{{ maintenance_git_token }}'
+      content: '{{ all_main_backup_res }}'
+      email: '{{ maintenance_git_mail }}'
+      name: '{{ maintenance_git_name }}'
+      commit_message: 'Added db dump logs {{ansible_date_time.date}}'
+      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/db-backups%2F{{ ansible_date_time.date + "-" + ansible_date_time.hour + "-" + ansible_date_time.minute }}-db-dump.json'
+  tags: [maintenance, backup, db-backup]
+
 - name: Print DB backup script result
   debug:
     var: main_backup_res

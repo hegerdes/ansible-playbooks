@@ -1,6 +1,6 @@
 #!/bin/bash
 
 LOGFILE=/db_dumps/db_backup.log
-echo -n "Creating db dump to: /db_dumps/$(date '+%Y-%m-%d')-${HOSTNAME}.dump..." >> $LOGFILE
+echo -n "Creating db dump to: /db_dumps/$(date '+%Y-%m-%d')-${HOSTNAME}.dump..." | tee -a $LOGFILE
 docker exec mongodb sh -c 'exec mongodump -u=$MONGO_INITDB_ROOT_USERNAME -p=$MONGO_INITDB_ROOT_PASSWORD --archive' | gzip > /db_dumps/$(date '+%Y-%m-%d')-${HOSTNAME}.dump.gz
-echo "done" >> $LOGFILE
+echo "done" | tee -a $LOGFILE
