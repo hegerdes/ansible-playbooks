@@ -32,7 +32,7 @@
   when: hostvars[item].main_backup_res.changed
   run_once: yes
   set_fact:
-    all_main_backup_res: '{{ all_main_backup_res | default({}) | combine({item: {stdout: hostvars[item].main_backup_res.stdout_lines, stderr: hostvars[item].main_backup_res.stderr_lines }}, recursive=True) }}'
+    all_main_backup_res: '{{ all_main_backup_res | default({}) | combine({item: {"stdout": hostvars[item].main_backup_res.stdout_lines, "stderr": hostvars[item].main_backup_res.stderr_lines }}, recursive=True) }}'
   with_items: '{{ groups.all }}'
   tags: [maintenance, backup, db-backup]
 
