@@ -1,4 +1,4 @@
-- name: Create Git issue
+- name: Create GitLab issue
   when: gitlab_conf.description is defined
   uri:
     url: '{{ gitlab_conf.url }}'

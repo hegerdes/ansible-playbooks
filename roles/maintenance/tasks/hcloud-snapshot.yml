@@ -11,7 +11,6 @@
 
 - name: Post update log to GitLab
   when: ansible_play_hosts_all | last == inventory_hostname and maintenance_post_to_git | bool
-  when: maintenance_post_to_git | bool
   import_tasks: shared/gitlab-post-log.yml
   vars:
     gitlab_conf:
