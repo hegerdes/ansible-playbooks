@@ -83,17 +83,17 @@
   tags: [maintenance, os-updates]
 
 - name: Update issue on GitLab
-  when: ansible_play_hosts_all | last == inventory_hostname and maintenance_post_to_git and not maintenance_run_upgrades and main_reop_get_issue_res.json is defined and all_updates is defined and main_reop_get_issue_res.json | length > 0
+  when: ansible_play_hosts_all | last == inventory_hostname and maintenance_post_to_git and not maintenance_run_upgrades and all_updates is defined
   import_tasks: shared/gitlab-post-issue.yml
   vars:
     gitlab_conf:
-      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/issues/{{ main_reop_get_issue_res.json | json_query("[0].iid") if (main_reop_get_issue_res.json | length > 0) else ""}}'
-      method: '{{"PUT" if (main_reop_get_issue_res.json | length > 0) else "POST"}}'
+      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/issues/{{ main_reop_get_issue_res.json | json_query("[0].iid") if (main_reop_get_issue_res.json is defined and main_reop_get_issue_res.json | length > 0) else ""}}'
+      method: '{{"PUT" if (main_reop_get_issue_res.json is defined and main_reop_get_issue_res.json | length > 0) else "POST"}}'
       labels: 'maintenance,aptPendingUpdates'
       title: '{{ ansible_date_time.date }} System Updates'
       assignee_id: '{{ maintenance_git_assignee_id }}'
       token: '{{ maintenance_git_token }}'
-      response_status: '{{ 200 if (main_reop_get_issue_res.json | length > 0) else 201 }}'
+      response_status: '{{ 200 if (main_reop_get_issue_res.json is defined and main_reop_get_issue_res.json | length > 0) else 201 }}'
       description: |
         Updates:
         ```yml
