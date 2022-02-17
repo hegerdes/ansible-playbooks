@@ -1,0 +1,15 @@
+# Install Node-Exporter
+---
+- name: Set firewall rules
+  firewalld:
+    state: enabled
+    zone: '{{ firewalld_zone | default("internal")}}'
+    port: '{{ firewalld_open_port | default(omit) }}'
+    permanent: yes
+  tags: [node-exporter, monitoring, firewall]
+
+- name: Restart firewalld
+  service:
+    name: firewalld
+    state: restarted
+  tags: [node-exporter, monitoring, firewall]

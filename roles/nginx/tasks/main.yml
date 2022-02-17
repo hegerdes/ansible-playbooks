@@ -23,6 +23,17 @@
   import_tasks: install-nginx-hosts.yml
   tags: [ingress, ingress-hosts]
 
+- name: Setup firewall
+  include_role:
+    name: firewalld
+  vars:
+    firwalld_rules: '{{ nginx_default_firewall_rules + nginx_firewall_rules }}'
+  tags: [ingress, firewall]
+
+- name: Ensure handlers are notified now
+  meta: flush_handlers
+  tags: [ingress, firewall]
+
 - name: Setup cron jobs
   when: nginx_run_certbot | bool
   import_tasks: shared/install-cron-jobs.yml

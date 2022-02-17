@@ -1,0 +1,10 @@
+# Install Node-Exporter
+---
+- name: Allow metrics-traffic from subnet
+  ufw:
+    rule: allow
+    state: enabled
+    proto: tcp
+    from: '{{ ansible_facts.ens10.ipv4.network if(ansible_facts.ens10 is defined) else ansible_facts.default_ipv4.network }}/24'
+    port: '{{ ufw_open_port }}'
+  tags: [node-exporter, monitoring, firewall]

@@ -105,8 +105,8 @@
   when: hetzner_server_info.hcloud_server_info | length > 0
   no_log: yes
   set_fact:
-    hetzner_inventory: '{{ hetzner_inventory | combine({"all": {"hosts":{item.hcloud_server_network.server: {"ansible_host": item.hcloud_server_network.ip, "ansible_port": ansible_default_port, "ansible_user": ansible_default_user }}}},recursive=True) }}'
-  loop: '{{ hetzner_vnet_res.results }}'
+    hetzner_inventory: '{{ hetzner_inventory | combine({"all": {"hosts":{item.hcloud_server_network.server if (hetzner_use_internal_ip) else item.hcloud_server.name : {"ansible_host": item.hcloud_server_network.ip if (hetzner_use_internal_ip) else item.hcloud_server.ipv4_address, "ansible_port": ansible_default_port, "ansible_user": ansible_default_user }}}},recursive=True) }}'
+  loop: '{{ hetzner_vnet_res.results if (hetzner_use_internal_ip) else hetzner_servers.results }}'
 
 - name: Creating inventory[II]...
   when: hetzner_server_info.hcloud_server_info | length > 0

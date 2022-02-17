@@ -32,6 +32,7 @@ nginx_vhosts:
 
 # Floating IPs
 nginx_floating_ips: []
+nginx_firewall_rules: []
 
 # Update promtail
 nginx_update_promtail: yes
@@ -49,3 +50,27 @@ nginx_cron_jobs:
     day: '*'
     state: present
     user: null
+
+nginx_default_firewall_rules:
+  - name: Setup public net
+    zone: public
+    interface: eth0
+  - name: https
+    service: https
+    zone: public
+  - name: http
+    service: http
+    zone: public
+  - name: Setup internal net
+    zone: internal
+    interface: ens10
+    sourceips: 10.10.0.0/24
+  - name: node-exporter
+    zone: internal
+    port: 9100/tcp
+  - name: http-internal
+    zone: internal
+    port: 80/tcp
+  - name: https-internal
+    zone: internal
+    port: 443/tcp
