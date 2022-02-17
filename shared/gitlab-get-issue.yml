@@ -7,4 +7,3 @@
     status_code: 200
   ignore_errors: yes
   register: main_reop_get_issue_res
-  tags: [maintenance, os-updates]

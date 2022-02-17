@@ -58,6 +58,20 @@
   delegate_to: localhost
   tags: [maintenance, os-updates]
 
+- name: Post log for performed update-scan
+  when: ansible_play_hosts_all | last == inventory_hostname and maintenance_post_to_git | bool
+  import_tasks: shared/gitlab-update-json-file.yml
+  vars:
+    gitlab_conf:
+      branch: '{{ maintenance_git_branch }}'
+      token: '{{ maintenance_git_token }}'
+      content: '{{ {ansible_date_time.date: "Performed update check on: " + ansible_play_hosts_all | join(",")} }}'
+      email: '{{ maintenance_git_mail }}'
+      name: '{{ maintenance_git_name }}'
+      commit_message: 'Searched for updates on {{ansible_date_time.date}}'
+      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/host-updates%2Fsearched-update-log.json'
+  tags: [maintenance, os-updates]
+
 - name: Post update log to GitLab
   when: ansible_play_hosts_all | last == inventory_hostname and all_updates is defined and maintenance_post_to_git | bool
   import_tasks: shared/gitlab-post-log.yml

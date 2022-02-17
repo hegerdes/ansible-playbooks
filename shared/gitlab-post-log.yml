@@ -16,4 +16,3 @@
     status_code: 201
   ignore_errors: yes
   register: main_reop_logs_res
-  tags: [maintenance, os-updates]

@@ -14,4 +14,3 @@
     status_code: '{{ gitlab_conf.response_status | default(201)}}'
   ignore_errors: yes
   register: main_reop_issue_res
-  tags: [maintenance, os-updates]
