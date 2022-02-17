@@ -5,9 +5,9 @@
     port: 9000
     delay: 5
     timeout: 45
+  tags: [mgmt, portainer]
 
 - name: Set Portainer Admin-PW
-  ignore_errors: yes
   uri:
     url: 'http://{{ mgmt_portainer_host }}/api/users/admin/init'
     method: POST
@@ -17,7 +17,8 @@
       Content-Type: "application/json"
   register: mgmt_portainer_api_res
   failed_when: "mgmt_portainer_api_res.status != 200 and mgmt_portainer_api_res.status != 409"
-  tags: ["mgmt", "portainer"]
+  tags: [mgmt, portainer]
+  ignore_errors: yes
 
 - name: Get Portainer Token
   ignore_errors: yes
@@ -29,10 +30,9 @@
     headers:
       Content-Type: "application/json"
   register: mgmt_portainer_api_res
-  tags: ["mgmt", "portainer"]
+  tags: [mgmt, portainer]
 
 - name: Add portainer nodes
-  ignore_errors: yes
   uri:
     url: 'http://{{ mgmt_portainer_host }}/api/endpoints'
     method: POST
@@ -45,4 +45,5 @@
       Content-Type: "multipart/form-data; boundary=<calculated when request is sent>"
       Authorization: 'Bearer {{ mgmt_portainer_api_res.json.jwt }}'
   with_dict: "{{ mgmt_portainer_nodes }}"
-  tags: ["mgmt", "portainer"]
+  tags: [mgmt, portainer]
+  ignore_errors: yes

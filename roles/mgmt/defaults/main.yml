@@ -4,7 +4,7 @@
 # JumpHost user
 mgmt_jumphost_user: gitlab
 # List of ssh key_paths for mgmt_jumphost_user
-ssh_key_list: []
+mgmt_ssh_keys: []
 mgmt_init_backup: yes
 # Ports for sshd
 ssh_listen_ports:

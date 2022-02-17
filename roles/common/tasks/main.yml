@@ -61,8 +61,10 @@
   tags: [common, hostnames]
 
 - name: Add ssh keys
-  import_tasks: install-ssh-keys.yml
-  tags: [common, ssh, ssh-keys]
+  import_tasks: shared/set-ssh-keys.yml
+  vars:
+    ssh_key_list: '{{ common_ssh_keys }}'
+  tags: [common, ssh-keys]
 
 - name: Ensure logfile for cron exists
   lineinfile:

@@ -5,24 +5,29 @@
     name: awscli
     state: latest
     install_recommends: no
+  tags: [mgmt, backup]
 
 - name: Check if azcopy is installed
   command: 'azcopy --version'
   register: azcopy_check_result
   changed_when: false
   failed_when: false
+  tags: [mgmt, backup]
 
 - name: Download and unarchive azcopy
   unarchive:
     src: https://aka.ms/downloadazcopy-v10-linux
     dest: /tmp
     remote_src: yes
+  tags: [mgmt, backup]
 
 - name: Install azcopy
   when: azcopy_check_result.stdout == ""
   shell: |
     mv /tmp/azcopy_linux*/azcopy /usr/local/bin/azcopy
+  tags: [mgmt, backup]
 
 - name: Test azcopy
   command: "azcopy --version"
   changed_when: "false"
+  tags: [mgmt, backup]

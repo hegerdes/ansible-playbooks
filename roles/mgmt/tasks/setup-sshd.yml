@@ -3,9 +3,27 @@
 - name: Setup ssh ports
   lineinfile:
     path: /etc/ssh/sshd_config
+    regexp: '^Port {{ item }}$'
     line: 'Port {{ item }}'
   loop: '{{ ssh_listen_ports | default(["22", "2223"])}}'
   notify: Restart SSHD
+  tags: [mgmt, ssh]
+
+- name: Disable password login
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?PasswordAuthentication'
+    line: 'PasswordAuthentication no'
+  notify: Restart SSHD
+  tags: [mgmt, ssh]
+
+- name: Disable X11
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?X11Forwarding*'
+    line: 'X11Forwarding no'
+  notify: Restart SSHD
+  tags: [mgmt, ssh]
 
 - name: Adding JumpHost user {{ mgmt_jumphost_user }}
   user:
@@ -14,19 +32,17 @@
     shell: /usr/bin/bash
     create_home: no
     state: present
+  tags: [mgmt, ssh]
 
 - name: Ensure .ssh directory exists
   file:
     path: '/home/{{ mgmt_jumphost_user }}/.ssh'
     state: directory
     mode: 0600
+  tags: [mgmt, ssh, ssh-keys]
 
-- name: Add CI ssh key to {{ mgmt_jumphost_user }} user
-  authorized_key:
-    user: '{{ mgmt_jumphost_user }}'
-    state: present
-    key_options: 'no-X11-forwarding'
-    key: '{{ lookup("file", item) }}'
-  loop: '{{ ssh_key_list }}'
-
-
+- name: Add ssh keys
+  import_tasks: shared/set-ssh-keys.yml
+  vars:
+    ssh_key_list: '{{ mgmt_ssh_keys }}'
+  tags: [mgmt, ssh, ssh-keys]

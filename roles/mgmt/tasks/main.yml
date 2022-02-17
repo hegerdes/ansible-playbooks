@@ -2,40 +2,41 @@
 ---
 - name: Setup sshd
   import_tasks: setup-sshd.yml
-  tags: ["mgmt", "ssh"]
+  tags: [mgmt, ssh]
 
 - name: Setup fail2ban
   import_tasks: setup-fail2ban.yml
-  tags: ["mgmt", "ssh", "secririty"]
+  tags: [mgmt, ssh ]
 
 - name: Install backup tools
   when: mgmt_init_backup | bool
   include_tasks: install-backup-tools.yml
-  tags: ["mgmt", "backup"]
+  tags: [mgmt, backup]
 
 - name: Install backup script
   when: mgmt_init_backup | bool
   include_tasks: install-backup-script.yml
-  tags: ["mgmt", "backup"]
+  tags: [mgmt, backup]
 
-- name: Run docker install
+- name: Docker install
   include_role:
     name: docker
+  tags: [mgmt, docker]
 
 - name: Ensure handlers are notified now
   meta: flush_handlers
-  tags: ["mgmt"]
+  tags: [mgmt]
 
 - name: Install mgmt stack
   import_tasks: install-mgmt-stack.yml
-  tags: ["mgmt", "mgmt-stack"]
+  tags: [mgmt, mgmt-stack]
 
 - name: Setup portainer
   when: mgmt_setup_portainer | bool
   include_tasks: setup-protainer.yml
-  tags: ["mgmt", "portainer"]
+  tags: [mgmt, portainer]
 
 - name: Setup grafana
   when: mgmt_setup_grafana | bool
   include_tasks: setup-grafana.yml
-  tags: ["mgmt", "grafaa"]
+  tags: [mgmt, grafana]

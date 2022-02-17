@@ -31,7 +31,13 @@ This role performs basic operation that should be done on every managed host. In
 extra_packages: []
 
 # List of key_paths
-ssh_key_list: []
+common_ssh_keys: []
+# Example
+# common_ssh_keys:
+#   - filename: '{{ inventory_dir }}/key.pub'
+#     state: present                # optional
+#     user: root                    # optional
+#     key_options: ''               # optional
 
 # Key value pairs of hostname: ip
 # Default is ansibe_host: ansible_ip

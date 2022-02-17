@@ -1,8 +1,0 @@
-# Install additional ssh/keys
----
-- name: Set authorized ssh keys
-  authorized_key:
-    user: root
-    state: present
-    key: '{{ lookup("file", item) }}'
-  loop: '{{ ssh_key_list }}'

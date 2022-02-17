@@ -1,0 +1,17 @@
+# Install mgmt stack
+---
+- name: Copy wireguard config
+  when: mgmt_use_wireguard | bool
+  template:
+    src: mgmt-stack-wiregurd.yml.j2
+    dest: '{{ mgmt_dst_config_files }}/mgmt-stack-wiregurd.yml'
+    mode: '0644'
+
+- name: Deploy wireguard-stack
+  when: mgmt_use_wireguard | bool
+  docker_compose:
+    project_name: monitor-stack
+    remove_orphans: yes
+    project_src: '{{ mgmt_dst_config_files }}'
+    files: ['mgmt-stack-wiregurd.yml']
+

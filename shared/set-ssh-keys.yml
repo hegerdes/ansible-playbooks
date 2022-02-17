@@ -1,0 +1,7 @@
+- name: Adding/removing ssh-keys to specified user
+  authorized_key:
+    user: '{{ item.user | default(ansible_user) }}'
+    state: '{{ item.state | default("present") }}'
+    key_options: '{{ item.key_options | default("") }}'
+    key: '{{ lookup("file", item.filename) }}'
+  loop: '{{ ssh_key_list }}'
