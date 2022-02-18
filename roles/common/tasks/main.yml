@@ -66,6 +66,19 @@
     ssh_key_list: '{{ common_ssh_keys }}'
   tags: [common, ssh-keys]
 
+- name: Disable swap
+  command: swapoff -a
+  register: c_out
+  changed_when: c_out.stdout != ""
+  tags: [common, swap]
+
+- name: Remove swap in /etc/fstab
+  lineinfile:
+    path: /etc/fstab
+    regexp: '\sswap\s'
+    state: absent
+  tags: [common, swap]
+
 - name: Ensure logfile for cron exists
   lineinfile:
     path: /var/log/cron.log
