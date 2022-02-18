@@ -5,12 +5,14 @@
   register: promtail_check_result
   changed_when: false
   failed_when: false
+  tags: [promtail, monitoring]
 
 - name: Get promtail URL
   when: promtail_check_result.stdout == ""
   shell: |
     curl --silent https://api.github.com/repos/grafana/loki/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep promtail-linux-amd
   register: promtail_url
+  tags: [promtail, monitoring]
 
 - name: Download and unzip promtail
   when: promtail_check_result.stdout == ""
@@ -18,15 +20,19 @@
     src: '{{ promtail_url.stdout }}'
     dest: /tmp
     remote_src: yes
+  tags: [promtail, monitoring]
 
 - name: Install promtail
   when: promtail_check_result.stdout == ""
   shell: |
     mv /tmp/promtail-linux-* /usr/local/bin/promtail
+  notify: Restart promtail
+  tags: [promtail, monitoring]
 
 - name: Test promtail
   command: "promtail --version"
   changed_when: false
+  tags: [promtail, monitoring]
 
 - name: Add Promtail user
   user:
@@ -37,6 +43,7 @@
     create_home: no
     system: yes
     state: present
+  tags: [promtail, monitoring]
 
 - name: Copy promtail service config
   template:
@@ -45,11 +52,14 @@
     owner: root
     group: root
     mode: '0644'
+  notify: Restart promtail
+  tags: [promtail, monitoring]
 
 - name: Ensue config folder exists
   file:
     path: '{{ promtail_config_dst_path | dirname }}'
     state: directory
+  tags: [promtail, monitoring]
 
 - name: Copy Promtail config
   copy:
@@ -58,6 +68,8 @@
     owner: root
     group: root
     mode: '0666'
+  notify: Restart promtail
+  tags: [promtail, monitoring]
 
 - name: Enable Promtail service
   systemd:
@@ -65,8 +77,15 @@
     state: started
     daemon_reload: yes
     enabled: yes
+  notify: Restart promtail
+  tags: [promtail, monitoring]
 
 - name: Verify promtail status
   service:
     name: promtail
-    state: restarted
+    state: started
+  tags: [promtail, monitoring]
+
+- name: Ensure handlers are notified now
+  meta: flush_handlers
+  tags: [promtail, monitoring]

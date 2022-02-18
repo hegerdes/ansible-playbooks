@@ -96,9 +96,11 @@
   community.docker.docker_stack_info:
   when: mgmt_use_swarm_mode | bool != true
   register: mgmt_docker_stack_info
+  tags: [mgmt, mgmt-stack]
 
 - name: Show stack info
   when: mgmt_use_swarm_mode | bool != true
   debug:
     var: mgmt_docker_stack_info.results
+  tags: [mgmt, mgmt-stack]
 

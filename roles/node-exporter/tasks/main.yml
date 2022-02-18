@@ -26,6 +26,7 @@
   when: node_exporter_check_result.stdout == ""
   shell: |
     mv /tmp/node_exporter-*/node_exporter /usr/local/bin/node_exporter
+  notify: Restart node-exporter
   tags: [node-exporter, monitoring]
 
 - name: Test node-exporter
@@ -68,6 +69,10 @@
     state: started
   tags: [node-exporter, monitoring]
 
+- name: Ensure handlers are notified now
+  meta: flush_handlers
+  tags: [node-exporter, monitoring]
+
 - name: Check is ufw installed
   shell: command -v ufw >/dev/null 2>&1
   register: ufw_installed
@@ -85,14 +90,14 @@
 - name: Allow port via ufw
   include_tasks: shared/open-port-ufw.yml
   when: ufw_installed.rc == 0
-  tags: [node-exporter, monitoring, firewall]
   vars:
-    firewalld_open_port: 9100/tcp
-    firewalld_zone: internal
+    ufw_open_port: 9100
+  tags: [node-exporter, monitoring, firewall]
 
 - name: Allow port via firewalld
   include_tasks: shared/open-port-firewalld.yml
   when: firewalld_installed.rc == 0
   tags: [node-exporter, monitoring, firewall]
   vars:
-    ufw_open_port: 9100
+    firewalld_open_port: 9100/tcp
+    firewalld_zone: internal
