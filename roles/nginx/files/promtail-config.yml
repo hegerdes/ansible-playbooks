@@ -74,7 +74,7 @@ scrape_configs:
           expressions:
             nginx_status: status
             nginx_server_name: server_name
-            http_user_agent: http_user_agent
+            nginx_http_user_agent: http_user_agent
             request:
       # Further disassemble the http request
       - regex:
@@ -96,4 +96,4 @@ scrape_configs:
           value:      "/1.0.0/health"
       - drop:
           source:     "nginx_http_user_agent"
-          regex: ".*Zabbix.*"
+          regex: "Zabbix.*"
