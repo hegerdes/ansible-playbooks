@@ -10,8 +10,19 @@ services:
       - ME_CONFIG_BASICAUTH_USERNAME={{ mongodb_root_user | default("root") }}
       - ME_CONFIG_MONGODB_AUTH_PASSWORD={{ mongodb_root_pw }}
       - ME_CONFIG_BASICAUTH_PASSWORD={{ mongodb_root_pw }}
+    networks:
+      - mgmt_net
     ports:
       - target: 8081
         published: 8081
         protocol: tcp
         mode: host
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mongo-express.rule=Host(`mongo-express.localhost`)"
+      - "traefik.http.routers.mongo-express.entrypoints=web"
+      - "traefik.http.services.mongo-express.loadbalancer.server.port=80"
+
+networks:
+  monitor-stack_mgmt_net:
+    external: true

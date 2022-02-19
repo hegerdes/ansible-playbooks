@@ -1,6 +1,8 @@
 version: '3.7'
 
 services:
+# ToDo: Make portainer sock configurable
+# Same for labels treafik
   portainer:
     image: portainer/portainer-ce:latest
     environment:
@@ -17,6 +19,11 @@ services:
     deploy:
       placement:
         constraints: [node.role == manager]
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.portainer.rule=Host(`portainer.localhost`)"
+      - "traefik.http.routers.portainer.entrypoints=web"
+      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
 
   prometheus:
     image: bitnami/prometheus:latest
@@ -30,6 +37,11 @@ services:
     configs:
       - source: prometheus-conf-{{ mgmt_conf_counter | default(ansible_date_time.date) }}
         target: /etc/prometheus/prometheus.yml
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prometheus.rule=Host(`prometheus.localhost`)"
+      - "traefik.http.routers.prometheus.entrypoints=web"
+      - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
 
   grafana:
     image: grafana/grafana:latest
@@ -48,6 +60,11 @@ services:
       - grafana-data:/var/lib/grafana
     secrets:
       - grafana_admin_password
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.localhost`)"
+      - "traefik.http.routers.grafana.entrypoints=web"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
 
   loki:
     image: grafana/loki:latest

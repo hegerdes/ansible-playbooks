@@ -1,0 +1,31 @@
+version: '3.7'
+
+services:
+  traefik:
+    image: "traefik:v2.6"
+    command:
+      - "--log.level=INFO"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:9023"
+    ports:
+      - "9023:9023"
+      - "8181:8080"
+    networks:
+      - mgmt_net
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    deploy:
+      placement:
+        constraints:
+          - "node.role==manager"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.treafik.rule=Host(`treafik.localhost`)"
+      - "traefik.http.routers.treafik.entrypoints=web"
+      - "traefik.http.services.treafik.loadbalancer.server.port=8080"
+
+networks:
+  monitor-stack_mgmt_net:
+    external: true

@@ -9,15 +9,22 @@ services:
       - TZ=Europe/London
     volumes:
       - heimdall-data:/config
+    networks:
+      - mgmt_net
     ports:
       - target: 80
         published: 80
         protocol: tcp
         mode: host
-      # - target: 443
-      #   published: 443
-      #   protocol: tcp
-      #   mode: host
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.heimdall.rule=Host(`localhost`)"
+      - "traefik.http.routers.heimdall.entrypoints=web"
+      - "traefik.http.services.heimdall.loadbalancer.server.port=80"
 
 volumes:
   heimdall-data:
+
+networks:
+  monitor-stack_mgmt_net:
+    external: true

@@ -7,8 +7,19 @@ services:
       - {{ mgmt_sql_taget_host_template }}
       - TZ=Europe/Berlin
       - UPLOAD_LIMIT=2G
+    networks:
+      - mgmt_net
     ports:
       - target: 80
         published: 8080
         protocol: tcp
         mode: host
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.phpmyadmin.rule=Host(`phpmyadmin.localhost`)"
+      - "traefik.http.routers.phpmyadmin.entrypoints=web"
+      - "traefik.http.services.phpmyadmin.loadbalancer.server.port=80"
+
+networks:
+  monitor-stack_mgmt_net:
+    external: true
