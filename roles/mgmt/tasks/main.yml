@@ -6,7 +6,7 @@
 
 - name: Setup fail2ban
   import_tasks: setup-fail2ban.yml
-  tags: [mgmt, ssh ]
+  tags: [mgmt, ssh]
 
 - name: Install backup tools
   when: mgmt_init_backup | bool

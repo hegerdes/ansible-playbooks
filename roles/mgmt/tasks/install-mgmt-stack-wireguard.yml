@@ -1,7 +1,6 @@
 # Install mgmt stack
 ---
 - name: Copy wireguard config
-  when: mgmt_use_wireguard | bool
   template:
     src: mgmt-stack-wiregurd.yml.j2
     dest: '{{ mgmt_dst_config_files }}/mgmt-stack-wiregurd.yml'
@@ -9,7 +8,6 @@
   tags: [mgmt, mgmt-stack, wireguard]
 
 - name: Deploy wireguard-stack
-  when: mgmt_use_wireguard | bool
   docker_compose:
     project_name: monitor-stack
     remove_orphans: yes
@@ -17,3 +15,9 @@
     files: ['mgmt-stack-wiregurd.yml']
   tags: [mgmt, mgmt-stack, wireguard]
 
+- name: Wait for containers to start
+  wait_for:
+    port: '{{ mgmt_wireguard_port }}'
+    delay: 5
+    timeout: 30
+  tags: [mgmt, mgmt-stack, wireguard]

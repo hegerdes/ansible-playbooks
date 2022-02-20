@@ -4,7 +4,7 @@
   wait_for:
     port: 3000
     delay: 5
-    timeout: 45
+    timeout: 30
   tags: [mgmt, grafana]
 
 - name: Get Grafana remote pw

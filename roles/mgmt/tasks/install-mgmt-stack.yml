@@ -1,13 +1,11 @@
 # Install mgmt stack
 ---
 - name: Install pip3
-  when: mgmt_use_swarm_mode
   apt:
     name: '{{ item }}'
     state: latest
   loop: ['python3-pip', 'libffi-dev']
   tags: [mgmt, mgmt-stack]
-
 
 - name: Install compose package
   when: mgmt_use_swarm_mode | bool != true
@@ -87,9 +85,10 @@
 
 - name: Wait for containers to start
   wait_for:
-    port: 9000
-    delay: 5
-    timeout: 45
+    port: '{{ item }}'
+    delay: 2
+    timeout: 60
+  loop: [9000, 9090, 3000]
   tags: [mgmt, mgmt-stack]
 
 - name: Shows stack info
