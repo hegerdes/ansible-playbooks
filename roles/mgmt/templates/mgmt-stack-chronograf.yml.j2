@@ -6,20 +6,22 @@ services:
     environment:
       - TZ=Europe/Berlin
     networks:
-      - mgmt_net
+      - {{ mgmt_docker_stack_name }}_mgmt_net
     ports:
       - {{ mgmt_chronograf_port }}:8888
     volumes:
       - chronograf-data:/var/lib/chronograf
+    deploy:
+      labels:
+        - "{{ mgmt_docker_stack_name }}=true"
+        {{ mgmt_traefik_labels | replace("__SERVICE__", "chronograf") | replace("__PORT__", "8888") | indent(width=8) if(mgmt_use_swarm_mode) }}
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.chronograf.rule=Host(`chronograf.localhost`)"
-      - "traefik.http.routers.chronograf.entrypoints=web"
-      - "traefik.http.services.chronograf.loadbalancer.server.port=80"
+      - "{{ mgmt_docker_stack_name }}=true"
+      {{ mgmt_traefik_labels | replace("__SERVICE__", "chronograf") | replace("__PORT__", "8888") | indent(width=6) if(not mgmt_use_swarm_mode) }}
 
 volumes:
   chronograf-data:
 
 networks:
-  monitor-stack_mgmt_net:
+  {{ mgmt_docker_stack_name }}_mgmt_net:
     external: true

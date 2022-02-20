@@ -2,30 +2,51 @@ version: '3.7'
 
 services:
   traefik:
-    image: "traefik:v2.6"
+    image: traefik:v2.6
     command:
       - "--log.level=INFO"
       - "--api.insecure=true"
+      - "--api.dashboard=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:9023"
+      - "--providers.docker.network={{ mgmt_docker_stack_name }}_mgmt_net"
+      - "--entrypoints.web.address=:80"
+      {{ mgmt_traefik_tls_flags | indent(width=6) if(mgmt_traefik_use_tls) }}
+      {{'- "--providers.docker.swarmMode=true"' | indent(width=6) if(mgmt_use_swarm_mode) }}
     ports:
-      - "9023:9023"
-      - "8181:8080"
+      - "80:80"
+      - "443:443"
     networks:
-      - mgmt_net
+      - {{ mgmt_docker_stack_name }}_mgmt_net
     volumes:
+      - "traefik_certs:/letsencrypt"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     deploy:
       placement:
         constraints:
           - "node.role==manager"
+      labels:
+        - "{{ mgmt_docker_stack_name }}=true"
+        {{ mgmt_traefik_labels | replace("__SERVICE__", "traefik") | replace("__PORT__", "8080") | indent(width=8) if(mgmt_use_swarm_mode) }}
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.treafik.rule=Host(`treafik.localhost`)"
-      - "traefik.http.routers.treafik.entrypoints=web"
-      - "traefik.http.services.treafik.loadbalancer.server.port=8080"
+      - "{{ mgmt_docker_stack_name }}=true"
+      {{ mgmt_traefik_labels | replace("__SERVICE__", "traefik") | replace("__PORT__", "8080") | indent(width=6) if(not mgmt_use_swarm_mode) }}
+
+  whoami:
+    image: containous/whoami
+    networks:
+      - {{ mgmt_docker_stack_name }}_mgmt_net
+    deploy:
+      labels:
+        - "{{ mgmt_docker_stack_name }}=true"
+        {{ mgmt_traefik_labels | replace("__SERVICE__", "whoami") | replace("__PORT__", "80") | indent(width=8) if(mgmt_use_swarm_mode) }}
+    labels:
+      - "{{ mgmt_docker_stack_name }}=true"
+      {{ mgmt_traefik_labels | replace("__SERVICE__", "whoami") | replace("__PORT__", "80") | indent(width=6) if(not mgmt_use_swarm_mode) }}
+
+volumes:
+  traefik_certs:
 
 networks:
-  monitor-stack_mgmt_net:
+  {{ mgmt_docker_stack_name }}_mgmt_net:
     external: true

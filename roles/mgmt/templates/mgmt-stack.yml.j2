@@ -19,11 +19,12 @@ services:
     deploy:
       placement:
         constraints: [node.role == manager]
+      labels:
+        - "{{ mgmt_docker_stack_name }}=true"
+        {{ mgmt_traefik_labels | replace("__SERVICE__", "portainer") | replace("__PORT__", "9000") | indent(width=8) if(mgmt_use_swarm_mode) }}
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.portainer.rule=Host(`portainer.localhost`)"
-      - "traefik.http.routers.portainer.entrypoints=web"
-      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+      - "{{ mgmt_docker_stack_name }}=true"
+      {{ mgmt_traefik_labels | replace("__SERVICE__", "portainer") | replace("__PORT__", "9000") | indent(width=6) if(not mgmt_use_swarm_mode) }}
 
   prometheus:
     image: bitnami/prometheus:latest
@@ -37,11 +38,13 @@ services:
     configs:
       - source: prometheus-conf-{{ mgmt_conf_counter | default(ansible_date_time.date) }}
         target: /etc/prometheus/prometheus.yml
+    deploy:
+      labels:
+        - "{{ mgmt_docker_stack_name }}=true"
+        {{ mgmt_traefik_labels | replace("__SERVICE__", "prometheus") | replace("__PORT__", "9090") | indent(width=8) if(mgmt_use_swarm_mode) }}
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.prometheus.rule=Host(`prometheus.localhost`)"
-      - "traefik.http.routers.prometheus.entrypoints=web"
-      - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
+      - "{{ mgmt_docker_stack_name }}=true"
+      {{ mgmt_traefik_labels | replace("__SERVICE__", "prometheus") | replace("__PORT__", "9090") | indent(width=6) if(not mgmt_use_swarm_mode) }}
 
   grafana:
     image: grafana/grafana:latest
@@ -60,11 +63,13 @@ services:
       - grafana-data:/var/lib/grafana
     secrets:
       - grafana_admin_password
+    deploy:
+      labels:
+        - "{{ mgmt_docker_stack_name }}=true"
+        {{ mgmt_traefik_labels | replace("__SERVICE__", "grafana") | replace("__PORT__", "3000") | indent(width=8) if(mgmt_use_swarm_mode) }}
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.grafana.rule=Host(`grafana.localhost`)"
-      - "traefik.http.routers.grafana.entrypoints=web"
-      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+      - "{{ mgmt_docker_stack_name }}=true"
+      {{ mgmt_traefik_labels | replace("__SERVICE__", "grafana") | replace("__PORT__", "3000") | indent(width=6) if(not mgmt_use_swarm_mode) }}
 
   loki:
     image: grafana/loki:latest
@@ -83,12 +88,6 @@ services:
       - source: loki-conf-{{ mgmt_conf_counter | default(ansible_date_time.date) }}
         target: /mnt/config/loki-config.yml
 
-  nginx-prometheus-exporter:
-    image: nginx/nginx-prometheus-exporter:latest
-    command: -nginx.scrape-uri=http://{{ mgmt_waf_target_host }}/nginx_status
-    networks:
-      - mgmt_net
-
 configs:
   loki-conf-{{ mgmt_conf_counter | default(ansible_date_time.date) }}:
     file: /srv/mgmt-loki/loki-config.yml
@@ -104,7 +103,6 @@ volumes:
   grafana-data:
   prometheus-data:
   portainer-data:
-  promtail-data:
 
 networks:
   mgmt_net:

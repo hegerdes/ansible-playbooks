@@ -27,7 +27,7 @@ mgmt_services_to_install:
   - mgmt-stack-db-phpmyadmin.yml
   - mgmt-stack-heimdall.yml
 
-mgmt_waf_target_host: null
+mgmt_waf_target_host: '{{ nginx_metrics_server_addr | default("127.0.0.1:80")}}'
 mgmt_mongodb_target_host: null
 mgmt_sql_taget_host: null
 mgmt_sql_taget_port: 3306
@@ -41,7 +41,7 @@ mgmt_wireguard_public_ip: '{{ ansible_default_ipv4.address }}'
 mgmt_wireguard_clients: 1
 mgmt_wireguard_port: 51820
 
-# Chronograph
+# Chronograf
 mgmt_chronograf_version: 1.9-alpine
 mgmt_chronograf_port: 8888
 
@@ -65,3 +65,23 @@ mgmt_grafana_dashbord_ids:
   - 7362    # SQL Metrics
   - 1229    # Docker metrics
 
+
+mgmt_domain: localhost
+mgmt_use_traefik: '"mgmt-stack-traefik.yml" is in mgmt_services_to_install'
+mgmt_traefik_use_tls: no
+mgmt_traefik_cert_mail: info@web.de
+mgmt_traefik_labels: '{{ mgmt_traefik_default_labels if(mgmt_use_traefik) else "" }}'
+mgmt_traefik_default_labels: |
+  - "traefik.enable=true"
+  - "traefik.http.routers.__SERVICE__.rule=Host(`__SERVICE__.{{ mgmt_domain }}`)"
+  - "traefik.http.routers.__SERVICE__.entrypoints={{'websecure' if(mgmt_traefik_use_tls) else 'web'}}"
+  - "traefik.http.services.__SERVICE__.loadbalancer.server.port=__PORT__"
+  {{ '- "traefik.http.routers.__SERVICE__.tls.certresolver=myresolver"' if (mgmt_traefik_use_tls) }}
+mgmt_traefik_tls_flags: |
+  - "--entrypoints.websecure.address=:443"
+  - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+  - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+  - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
+  - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
+  - "--certificatesresolvers.myresolver.acme.email={{ mgmt_traefik_cert_mail }}"
+  - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"

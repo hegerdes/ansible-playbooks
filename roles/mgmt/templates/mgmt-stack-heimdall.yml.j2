@@ -10,21 +10,23 @@ services:
     volumes:
       - heimdall-data:/config
     networks:
-      - mgmt_net
+      - {{ mgmt_docker_stack_name }}_mgmt_net
     ports:
       - target: 80
-        published: 80
+        published: {{ 8080 if(mgmt_use_traefik) else 80 }}
         protocol: tcp
         mode: host
+    deploy:
+      labels:
+        - "{{ mgmt_docker_stack_name }}=true"
+        {{ mgmt_traefik_labels | replace("__SERVICE__", "heimdall") | replace("__PORT__", "80") | indent(width=8) if(mgmt_use_swarm_mode) }}
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.heimdall.rule=Host(`localhost`)"
-      - "traefik.http.routers.heimdall.entrypoints=web"
-      - "traefik.http.services.heimdall.loadbalancer.server.port=80"
+      - "{{ mgmt_docker_stack_name }}=true"
+      {{ mgmt_traefik_labels | replace("__SERVICE__", "heimdall") | replace("__PORT__", "80") | indent(width=6) if(not mgmt_use_swarm_mode) }}
 
 volumes:
   heimdall-data:
 
 networks:
-  monitor-stack_mgmt_net:
+  {{ mgmt_docker_stack_name }}_mgmt_net:
     external: true

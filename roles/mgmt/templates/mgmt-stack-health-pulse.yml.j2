@@ -5,9 +5,9 @@ services:
     image: git.cci-net.de:5050/mycci/dm/symbic-servicemonitor:master
     environment:
       - TZ=Europe/Berlin
-    env_file: health-pulse/.env
+    env_file: {{ mgmt_dst_config_files }}health-pulse/.env
     volumes:
-      - /srv/health-pulse:/app/config
+      - {{ mgmt_dst_config_files }}health-pulse:/app/config
       - health-pulse-data:/app/data
 
 volumes:

@@ -7,8 +7,8 @@ services:
       - TZ=Europe/Berlin
       - DATA_SOURCE_NAME={{ mgmt_sql_exporter_connection_string }}/
     networks:
-      - mgmt_net
+      - {{ mgmt_docker_stack_name }}_mgmt_net
 
 networks:
-  monitor-stack_mgmt_net:
+  {{ mgmt_docker_stack_name }}_mgmt_net:
     external: true
