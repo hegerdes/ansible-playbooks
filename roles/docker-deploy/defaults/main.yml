@@ -8,8 +8,8 @@ docker_deploy_dst_config_files: /srv/
 docker_deploy_app_name: myapp
 docker_deploy_conf_version: '{{ lookup("env","CI_COMMIT_SHORT_SHA") | default(ansible_date_time.iso8601_basic_short, True) }}'
 
-docker_deploy_services_to_install:
-  - docker-compose.yml
+docker_deploy_services: []
+docker_deploy_stacks: []
 
 docker_deploy_file_permissions: []
 # Example

@@ -1,6 +1,6 @@
 # Deploy playbook
 
-- hosts: docker_apis
+- hosts: docker_hosts
   become: true
   gather_facts: True
   roles:

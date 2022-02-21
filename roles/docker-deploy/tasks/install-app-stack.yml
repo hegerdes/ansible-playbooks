@@ -1,45 +1,25 @@
 # Install app stack
 ---
-- name: Get the info on docker host
-  docker_swarm_info:
-  ignore_errors: yes
-  register: swarm_info
-  failed_when: 'not swarm_info.can_talk_to_docker'
-
-- name: Synchronization of application compose|stack files
-  synchronize:
-    src: '{{ docker_deploy_src_config_files }}'
-    dest: '{{ docker_deploy_dst_config_files }}'
-    recursive: yes
-    use_ssh_args: yes
-    mode: push
-    checksum: yes
-
 - name: Configuring compose|stack files
   template:
     src: '{{ docker_deploy_src_config_files + item }}.j2'
     dest: '{{ docker_deploy_dst_config_files + item }}'
     mode: '0644'
-  loop: '{{ docker_deploy_services_to_install }}'
-
-- name: Fix permissions
-  file:
-    path: '{{ docker_deploy_dst_config_files + item.name }}'
-    owner: root
-    group: root
-    mode: '{{ item.mode | default("0644") }}'
-  loop: '{{ docker_deploy_file_permissions }}'
+  loop: '{{ docker_deploy_stacks }}'
+  tags: [docker-deploy]
 
 - name: Install pip3
   when: docker_deploy_use_swarm_mode | bool != true
   apt:
     name: python3-pip
     state: latest
+  tags: [docker-deploy]
 
 - name: Install compose package
   when: docker_deploy_use_swarm_mode | bool != true
   pip:
     name: docker-compose
+  tags: [docker-deploy]
 
 - name: Deploy app-services via compose
   when: docker_deploy_use_swarm_mode | bool != true
@@ -47,19 +27,22 @@
     project_name: '{{ docker_deploy_app_name }}'
     remove_orphans: yes
     project_src: '{{ docker_deploy_dst_config_files }}'
-    files: '{{ docker_deploy_services_to_install | list }}'
+    files: '{{ docker_deploy_stacks | list }}'
+  tags: [docker-deploy]
 
 - name: Init a new swarm
   when: docker_deploy_use_swarm_mode | bool and not swarm_info.docker_swarm_manager
   docker_swarm:
     advertise_addr: '{{ ansible_host }}'
     state: present
+  tags: [docker-deploy]
 
 - name: Create absolut paths for stack files
   when: docker_deploy_use_swarm_mode | bool
   set_fact:
     compose_files_stack: '{{ compose_files_stack | default([]) + ["".join((docker_deploy_dst_config_files,item))] }}'
-  loop: '{{ docker_deploy_services_to_install | list}}'
+  loop: '{{ docker_deploy_stacks | list}}'
+  tags: [docker-deploy]
 
 - name: Deploy app-stack via stack
   when: compose_files_stack is defined and docker_deploy_use_swarm_mode and swarm_info.docker_swarm_manager
@@ -69,21 +52,25 @@
     resolve_image: always
     with_registry_auth: yes
     compose: '{{ compose_files_stack | list }}'
+  tags: [docker-deploy]
 
 - name: Sleep for 45 seconds and continue with play
   when: compose_files_stack is defined and docker_deploy_use_swarm_mode and swarm_info.docker_swarm_manager
   wait_for:
     timeout: 45
+  tags: [docker-deploy]
 
 - name: Shows stack info
   when: docker_deploy_use_swarm_mode | bool
   community.docker.docker_stack_info:
   register: app_docker_stack_info
+  tags: [docker-deploy]
 
 - name: Show stack info
   when: docker_deploy_use_swarm_mode | bool
   debug:
     var: app_docker_stack_info.results
+  tags: [docker-deploy]
 
 - name: Get info on Docker Swarm
   docker_swarm_info:
@@ -92,7 +79,9 @@
     tasks: yes
   ignore_errors: yes
   register: app_docker_swarm_info
+  tags: [docker-deploy]
 
 - name: Inform about swarm
   debug:
     var: app_docker_swarm_info
+  tags: [docker-deploy]

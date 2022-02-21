@@ -14,6 +14,5 @@ docker_deploy_src_config_files: srv/
 docker_deploy_dst_config_files: /srv/
 docker_deploy_app_name: myapp
 
-docker_deploy_services_to_install:
-  - docker-compose.yml
+docker_deploy_stacks: []
 ```

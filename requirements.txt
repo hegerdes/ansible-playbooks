@@ -4,3 +4,4 @@ jsondiff
 hcloud
 hetzner
 jmespath
+passlib

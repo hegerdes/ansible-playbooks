@@ -11,6 +11,57 @@
   loop: '{{ docker_regesties }}'
   loop_control:
     label: '{{ item.regestry | default("https://index.docker.io/v1/") }}'
+  tags: [docker-deploy]
+
+- name: Get the info on docker host
+  docker_swarm_info:
+  ignore_errors: yes
+  register: swarm_info
+  failed_when: 'not swarm_info.can_talk_to_docker'
+  tags: [docker-deploy]
+
+- name: Synchronization of application compose|stack files
+  synchronize:
+    src: '{{ docker_deploy_src_config_files }}'
+    dest: '{{ docker_deploy_dst_config_files }}'
+    recursive: yes
+    use_ssh_args: yes
+    mode: push
+    checksum: yes
+  tags: [docker-deploy]
+
+- name: Fix permissions
+  file:
+    path: '{{ docker_deploy_dst_config_files + item.name }}'
+    owner: root
+    group: root
+    mode: '{{ item.mode | default("0644") }}'
+  loop: '{{ docker_deploy_file_permissions }}'
+  tags: [docker-deploy]
+
+
+- name: Create Service
+  docker_swarm_service:
+    env: '{{ item.env | default(omit)}}'
+    user: '{{ item.user | default(omit)}}'
+    image: '{{ item.image | default(omit)}}'
+    mounts: '{{ item.mounts | default(omit)}}'
+    name: '{{ item.name | default("my-service")}}'
+    state: '{{ item.state | default("present")}}'
+    networks: '{{item.placment | default(omit)}}'
+    placement: '{{item.networks | default(omit)}}'
+    container_labels: '{{ item.container_labels | default(omit)}}'
+    mode: '{{ item.mode | default("replicated")}}'
+    secrets: '{{ item.secrets | default(omit)}}'
+    command: '{{ item.command | default(omit)}}'
+    configs: '{{ item.configs | default(omit)}}'
+    publish: '{{ item.ports | default(omit)}}'
+    replicas: '{{item.networks | default(1)}}'
+    labels: '{{ item.labels | default(omit)}}'
+    resolve_image: yes
+  loop: '{{ docker_deploy_services }}'
+  tags: [docker-deploy]
 
 - name: Install app via Docker
   include_tasks: install-app-stack.yml
+  tags: [docker-deploy]
