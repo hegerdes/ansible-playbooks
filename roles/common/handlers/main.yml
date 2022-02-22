@@ -1,0 +1,4 @@
+---
+- name: Update grub
+  command: update-grub2
+  tags: [common, sys]

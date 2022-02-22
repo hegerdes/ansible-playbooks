@@ -79,6 +79,14 @@
     state: absent
   tags: [common, swap]
 
+- name: Ensue cgroup memory support
+  lineinfile:
+    path: /etc/default/grub
+    regexp: '^GRUB_CMDLINE_LINUX='
+    line: GRUB_CMDLINE_LINUX=""
+  tags: [common, sys]
+  notify: Update grub
+
 - name: Ensure logfile for cron exists
   lineinfile:
     path: /var/log/cron.log
@@ -92,3 +100,7 @@
   vars:
     cron_jobs: '{{ common_cron_jobs }}'
   tags: [common, cron]
+
+- name: Ensure handlers are notified now
+  meta: flush_handlers
+  tags: [common]
