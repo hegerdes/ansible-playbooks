@@ -68,6 +68,7 @@ mgmt_proxy_use_tls: no
 mgmt_certbot_mail: info@xyz.com
 mgmt_use_nginx: '{{ "mgmt-stack-nginx.yml" is in mgmt_services_to_install }}'
 mgmt_use_traefik: '{{ "mgmt-stack-traefik.yml" is in mgmt_services_to_install }}'
+mgmt_traefik_version: v2.6
 
 # Add basic auth via proxy
 mgmt_proxy_users_auth: {}

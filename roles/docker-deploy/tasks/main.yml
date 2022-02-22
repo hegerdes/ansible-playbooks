@@ -39,7 +39,6 @@
   loop: '{{ docker_deploy_file_permissions }}'
   tags: [docker-deploy]
 
-
 - name: Create Service
   docker_swarm_service:
     env: '{{ item.env | default(omit)}}'

@@ -1,5 +1,6 @@
 ---
 # Nginx settings
+nginx_use_docker: no
 nginx_src_config_dir: nginx/
 nginx_metrics_server_addr: '{{ ansible_default_ipv4.address }}:80'
 

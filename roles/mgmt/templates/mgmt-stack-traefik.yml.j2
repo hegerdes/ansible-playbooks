@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   traefik:
-    image: traefik:v2.6
+    image: traefik:{{ mgmt_traefik_version | default("latest") }}
     command:
       - "--accesslog"
       - "--log.level=DEBUG"
