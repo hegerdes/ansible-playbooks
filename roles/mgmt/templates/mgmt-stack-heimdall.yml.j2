@@ -13,16 +13,18 @@ services:
       - {{ mgmt_docker_stack_name }}_mgmt_net
     ports:
       - target: 80
-        published: {{ 8080 if(mgmt_use_traefik) else 80 }}
+        published: {{ 8080 if(mgmt_use_traefik or mgmt_use_nginx) else 80 }}
         protocol: tcp
         mode: host
     deploy:
       labels:
         - "{{ mgmt_docker_stack_name }}=true"
         {{ mgmt_traefik_labels | replace("__SERVICE__", "heimdall") | replace("__PORT__", "80") | indent(width=8) if(mgmt_use_swarm_mode) }}
+        {{ mgmt_traefik_auth_labels.heimdall | default("") | indent(width=8) if(mgmt_use_swarm_mode) }}
     labels:
       - "{{ mgmt_docker_stack_name }}=true"
       {{ mgmt_traefik_labels | replace("__SERVICE__", "heimdall") | replace("__PORT__", "80") | indent(width=6) if(not mgmt_use_swarm_mode) }}
+      {{ mgmt_traefik_auth_labels.heimdall | default("") | indent(width=6) if(not mgmt_use_swarm_mode) }}
 
 volumes:
   heimdall-data:

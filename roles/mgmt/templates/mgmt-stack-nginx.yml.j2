@@ -1,0 +1,25 @@
+version: '3.7'
+
+services:
+  nginx:
+    image: nginx:stable-alpine
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - {{ mgmt_docker_stack_name }}_mgmt_net
+    volumes:
+      - /srv/nginx/:/etc/nginx/
+      - nginx_certs:/etc/letsencrypt
+
+  whoami:
+    image: containous/whoami
+    networks:
+      - {{ mgmt_docker_stack_name }}_mgmt_net
+
+volumes:
+  nginx_certs:
+
+networks:
+  {{ mgmt_docker_stack_name }}_mgmt_net:
+    external: true

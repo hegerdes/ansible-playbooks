@@ -1,6 +1,7 @@
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
   ANSIBLE_DOACKER_IMAGE: python:3.9-bullseye
+  KANIKO_USE_CACHE: 'yes'
 
 include:
   - project: 'symbic-intern/symbic-templates'

@@ -18,9 +18,11 @@ services:
       labels:
         - "{{ mgmt_docker_stack_name }}=true"
         {{ mgmt_traefik_labels | replace("__SERVICE__", "phpmyadmin") | replace("__PORT__", "80") | indent(width=8) if(mgmt_use_swarm_mode) }}
+        {{ mgmt_traefik_auth_labels.phpmyadmin | default("") | indent(width=8) if(mgmt_use_swarm_mode) }}
     labels:
       - "{{ mgmt_docker_stack_name }}=true"
       {{ mgmt_traefik_labels | replace("__SERVICE__", "phpmyadmin") | replace("__PORT__", "80") | indent(width=6) if(not mgmt_use_swarm_mode) }}
+      {{ mgmt_traefik_auth_labels.phpmyadmin | default("") | indent(width=6) if(not mgmt_use_swarm_mode) }}
 
 networks:
   {{ mgmt_docker_stack_name }}_mgmt_net:

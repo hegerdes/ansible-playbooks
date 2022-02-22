@@ -7,9 +7,7 @@ mgmt_jumphost_user: gitlab
 mgmt_ssh_keys: []
 mgmt_init_backup: yes
 # Ports for sshd
-ssh_listen_ports:
-  - 22
-  - 2223
+ssh_listen_ports: [22]
 
 # Backup
 mgmt_backup_target_hosts: []
@@ -23,8 +21,6 @@ mgmt_docker_stack_name: monitor-stack
 
 mgmt_services_to_install:
   - mgmt-stack.yml
-  - mgmt-stack-db-mongo-express.yml
-  - mgmt-stack-db-phpmyadmin.yml
   - mgmt-stack-heimdall.yml
 
 mgmt_waf_target_host: '{{ nginx_metrics_server_addr | default("127.0.0.1:80")}}'
@@ -65,23 +61,57 @@ mgmt_grafana_dashbord_ids:
   - 7362    # SQL Metrics
   - 1229    # Docker metrics
 
-
+# Proxy settings
 mgmt_domain: localhost
-mgmt_use_traefik: '"mgmt-stack-traefik.yml" is in mgmt_services_to_install'
-mgmt_traefik_use_tls: no
-mgmt_traefik_cert_mail: info@web.de
+mgmt_proxy_use_tls: no
+mgmt_certbot_mail: info@xyz.com
+mgmt_use_nginx: '{{ "mgmt-stack-nginx.yml" is in mgmt_services_to_install }}'
+mgmt_use_traefik: '{{ "mgmt-stack-traefik.yml" is in mgmt_services_to_install }}'
+
+# Add basic auth via proxy
+mgmt_proxy_users_auth: {}
+# Example
+# mgmt_proxy_users_auth:
+#   portainer:
+#     - username: portainer
+#       password: portainer
+
+# NGINX
+mgmt_nginx_sites:
+  - host: 'grafana.{{ mgmt_domain }}'
+    locations: |
+      location / {
+        proxy_pass http://grafana:3000;
+      }
+  - host: 'portainer.{{ mgmt_domain }}'
+    locations: |
+      location / {
+        proxy_pass http://portainer:9000;
+      }
+
+mgmt_nginx_default_redirect: |
+  location / {
+      return 301 https://$server_name$request_uri;
+  }
+
+# TRAEFIK
 mgmt_traefik_labels: '{{ mgmt_traefik_default_labels if(mgmt_use_traefik) else "" }}'
 mgmt_traefik_default_labels: |
   - "traefik.enable=true"
   - "traefik.http.routers.__SERVICE__.rule=Host(`__SERVICE__.{{ mgmt_domain }}`)"
-  - "traefik.http.routers.__SERVICE__.entrypoints={{'websecure' if(mgmt_traefik_use_tls) else 'web'}}"
+  - "traefik.http.routers.__SERVICE__.entrypoints={{'websecure' if(mgmt_proxy_use_tls) else 'web'}}"
   - "traefik.http.services.__SERVICE__.loadbalancer.server.port=__PORT__"
-  {{ '- "traefik.http.routers.__SERVICE__.tls.certresolver=myresolver"' if (mgmt_traefik_use_tls) }}
+  {{ '- "traefik.http.routers.__SERVICE__.tls.certresolver=myresolver"' if (mgmt_proxy_use_tls) }}
 mgmt_traefik_tls_flags: |
   - "--entrypoints.websecure.address=:443"
   - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
   - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
   - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
   - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
-  - "--certificatesresolvers.myresolver.acme.email={{ mgmt_traefik_cert_mail }}"
+  - "--certificatesresolvers.myresolver.acme.email={{ mgmt_certbot_mail }}"
   - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+mgmt_traefik_default_auth_labels: |
+  - "traefik.http.routers.__SERVICE__.middlewares=__SERVICE__-auth"
+  - "traefik.http.middlewares.__SERVICE__-auth.basicauth.realm=__SERVICE__"
+  - "traefik.http.middlewares.__SERVICE__-auth.basicauth.removeheader=true"
+  - "traefik.http.middlewares.__SERVICE__-auth.basicauth.users={% for entry in item.value | default([]) %}{{ entry.username }}:{{ entry.password | password_hash('bcrypt') | replace('$','$$') }},{% endfor %}"

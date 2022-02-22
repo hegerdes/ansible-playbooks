@@ -4,14 +4,16 @@ services:
   traefik:
     image: traefik:v2.6
     command:
-      - "--log.level=INFO"
+      - "--accesslog"
+      - "--log.level=DEBUG"
       - "--api.insecure=true"
       - "--api.dashboard=true"
+      - "--metrics.prometheus"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--providers.docker.network={{ mgmt_docker_stack_name }}_mgmt_net"
       - "--entrypoints.web.address=:80"
-      {{ mgmt_traefik_tls_flags | indent(width=6) if(mgmt_traefik_use_tls) }}
+      {{ mgmt_traefik_tls_flags | indent(width=6) if(mgmt_proxy_use_tls) }}
       {{'- "--providers.docker.swarmMode=true"' | indent(width=6) if(mgmt_use_swarm_mode) }}
     ports:
       - "80:80"
@@ -28,9 +30,11 @@ services:
       labels:
         - "{{ mgmt_docker_stack_name }}=true"
         {{ mgmt_traefik_labels | replace("__SERVICE__", "traefik") | replace("__PORT__", "8080") | indent(width=8) if(mgmt_use_swarm_mode) }}
+        {{ mgmt_traefik_auth_labels.traefik | default("") | indent(width=8) if(mgmt_use_swarm_mode) }}
     labels:
       - "{{ mgmt_docker_stack_name }}=true"
       {{ mgmt_traefik_labels | replace("__SERVICE__", "traefik") | replace("__PORT__", "8080") | indent(width=6) if(not mgmt_use_swarm_mode) }}
+      {{ mgmt_traefik_auth_labels.traefik | default("") | indent(width=6) if(not mgmt_use_swarm_mode) }}
 
   whoami:
     image: containous/whoami

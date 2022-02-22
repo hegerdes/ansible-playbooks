@@ -5,3 +5,9 @@
     enabled: yes
     state: reloaded
 
+- name: Reload nginx
+  community.docker.docker_container_exec:
+    container: '{{ nginx_containerid.stdout }}'
+    command: /bin/sh -c "nginx -t && nginx -s reload"
+  register: result
+  tags: [mgmt, mgmt-stack, mgmt-nginx]

@@ -1,5 +1,13 @@
 # Main mgmt setup
 ---
+- name: Generate-Basic-Auth labels
+  set_fact:
+    mgmt_traefik_auth_labels: "{{ mgmt_traefik_auth_labels | default({}) | combine({item.key: mgmt_traefik_default_auth_labels | replace('__SERVICE__', item.key) | regex_replace(',\"','\"') }) }}"
+  with_dict: '{{ mgmt_proxy_users_auth | default({}) }}'
+  tags: [mgmt, ssh, mgmt-stack]
+  loop_control:
+    label: '{{ item.key }}'
+
 - name: Setup sshd
   import_tasks: setup-sshd.yml
   tags: [mgmt, ssh]

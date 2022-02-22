@@ -66,7 +66,7 @@
 
 - name: Run Certbot
   when: nginx_run_certbot | bool and (nginx_created_hosts.changed or nginx_force_reinstall_hosts)
-  command: 'certbot --nginx -d {{ nginx_vhost.host }} --agree-tos --non-interactive -m {{ nginx_certbot_mail }} {{"--test-cert" if (nginx_testing_certbot) }}'
+  command: 'certbot --nginx -d {{ nginx_vhost.host }} --agree-tos --non-interactive -m {{ nginx_certbot_mail }} {{"--test-cert" if (nginx_testing_certbot | default(false) ) }}'
   loop: '{{ nginx_vhosts }}'
   loop_control:
     loop_var: nginx_vhost

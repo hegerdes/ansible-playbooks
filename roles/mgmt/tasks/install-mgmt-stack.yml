@@ -1,5 +1,11 @@
 # Install mgmt stack
 ---
+- name: Checking proxy configuration
+  fail:
+    msg: Can not use Traefik and Nginx as proxy
+  when: mgmt_use_nginx and mgmt_use_traefik
+  tags: [mgmt, mgmt-stack]
+
 - name: Install pip3
   apt:
     name: '{{ item }}'
@@ -19,7 +25,7 @@
     dest: '{{ mgmt_dst_config_files }}'
     owner: root
     group: root
-  tags: [mgmt, mgmt-stack]
+  tags: [mgmt, mgmt-stack, mgmt-nginx]
 
 - name: Copy MGMT compose|stack custom files
   copy:
@@ -27,7 +33,7 @@
     dest: '{{ mgmt_dst_config_files }}'
     owner: root
     group: root
-  tags: [mgmt, mgmt-stack]
+  tags: [mgmt, mgmt-stack, mgmt-nginx]
 
 - name: Configuring compose|stack files
   template:
@@ -36,6 +42,7 @@
     mode: '0644'
   loop: '{{ mgmt_services_to_install }}'
   tags: [mgmt, mgmt-stack]
+
 
 - name: Setting Grafana password
   no_log: true
@@ -52,8 +59,16 @@
     state: present
   tags: [mgmt, mgmt-stack]
 
+- name: Create network
+  docker_network:
+    name: '{{ mgmt_docker_stack_name }}_mgmt_net'
+    driver: overlay
+    attachable: yes
+    driver_options:
+      com.docker.network.driver.mtu: 1450
+
 - name: Create absolut paths for stack files
-  when: mgmt_use_swarm_mode | bool
+  when: mgmt_use_swarm_mode | bool and item != "mgmt-stack-nginx.yml"
   set_fact:
     mgmt_compose_files_stack: '{{ mgmt_compose_files_stack | default([]) + ["".join((mgmt_dst_config_files,item))] }}'
   loop: '{{ mgmt_services_to_install | list}}'
@@ -88,8 +103,13 @@
     port: '{{ item }}'
     delay: 2
     timeout: 60
-  loop: [9000, 9090, 3000]
+  loop: [9000, 3000]
   tags: [mgmt, mgmt-stack]
+
+- name: Setup Nginx-Proxy
+  when: mgmt_use_nginx
+  include_tasks: install-mgmt-stack-nginx.yml
+  tags: [mgmt, mgmt-stack, mgmt-nginx]
 
 - name: Shows stack info
   community.docker.docker_stack_info:

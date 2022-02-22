@@ -8,7 +8,7 @@ services:
     environment:
       - TZ=Europe/Berlin
     networks:
-      - mgmt_net
+      - {{ mgmt_docker_stack_name }}_mgmt_net
     ports:
       - "8000:8000"
       - "9000:9000"
@@ -22,9 +22,11 @@ services:
       labels:
         - "{{ mgmt_docker_stack_name }}=true"
         {{ mgmt_traefik_labels | replace("__SERVICE__", "portainer") | replace("__PORT__", "9000") | indent(width=8) if(mgmt_use_swarm_mode) }}
+        {{ mgmt_traefik_auth_labels.portainer | default("") | indent(width=8) if(mgmt_use_swarm_mode) }}
     labels:
       - "{{ mgmt_docker_stack_name }}=true"
       {{ mgmt_traefik_labels | replace("__SERVICE__", "portainer") | replace("__PORT__", "9000") | indent(width=6) if(not mgmt_use_swarm_mode) }}
+      {{ mgmt_traefik_auth_labels.portainer | default("") | indent(width=6) if(not mgmt_use_swarm_mode) }}
 
   prometheus:
     image: bitnami/prometheus:latest
@@ -32,7 +34,7 @@ services:
     environment:
       - TZ=Europe/Berlin
     networks:
-      - mgmt_net
+      - {{ mgmt_docker_stack_name }}_mgmt_net
     volumes:
       - prometheus-data:/opt/bitnami/prometheus/data
     configs:
@@ -42,9 +44,11 @@ services:
       labels:
         - "{{ mgmt_docker_stack_name }}=true"
         {{ mgmt_traefik_labels | replace("__SERVICE__", "prometheus") | replace("__PORT__", "9090") | indent(width=8) if(mgmt_use_swarm_mode) }}
+        {{ mgmt_traefik_auth_labels.prometheus | default("") | indent(width=8) if(mgmt_use_swarm_mode) }}
     labels:
       - "{{ mgmt_docker_stack_name }}=true"
       {{ mgmt_traefik_labels | replace("__SERVICE__", "prometheus") | replace("__PORT__", "9090") | indent(width=6) if(not mgmt_use_swarm_mode) }}
+      {{ mgmt_traefik_auth_labels.prometheus | default("") | indent(width=6) if(not mgmt_use_swarm_mode) }}
 
   grafana:
     image: grafana/grafana:latest
@@ -53,7 +57,7 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD__FILE=/run/secrets/grafana_admin_password
       - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource,grafana-piechart-panel,alexanderzobnin-zabbix-app,grafana-worldmap-panel
     networks:
-      - mgmt_net
+      - {{ mgmt_docker_stack_name }}_mgmt_net
     ports:
       - target: 3000
         published: 3000
@@ -67,16 +71,17 @@ services:
       labels:
         - "{{ mgmt_docker_stack_name }}=true"
         {{ mgmt_traefik_labels | replace("__SERVICE__", "grafana") | replace("__PORT__", "3000") | indent(width=8) if(mgmt_use_swarm_mode) }}
+        {{ mgmt_traefik_auth_labels.grafana | default("") | indent(width=8) if(mgmt_use_swarm_mode) }}
     labels:
       - "{{ mgmt_docker_stack_name }}=true"
       {{ mgmt_traefik_labels | replace("__SERVICE__", "grafana") | replace("__PORT__", "3000") | indent(width=6) if(not mgmt_use_swarm_mode) }}
-
+      {{ mgmt_traefik_auth_labels.grafana | default("") | indent(width=6) if(not mgmt_use_swarm_mode) }}
   loki:
     image: grafana/loki:latest
     environment:
       - TZ=Europe/Berlin
     networks:
-      - mgmt_net
+      - {{ mgmt_docker_stack_name }}_mgmt_net
     ports:
       - target: 3100
         published: 3100
@@ -105,10 +110,13 @@ volumes:
   portainer-data:
 
 networks:
-  mgmt_net:
-    driver: overlay
-    attachable: true
-    driver_opts:
-      com.docker.network.driver.mtu: 1450
-      # Workaround for Hetzner and GCE networks
-      # See: https://github.com/portainer/portainer/issues/4962
+  {{ mgmt_docker_stack_name }}_mgmt_net:
+    external: true
+# INFO: None templated
+#  mgmt_net:
+#    driver: overlay
+#    attachable: true
+#    driver_opts:
+#      com.docker.network.driver.mtu: 1450
+#      # Workaround for Hetzner and GCE networks
+#      # See: https://github.com/portainer/portainer/issues/4962

@@ -1,5 +1,3 @@
-# Upstream target
-{{ nginx_vhost.upstream | default("# No upsteam set") }}
 
 # Server
 server {
@@ -14,11 +12,11 @@ server {
     # Location configs for this host
     {{ nginx_vhost.locations | indent(width=4) }}
 
-    listen {{ nginx_vhost.ip }}:443 ssl http2; # managed by Certbot
-    ssl_certificate /etc/letsencrypt/dummy/fullchain.pem; # managed by Certbot
-    ssl_certificate_key /etc/letsencrypt/dummy/privkey.pem; # managed by Certbot
-    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
-    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+    listen 443 ssl http2; # managed by Certbot
+    ssl_certificate /etc/nginx/dummy_certs/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/nginx/dummy_certs/privkey.pem; # managed by Certbot
+    include /etc/nginx/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/nginx/dummy_certs/ssl-dhparams.pem; # managed by Certbot
 
     # Shared sec settings
     include shared.conf/security.conf;
@@ -26,9 +24,10 @@ server {
     include shared.conf/general.conf;
 }
 
+
 # HTTP redirect
 server {
-    listen      {{ nginx_vhost.ip }}:80;
+    listen      80;
     listen      [::]:80;
     server_name {{ nginx_vhost.host }};
 
@@ -37,9 +36,8 @@ server {
         root /var/www/_letsencrypt;
     }
 
-    location / {
-        return 301 https://{{ nginx_vhost.host }}$request_uri;
-    }
+    {{ mgmt_nginx_default_redirect | indent(width=4) if(mgmt_proxy_use_tls) }}
+    {{ nginx_vhost.locations | indent(width=4) if(not mgmt_proxy_use_tls) }}
 
     # Shared server settings
     include shared.conf/general.conf;
