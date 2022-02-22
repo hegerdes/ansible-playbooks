@@ -60,6 +60,7 @@ mgmt_grafana_dashbord_ids:
   - 12708   # NGINX exporter
   - 7362    # SQL Metrics
   - 1229    # Docker metrics
+  - 14282   # Cadvisor
 
 # Proxy settings
 mgmt_domain: localhost

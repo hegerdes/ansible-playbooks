@@ -73,15 +73,15 @@
   tags: [docker-deploy]
 
 - name: Get info on Docker Swarm
-  docker_swarm_info:
-    nodes: yes
-    services: yes
-    tasks: yes
+  when: docker_deploy_use_swarm_mode | bool
+  command: docker service ls
   ignore_errors: yes
   register: app_docker_swarm_info
   tags: [docker-deploy]
 
 - name: Inform about swarm
+  when: docker_deploy_use_swarm_mode | bool
   debug:
     var: app_docker_swarm_info
+  ignore_errors: yes
   tags: [docker-deploy]
