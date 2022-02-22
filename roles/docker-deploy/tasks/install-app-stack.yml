@@ -1,5 +1,10 @@
 # Install app stack
 ---
+- name: Using override-file with the following content
+  debug:
+    var: docker_deploy_override
+  tags: [docker-deploy]
+
 - name: Configuring compose|stack files
   template:
     src: '{{ docker_deploy_src_config_files + item }}.j2'

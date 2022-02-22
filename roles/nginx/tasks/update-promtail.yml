@@ -8,6 +8,7 @@
     group: root
     mode: '0666'
   notify: Verify promtail status
+  tags: [ingress, ingress-logs]
 
 - name: Enable Promtail service
   systemd:
@@ -15,4 +16,5 @@
     state: started
     daemon_reload: yes
     enabled: yes
+  tags: [ingress, ingress-logs]
 

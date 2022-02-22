@@ -5,8 +5,11 @@
 docker_deploy_use_swarm_mode: no
 docker_deploy_src_config_files: srv/
 docker_deploy_dst_config_files: /srv/
+docker_deploy_override_file: docker-deploy-override.yml
+docker_deploy_override: '{{ lookup("file", docker_deploy_override_file) | from_yaml }}'
 docker_deploy_app_name: myapp
 docker_deploy_conf_version: '{{ lookup("env","CI_COMMIT_SHORT_SHA") | default(ansible_date_time.iso8601_basic_short, True) }}'
+docker_deploy_tag: latest
 
 docker_deploy_services: []
 docker_deploy_stacks: []
