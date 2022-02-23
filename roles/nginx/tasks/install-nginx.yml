@@ -1,74 +1,11 @@
 # Install nginx
 ---
-- name: Add nginx GPG apt Key
-  apt_key:
-    url: https://nginx.org/keys/nginx_signing.key
-    state: present
+- name: Install nginx on bare-metal
+  when: nginx_use_docker | bool != true
+  include_tasks: install-nginx-host.yml
+  tags: [ingress, nginx]
 
-- name: Add nginx repository
-  apt_repository:
-    repo: deb http://nginx.org/packages/debian/ {{ ansible_facts.lsb.codename }} nginx
-    update_cache: yes
-    state: present
-
-- name: Install nginx
-  apt:
-    name: nginx
-    state: latest
-
-- name: Ensue nginx user
-  user:
-    name: nginx
-    group: nginx
-    groups: [nginx, www-data]
-    shell: /bin/false
-    create_home: no
-    append: yes
-    system: yes
-    state: present
-
-- name: Start nginx
-  service:
-    name: nginx
-    state: started
-    enabled: yes
-
-- name: Remove default nginx config
-  file:
-    name: /etc/nginx/sites-enabled/default
-    state: absent
-
-- name: Copy NGINX conf files
-  copy:
-    src: '{{ nginx_src_config_dir }}'
-    dest: /etc/nginx/
-    owner: root
-    group: root
-    mode: '0644'
-  notify: Restart nginx
-
-- name: Check for dhparam.pem
-  stat:
-    path: /etc/nginx/dhparam.pem
-  register: nginx_dhparam_result
-
-- name: Creating dhparam.pem
-  when: not nginx_dhparam_result.stat.exists
-  command: openssl dhparam -out /etc/nginx/dhparam.pem 2048
-
-- name: Create nginx metrics status page
-  template:
-    src: internal-status.conf.j2
-    dest: /etc/nginx/conf.d/internal-status.conf
-    mode: '0644'
-  notify: Restart nginx
-
-- name: Check nginx syntax
-  command: nginx -t
-  register: res
-  changed_when: false
-  failed_when: '"warn" is in res.stderr_lines or "emerg" is in res.stderr_lines or res.rc != 0'
-
-- name: Ensure handlers are notified now
-  meta: flush_handlers
-
+- name: Install nginx via docker
+  when: nginx_use_docker | bool
+  include_tasks: install-nginx-docker.yml
+  tags: [ingress, nginx]

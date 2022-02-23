@@ -1,5 +1,39 @@
 # Install nginx-hosts and run certbot
 ---
+- name: Copy NGINX conf files
+  copy:
+    src: '{{ nginx_src_config_dir }}'
+    dest: /etc/nginx/
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart nginx
+
+- name: Check for dhparam.pem
+  stat:
+    path: /etc/nginx/dhparam.pem
+  register: nginx_dhparam_result
+
+- name: Creating dhparam.pem
+  when: not nginx_dhparam_result.stat.exists
+  command: openssl dhparam -out /etc/nginx/dhparam.pem 2048
+
+- name: Create nginx metrics status page
+  template:
+    src: internal-status.conf.j2
+    dest: /etc/nginx/conf.d/internal-status.conf
+    mode: '0644'
+  notify: Restart nginx
+
+- name: Check nginx syntax
+  command: nginx -t
+  register: res
+  changed_when: false
+  failed_when: '"warn" is in res.stderr_lines or "emerg" is in res.stderr_lines or res.rc != 0'
+
+- name: Ensure handlers are notified now
+  meta: flush_handlers
+
 - name: Verify Nginx is started
   service:
     name: nginx

@@ -1,26 +1,23 @@
 # Main Nginx Setup
 ---
-- name: Install nginx
-  import_tasks: install-nginx.yml
-  tags: ingress
-
 - name: Set floating IPs
   when: nginx_floating_ips | length > 0
-  import_tasks: set-floting-ip.yml
+  import_tasks: shared/set-floting-ip.yml
+  vars:
+    floating_ips: '{{ nginx_floating_ips }}'
   tags: [ingress, ingress-ip]
 
-- name: Update Promtail config
-  when: nginx_update_promtail | bool
-  import_tasks: update-promtail.yml
-  tags: [ingress, ingress-logs]
+- name: Install nginx
+  import_tasks: install-nginx.yml
+  tags: [ingress, nginx]
 
 - name: Ensure handlers are notified now
   meta: flush_handlers
-  tags: ingress
+  tags: [ingress, nginx]
 
-- name: Install nginx hosts
+- name: Install nginx routes
   when: nginx_install_hosts | bool
-  import_tasks: install-nginx-hosts.yml
+  import_tasks: install-nginx-routes.yml
   tags: [ingress, ingress-hosts]
 
 - name: Setup firewall

@@ -1,0 +1,9 @@
+# Install nginx
+---
+- name: Run docker install
+  include_role:
+    name: docker
+  vars:
+    docker_init_swarm: false
+  tags: [ingress, nginx]
+
