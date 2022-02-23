@@ -4,8 +4,8 @@ After=network.target
 
 [Service]
 Type=simple
-User=traefik
-ExecStart=/usr/local/bin/traefik --configFile=/srv/traefik-conf.yml
+User=root
+ExecStart=/usr/local/bin/traefik --configFile=/srv/traefik/traefik-conf.yml
 Restart=always
 
 [Install]

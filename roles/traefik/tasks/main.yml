@@ -93,11 +93,17 @@
   notify: Restart traefik
   tags: [ingress, traefik]
 
-# - name: Enable Traefik service
-#   systemd:
-#     name: traefik.service
-#     state: started
-#     daemon_reload: yes
-#     enabled: yes
-#   notify: Restart traefik
-#   tags: [ingress, traefik]
+- name: Enable Traefik service
+  systemd:
+    name: traefik.service
+    state: started
+    daemon_reload: yes
+    enabled: yes
+  notify: Restart traefik
+  tags: [ingress, traefik]
+
+- name: Verify Traefik status
+  service:
+    name: traefik
+    state: started
+  tags: [ingress, traefik]
