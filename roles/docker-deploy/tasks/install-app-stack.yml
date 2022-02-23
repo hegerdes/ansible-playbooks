@@ -65,7 +65,7 @@
     timeout: 45
   tags: [docker-deploy]
 
-- name: Shows stack info
+- name: Get stack info
   when: docker_deploy_use_swarm_mode | bool
   community.docker.docker_stack_info:
   register: app_docker_stack_info
@@ -87,6 +87,6 @@
 - name: Inform about swarm
   when: docker_deploy_use_swarm_mode | bool
   debug:
-    var: app_docker_swarm_info
+    var: app_docker_swarm_info.stdout_lines
   ignore_errors: yes
   tags: [docker-deploy]
