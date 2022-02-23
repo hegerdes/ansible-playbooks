@@ -7,9 +7,10 @@ services:
       - {{ mgmt_docker_stack_name }}_mgmt_net
     volumes:
     - /:/rootfs:ro
-    - /var/run:/var/run:rw
+    - /var/run:/var/run:ro
     - /sys:/sys:ro
     - /var/lib/docker/:/var/lib/docker:ro
+    - /dev/disk/:/dev/disk:ro
     deploy:
       mode: global
       placement:

@@ -8,6 +8,7 @@ mgmt_ssh_keys: []
 mgmt_init_backup: yes
 # Ports for sshd
 ssh_listen_ports: [22]
+mgmt_floating_ips: []
 
 # Backup
 mgmt_backup_target_hosts: []
@@ -61,6 +62,8 @@ mgmt_grafana_dashbord_ids:
   - 7362    # SQL Metrics
   - 1229    # Docker metrics
   - 14282   # Cadvisor
+  - 13452   # Traefik
+  - 12250   # Traefik
 
 # Proxy settings
 mgmt_domain: localhost
