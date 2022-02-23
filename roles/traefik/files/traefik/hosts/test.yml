@@ -1,0 +1,26 @@
+http:
+  routers:
+    test:
+      entryPoints:
+        - web
+      rule: PathPrefix(`/`)
+      service: test
+
+    traefik-dashboard:
+      entryPoints:
+        - web
+      rule: PathPrefix(`/dashboard/`)
+      service: api@internal
+
+  services:
+    test:
+      loadBalancer:
+        servers:
+          - url: http://localhost:8888
+
+  middlewares:
+    auth:
+      basicAuth:
+        users:
+          - "test:$apr1$H6uskkkW$IgXLP6ewTrSuBkTrqE8wj/"
+          - "test2:$apr1$d9hr9HBB$4HxwgUir3HP4EsggP/QNo0"

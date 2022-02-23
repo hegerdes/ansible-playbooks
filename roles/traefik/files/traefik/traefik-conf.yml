@@ -1,0 +1,27 @@
+global:
+  checkNewVersion: true
+  sendAnonymousUsage: false
+
+entryPoints:
+  web:
+    address: :80
+  websecure:
+    address: :443
+
+log:
+  level: DEBUG
+  format: json
+  filePath: /var/log/traefik/traefik.log
+
+accessLog:
+  format: json
+  filePath: /var/log/traefik/access.log
+
+api:
+ insecure: true
+ dashboard: true
+
+providers:
+  file:
+    directory: /srv/traefik/hosts/
+    watch: true

@@ -1,0 +1,5 @@
+---
+- name: Restart traefik
+  service:
+    name: promtail
+    state: restarted

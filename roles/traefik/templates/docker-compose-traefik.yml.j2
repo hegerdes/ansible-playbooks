@@ -1,0 +1,28 @@
+version: '3.7'
+
+services:
+  traefik:
+    image: traefik:{{ traefik_version | default("latest") }}
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - {{ mgmt_docker_stack_name }}_ingress_net
+    volumes:
+      - "traefik_certs:/letsencrypt"
+    deploy:
+      placement:
+        constraints:
+          - "node.role==manager"
+
+  whoami:
+    image: containous/whoami
+    networks:
+      - {{ mgmt_docker_stack_name }}_ingress_net
+
+volumes:
+  traefik_certs:
+
+networks:
+  {{ mgmt_docker_stack_name }}_ingress_net:
+    external: true

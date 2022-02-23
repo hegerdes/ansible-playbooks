@@ -2,3 +2,4 @@ notes.txt
 *.retry
 *.log
 inventories
+roles/traefik/tmp/

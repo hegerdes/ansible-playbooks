@@ -1,0 +1,30 @@
+---
+# Nginx settings
+traefik_docker_version: v2.6
+traefik_force_reinstall: no
+traefik_src_config_dir: traefik/
+
+# Nginx host & Certbot setting
+traefik_install_hosts: yes
+traefik_hosts_default_listen_addr: '{{ ansible_default_ipv4.address }}'
+traefik_run_certbot: yes
+traefik_certbot_mail: info@xyz.com
+traefik_testing_certbot: no # if yes use letsencrypt staging (no rate limit)
+
+# Domain settings
+traefik_vhosts:
+  - host: example.123preview.com
+    ip: '{{ traefik_hosts_default_listen_addr }}'
+    upstream: |
+      upstream my_upstream {
+        server localhost:500;
+      }
+    locations: |
+      location / {
+        return 404;
+      }
+
+# Floating IPs
+traefik_floating_ips: []
+traefik_firewall_rules: []
+

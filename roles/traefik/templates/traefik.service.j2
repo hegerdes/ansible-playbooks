@@ -1,0 +1,13 @@
+[Unit]
+Description=Traefik service
+After=network.target
+
+[Service]
+Type=simple
+User=traefik
+ExecStart=/usr/local/bin/traefik --configFile=/srv/traefik-conf.yml
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+Alias=traefik.service
