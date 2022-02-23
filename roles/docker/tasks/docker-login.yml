@@ -11,3 +11,4 @@
   loop: '{{ docker_regesties }}'
   loop_control:
     label: '{{ item.regestry | default("https://index.docker.io/v1/") }}'
+  tags: [docker, docker-regestry]

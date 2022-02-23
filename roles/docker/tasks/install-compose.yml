@@ -8,6 +8,7 @@
     check_mode: no
     changed_when: false
     failed_when: false
+  tags: [docker, docker-compose]
 
   - name: Delete existing docker-compose version if it differs to version {{ docker_compose_version }}
     file:
@@ -16,6 +17,7 @@
     when: >
       docker_compose_current_version.stdout is defined
       and docker_compose_version not in docker_compose_current_version.stdout
+  tags: [docker, docker-compose]
 
   - name: Get docker-compose {{ docker_compose_version }} version
     environment:
@@ -28,6 +30,7 @@
       fi
     changed_when: false
     register: docker_compose_url
+  tags: [docker, docker-compose]
 
   - name: Install docker-compose {{ docker_compose_version }}
     get_url:
@@ -37,30 +40,36 @@
     when: >
       docker_compose_current_version.stdout is not defined
       or docker_compose_version not in docker_compose_current_version.stdout
+  tags: [docker, docker-compose]
 
   - name: Create docker-compose symbolic link
     file:
       src: /usr/local/bin/docker-compose
       dest: /usr/bin/docker-compose
       state: link
+  tags: [docker, docker-compose]
 
   - name: Check current docker-compose version
     command: docker-compose --version
     changed_when: false
+  tags: [docker, docker-compose]
 
   rescue:
     - name: Error Handler
       debug:
         msg: Error while installing compose, using fallback with pip
         var: docker_compose_url
+        tags: [docker, docker-compose]
 
     - name: Ensure needed packages are installed
       apt:
         name: 'python3-pip'
         state: present
         install_recommends: no
+        tags: [docker, docker-compose]
 
     - name: Install compose
       pip:
         name: docker-compose
         state: present
+        tags: [docker, docker-compose]

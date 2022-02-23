@@ -4,6 +4,7 @@
     name: sshd
     enabled: yes
     state: reloaded
+  tags: [mgmt, ssh]
 
 - name: Reload nginx
   community.docker.docker_container_exec:
@@ -11,3 +12,9 @@
     command: /bin/sh -c "nginx -t && nginx -s reload"
   register: result
   tags: [mgmt, mgmt-stack, mgmt-nginx]
+
+- name: Restart network service
+  service:
+    name: networking
+    state: restarted
+  tags: [mgmt]

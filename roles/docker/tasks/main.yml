@@ -1,28 +1,34 @@
 # Main Docker Setup
 ---
 - name: Install docker
-  include_tasks: install-docker.yml
+  import_tasks: install-docker.yml
+  tags: [docker, docker-install]
 
 - name: Log into regestry
-  include_tasks: docker-login.yml
-  when: docker_regesties | length > 0
+  import_tasks: docker-login.yml
+  tags: [docker, docker-regestry]
 
 - name: Docker-Compose install
   include_tasks: install-compose.yml
   when: docker_install_compose | bool
+  tags: [docker, docker-compose]
 
 - name: Docker user setup
-  include_tasks: docker-users.yml
+  import_tasks: docker-users.yml
+  tags: [docker, docker-user]
 
 - name: Setup SWARM
   include_tasks: docker-swarm.yml
   when: docker_init_swarm | bool
+  tags: [docker, docker-swarm]
 
 - name: Install Portainer
   include_tasks: docker-portainer.yml
   when: docker_install_portainer | bool
+  tags: [docker, docker-portainer]
 
 - name: Setup cron jobs
   include_tasks: shared/install-cron-jobs.yml
   vars:
     cron_jobs: '{{ docker_cron_jobs }}'
+  tags: [docker, cron]

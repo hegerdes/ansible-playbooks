@@ -5,12 +5,14 @@
   ignore_errors: yes
   register: swarm_info
   failed_when: 'not swarm_info.can_talk_to_docker'
+  tags: [docker, docker-portainer]
 
 - name: Ensue config folder exists
   when: docker_install_portainer | bool
   file:
     path: '{{ docker_portainer_dst_stack | dirname }}'
     state: directory
+  tags: [docker, docker-portainer]
 
 - name: Copy portainer stack files
   when: docker_install_portainer and docker_init_swarm | bool
@@ -19,12 +21,14 @@
     dest: '{{ docker_portainer_dst_stack }}'
     owner: root
     group: docker
+  tags: [docker, docker-portainer]
 
 - name: Get info on Docker Swarm
   when: docker_install_portainer and docker_init_swarm | bool
   docker_swarm_info:
   ignore_errors: yes
   register: docker_swarm_result
+  tags: [docker, docker-portainer]
 
 - name: Copy portainer compose files
   when: docker_install_portainer and not docker_init_swarm | bool
@@ -33,6 +37,7 @@
     dest: '{{ docker_portainer_dst_stack }}'
     owner: root
     group: docker
+  tags: [docker, docker-portainer]
 
 - name: Deploy portainer via docker stack
   when: docker_install_portainer and docker_init_swarm and docker_swarm_result.docker_swarm_manager | bool
@@ -43,17 +48,20 @@
     with_registry_auth: yes
     compose:
       - '{{ docker_portainer_dst_stack }}'
+  tags: [docker, docker-portainer]
 
 - name: Install pip3
   when: docker_install_portainer and not docker_init_swarm | bool
   apt:
     name: python3-pip
     state: latest
+  tags: [docker, docker-portainer]
 
 - name: Install docker-compose pip package
   when: docker_install_portainer and not docker_init_swarm | bool
   pip:
     name: docker-compose
+  tags: [docker, docker-portainer]
 
 - name: Deploy portainer via docker-compose
   when: docker_install_portainer and not docker_init_swarm | bool
@@ -63,3 +71,4 @@
     project_name: portainer
     files:
       - '{{ docker_portainer_dst_stack }}'
+  tags: [docker, docker-portainer]

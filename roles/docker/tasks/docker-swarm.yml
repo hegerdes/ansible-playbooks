@@ -6,6 +6,7 @@
     advertise_addr: '{{ docker_swarm_manager_and_advertise_addr[ansible_facts.hostname] | default("eth0:2377") }}'
     state: present
   register: swarm_init_res
+  tags: [docker, docker-swarm]
 
 - name: Init swarm master
   when: 'inventory_hostname in docker_swarm_manager_and_advertise_addr'
@@ -13,6 +14,7 @@
     advertise_addr: '{{ docker_swarm_manager_and_advertise_addr[inventory_hostname] | default("eth0:2377") }}'
     state: present
   register: swarm_init_res
+  tags: [docker, docker-swarm]
 
 - name: Join master node
   when: 'item.key == ansible_facts.hostname or item.key == inventory_hostname'
@@ -21,4 +23,5 @@
     join_token: '{{ hostvars[item.value.leader].swarm_init_res.swarm_facts.JoinTokens[item.value.role | default("Worker")] }}'
     remote_addrs: [ '{{ item.value.leader }}' ]
   loop: '{{ docker_swarm_worker_mapping | dict2items }}'
+  tags: [docker, docker-swarm]
 

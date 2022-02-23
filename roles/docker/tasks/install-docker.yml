@@ -39,6 +39,7 @@
   docker_host_info:
     verbose_output: yes
   register: docker_facts
+  tags: [docker, docker-install]
 
 - name: Install Loki log driver
   when: docker_install_loki_log_plugin | bool
@@ -46,12 +47,14 @@
     plugin_name: grafana/loki-docker-driver:latest
     state: present
     alias: loki
+  tags: [docker, docker-install]
 
 - name: Enable Loki log driver
   when: docker_install_loki_log_plugin | bool
   community.docker.docker_plugin:
     plugin_name: loki
     state: enable
+  tags: [docker, docker-install]
 
 - name: Ensure /etc/docker/ directory exists
   file:
@@ -59,6 +62,7 @@
     state: directory
     mode: 0755
   when: docker_daemon_options.keys() | length > 0
+  tags: [docker, docker-install]
 
 - name: Configure Docker daemon options
   copy:
@@ -67,12 +71,15 @@
     mode: 0644
   when: docker_daemon_options.keys() | length > 0
   notify: restart docker
+  tags: [docker, docker-install]
 
 - name: Ensure Docker is started and enabled at boot
   service:
     name: docker
     state: started
     enabled: yes
+  tags: [docker, docker-install]
 
 - name: Ensure handlers are notified now
   meta: flush_handlers
+  tags: [docker, docker-install]
