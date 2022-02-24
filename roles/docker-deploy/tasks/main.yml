@@ -59,8 +59,8 @@
     labels: '{{ item.labels | default(omit)}}'
     resolve_image: yes
   loop: '{{ docker_deploy_services }}'
-  tags: [docker-deploy]
+  tags: [docker-deploy, docker-deploy-service]
 
 - name: Install app via Docker
   include_tasks: install-app-stack.yml
-  tags: [docker-deploy]
+  tags: [docker-deploy, docker-deploy-stack]
