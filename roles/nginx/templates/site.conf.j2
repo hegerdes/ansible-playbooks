@@ -1,4 +1,9 @@
 # Upstream target
+
+    upstream {{ nginx_vhost.host }}_upstream {
+        {{ ["server "] | product(nginx_vhost.upstreams | default([])) | map('join') | list | product([";"]) | map('join') | list | join("\n") | indent(width=8) }}
+    }
+
 {{ nginx_vhost.upstream | default("# No upsteam set") }}
 
 # Server
@@ -11,8 +16,19 @@ server {
         root /var/www/_letsencrypt;
     }
 
-    # Location configs for this host
-    {{ nginx_vhost.locations | indent(width=4) }}
+{% for location in nginx_vhost.nginx.locations | default([]) %}
+    location {{ location.route }} {
+        {{ nginx_settings.common_header | trim | indent(width=8) if (nginx_settings.common_header) }}
+        {{ location.body | indent(width=8) }}
+    }
+{% endfor %}
+
+{% if nginx_vhost.nginx.locations | default([]) | length == 0 %}
+    location / {
+        {{ nginx_settings.common_header | trim |indent(width=8) if (nginx_settings.common_header) }}
+        proxy_pass http://{{ nginx_vhost.host }}_upstream/;
+    }
+{% endif %}
 
     listen {{ nginx_vhost.ip }}:443 ssl http2; # managed by Certbot
     ssl_certificate /etc/letsencrypt/dummy/fullchain.pem; # managed by Certbot

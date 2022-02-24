@@ -1,5 +1,8 @@
 ---
 # Nginx settings
+ingress_hosts_file: null
+ingress_hosts: '{{lookup("file", ingress_hosts_file) | from_yaml if(ingress_hosts_file) }}'
+
 nginx_use_docker: no
 nginx_src_config_dir: nginx/
 nginx_metrics_server_addr: '{{ ansible_default_ipv4.address }}:80'
@@ -12,24 +15,30 @@ nginx_run_certbot: yes
 nginx_certbot_mail: info@xyz.com
 nginx_testing_certbot: no # if yes use letsencrypt staging (no rate limit)
 
-# Domain settings
-nginx_vhosts:
-  - host: example.123preview.com
-    ip: '{{ nginx_hosts_default_listen_addr }}'
-    upstream: |
-      upstream my_upstream {
-        server localhost:500;
-      }
-    locations: |
-      location / {
-        return 404;
-      }
-
-# Common Headders to use are:
-#proxy_set_header Host $host;
-#proxy_set_header X-Real-IP $remote_addr;
-#proxy_set_header X-Forwarded-Protocol  $scheme;
-#proxy_set_header X-Forwarded-For $remote_addr;
+# Nginx default hosts cofig
+nginx_default_hosts:
+  conf:
+    nginx:
+      common_header: |
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-Protocol $scheme;
+        proxy_set_header X-Forwarded-For $remote_addr;
+  sites:
+    - host: default.example.123preview.com
+      ip: '{{ ansible_default_ipv4.address }}'
+      upstreams: [127.0.0.1:3000]
+    - host: custom.example.123preview.com
+      ip: '{{ ansible_default_ipv4.address }}'
+      upstreams: [127.0.0.1:3000]
+      nginx:
+        locations:
+          - route: /
+            body: |
+              proxy_pass http://custom.devops-testing.123preview.com_upstream;
+          - route: /test
+            body: |
+              return 404;
 
 # Floating IPs
 nginx_floating_ips: []

@@ -1,5 +1,15 @@
 # Install nginx-hosts and run certbot
 ---
+- name: List sites/host that will be installed
+  debug:
+    msg:
+      - 'Using host: {{ item.host }} with ip: {{ item.ip }}'
+      - 'Using locations {{ item.locations | default("location / { proxy_pass http://" + item.host + "_upstream/; }") }}'
+      - 'With upstream: {{ item.host }}_upstream { {{item.upstreams | join("\n") }} }'
+  loop: '{{ ingress_hosts.sites | default(nginx_default_hosts.sites) }}'
+  loop_control:
+    label: '{{ item.host }}'
+
 - name: Copy NGINX conf files
   copy:
     src: '{{ nginx_src_config_dir }}'
@@ -66,9 +76,12 @@
     src: 'site.conf.j2'
     dest: '/etc/nginx/conf.d/{{ nginx_vhost.host }}.conf'
     mode: '0644'
-  loop: '{{ nginx_vhosts }}'
+  loop: '{{ ingress_hosts.sites | default(nginx_default_hosts.sites) }}'
   loop_control:
     loop_var: nginx_vhost
+    label: '{{ nginx_vhost.host }}'
+  vars:
+    nginx_settings: '{{ ingress_hosts.conf.nginx | default(nginx_default_hosts.conf.nginx) }}'
   notify: Reload nginx
   register: nginx_created_hosts
 
@@ -101,7 +114,7 @@
 - name: Run Certbot
   when: nginx_run_certbot | bool and (nginx_created_hosts.changed or nginx_force_reinstall_hosts)
   command: 'certbot --nginx -d {{ nginx_vhost.host }} --agree-tos --non-interactive -m {{ nginx_certbot_mail }} {{"--test-cert" if (nginx_testing_certbot | default(false) ) }}'
-  loop: '{{ nginx_vhosts }}'
+  loop: '{{ ingress_hosts.sites | default(nginx_default_hosts.sites) }}'
   loop_control:
     loop_var: nginx_vhost
     label: '{{ nginx_vhost.host }}'
