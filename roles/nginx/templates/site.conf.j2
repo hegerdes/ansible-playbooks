@@ -11,6 +11,11 @@ server {
     # Server-name will be domain name
     server_name {{ nginx_vhost.host }};
 
+    # Sever settings for all sites
+    {{ ingress_hosts.nginx.common_server_settings | default("# None") | indent(width=4) }}
+    # Sever settings per site
+    {{ nginx_vhost.nginx.server_settings | default("# None") | indent(width=4) }}
+
     # ACME-challenge
     location ^~ /.well-known/acme-challenge/ {
         root /var/www/_letsencrypt;

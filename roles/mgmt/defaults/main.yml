@@ -117,6 +117,7 @@ mgmt_traefik_tls_flags: |
   - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
 mgmt_traefik_default_auth_labels: |
   - "traefik.http.routers.__SERVICE__.middlewares=__SERVICE__-auth"
-  - "traefik.http.middlewares.__SERVICE__-auth.basicauth.realm=__SERVICE__"
+  - "traefik.http.middlewares.__SERVICE__-auth.basicauth.realm=mgmt"
   - "traefik.http.middlewares.__SERVICE__-auth.basicauth.removeheader=true"
+  - "traefik.http.middlewares.__SERVICE__-auth.basicauth.headerField=X-WebAuth-User"
   - "traefik.http.middlewares.__SERVICE__-auth.basicauth.users={% for entry in item.value | default([]) %}{{ entry.username }}:{{ entry.password | password_hash('bcrypt') | replace('$','$$') }},{% endfor %}"

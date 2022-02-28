@@ -21,19 +21,18 @@
 
 - name: Install docker
   apt:
-    name: '{{ item }}'
     state: present
     install_recommends: no
-  loop:
-    - 'containerd.io'
-    - 'docker-{{ docker_edition }}'
-    - 'docker-{{ docker_edition }}-cli'
-    - 'python3-setuptools'
-    - 'python3-jsondiff'
-    - 'python3-docker'
-    - 'python3-yaml'
-    - 'gnupg2'
-    - 'pass'
+    name:
+      - 'containerd.io'
+      - 'docker-{{ docker_edition }}'
+      - 'docker-{{ docker_edition }}-cli'
+      - 'python3-setuptools'
+      - 'python3-jsondiff'
+      - 'python3-docker'
+      - 'python3-yaml'
+      - 'gnupg2'
+      - 'pass'
 
 - name: Test Docker
   docker_host_info:
