@@ -2,7 +2,7 @@
 ---
 - name: Check for DB Backup folder
   stat:
-    path: /db_dumps/backup_db.sh
+    path: '{{ "/db_dumps/backup_db.sh" if(inventory_hostname != "mgmt") else "/db_dumps/archive-db-backups.sh" }}'
   register: main_db_dir
   tags: [maintenance, backup, db-backup]
 
@@ -24,7 +24,7 @@
 
 - name: Run DB backup script
   when: main_db_dir.stat.exists
-  shell: bash /db_dumps/backup_db.sh
+  shell: 'bash {{ "/db_dumps/backup_db.sh" if(inventory_hostname != "mgmt") else "/db_dumps/archive-db-backups.sh" }}'
   register: main_backup_res
   tags: [maintenance, backup, db-backup]
 
