@@ -28,7 +28,7 @@ This role performs basic operation that should be done on every managed host. In
 ## Defaults
 ```yml
 # Install extra packages
-extra_packages: []
+common_extra_packages: []
 
 # List of key_paths
 common_ssh_keys: []

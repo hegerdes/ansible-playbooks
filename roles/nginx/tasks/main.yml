@@ -1,10 +1,10 @@
 # Main Nginx Setup
 ---
 - name: Set floating IPs
-  when: nginx_floating_ips | length > 0
+  when: ingress_floating_ips | length > 0
   import_tasks: shared/set-floting-ip.yml
   vars:
-    floating_ips: '{{ nginx_floating_ips }}'
+    floating_ips: '{{ common_floating_ips | default([]) + ingress_floating_ips }}'
   tags: [ingress, ingress-ip]
 
 - name: Install nginx

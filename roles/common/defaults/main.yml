@@ -2,8 +2,10 @@
 ##### general #####
 
 # Install extra packages
-extra_packages: []
-delete_packages: []
+common_extra_packages: []
+common_delete_packages: []
+# Floating ips
+common_floating_ips: []
 
 # List of key_paths
 common_ssh_keys: []

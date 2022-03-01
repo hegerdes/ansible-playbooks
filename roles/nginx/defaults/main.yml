@@ -41,7 +41,7 @@ nginx_default_hosts:
               return 404;
 
 # Floating IPs
-nginx_floating_ips: []
+ingress_floating_ips: []
 nginx_firewall_rules: []
 
 # Update promtail

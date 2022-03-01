@@ -2,3 +2,8 @@
 - name: Update grub
   command: update-grub2
   tags: [common, sys]
+
+- name: Restart network service
+  service:
+    name: networking
+    state: restarted

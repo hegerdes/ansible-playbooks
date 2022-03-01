@@ -8,13 +8,6 @@
   loop_control:
     label: '{{ item.key }}'
 
-- name: Set floating IPs
-  when: mgmt_floating_ips | length > 0
-  import_tasks: shared/set-floting-ip.yml
-  vars:
-    floating_ips: '{{ mgmt_floating_ips }}'
-  tags: [mgmt, ingress-ip]
-
 - name: Setup sshd
   import_tasks: setup-sshd.yml
   tags: [mgmt, ssh]

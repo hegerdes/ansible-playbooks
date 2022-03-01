@@ -46,14 +46,14 @@
     name: '{{ item }}'
     state: latest
     install_recommends: no
-  loop: '{{ extra_packages }}'
+  loop: '{{ common_extra_packages }}'
   tags: [common, apt]
 
 - name: Remove specified packages
   apt:
     name: '{{ item }}'
     state: absent
-  loop: '{{ delete_packages }}'
+  loop: '{{ common_delete_packages }}'
   tags: [common, apt]
 
 - name: Set hostnames
@@ -86,6 +86,13 @@
     line: GRUB_CMDLINE_LINUX=""
   tags: [common, sys]
   notify: Update grub
+
+- name: Set floating IPs
+  when: common_floating_ips | length > 0
+  import_tasks: shared/set-floting-ip.yml
+  vars:
+    floating_ips: '{{ common_floating_ips }}'
+  tags: [common, ingress-ip]
 
 - name: Ensure logfile for cron exists
   lineinfile:

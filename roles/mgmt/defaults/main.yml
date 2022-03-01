@@ -8,8 +8,6 @@ mgmt_ssh_keys: []
 mgmt_init_backup: yes
 # Ports for sshd
 ssh_listen_ports: [22]
-mgmt_floating_ips: []
-
 # Backup
 mgmt_backup_target_hosts: []
 mgmt_azure_token: '{{ lookup("env","AZURE_SAS_TOKEN") | default("", True) }}'
