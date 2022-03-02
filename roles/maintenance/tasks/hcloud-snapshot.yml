@@ -22,3 +22,8 @@
       commit_message: 'Created Hetzner-Snapshot on {{ansible_date_time.date}}'
       url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/hetzner-snapshots%2F{{ ansible_date_time.date + "-" + ansible_date_time.hour + "-" + ansible_date_time.minute }}-snapshot.json'
   tags: [maintenance, backup, db-backup, hetzner-snapshot]
+
+- name: Print Hetzner-Snapshot results
+  debug:
+    msg: '{{ main_snapshot_res }}'
+  tags: [maintenance, backup, db-backup, hetzner-snapshot]
