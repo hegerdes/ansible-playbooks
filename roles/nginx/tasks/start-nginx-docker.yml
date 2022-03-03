@@ -1,0 +1,35 @@
+# Start nginx
+---
+- name: Copy docker-compose file
+  when: nginx_use_docker | bool
+  template:
+    src: docker-compose-nginx.yml.j2
+    dest: /srv/docker-compose-nginx.yml
+  tags: [ingress, nginx, ingress-hosts]
+
+- name: Init a new swarm
+  when: nginx_use_docker | bool
+  docker_swarm:
+    advertise_addr: '{{ ansible_host }}'
+    state: present
+  tags: [ingress, nginx, ingress-hosts]
+
+- name: Create docker network
+  when: nginx_use_docker | bool
+  docker_network:
+    name: ingress_net
+    driver: overlay
+    attachable: yes
+    driver_options:
+      com.docker.network.driver.mtu: 1450
+  tags: [ingress, nginx, ingress-hosts]
+
+# - name: Deploy mgmt-stack [via docker stack]
+#   when: nginx_use_docker | bool
+#   docker_stack:
+#     state: present
+#     name: ingress
+#     resolve_image: always
+#     with_registry_auth: yes
+#     compose: /srv/docker-compose-nginx.yml
+#   tags: [ingress, nginx, ingress-hosts]

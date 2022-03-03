@@ -1,0 +1,11 @@
+# Start nginx
+---
+- name: Start nginx on bare-metal
+  when: nginx_use_docker | bool != true
+  include_tasks: start-nginx-host.yml
+  tags: [ingress, nginx]
+
+- name: Start nginx via docker
+  when: nginx_use_docker | bool
+  include_tasks: start-nginx-docker.yml
+  tags: [ingress, nginx]

@@ -15,9 +15,13 @@
   meta: flush_handlers
   tags: [ingress, nginx]
 
-- name: Install nginx routes
+- name: Setup nginx routes
   when: nginx_install_hosts | bool
-  import_tasks: install-nginx-routes.yml
+  import_tasks: setup-nginx-routes.yml
+  tags: [ingress, nginx, ingress-hosts]
+
+- name: Start nginx
+  import_tasks: start-nginx.yml
   tags: [ingress, nginx, ingress-hosts]
 
 - name: Setup firewall

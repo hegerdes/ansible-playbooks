@@ -13,12 +13,21 @@
 
 - name: Copy NGINX conf files
   copy:
-    src: '{{ nginx_src_config_dir }}'
+    src: nginx/
     dest: /etc/nginx/
     owner: root
     group: root
     mode: '0644'
-  notify: Restart nginx
+  tags: [ingress, nginx, ingress-hosts]
+
+- name: Copy NGINX extra conf files
+  copy:
+    src: '{{ inventory_dir }}/{{ inventory_hostname }}/srv'
+    dest: /etc/nginx/
+    owner: root
+    group: root
+    mode: '0644'
+  ignore_errors: yes
   tags: [ingress, nginx, ingress-hosts]
 
 - name: Check for dhparam.pem
@@ -37,24 +46,6 @@
     src: internal-status.conf.j2
     dest: /etc/nginx/conf.d/internal-status.conf
     mode: '0644'
-  notify: Restart nginx
-  tags: [ingress, nginx, ingress-hosts]
-
-- name: Check nginx syntax
-  command: nginx -t
-  register: res
-  changed_when: false
-  failed_when: '"warn" is in res.stderr_lines or "emerg" is in res.stderr_lines or res.rc != 0'
-  tags: [ingress, nginx, ingress-hosts]
-
-- name: Ensure handlers are notified now
-  meta: flush_handlers
-  tags: [ingress, nginx, ingress-hosts]
-
-- name: Verify Nginx is started
-  service:
-    name: nginx
-    state: started
   tags: [ingress, nginx, ingress-hosts]
 
 - name: Create directory for dummy certs
@@ -93,7 +84,6 @@
     label: '{{ nginx_vhost.host }}'
   vars:
     nginx_settings: '{{ ingress_hosts.conf.nginx | default(nginx_default_hosts.conf.nginx) }}'
-  notify: Reload nginx
   register: nginx_created_hosts
   tags: [ingress, nginx, ingress-hosts]
 
@@ -104,47 +94,7 @@
     owner: root
     group: root
     mode: '0644'
-  notify: Reload nginx
   loop: ['options-ssl-nginx.conf', 'ssl-dhparams.pem']
   tags: [ingress, nginx, ingress-hosts]
 
-- name: Check nginx syntax
-  command: nginx -t
-  register: res
-  changed_when: false
-  failed_when: '"warn" is in res.stderr_lines or "emerg" is in res.stderr_lines or res.rc != 0'
-  tags: [ingress, nginx, ingress-hosts]
 
-- name: Ensure handlers are notified now
-  meta: flush_handlers
-  tags: [ingress, nginx, ingress-hosts]
-
-- name: Verify Certbot Installation
-  when: nginx_run_certbot | bool
-  apt:
-    name: '{{ item }}'
-    state: latest
-  loop: [ 'certbot', 'python3-certbot', 'python3-certbot-nginx']
-  tags: [ingress, nginx, ingress-hosts]
-
-- name: Run Certbot
-  when: nginx_run_certbot | bool and (nginx_created_hosts.changed or nginx_force_reinstall_hosts)
-  command: 'certbot --nginx -d {{ nginx_vhost.host }} --agree-tos --non-interactive -m {{ nginx_certbot_mail }} {{"--test-cert" if (nginx_testing_certbot | default(false) ) }}'
-  loop: '{{ ingress_hosts.sites | default(nginx_default_hosts.sites) }}'
-  loop_control:
-    loop_var: nginx_vhost
-    label: '{{ nginx_vhost.host }}'
-  notify: Reload nginx
-  tags: [ingress, nginx, ingress-hosts]
-
-- name: Check nginx syntax
-  when: nginx_run_certbot | bool
-  command: nginx -t
-  register: res
-  changed_when: false
-  failed_when: '"warn" is in res.stderr_lines or "emerg" is in res.stderr_lines or res.rc != 0'
-  tags: [ingress, nginx, ingress-hosts]
-
-- name: Ensure handlers are notified now
-  meta: flush_handlers
-  tags: [ingress, nginx, ingress-hosts]
