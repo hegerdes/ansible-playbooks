@@ -16,7 +16,7 @@
     project_src: /srv/mariadb
     state: present
     remove_orphans: yes
-    project_name: service
+    project_name: service-mariadb
     files:
       - mariadb-docker-compose.yml
   register: mariadb_install_res

@@ -9,6 +9,7 @@
   loop: '{{ ingress_hosts.sites | default(nginx_default_hosts.sites) }}'
   loop_control:
     label: '{{ item.host }}'
+  tags: [ingress, nginx, ingress-hosts]
 
 - name: Copy NGINX conf files
   copy:
@@ -18,15 +19,18 @@
     group: root
     mode: '0644'
   notify: Restart nginx
+  tags: [ingress, nginx, ingress-hosts]
 
 - name: Check for dhparam.pem
   stat:
     path: /etc/nginx/dhparam.pem
   register: nginx_dhparam_result
+  tags: [ingress, nginx, ingress-hosts]
 
 - name: Creating dhparam.pem
   when: not nginx_dhparam_result.stat.exists
   command: openssl dhparam -out /etc/nginx/dhparam.pem 2048
+  tags: [ingress, nginx, ingress-hosts]
 
 - name: Create nginx metrics status page
   template:
@@ -34,25 +38,30 @@
     dest: /etc/nginx/conf.d/internal-status.conf
     mode: '0644'
   notify: Restart nginx
+  tags: [ingress, nginx, ingress-hosts]
 
 - name: Check nginx syntax
   command: nginx -t
   register: res
   changed_when: false
   failed_when: '"warn" is in res.stderr_lines or "emerg" is in res.stderr_lines or res.rc != 0'
+  tags: [ingress, nginx, ingress-hosts]
 
 - name: Ensure handlers are notified now
   meta: flush_handlers
+  tags: [ingress, nginx, ingress-hosts]
 
 - name: Verify Nginx is started
   service:
     name: nginx
     state: started
+  tags: [ingress, nginx, ingress-hosts]
 
 - name: Create directory for dummy certs
   file:
     path: /etc/letsencrypt/dummy
     state: directory
+  tags: [ingress, nginx, ingress-hosts]
 
 - name: Copy dummy certs
   copy:
@@ -62,6 +71,7 @@
     group: root
     mode: '0777'
   loop: ['fullchain.pem', 'privkey.pem']
+  tags: [ingress, nginx, ingress-hosts]
 
 - name: Find all nginx hosts
   shell: |
@@ -69,6 +79,7 @@
     ls *.conf
   register: nginx_deployed_hosts
   changed_when: false
+  tags: [ingress, nginx, ingress-hosts]
 
 - name: Creating hosts for nginx
   when: nginx_vhost.host + ".conf" not in nginx_deployed_hosts.stdout_lines or nginx_force_reinstall_hosts
@@ -84,6 +95,7 @@
     nginx_settings: '{{ ingress_hosts.conf.nginx | default(nginx_default_hosts.conf.nginx) }}'
   notify: Reload nginx
   register: nginx_created_hosts
+  tags: [ingress, nginx, ingress-hosts]
 
 - name: Copy ssl-nginx.conf|ssl-dhparams.pem
   copy:
@@ -94,15 +106,18 @@
     mode: '0644'
   notify: Reload nginx
   loop: ['options-ssl-nginx.conf', 'ssl-dhparams.pem']
+  tags: [ingress, nginx, ingress-hosts]
 
 - name: Check nginx syntax
   command: nginx -t
   register: res
   changed_when: false
   failed_when: '"warn" is in res.stderr_lines or "emerg" is in res.stderr_lines or res.rc != 0'
+  tags: [ingress, nginx, ingress-hosts]
 
 - name: Ensure handlers are notified now
   meta: flush_handlers
+  tags: [ingress, nginx, ingress-hosts]
 
 - name: Verify Certbot Installation
   when: nginx_run_certbot | bool
@@ -110,6 +125,7 @@
     name: '{{ item }}'
     state: latest
   loop: [ 'certbot', 'python3-certbot', 'python3-certbot-nginx']
+  tags: [ingress, nginx, ingress-hosts]
 
 - name: Run Certbot
   when: nginx_run_certbot | bool and (nginx_created_hosts.changed or nginx_force_reinstall_hosts)
@@ -119,6 +135,7 @@
     loop_var: nginx_vhost
     label: '{{ nginx_vhost.host }}'
   notify: Reload nginx
+  tags: [ingress, nginx, ingress-hosts]
 
 - name: Check nginx syntax
   when: nginx_run_certbot | bool
@@ -126,6 +143,8 @@
   register: res
   changed_when: false
   failed_when: '"warn" is in res.stderr_lines or "emerg" is in res.stderr_lines or res.rc != 0'
+  tags: [ingress, nginx, ingress-hosts]
 
 - name: Ensure handlers are notified now
   meta: flush_handlers
+  tags: [ingress, nginx, ingress-hosts]

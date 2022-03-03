@@ -40,7 +40,7 @@
     project_src: /srv/influxdb
     state: present
     remove_orphans: yes
-    project_name: service
+    project_name: service-influxdb
     files:
       - influx-docker-compose.yml
   register: influx_deploy_res

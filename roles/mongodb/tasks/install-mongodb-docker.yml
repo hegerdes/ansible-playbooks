@@ -16,7 +16,7 @@
     project_src: /srv/mongodb
     state: present
     remove_orphans: yes
-    project_name: service
+    project_name: service-mongodb
     files:
       - mongodb-docker-compose.yml
 

@@ -11,6 +11,7 @@
     name: docker
   vars:
     docker_init_swarm: false
+    docker_install_portainer: false
 
 - name: Install MariaDB
   when: mariadb_use_docker | bool

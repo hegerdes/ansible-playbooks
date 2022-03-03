@@ -16,6 +16,7 @@
     name: docker
   vars:
     docker_init_swarm: false
+    docker_install_portainer: false
 
 - name: Install MongoDB
   when: mongodb_use_docker | bool

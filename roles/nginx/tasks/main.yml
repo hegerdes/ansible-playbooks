@@ -5,7 +5,7 @@
   import_tasks: shared/set-floting-ip.yml
   vars:
     floating_ips: '{{ common_floating_ips | default([]) + ingress_floating_ips }}'
-  tags: [ingress, ingress-ip]
+  tags: [ingress, nginx, ingress-ip]
 
 - name: Install nginx
   import_tasks: install-nginx.yml
@@ -18,26 +18,26 @@
 - name: Install nginx routes
   when: nginx_install_hosts | bool
   import_tasks: install-nginx-routes.yml
-  tags: [ingress, ingress-hosts]
+  tags: [ingress, nginx, ingress-hosts]
 
 - name: Setup firewall
   include_role:
     name: firewalld
   vars:
     firwalld_rules: '{{ nginx_default_firewall_rules + nginx_firewall_rules }}'
-  tags: [ingress, firewall]
+  tags: [ingress, nginx, firewall]
 
 - name: Ensure handlers are notified now
   meta: flush_handlers
-  tags: [ingress, firewall]
+  tags: [ingress, nginx, firewall]
 
 - name: Setup cron jobs
   when: nginx_run_certbot | bool
   import_tasks: shared/install-cron-jobs.yml
-  tags: [ingress, cron]
+  tags: [ingress, nginx, cron]
   vars:
     cron_jobs: '{{ nginx_cron_jobs }}'
 
 - name: Ensure handlers are notified now
   meta: flush_handlers
-  tags: ingress
+  tags: [ingress, nginx]

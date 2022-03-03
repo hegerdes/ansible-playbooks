@@ -51,3 +51,13 @@
     - '{{ inventory_dir }}/secrets/vault.yml'
   roles:
     - influxdb
+
+- hosts: dev-docker-db
+  become: true
+  gather_facts: True
+  vars_files:
+    - '{{ inventory_dir }}/secrets/vault.yml'
+  roles:
+    - mariadb
+    - mongodb
+    - influxdb
