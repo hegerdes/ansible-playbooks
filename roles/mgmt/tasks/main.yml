@@ -26,7 +26,14 @@
   include_tasks: install-backup-script.yml
   tags: [mgmt, backup]
 
+- name: Check if docker is installed
+  command: docker --version
+  register: docker_valid
+  ignore_errors: yes
+  tags: [mgmt, docker]
+
 - name: Docker install
+  when: docker_valid.failed
   include_role:
     name: docker
   tags: [mgmt, docker]

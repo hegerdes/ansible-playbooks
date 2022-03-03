@@ -1,10 +1,17 @@
 # Install traefik
 ---
-# - name: Run docker install
-#   include_role:
-#     name: docker
-#   vars:
-#     docker_init_swarm: false
-#     docker_install_portainer: false
-#   tags: [ingress, traefik]
+- name: Check if docker is installed
+  command: docker --version
+  register: docker_valid
+  ignore_errors: yes
+  tags: [ingress, nginx]
+
+- name: Run docker install
+  when: docker_valid.failed
+  include_role:
+    name: docker
+  vars:
+    docker_init_swarm: false
+    docker_install_portainer: false
+  tags: [ingress, traefik]
 

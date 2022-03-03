@@ -5,8 +5,14 @@
     name: python3-influxdb
     state: latest
 
-- name: Run Docker install
+- name: Check if docker is installed
   when: influx_use_docker | bool
+  command: docker --version
+  register: docker_valid
+  ignore_errors: yes
+
+- name: Run Docker install
+  when: influx_use_docker | bool and docker_valid.failed | default(True)
   include_role:
     name: docker
   vars:
