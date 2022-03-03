@@ -1,0 +1,10 @@
+# Install traefik
+---
+# - name: Run docker install
+#   include_role:
+#     name: docker
+#   vars:
+#     docker_init_swarm: false
+#     docker_install_portainer: false
+#   tags: [ingress, traefik]
+

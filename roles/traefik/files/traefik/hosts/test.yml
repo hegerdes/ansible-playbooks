@@ -11,6 +11,8 @@ http:
         - web
       rule: PathPrefix(`/dashboard/`)
       service: api@internal
+      middlewares:
+        - auth
 
   services:
     test:
@@ -24,3 +26,9 @@ http:
         users:
           - "test:$apr1$H6uskkkW$IgXLP6ewTrSuBkTrqE8wj/"
           - "test2:$apr1$d9hr9HBB$4HxwgUir3HP4EsggP/QNo0"
+    testHeader:
+      headers:
+        customRequestHeaders:
+          X-Script-Name: "test"
+        customResponseHeaders:
+          X-Custom-Response-Header: "value"

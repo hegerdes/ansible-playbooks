@@ -1,109 +1,84 @@
 # Main Traefik Setup
 ---
-- name: Add traefik user
-  user:
-    name: traefik
-    comment: User for traefik server
-    group: adm
-    shell: /usr/sbin/nologin
-    create_home: no
-    system: yes
-    state: present
-  tags: [ingress, traefik]
-
-- name: Check if traefik is setup
-  command: "traefik --version"
-  register: traefik_check_result
-  changed_when: false
-  failed_when: false
-  tags: [ingress, traefik]
-
-- name: Get traefik URL
-  when: traefik_check_result.stdout == ""
-  shell: |
-    curl --silent https://api.github.com/repos/traefik/traefik/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep linux_amd64.tar.gz
-  register: traefik_url
-  tags: [ingress, traefik]
-
-- name: Download and unzip traefik
-  when: traefik_check_result.stdout == ""
-  unarchive:
-    src: '{{ traefik_url.stdout }}'
-    dest: /tmp
-    remote_src: yes
-  tags: [ingress, traefik]
-
-- name: Give insecure permissions to an existing file
-  file:
-    path: /tmp/traefik
-    owner: traefik
-    group: adm
-    mode: '0750'
-
 - name: Install traefik
-  when: traefik_check_result.stdout == "" or traefik_force_reinstall
-  shell: |
-    mv /tmp/traefik /usr/local/bin/traefik
-  notify: Restart traefik
+  import_tasks: install-traefik.yml
   tags: [ingress, traefik]
 
-# - name: DEBUG
-#   debug:
-#     var: traefik_url.stdout
-#   tags: [ingress, traefik]
-
-- name: Test traefik
-  command: "traefik version"
-  changed_when: false
+- name: Creating router config
+  set_fact:
+    traefik_routers_tmp: '{{ traefik_routers_tmp | default({}) | combine({item.host.split(".")[0]: {"entryPoints": ["web" if(traefik_use_docker) else "web_" + item.ip | default(ansible_default_ipv4.address) | hash("md5"), "websecure" if(traefik_use_docker) else "websecure_" + item.ip | default(ansible_default_ipv4.address) | hash("md5")], "service": item.host.split(".")[0], "rule": "Host(`" + item.host +"`)", "tls": {"certresolver": "traefik_ssl_resolver"}, "middlewares": [item.traefik.middlewares | default([])] | flatten }}) }}'
+  loop: '{{ ingress_hosts.sites | default(traefik_default_hosts.sites) }}'
+  loop_control:
+    label: '{{ item.host }}'
   tags: [ingress, traefik]
 
-- name: Copy traefik service config
-  template:
-    src: traefik.service.j2
-    dest: /etc/systemd/system/traefik.service
-    owner: root
-    group: root
-    mode: '0644'
-  notify: Restart traefik
+- name: Creating service config 1
+  set_fact:
+    traefik_services_tmp: '{ {% for item in ingress_hosts.sites %}{{ item.host.split(".")[0] }}: [{%for up in item.upstreams %}{ {{ "url: http://" + up if(item.traefik.protocol | default("http") == "http") else "address: " + up}} }{{ ", " if not loop.last }}{% endfor %}]{{", " if not loop.last}}{% endfor %} }'
   tags: [ingress, traefik]
 
-- name: Ensue config folder exists
-  file:
-    path: /srv/traefik
-    state: directory
+- name: Creating service config 2
+  set_fact:
+    traefik_services_tmp: '{{ traefik_services_tmp | from_yaml }}'
   tags: [ingress, traefik]
 
-- name: Ensue log folder exists
-  file:
-    path: /var/log/traefik
-    recurse: yes
-    state: directory
-    owner: traefik
-    group: adm
-    mode: '0644'
+- name: Creating service config 3
+  set_fact:
+    traefik_services_tmp: '{{ traefik_services_tmp | default({}) | combine({item.host.split(".")[0]: {"loadBalancer": {"servers": traefik_services_tmp[item.host.split(".")[0]] }} }, recursive=True) }}'
+  loop: '{{ ingress_hosts.sites | default(traefik_default_hosts.sites) }}'
+  loop_control:
+    label: '{{ item.host }}'
   tags: [ingress, traefik]
 
-- name: Copy Traefik config
+- name: Creating entrypoints
+  set_fact:
+    traefik_entrypoints: '{{ traefik_entrypoints | default({}) | combine({"web" if(traefik_use_docker) else "web_" + item.ip | default(ansible_default_ipv4.address) | hash("md5"): {"address": item.ip | default(ansible_default_ipv4.address) + ":80"}, "websecure" if(traefik_use_docker) else "websecure_" + item.ip | default(ansible_default_ipv4.address) | hash("md5"): {"address": item.ip | default(ansible_default_ipv4.address) + ":443"} }, recursive=True) }}'
+  loop: '{{ ingress_hosts.sites | default(traefik_default_hosts.sites) }}'
+  loop_control:
+    label: '{{ item.host }}'
+  tags: [ingress, traefik]
+
+- name: Creating cert resolver
+  set_fact:
+    traefik_cert_resolver:
+      traefik_ssl_resolver:
+        acme:
+          email: '{{ traefik_certbot_mail }}'
+          storage: /srv/traefik/tls
+          httpChallenge:
+            entryPoint: web_b742f2d905e8c3c1e1f726de1bcfbe0f
+  tags: [ingress, traefik]
+
+- name: Creating http config
+  set_fact:
+    traefik_sites:
+      http:
+        routers: '{{ traefik_routers_tmp }}'
+        services: '{{ traefik_services_tmp }}'
+        middlewares: '{{ ingress_hosts.conf.traefik.middlewares | default({}) }}'
+      tcp:
+        routers: '{{ traefik_tcp_routers_tmp }}'
+        services: '{{ traefik_tcp_services_tmp }}'
+  tags: [ingress, traefik]
+
+- name: debug
+  debug:
+    var: traefik_sites
+  tags: [ingress, traefik]
+
+- name: debug
+  debug:
+    var: traefik_entrypoints
+  tags: [ingress, traefik]
+
+- name: Copy traefik config
   copy:
-    src: '{{ traefik_src_config_dir }}'
-    dest: /srv/traefik
-    owner: traefik
-    group: adm
-    mode: '0666'
-  notify: Restart traefik
+    content: '{{ lookup("file", "traefik/traefik-conf.yml") | from_yaml | combine({"entryPoints": traefik_entrypoints, "certificatesResolvers": traefik_cert_resolver}) | to_nice_yaml(indent=2) }}'
+    dest: /srv/traefik/traefik-conf.yml
   tags: [ingress, traefik]
 
-- name: Enable Traefik service
-  systemd:
-    name: traefik.service
-    state: started
-    daemon_reload: yes
-    enabled: yes
-  notify: Restart traefik
-  tags: [ingress, traefik]
-
-- name: Verify Traefik status
-  service:
-    name: traefik
-    state: started
+- name: Copy traefik host config
+  copy:
+    content: '{{ traefik_sites | to_nice_yaml(indent=2) }}'
+    dest: /srv/traefik/hosts/traefik-hosts.yml
   tags: [ingress, traefik]

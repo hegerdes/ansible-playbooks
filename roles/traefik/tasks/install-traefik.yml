@@ -1,0 +1,11 @@
+# Install traefik
+---
+- name: Install traefik on bare-metal
+  when: traefik_use_docker | bool != true
+  include_tasks: install-traefik-host.yml
+  tags: [ingress, traefik]
+
+- name: Install traefik via docker
+  when: traefik_use_docker | bool
+  include_tasks: install-traefik-docker.yml
+  tags: [ingress, traefik]

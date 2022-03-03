@@ -3,10 +3,10 @@ global:
   sendAnonymousUsage: false
 
 entryPoints:
-  web:
-    address: :80
-  websecure:
-    address: :443
+  # web:
+  #   address: :80
+  # websecure:
+  #   address: :443
 
 log:
   level: DEBUG
@@ -23,5 +23,18 @@ api:
 
 providers:
   file:
-    directory: /srv/traefik/hosts/
+    directory: /srv/traefik/hosts
     watch: true
+
+metrics:
+  prometheus:
+    addEntryPointsLabels: true
+    addServicesLabels: true
+
+certificatesResolvers:
+  traefik_ssl_resolver:
+    acme:
+      email: info@***REMOVED***
+      storage: /srv/traefik/tls
+      httpChallenge:
+        entryPoint: web_b742f2d905e8c3c1e1f726de1bcfbe0f

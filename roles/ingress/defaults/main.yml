@@ -1,0 +1,5 @@
+---
+##### ingress #####
+
+ingress_proxy: '{{ ingress_default_proxy }}'
+ingress_default_proxy: nginx

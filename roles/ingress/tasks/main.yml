@@ -1,0 +1,14 @@
+# Role ingress
+---
+
+- name: Install nginx ingress
+  when: ingress_proxy == "nginx"
+  include_role:
+    name: nginx
+  tags: [ingress, nginx]
+
+- name: Install traefik ingress
+  when: ingress_proxy == "traefik"
+  include_role:
+    name: traefik
+  tags: [ingress, traefik]
