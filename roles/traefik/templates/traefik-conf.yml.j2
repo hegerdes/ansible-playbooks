@@ -1,0 +1,26 @@
+global:
+  checkNewVersion: true
+  sendAnonymousUsage: false
+
+# Generated entrypoints
+{{ {"entryPoints": traefik_entrypoints} | to_nice_yaml(indent=2) }}
+
+# Generated tls conf
+{{ {"certificatesResolvers": traefik_cert_resolver} | to_nice_yaml(indent=2) }}
+
+# Generated log conf
+{{ traefik_log_conf | to_nice_yaml(indent=2) }}
+
+api:
+  insecure: true
+  dashboard: true
+
+providers:
+  file:
+    directory: /srv/traefik/hosts
+    watch: true
+
+metrics:
+  prometheus:
+    addEntryPointsLabels: true
+    addServicesLabels: true

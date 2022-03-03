@@ -3,10 +3,15 @@ version: '3.7'
 services:
   traefik:
     image: traefik:{{ traefik_version | default("latest") }}
+    command: --configFile=/srv/traefik/traefik-conf.yml
     ports:
       - "80:80"
       - "443:443"
-    networks:
-      - {{ mgmt_docker_stack_name }}_ingress_net
     volumes:
-      - "/srv/traefik/tls:/srv/traefik/tls"
+      - "/srv/traefik:/srv/traefik"
+    networks:
+      - ingress_net
+
+networks:
+  ingress_net:
+    external: true

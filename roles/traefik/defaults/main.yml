@@ -3,18 +3,28 @@
 ingress_hosts_file: null
 ingress_hosts: '{{lookup("file", ingress_hosts_file) | from_yaml if(ingress_hosts_file) }}'
 
-traefik_use_docker: yes
+# Docker
+traefik_use_docker: no
 traefik_docker_version: v2.6
 
-# Nginx host & Certbot setting
+# Traefik host & Certbot setting
+traefik_enable_dashboard: yes
+traefik_force_reinstall: no
 traefik_install_hosts: yes
 traefik_hosts_default_listen_addr: '{{ ansible_default_ipv4.address }}'
 traefik_run_certbot: yes
 traefik_certbot_mail: info@xyz.com
+traefik_default_tld: work.henrikgerdes.me
 
 # Floating IPs
 ingress_floating_ips: []
 traefik_firewall_rules: []
+
+traefik_dashboard_conf:
+  traefik-dashboard:
+    entryPoints: '{{["web_" if(traefik_use_docker) else "web_" + ansible_default_ipv4.address | hash("md5")]}}'
+    rule: 'Host(`traefik.{{ traefik_default_tld }}`)'
+    service: api@internal
 
 # Example site conf
 traefik_default_hosts:
@@ -39,3 +49,20 @@ traefik_default_hosts:
     - host: custom.example.123preview.com
       ip: '{{ ansible_default_ipv4.address }}'
       upstreams: [127.0.0.1:3000]
+
+# Log config
+traefik_log_conf: '{{ traefik_docker_log_conf if(traefik_use_docker) else traefik_host_log_conf }}'
+traefik_docker_log_conf:
+  log:
+    level: DEBUG
+    format: json
+  accessLog:
+    format: json
+traefik_host_log_conf:
+  log:
+    level: DEBUG
+    format: json
+    filePath: /var/log/traefik/traefik.log
+  accessLog:
+    format: json
+    filePath: /var/log/traefik/access.log
