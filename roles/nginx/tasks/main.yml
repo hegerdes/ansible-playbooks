@@ -1,11 +1,29 @@
 # Main Nginx Setup
 ---
+- name: Check for host specific files
+  stat:
+    path: '{{ inventory_dir }}/{{ inventory_hostname }}/srv/'
+  register: nginx_host_extra_files
+  delegate_to: localhost
+  become: False
+  tags: [ingress, nginx]
+
 - name: Set floating IPs
   when: ingress_floating_ips | length > 0
   import_tasks: shared/set-floting-ip.yml
   vars:
     floating_ips: '{{ common_floating_ips | default([]) + ingress_floating_ips }}'
   tags: [ingress, nginx, ingress-ip]
+
+- name: Copy from inventory_dir/host/srv to remote host/srv
+  when: nginx_host_extra_files.stat.exists
+  copy:
+    src: '{{ inventory_dir }}/{{ inventory_hostname }}/srv/'
+    dest: /srv
+    owner: root
+    group: root
+    mode: '0644'
+  tags: [ingress, nginx]
 
 - name: Install nginx
   import_tasks: install-nginx.yml

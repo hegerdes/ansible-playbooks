@@ -18,15 +18,13 @@
   tags: [ingress, nginx, ingress-hosts]
 
 - name: Verify Certbot Installation
-  when: nginx_run_certbot | bool
   apt:
-    name: '{{ item }}'
+    name: [ 'certbot', 'python3-certbot', 'python3-certbot-nginx']
     state: latest
-  loop: [ 'certbot', 'python3-certbot', 'python3-certbot-nginx']
   tags: [ingress, nginx, ingress-hosts]
 
 - name: Run Certbot
-  when: nginx_run_certbot | bool and (nginx_created_hosts.changed or nginx_force_reinstall_hosts)
+  when: nginx_run_certbot | bool and (nginx_created_hosts.changed or nginx_force_reinstall_hosts) and nginx_cert_paths[nginx_vhost.host] is not defined
   command: 'certbot --nginx -d {{ nginx_vhost.host }} --agree-tos --non-interactive -m {{ nginx_certbot_mail }} {{"--test-cert" if (nginx_testing_certbot | default(false) ) }}'
   loop: '{{ ingress_hosts.sites | default(nginx_default_hosts.sites) }}'
   loop_control:
@@ -36,7 +34,6 @@
   tags: [ingress, nginx, ingress-hosts]
 
 - name: Check nginx syntax
-  when: nginx_run_certbot | bool
   command: nginx -t
   register: res
   changed_when: false

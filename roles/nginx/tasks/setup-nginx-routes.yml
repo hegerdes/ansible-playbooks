@@ -21,13 +21,13 @@
   tags: [ingress, nginx, ingress-hosts]
 
 - name: Copy NGINX extra conf files
+  when: nginx_host_extra_files.stat.exists
   copy:
-    src: '{{ inventory_dir }}/{{ inventory_hostname }}/srv'
+    src: '{{ inventory_dir }}/{{ inventory_hostname }}/srv/nginx/'
     dest: /etc/nginx/
     owner: root
     group: root
     mode: '0644'
-  ignore_errors: yes
   tags: [ingress, nginx, ingress-hosts]
 
 - name: Check for dhparam.pem

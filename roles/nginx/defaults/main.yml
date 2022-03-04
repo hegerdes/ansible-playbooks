@@ -15,6 +15,12 @@ nginx_hosts_default_listen_addr: '{{ ansible_default_ipv4.address }}'
 nginx_run_certbot: yes
 nginx_certbot_mail: info@xyz.com
 nginx_testing_certbot: no # if yes use letsencrypt staging (no rate limit)
+nginx_cert_paths: {}
+# Example
+# nginx_cert_paths:
+#   default.devops-testing.123preview.com:
+#     crt: /etc/letsencrypt/dummy/fullchain.pem
+#     key: /etc/letsencrypt/dummy/privkey.pem
 
 # Nginx default hosts cofig
 nginx_default_hosts:
