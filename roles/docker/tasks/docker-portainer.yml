@@ -2,7 +2,7 @@
 ---
 - name: Get the swarm info
   docker_swarm_info:
-  ignore_errors: yes
+  ignore_errors: True
   register: swarm_info
   failed_when: 'not swarm_info.can_talk_to_docker'
   tags: [docker, docker-portainer]
@@ -26,7 +26,7 @@
 - name: Get info on Docker Swarm
   when: docker_install_portainer and docker_init_swarm | bool
   docker_swarm_info:
-  ignore_errors: yes
+  ignore_errors: True
   register: docker_swarm_result
   tags: [docker, docker-portainer]
 

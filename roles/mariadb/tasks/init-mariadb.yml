@@ -5,6 +5,7 @@
     login_user: '{{ mariadb_root_user }}'
     login_password : '{{ mariadb_root_pw }}'
     login_unix_socket: '{{ sql_db_socket }}'
+  tags: [mariadb]
 
 - name: Create a new databases
   mysql_db:
@@ -17,6 +18,7 @@
   loop: '{{ sql_setups }}'
   loop_control:
     label: '{{ item.db }}'
+  tags: [mariadb]
 
 - name: Create Users.
   mysql_user:
@@ -29,5 +31,4 @@
   loop: '{{ sql_setups }}'
   loop_control:
     label: '{{ item.user }}'
-
-
+  tags: [mariadb]

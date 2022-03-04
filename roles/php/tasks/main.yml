@@ -1,7 +1,9 @@
 # Main Nginx Setup
 ---
 - name: Install PHP
-  include_tasks: install-php.yml
+  import_tasks: install-php.yml
+  tags: [php]
 
 - name: Install php-nginx hosts
-  include_tasks: install-php-nginx-hosts.yml
+  import_tasks: install-php-nginx-hosts.yml
+  tags: [php, php-nginx]

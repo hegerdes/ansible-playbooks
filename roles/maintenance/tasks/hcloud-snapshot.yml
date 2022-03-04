@@ -3,7 +3,7 @@
 - name: Create and rotate HetznerSnapshots
   when: maintenance_run_hcloud_snapshot | bool
   command: 'node {{ role_path }}/files/hcloude-snapshot.js'
-  run_once: yes
+  run_once: True
   become: no
   delegate_to: localhost
   register: main_snapshot_res

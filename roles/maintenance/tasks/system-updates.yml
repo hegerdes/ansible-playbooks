@@ -26,7 +26,7 @@
 
 - name: Format update string II
   when: hostvars[item].updates is defined
-  run_once: yes
+  run_once: True
   set_fact:
     all_updates: '{{ all_updates | default({}) | combine({item: hostvars[item].updates}) }}'
   with_items: '{{ groups.all }}'
@@ -34,7 +34,7 @@
 
 - name: Format update string III
   when: hostvars[item].updates is defined
-  run_once: yes
+  run_once: True
   set_fact:
     all_updates: '{{ all_updates | default({}) | combine({"failed_hosts": ansible_play_hosts_all | difference(ansible_play_batch) | default([])}) }}'
   with_items: '{{ groups.all }}'
@@ -42,7 +42,7 @@
 
 - name: Print updates
   when: hostvars[item].updates is defined
-  run_once: yes
+  run_once: True
   debug:
     var: hostvars[item].updates
   with_items: '{{ groups.all }}'
@@ -51,7 +51,7 @@
 - name: Save update file to ...
   when: all_updates is defined
   become: false
-  run_once: yes
+  run_once: True
   copy:
     content: "{{ all_updates }}"
     dest: "/tmp/{{ inventory_dir | basename + lookup('pipe', 'date +\"-%Y-%m-%d\"') }}.json"
@@ -93,7 +93,7 @@
     gitlab_conf:
       url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/issues?labels=aptPendingUpdates&state=opened'
       token: '{{ maintenance_git_token }}'
-  run_once: yes
+  run_once: True
   tags: [maintenance, os-updates]
 
 - name: Update issue on GitLab
@@ -146,7 +146,7 @@
 
 - name: Format update result string II
   when: hostvars[item].performed_updates is defined
-  run_once: yes
+  run_once: True
   set_fact:
     all_performed_updates: '{{ all_performed_updates | default({}) | combine({item: hostvars[item].performed_updates, "reboots": {item: hostvars[item].main_reboot_needed.stat.exists}}, recursive=True) }}'
   with_items: '{{ groups.all }}'

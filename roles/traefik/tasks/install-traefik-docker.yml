@@ -3,7 +3,7 @@
 - name: Check if docker is installed
   command: docker --version
   register: docker_valid
-  ignore_errors: yes
+  ignore_errors: True
   tags: [ingress, nginx]
 
 - name: Run docker install

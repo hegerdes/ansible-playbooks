@@ -5,16 +5,19 @@
     state: latest
     update_cache: yes
   loop: ['mariadb-server', 'python3-pymysql']
+  tags: [mariadb]
 
 - name: Ensure service is started
   service:
     name: mariadb
     state: started
     enabled: yes
+  tags: [mariadb]
 
 - name: Sleep for 15 seconds and continue with play
   wait_for:
     timeout: 15
+  tags: [mariadb]
 
 - name: Check if root password is set
   shell: |
@@ -22,6 +25,7 @@
   changed_when: false
   failed_when: false
   register: root_pwd_check
+  tags: [mariadb]
 
 - name: Set MariaDB root password for the first time
   mysql_user:
@@ -30,3 +34,4 @@
     state: present
     login_unix_socket: '{{ sql_db_socket }}'
   when: root_pwd_check.rc == 0
+  tags: [mariadb]

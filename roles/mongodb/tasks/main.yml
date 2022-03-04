@@ -4,11 +4,13 @@
   become: false
   command: ansible-galaxy collection install community.mongodb
   delegate_to: 127.0.0.1
+  tags: [mongodb]
 
 - name: Install MongoDB dependencies
   apt:
     name: python3-pymongo
     state: latest
+  tags: [mongodb]
 
 - name: Run docker install
   when: mongodb_use_docker | bool
@@ -17,10 +19,12 @@
   vars:
     docker_init_swarm: false
     docker_install_portainer: false
+  tags: [mongodb]
 
 - name: Install MongoDB
   when: mongodb_use_docker | bool
   include_tasks: install-mongodb-docker.yml
+  tags: [mongodb]
 
 - name: Install MongoDB
   when: mongodb_use_docker | bool == false
@@ -34,6 +38,7 @@
     - 'community.mongodb.mongodb_auth'
   loop_control:
     loop_var: mytask
+  tags: [mongodb]
 
 - name: Set init pw
   when: mongodb_use_docker | bool == false
@@ -43,9 +48,11 @@
     password: '{{ mongodb_root_pw }}'
     state: present
     update_password: always
+  tags: [mongodb]
 
 - name: Init MongoDB
-  include_tasks: init-mongodb.yml
+  import_tasks: init-mongodb.yml
+  tags: [mongodb]
 
 - name: Create backup directory if it does not exist
   file:
@@ -54,6 +61,7 @@
     mode: '0755'
     owner: root
     group: root
+  tags: [mongodb]
 
 - name: Copy backup script
   copy:
@@ -62,8 +70,10 @@
     owner: root
     group: root
     mode: '0755'
+  tags: [mongodb]
 
 - name: Setup cron jobs
-  include_tasks: shared/install-cron-jobs.yml
+  import_tasks: shared/install-cron-jobs.yml
   vars:
     cron_jobs: '{{ mongodb_cron_jobs }}'
+  tags: [mongodb]

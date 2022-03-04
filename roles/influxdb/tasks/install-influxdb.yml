@@ -4,18 +4,21 @@
   apt_key:
     url: https://repos.influxdata.com/influxdb.key
     state: present
+  tags: [influxdb]
 
 - name: Add influx repository
   apt_repository:
     repo: deb https://repos.influxdata.com/{{ ansible_distribution | lower }} {{ ansible_facts.lsb.codename }} stable
     update_cache: yes
     state: present
+  tags: [influxdb]
 
 - name: Ensure /etc/influxdb2/ directory exists
   file:
     path: /etc/influxdb2/
     state: directory
     mode: 0755
+  tags: [influxdb]
 
 - name: Set Influx conf location
   lineinfile:
@@ -23,6 +26,7 @@
      line: INFLUXD_CONFIG_PATH=/etc/influxdb2
      create: yes
   notify: Reboot
+  tags: [influxdb]
 
 - name: Copy influxdb-conf
   template:
@@ -30,27 +34,33 @@
     dest: /etc/influxdb2/influx.toml
     mode: '0644'
   notify: Reload
+  tags: [influxdb]
 
 - name: Ensure handlers are notified now
   meta: flush_handlers
+  tags: [influxdb]
 
 - name: Install Influxdb
   apt:
     name: '{{ item }}'
     state: latest
   loop: ['influxdb2', 'influxdb2-cli']
+  tags: [influxdb]
 
 - name: Ensure service is started
   service:
     name: influxdb
     state: started
     enabled: yes
+  tags: [influxdb]
 
 - name: Sleep for 15 seconds and continue with play
   wait_for:
     timeout: 15
+  tags: [influxdb]
 
 - name: Run Influx init
   command: 'influx setup --org {{ influx_organization }} --bucket {{ influx_root_bucket }} --username {{ influx_root_user }} --password {{ influx_root_pw }} --host http://{{ influx_listen_addr }} --force'
   register: influx_setup_res
-  ignore_errors: yes
+  ignore_errors: True
+  tags: [influxdb]

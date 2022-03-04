@@ -2,7 +2,7 @@
 ---
 
 - name: Log into docker registries
-  no_log: yes
+  no_log: True
   docker_login:
     registry_url: '{{ item.regestry | default("https://index.docker.io/v1/") }}'
     username: '{{ item.username }}'
@@ -15,7 +15,7 @@
 
 - name: Get the info on docker host
   docker_swarm_info:
-  ignore_errors: yes
+  ignore_errors: True
   register: swarm_info
   failed_when: 'not swarm_info.can_talk_to_docker'
   tags: [docker-deploy]
@@ -62,5 +62,5 @@
   tags: [docker-deploy, docker-deploy-service]
 
 - name: Install app via Docker
-  include_tasks: install-app-stack.yml
+  import_tasks: install-app-stack.yml
   tags: [docker-deploy, docker-deploy-stack]

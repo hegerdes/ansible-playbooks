@@ -4,12 +4,14 @@
   file:
     path: /srv/mariadb
     state: directory
+  tags: [mariadb]
 
 - name: Copy mariadb compose file
   template:
     src: mariadb-docker-compose.yml.j2
     dest: /srv/mariadb/mariadb-docker-compose.yml
     mode: '0644'
+  tags: [mariadb]
 
 - name: Deploy mariadb via compose
   docker_compose:
@@ -20,11 +22,13 @@
     files:
       - mariadb-docker-compose.yml
   register: mariadb_install_res
+  tags: [mariadb]
 
 - name: Sleep for 15 seconds and continue with play
   when: mariadb_install_res.changed
   wait_for:
     timeout: 15
+  tags: [mariadb]
 
 - name: Collect all possible DB information
   mysql_info:
@@ -32,8 +36,10 @@
     login_password : '{{ mariadb_root_pw }}'
     login_host: localhost
   register: mariadb_info_res
+  tags: [mariadb]
 
 - name: Print DB infomation
   debug:
     msg: 'Version: {{ mariadb_info_res.version.full }}; Faild: {{ mariadb_info_res.failed }}; DBs: {{ mariadb_info_res.databases }}'
+  tags: [mariadb]
 

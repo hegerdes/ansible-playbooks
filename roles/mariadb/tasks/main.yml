@@ -4,6 +4,7 @@
   apt:
     name: python3-pymysql
     state: latest
+  tags: [mariadb]
 
 - name: Run docker install
   when: mariadb_use_docker | bool
@@ -12,22 +13,27 @@
   vars:
     docker_init_swarm: false
     docker_install_portainer: false
+  tags: [mariadb]
 
 - name: Install MariaDB
   when: mariadb_use_docker | bool
   include_tasks: install-mariadb-docker.yml
+  tags: [mariadb]
 
 - name: Install MariaDB
   when: mariadb_use_docker | bool == false
   include_tasks: install-mariadb.yml
+  tags: [mariadb]
 
 - name: Init MariaDB
-  include_tasks: init-mariadb.yml
+  import_tasks: init-mariadb.yml
+  tags: [mariadb]
 
 - name: Setup cron jobs
-  include_tasks: shared/install-cron-jobs.yml
+  import_tasks: shared/install-cron-jobs.yml
   vars:
     cron_jobs: '{{ mariadb_cron_jobs }}'
+  tags: [mariadb]
 
 - name: Create backup directory if it does not exist
   file:
@@ -36,6 +42,7 @@
     mode: '0755'
     owner: root
     group: root
+  tags: [mariadb]
 
 - name: Copy backup script
   copy:
@@ -44,3 +51,4 @@
     owner: root
     group: root
     mode: '0755'
+  tags: [mariadb]

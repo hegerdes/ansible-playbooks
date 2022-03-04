@@ -3,6 +3,7 @@
 - name: Check nginx is installed
   command: nginx -V
   changed_when: false
+  tags: [php, php-nginx]
 
 - name: Copy NGINX conf files
   copy:
@@ -11,6 +12,7 @@
     owner: root
     group: root
     mode: '0644'
+  tags: [php, php-nginx]
 
 - name: Copy default nginx server conf file
   when: php_nginx_use_default_server | bool
@@ -18,6 +20,7 @@
     src: nginx-default-server.j2
     dest: /etc/nginx/conf.d/default.conf
     mode: '0644'
+  tags: [php, php-nginx]
 
 - name: Copy Hosts to nginx
   when: php_nginx_use_default_server | bool != true
@@ -27,17 +30,21 @@
     owner: root
     group: root
     mode: '0644'
+  tags: [php, php-nginx]
 
 - name: Check nginx syntax
   command: nginx -t
   register: res
   changed_when: false
   failed_when: '"warn" is in res.stderr_lines or "emerg" is in res.stderr_lines or res.rc != 0'
+  tags: [php, php-nginx]
 
 - name: Reload nginx
   command: nginx -s reload
+  tags: [php, php-nginx]
 
 - name: Verify Nginx is started
   service:
     name: nginx
     state: started
+  tags: [php, php-nginx]

@@ -7,17 +7,20 @@
     update_cache: yes
     install_recommends: no
   loop: [ 'ca-certificates', 'curl', 'gnupg', 'lsb-release']
+  tags: [docker, docker-install]
 
 - name: Add Docker GPG apt Key
   apt_key:
     url: https://download.docker.com/linux/debian/gpg
     state: present
+  tags: [docker, docker-install]
 
 - name: Add Docker repository
   apt_repository:
     repo: 'deb https://download.docker.com/linux/debian {{ ansible_facts.lsb.codename }} stable'
     update_cache: yes
     state: present
+  tags: [docker, docker-install]
 
 - name: Install docker
   apt:
@@ -33,6 +36,7 @@
       - 'python3-yaml'
       - 'gnupg2'
       - 'pass'
+  tags: [docker, docker-install]
 
 - name: Test Docker
   docker_host_info:

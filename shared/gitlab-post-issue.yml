@@ -12,5 +12,5 @@
       assignee_id: '{{ gitlab_conf.assignee_id | default("") | string }}'
       description: '{{ gitlab_conf.description }}'
     status_code: '{{ gitlab_conf.response_status | default(201)}}'
-  ignore_errors: yes
+  ignore_errors: True
   register: main_reop_issue_res

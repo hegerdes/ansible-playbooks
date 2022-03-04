@@ -2,7 +2,7 @@
 ---
 - name: Getting all hostkeys
   when: hostvars[item].ansible_facts.ens10 is defined
-  run_once: yes
+  run_once: True
   set_fact:
     all_hostkeys: "{{ all_hostkeys | default([]) + [hostvars[item].ansible_facts.ens10.ipv4.address + ' ssh-rsa ' + hostvars[item].ansible_facts.ssh_host_key_rsa_public] + [hostvars[item].ansible_facts.ens10.ipv4.address + ' ssh-ed25519 ' + hostvars[item].ansible_facts.ssh_host_key_ed25519_public] + [hostvars[item].ansible_facts.ens10.ipv4.address + ' ecdsa-sha2-nistp256 ' + hostvars[item].ansible_facts.ssh_host_key_ecdsa_public] }}"
   with_items: '{{ groups.all }}'
@@ -13,7 +13,7 @@
     name: aptitude
     state: latest
     update_cache: yes
-  tags: common
+  tags: [common, apt]
 
 - name: Install required system packages
   apt:

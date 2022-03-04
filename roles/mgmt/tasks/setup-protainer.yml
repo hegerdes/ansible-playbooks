@@ -17,11 +17,11 @@
       Content-Type: "application/json"
   register: mgmt_portainer_api_res
   failed_when: "mgmt_portainer_api_res.status != 200 and mgmt_portainer_api_res.status != 409"
-  ignore_errors: yes
+  ignore_errors: True
   tags: [mgmt, portainer]
 
 - name: Get Portainer Token
-  ignore_errors: yes
+  ignore_errors: True
   uri:
     url: 'http://{{ mgmt_portainer_host }}/api/auth'
     method: POST
@@ -45,5 +45,5 @@
       Content-Type: "multipart/form-data; boundary=<calculated when request is sent>"
       Authorization: 'Bearer {{ mgmt_portainer_api_res.json.jwt }}'
   with_dict: "{{ mgmt_portainer_nodes }}"
-  ignore_errors: yes
+  ignore_errors: True
   tags: [mgmt, portainer]

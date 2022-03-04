@@ -3,11 +3,13 @@
   apt_key:
     url: https://www.mongodb.org/static/pgp/server-5.0.asc
     state: present
+  tags: [mongodb]
 
 - name: Add MongoDB repository
   apt_repository:
     repo: deb http://repo.mongodb.org/apt/debian buster/mongodb-org/5.0 main
     state: present
+  tags: [mongodb]
 
 - name: Install MongoDB
   apt:
@@ -15,6 +17,7 @@
     state: latest
     update_cache: yes
     force_apt_get: yes
+  tags: [mongodb]
 
 - name: Reload mongod systemd
   systemd:
@@ -22,10 +25,11 @@
     state: started
     daemon_reload: yes
     enabled: yes
+  tags: [mongodb]
 
 - name: Ensure service is started
   service:
     name: mongod
     state: started
     enabled: yes
-
+  tags: [mongodb]

@@ -76,14 +76,14 @@
 - name: Check is ufw installed
   shell: command -v ufw >/dev/null 2>&1
   register: ufw_installed
-  ignore_errors: yes
+  ignore_errors: True
   changed_when: false
   tags: [node-exporter, monitoring, firewall]
 
 - name: Check is firewalld installed
   shell: command -v firewall-cmd >/dev/null 2>&1
   register: firewalld_installed
-  ignore_errors: yes
+  ignore_errors: True
   changed_when: false
   tags: [node-exporter, monitoring, firewall]
 

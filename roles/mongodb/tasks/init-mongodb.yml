@@ -11,4 +11,4 @@
   loop: '{{ mongodb_user_setups }}'
   loop_control:
     label: '{{ item.user }}'
-
+  tags: [mongodb]

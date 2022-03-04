@@ -1,5 +1,3 @@
-
-
 - name: Create a new databases
   influxdb_database:
     database_name: '{{ item.db }}'
@@ -9,6 +7,7 @@
   loop: '{{ influx_setups }}'
   loop_control:
     label: '{{ item.db }}'
+  tags: [influxdb]
 
 - name: Create a user on localhost using default login credentials
   influxdb_user:
@@ -20,6 +19,7 @@
   loop: '{{ influx_setups }}'
   loop_control:
     label: '{{ item.user }}'
+  tags: [influxdb]
 
 - name: Create backup directory if it does not exist
   file:
@@ -28,6 +28,7 @@
     mode: '0755'
     owner: root
     group: root
+  tags: [influxdb]
 
 - name: Copy backup script
   copy:
@@ -36,4 +37,4 @@
     owner: root
     group: root
     mode: '0744'
-
+  tags: [influxdb]
