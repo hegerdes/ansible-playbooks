@@ -14,5 +14,5 @@
       content: '{{ gitlab_conf.content | to_nice_json }}'
       commit_message: '{{ gitlab_conf.commit_message }}'
     status_code: 201
-  ignore_errors: yes
+  ignore_errors: True
   register: main_reop_logs_res

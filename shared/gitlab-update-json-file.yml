@@ -7,7 +7,7 @@
       PRIVATE-TOKEN: '{{ gitlab_conf.token }}'
       Content-Type: application/json
     status_code: 200
-  ignore_errors: yes
+  ignore_errors: True
   register: main_reop_logs_res
 
 - name: Post update log to GitLab
@@ -26,4 +26,4 @@
       content: '{{ main_reop_logs_res.json.content | default("e30=") | b64decode | from_json | combine(gitlab_conf.content) | to_nice_json }}'
       commit_message: '{{ gitlab_conf.commit_message }}'
     status_code: '{{ 201 if(main_reop_logs_res.status == 404) else 200 }}'
-  ignore_errors: yes
+  ignore_errors: True
