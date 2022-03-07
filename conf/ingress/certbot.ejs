@@ -1,0 +1,14 @@
+#!/bin/bash
+set -e
+
+MAIL=<%if (conf && conf.certbot_mail) {-%>  <%=conf.certbot_mail%> <%} else {%>"info@xyz.de"<%}%>
+DOMAINS=(<%for(let site of sites){-%> <%=site.host%><%}-%>)
+
+if [ $RUN_CERTBOT = "yes" ]; then
+    for DOMAIN in "${DOMAINS[@]}"; do
+        echo "Generating cert for ${DOMAIN}"
+        certbot --nginx -d $DOMAIN --agree-tos --non-interactive -m $MAIL
+    done
+fi
+
+sh /docker-entrypoint.sh nginx -g "daemon off;"

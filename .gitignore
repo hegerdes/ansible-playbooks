@@ -4,3 +4,4 @@ notes.txt
 inventories
 roles/traefik/tmp/
 node_modules
+conf/ingress/nginx/my-entrypoint.sh

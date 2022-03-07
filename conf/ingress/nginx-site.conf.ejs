@@ -63,7 +63,7 @@ server {
 
 # HTTP redirect
 server {
-    listen      <%=site.ip%>:80;
+    listen      <%if (!conf.use_docker) {%> <%=site.ip + ":"%><%}%>80;
     listen      [::]:80;
     server_name <%=site.host%>;
 

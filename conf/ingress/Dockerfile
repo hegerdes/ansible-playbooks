@@ -17,14 +17,20 @@ LABEL commit-tag=$COMMIT_TAG
 ENV TZ=Europe/Berlin
 ENV USE_DOCKER=true
 
+
 # For debugging
 ENTRYPOINT [ "sh" ]
 
 
 # RUN npm run generate-nginx ingress-hosts-nginx.yml
-
 # FROM nginx:1.20-alpine
-# RUN apk add certbot certbot-nginx
+# ARG RUN_CERTBOT="no"
+# ENV RUN_CERTBOT=$RUN_CERTBOT
+# RUN apk add bash certbot certbot-nginx && rm /etc/nginx/conf.d/*.conf
 
 # COPY --from=build /app/nginx /etc/nginx
-# RUN nginx -t
+# RUN mv /etc/nginx/my-entrypoint.sh /my-entrypoint.sh \
+#     && chmod +x /my-entrypoint.sh \
+#     && nginx -t
+
+# ENTRYPOINT [ "/my-entrypoint.sh" ]
