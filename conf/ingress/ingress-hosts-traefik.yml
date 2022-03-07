@@ -1,0 +1,31 @@
+
+conf:
+  traefik:
+    middlewares:
+      auth:
+        basicAuth:
+          users:
+            - "test:$apr1$H6uskkkW$IgXLP6ewTrSuBkTrqE8wj/"
+      testHeader:
+        headers:
+          customResponseHeaders:
+            X-Custom-Response-Header: "value"
+########################################################################
+sites:
+  - host: default.work.henrikgerdes.me
+    ip: 162.55.216.225
+    upstreams:
+      - 10.10.0.4:8001
+  - host: whoami.work.henrikgerdes.me
+    upstreams:
+      - 10.10.0.4:8003
+    traefik:
+      protocol: http
+      middlewares: [auth, testHeader]
+  - host: custom.work.henrikgerdes.me
+    upstreams:
+      - 10.10.0.4:22
+      - 10.10.0.4:22
+    tls: no
+    traefik:
+      protocol: tcp

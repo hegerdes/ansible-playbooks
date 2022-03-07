@@ -1,0 +1,81 @@
+# Upstream target
+upstream <%=site.host%>_upstream {
+    <% for(var tmp of site.upstreams) {%>
+    server <%=tmp%>;<%
+    }%>
+}
+
+# Server
+server {
+    # Server-name will be domain name
+    server_name <%=site.host%>;
+
+    <%if (conf.common_server_settings) {-%>
+    # Sever settings for all sites
+    <%for(let setting of conf.common_server_settings.split(/\r?\n/)) {-%>
+        <%=setting%>
+    <%}-%>
+<%}-%>
+<%if (site.server_settings) {-%>
+    # Sever settings per site
+    <%for(let setting of site.server_settings.split(/\r?\n/)) {-%>
+        <%=setting%>
+    <%}-%>
+<%}-%>
+
+    # ACME-challenge
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/www/_letsencrypt;
+    }
+
+<%if (site.nginx && site.nginx.locations) {-%>
+    <%for(let location of site.nginx.locations) {-%>
+        location <%=location.route-%> {
+            <%for(let line of conf.common_header.split(/\r?\n/)) {-%>
+                <%=line%>
+            <%}-%>
+            <%for(let line of location.body.split(/\r?\n/)) {-%>
+                <%=line%>
+            <%}-%>
+            }
+    <%}-%>
+<%}-%>
+<%if (!site.nginx || !site.nginx.locations || site.nginx.locations.length == 0) {-%>
+    location / {
+        <%for(let line of conf.common_header.split(/\r?\n/)) {-%>
+            <%=line%>
+        <%}-%>
+        proxy_pass http://<%= site.host %>_upstream/;
+        }
+<%}-%>
+
+    listen <%if (!conf.use_docker) {%> <%=site.ip + ":"%><%}%>443 ssl http2; # managed by Certbot
+    ssl_certificate <%if (site.tls && site.tls.cert) {%> <%=site.tls.cert%><% }else{ %>/etc/nginx/ssl/dummy/fullchain.pem<%}%>; # managed by Certbot
+    ssl_certificate_key <%if (site.tls && site.tls.key) {%> <%=site.tls.key%><% }else{ %>/etc/nginx/ssl/dummy/privkey.pem<%}%>; # managed by Certbot
+    include /etc/nginx/ssl/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/nginx/ssl/ssl-dhparams.pem; # managed by Certbot
+
+    # Shared sec settings
+    include shared.conf/security.conf;
+    # Shared server settings
+    include shared.conf/general.conf;
+}
+
+# HTTP redirect
+server {
+    listen      <%=site.ip%>:80;
+    listen      [::]:80;
+    server_name <%=site.host%>;
+
+    # ACME-challenge
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/www/_letsencrypt;
+    }
+
+    location / {
+        return 301 https://<%=site.host%>$request_uri;
+    }
+
+    # Shared server settings
+    include shared.conf/general.conf;
+}

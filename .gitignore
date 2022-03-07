@@ -3,3 +3,4 @@ notes.txt
 *.log
 inventories
 roles/traefik/tmp/
+node_modules

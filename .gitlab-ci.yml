@@ -9,7 +9,7 @@ include:
 stages:
   - build
 
-build_tags:
+image-build-playbooks-tags:
   extends: .build_template
   variables:
     COMMIT_TAG: $CI_COMMIT_TAG
@@ -17,9 +17,18 @@ build_tags:
   rules:
     - if: $CI_COMMIT_TAG
 
-build_branch:
+image-build-playbooks-branch:
   extends: .build_template
   variables:
+    BUILD_IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_BRANCH
+  rules:
+    - if: $CI_COMMIT_BRANCH
+
+image-build-ingress-genarator:
+  extends: .build_template
+  variables:
+    DOCKERFILE: $CI_PROJECT_DIR/conf/ingress/Dockerfile
+    CONTEXT: $CI_PROJECT_DIR/conf/ingress/
     BUILD_IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_BRANCH
   rules:
     - if: $CI_COMMIT_BRANCH
