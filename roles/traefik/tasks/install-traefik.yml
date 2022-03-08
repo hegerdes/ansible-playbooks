@@ -1,11 +1,90 @@
-# Install traefik
+# Main Traefik Setup
 ---
-- name: Install traefik on bare-metal
-  when: traefik_use_docker | bool != true
-  include_tasks: install-traefik-host.yml
+- name: Add traefik user
+  user:
+    name: traefik
+    comment: User for traefik server
+    group: adm
+    shell: /usr/sbin/nologin
+    create_home: no
+    system: yes
+    state: present
   tags: [ingress, traefik]
 
-- name: Install traefik via docker
-  when: traefik_use_docker | bool
-  include_tasks: install-traefik-docker.yml
+- name: Check if traefik is setup
+  command: "which traefik"
+  register: traefik_check_result
+  changed_when: false
+  failed_when: false
+  tags: [ingress, traefik]
+
+- name: Get traefik URL
+  shell: |
+    curl --silent https://api.github.com/repos/traefik/traefik/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep linux_amd64.tar.gz
+  changed_when: false
+  register: traefik_url
+  tags: [ingress, traefik]
+
+- name: Download and unzip traefik
+  when: traefik_check_result.stdout == "" or traefik_force_reinstall
+  unarchive:
+    src: '{{ traefik_url.stdout }}'
+    dest: /tmp
+    remote_src: yes
+  tags: [ingress, traefik]
+
+- name: Give insecure permissions to an existing file
+  when: traefik_check_result.stdout == "" or traefik_force_reinstall
+  file:
+    path: /tmp/traefik
+    owner: traefik
+    group: adm
+    mode: '0750'
+
+- name: Install traefik
+  when: traefik_check_result.stdout == "" or traefik_force_reinstall
+  shell: |
+    mv /tmp/traefik /usr/local/bin/traefik
+  notify: Restart traefik
+  tags: [ingress, traefik]
+
+- name: Test traefik
+  command: "traefik version"
+  changed_when: false
+  tags: [ingress, traefik]
+
+- name: Copy traefik service config
+  template:
+    src: traefik.service.j2
+    dest: /etc/systemd/system/traefik.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart traefik
+  tags: [ingress, traefik]
+
+- name: Ensue config folder exists
+  file:
+    path: /srv/traefik
+    state: directory
+  tags: [ingress, traefik]
+
+- name: Ensue log folder exists
+  file:
+    path: /var/log/traefik
+    recurse: yes
+    state: directory
+    owner: traefik
+    group: adm
+    mode: '0644'
+  tags: [ingress, traefik]
+
+- name: Copy Traefik default config
+  copy:
+    src:  traefik
+    dest: /srv/traefik
+    owner: traefik
+    group: adm
+    mode: '0666'
+  notify: Restart traefik
   tags: [ingress, traefik]

@@ -1,11 +1,45 @@
 # Start nginx
 ---
-- name: Start nginx on bare-metal
-  when: nginx_use_docker | bool != true
-  include_tasks: start-nginx-host.yml
-  tags: [ingress, nginx]
+- name: Check nginx syntax
+  command: nginx -t
+  register: res
+  changed_when: false
+  failed_when: '"warn" is in res.stderr_lines or "emerg" is in res.stderr_lines or res.rc != 0'
+  tags: [ingress, nginx, ingress-hosts]
 
-- name: Start nginx via docker
-  when: nginx_use_docker | bool
-  include_tasks: start-nginx-docker.yml
-  tags: [ingress, nginx]
+- name: Verify Nginx is started
+  service:
+    name: nginx
+    state: started
+  tags: [ingress, nginx, ingress-hosts]
+
+- name: Ensure handlers are notified now
+  meta: flush_handlers
+  tags: [ingress, nginx, ingress-hosts]
+
+- name: Verify Certbot Installation
+  apt:
+    name: [ 'certbot', 'python3-certbot', 'python3-certbot-nginx']
+    state: latest
+  tags: [ingress, nginx, ingress-hosts]
+
+- name: Run Certbot
+  when: nginx_run_certbot | bool and (nginx_created_hosts.changed or nginx_force_reinstall_hosts) and nginx_vhost.tls.crt is not defined
+  command: 'certbot --nginx -d {{ nginx_vhost.host }} --agree-tos --non-interactive -m {{ nginx_certbot_mail }} {{"--test-cert" if (nginx_testing_certbot | default(false) ) }}'
+  loop: '{{ ingress_hosts.sites | default(nginx_default_hosts.sites) }}'
+  loop_control:
+    loop_var: nginx_vhost
+    label: '{{ nginx_vhost.host }}'
+  notify: Reload nginx
+  tags: [ingress, nginx, ingress-hosts]
+
+- name: Check nginx syntax
+  command: nginx -t
+  register: res
+  changed_when: false
+  failed_when: '"warn" is in res.stderr_lines or "emerg" is in res.stderr_lines or res.rc != 0'
+  tags: [ingress, nginx, ingress-hosts]
+
+- name: Ensure handlers are notified now
+  meta: flush_handlers
+  tags: [ingress, nginx, ingress-hosts]

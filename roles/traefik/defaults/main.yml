@@ -3,10 +3,6 @@
 ingress_hosts_file: null
 ingress_hosts: '{{lookup("file", ingress_hosts_file) | from_yaml if(ingress_hosts_file) }}'
 
-# Docker
-traefik_use_docker: no
-traefik_docker_version: v2.6
-
 # Traefik host & Certbot setting
 traefik_enable_dashboard: yes
 traefik_force_reinstall: no
@@ -22,7 +18,7 @@ traefik_firewall_rules: []
 
 traefik_dashboard_conf:
   traefik-dashboard:
-    entryPoints: '{{["web_" if(traefik_use_docker) else "web_" + ansible_default_ipv4.address | hash("md5")]}}'
+    entryPoints: '{{["web_" + ansible_default_ipv4.address | hash("md5")]}}'
     rule: 'Host(`traefik.{{ traefik_default_tld }}`)'
     service: api@internal
 
@@ -51,14 +47,7 @@ traefik_default_hosts:
       upstreams: [127.0.0.1:3000]
 
 # Log config
-traefik_log_conf: '{{ traefik_docker_log_conf if(traefik_use_docker) else traefik_host_log_conf }}'
-traefik_docker_log_conf:
-  log:
-    level: DEBUG
-    format: json
-  accessLog:
-    format: json
-traefik_host_log_conf:
+traefik_log_conf:
   log:
     level: DEBUG
     format: json

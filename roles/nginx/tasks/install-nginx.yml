@@ -1,11 +1,50 @@
 # Install nginx
 ---
-- name: Install nginx on bare-metal
-  when: nginx_use_docker | bool != true
-  include_tasks: install-nginx-host.yml
+- name: Add nginx GPG apt Key
+  apt_key:
+    url: https://nginx.org/keys/nginx_signing.key
+    state: present
   tags: [ingress, nginx]
 
-- name: Install nginx via docker
-  when: nginx_use_docker | bool
-  include_tasks: install-nginx-docker.yml
+- name: Add nginx repository
+  apt_repository:
+    repo: deb http://nginx.org/packages/debian/ {{ ansible_facts.lsb.codename }} nginx
+    update_cache: yes
+    state: present
   tags: [ingress, nginx]
+
+- name: Install nginx
+  apt:
+    name: nginx
+    state: latest
+  tags: [ingress, nginx]
+
+- name: Ensue nginx user
+  user:
+    name: nginx
+    group: nginx
+    groups: [nginx, www-data]
+    shell: /bin/false
+    create_home: no
+    append: yes
+    system: yes
+    state: present
+  tags: [ingress, nginx]
+
+- name: Start nginx
+  service:
+    name: nginx
+    state: started
+    enabled: yes
+  tags: [ingress, nginx]
+
+- name: Remove default nginx config
+  file:
+    name: /etc/nginx/sites-enabled/default
+    state: absent
+  tags: [ingress, nginx]
+
+- name: Update Promtail config
+  when: nginx_update_promtail | bool
+  import_tasks: update-promtail.yml
+  tags: [ingress, ingress-logs]
