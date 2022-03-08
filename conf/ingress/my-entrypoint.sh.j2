@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# Start cron
+echo "Starting cron"
+cron
+
+# Start nginx
+sh /docker-entrypoint.sh nginx -g "daemon off;" &
+MAIN_PID=$!
+
+MAIL={{ conf.certbot_mail | default("info@xyz.de") }}
+DOMAINS=({% for site in sites %}{{ site.host }} {% endfor %})
+
+
+# Start init certbot if set
+if [ $RUN_CERTBOT = "yes" ]; then
+    for DOMAIN in "${DOMAINS[@]}"; do
+        echo "Generating cert for ${DOMAIN}"
+        certbot --nginx -d $DOMAIN --agree-tos --non-interactive -m $MAIL
+    done
+fi
+
+# Wait for nginx to exit
+wait $MAIN_PID
