@@ -34,10 +34,11 @@ let conf_dst = `${__dirname}/nginx/conf.d`
     var res = await ejs.renderFile(__dirname + '/nginx-site.conf.ejs', {site:site, conf:ingress.conf.nginx}, {async: true})
     console.log(`Writing to ${conf_dst}/${site.host}.conf`)
     fs.writeFileSync(`${conf_dst}/${site.host}.conf`, res)
-    // console.log(res)
   }
-  var res = await ejs.renderFile(__dirname + '/certbot.ejs', {sites:ingress.sites, conf:ingress.conf.nginx}, {async: true})
+  var res = await ejs.renderFile(__dirname + '/my-entrypoint.sh.ejs', {sites:ingress.sites, conf:ingress.conf.nginx}, {async: true})
+  console.log(`Writing entrypoint to ${__dirname}/nginx/my-entrypoint.sh`)
   fs.writeFileSync(`${__dirname}/nginx/my-entrypoint.sh`, res)
+  console.log('done')
 }
 
 async function run(){

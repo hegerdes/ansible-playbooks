@@ -1,0 +1,1 @@
+30 23 * * 0 if [ $RUN_CERTBOT = "yes" ]; then certbot renew --post-hook "nginx -s reload" > /proc/1/fd/1 2>/proc/1/fd/2
