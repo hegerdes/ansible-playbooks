@@ -3,3 +3,78 @@
 
 ingress_proxy: '{{ ingress_default_proxy }}'
 ingress_default_proxy: nginx
+
+
+ingress_conf:
+  conf:
+    nginx:
+      common_header: |
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-Protocol $scheme;
+        proxy_set_header X-Forwarded-For $remote_addr;
+      common_server_settings: ''
+########################################################################
+# NOTE: nginx
+# The upsteams are always named after the host with the suffix _upstream
+# Resulting in <HOSTNAME>_upstream. To pass use proxy_pass http://<HOSTNAME>_upstream/;
+# Example Host: example.com; upstream: example.com_upstream
+# If no location is given a default location ("/") is created.
+# This location contains the common headers and the proxypass to the defined upstream ips
+########################################################################
+# NOTE: traefik
+    traefik:
+      middlewares:
+        auth:
+          basicAuth:
+            users:
+              - "test:$apr1$H6uskkkW$IgXLP6ewTrSuBkTrqE8wj/"
+        testHeader:
+          headers:
+            customResponseHeaders:
+              X-Custom-Response-Header: "value"
+############################## sites-nginx #####################################
+  sites:
+    - host: default.devops-testing.123preview.com
+      ip: 116.202.189.62
+      upstreams:
+        - 10.10.0.2:8001
+      # tls:
+      #   crt: /etc/letsencrypt/dummy/fullchain.pem
+      #   key: /etc/letsencrypt/dummy/privkey.pem
+    - host: whoami.devops-testing.123preview.com
+      ip: 116.202.189.62
+      upstreams:
+        - 10.10.0.2:8003
+    - host: custom.devops-testing.123preview.com
+      ip: 116.202.189.62
+      upstreams:
+        - 10.10.0.2:8002
+        - 10.10.0.2:8002
+      nginx:
+        locations:
+          - route: /
+            body: |
+              proxy_pass http://custom.devops-testing.123preview.com_upstream;
+          - route: /test
+            body: |
+              return 404;
+        server_settings: ''
+############################## sites-traefik #####################################
+    - host: default.work.henrikgerdes.me
+      ip: 162.55.216.225
+      upstreams:
+        - 10.10.0.4:8001
+    - host: whoami.work.henrikgerdes.me
+      upstreams:
+        - 10.10.0.4:8003
+      traefik:
+        protocol: http
+        middlewares: [auth, testHeader]
+    - host: custom.work.henrikgerdes.me
+      upstreams:
+        - 10.10.0.4:22
+        - 10.10.0.4:22
+      tls: no
+      traefik:
+        protocol: tcp

@@ -8,18 +8,18 @@ upstream <%=site.host%>_upstream {
 # Server
 server {
     # Server-name will be domain name
-    server_name <%=site.host%>;
+    server_name <%-site.host%>;
 
     <%if (conf.common_server_settings) {-%>
     # Sever settings for all sites
     <%for(let setting of conf.common_server_settings.split(/\r?\n/)) {-%>
-        <%=setting%>
+        <%-setting%>
     <%}-%>
 <%}-%>
 <%if (site.server_settings) {-%>
     # Sever settings per site
     <%for(let setting of site.server_settings.split(/\r?\n/)) {-%>
-        <%=setting%>
+        <%-setting%>
     <%}-%>
 <%}-%>
 
@@ -32,20 +32,20 @@ server {
     <%for(let location of site.nginx.locations) {-%>
         location <%=location.route-%> {
             <%for(let line of conf.common_header.split(/\r?\n/)) {-%>
-                <%=line%>
+                <%-line%>
             <%}-%>
             <%for(let line of location.body.split(/\r?\n/)) {-%>
-                <%=line%>
+                <%-line%>
             <%}-%>
             }
     <%}-%>
 <%}-%>
 <%if (!site.nginx || !site.nginx.locations || site.nginx.locations.length == 0) {-%>
-    location / {
+    location <%if (conf.common_location_prefix) {%><%-conf.common_location_prefix%><% }else{ %>/<%}%> {
         <%for(let line of conf.common_header.split(/\r?\n/)) {-%>
-            <%=line%>
+            <%-line%>
         <%}-%>
-        proxy_pass http://<%= site.host %>_upstream/;
+        proxy_pass http://<%- site.host %>_upstream/<%if (conf.common_proxypass_suffix) {%><%-conf.common_proxypass_suffix%><% } %>;
         }
 <%}-%>
 
