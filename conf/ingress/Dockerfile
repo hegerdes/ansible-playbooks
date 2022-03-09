@@ -21,15 +21,22 @@ ENV USE_DOCKER=true
 # For debugging
 ENTRYPOINT [ "sh" ]
 
-
+# # Genarate config
 # RUN npm run generate-nginx ingress-hosts-nginx.yml
-# FROM nginx:1.20-alpine
+
+# FROM nginx:1.20
 # ARG RUN_CERTBOT="no"
 # ENV RUN_CERTBOT=$RUN_CERTBOT
-# RUN apk add bash certbot certbot-nginx && rm /etc/nginx/conf.d/*.conf
+# RUN apt-get update && apt-get install -q -y --no-install-recommends \
+#     bash cron certbot python3-certbot-nginx \
+#     && rm /etc/nginx/conf.d/*.conf \
+#     && rm -rf /var/lib/apt/lists/*
 
 # COPY --from=build /app/nginx /etc/nginx
 # RUN mv /etc/nginx/my-entrypoint.sh /my-entrypoint.sh \
+#     && mv /etc/nginx/certbot-renew /etc/cron.d/certbot-renew \
+#     && chmod 0644 /etc/cron.d/certbot-renew \
+#     && crontab /etc/cron.d/certbot-renew \
 #     && chmod +x /my-entrypoint.sh \
 #     && nginx -t
 

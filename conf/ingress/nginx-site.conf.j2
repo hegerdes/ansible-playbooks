@@ -31,16 +31,16 @@ server {
 
 {% if nginx_vhost.nginx.locations | default([]) | length == 0 -%}
     location / {
-        {{ nginx_settings.common_header | trim |indent(8) if (nginx_settings.common_header) }}
+        {{ nginx_settings.common_header | trim | indent(8) if (nginx_settings.common_header) }}
         proxy_pass http://{{ nginx_vhost.host }}_upstream/;
     }
 {% endif %}
 
     listen 443 ssl http2; # managed by Certbot
-    ssl_certificate {{ nginx_vhost.tls.cert | default("/etc/letsencrypt/dummy/fullchain.pem") }}; # managed by Certbot
-    ssl_certificate_key {{ nginx_vhost.tls.key | default("/etc/letsencrypt/dummy/privkey.pem") }}; # managed by Certbot
-    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
-    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+    ssl_certificate {{ nginx_vhost.tls.cert | default("/etc/nginx/ssl/dummy/fullchain.pem") }}; # managed by Certbot
+    ssl_certificate_key {{ nginx_vhost.tls.key | default("/etc/nginx/ssl/dummy/privkey.pem") }}; # managed by Certbot
+    include /etc/nginx/ssl/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/nginx/ssl/ssl-dhparams.pem; # managed by Certbot
 
     # Shared sec settings
     include shared.conf/security.conf;

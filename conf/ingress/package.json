@@ -12,7 +12,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "ejs": "^3.1.6",
     "js-yaml": "^4.1.0",
     "nunjucks": "^3.2.3"
   }
