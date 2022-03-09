@@ -1,11 +1,13 @@
 # Upstream target
 
+{% if(nginx_vhost.upstreams | default([]) | length != 0) %}
     # Upstream target
     upstream {{ nginx_vhost.host }}_upstream {
         {% for up in nginx_vhost.upstreams | default([]) -%}
             server {{ up }};
         {% endfor %}
     }
+{% endif %}
 
 # Server
 server {
