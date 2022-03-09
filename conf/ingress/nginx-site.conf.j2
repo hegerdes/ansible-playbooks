@@ -50,7 +50,7 @@ server {
 
 # HTTP redirect
 server {
-    listen      {{ nginx_vhost.ip }}:80;
+    listen      80;
     listen      [::]:80;
     server_name {{ nginx_vhost.host }};
 

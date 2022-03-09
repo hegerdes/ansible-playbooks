@@ -39,6 +39,20 @@
   loop: '{{ docker_deploy_file_permissions }}'
   tags: [docker-deploy]
 
+- name: Generate volume list
+  when: item.1.type is defined and item.1.type == "volume"
+  set_fact:
+    docker_deploy_volumes: '{{ docker_deploy_volumes | default([]) + [item.1.source] }}'
+  loop: '{{ docker_deploy_services | subelements("mounts", "skip_missing=True") }}'
+  tags: [docker-deploy, docker-deploy-service]
+
+- name: Create volumes
+  docker_volume:
+    name: '{{ item }}'
+    state: present
+  loop: '{{ docker_deploy_volumes | default([]) }}'
+  tags: [docker-deploy, docker-deploy-service]
+
 - name: Create Service
   docker_swarm_service:
     env: '{{ item.env | default(omit)}}'
@@ -62,6 +76,6 @@
   loop: '{{ docker_deploy_services }}'
   tags: [docker-deploy, docker-deploy-service]
 
-- name: Install app via Docker
-  import_tasks: install-app-stack.yml
-  tags: [docker-deploy, docker-deploy-stack]
+# - name: Install app via Docker
+#   import_tasks: install-app-stack.yml
+#   tags: [docker-deploy, docker-deploy-stack]
