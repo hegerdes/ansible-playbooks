@@ -13,7 +13,7 @@ services:
       - {{ mgmt_docker_stack_name }}_mgmt_net
     ports:
       - target: 80
-        published: {{ 8080 if(mgmt_use_traefik or mgmt_use_nginx) else 80 }}
+        published: {{ 8080 if(mgmt_use_traefik) else 80 }}
         protocol: tcp
         mode: host
     deploy:

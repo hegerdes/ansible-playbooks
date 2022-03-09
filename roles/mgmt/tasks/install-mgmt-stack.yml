@@ -1,11 +1,5 @@
 # Install mgmt stack
 ---
-- name: Checking proxy configuration
-  fail:
-    msg: Can not use Traefik and Nginx as proxy
-  when: mgmt_use_nginx and mgmt_use_traefik
-  tags: [mgmt, mgmt-stack]
-
 - name: Install pip3
   apt:
     name: ['python3-pip', 'libffi-dev']
@@ -104,11 +98,6 @@
     timeout: 60
   loop: [9000, 3000]
   tags: [mgmt, mgmt-stack]
-
-- name: Setup Nginx-Proxy
-  when: mgmt_use_nginx
-  include_tasks: install-mgmt-stack-nginx.yml
-  tags: [mgmt, mgmt-stack, mgmt-nginx]
 
 - name: Shows stack info
   community.docker.docker_stack_info:
