@@ -27,9 +27,9 @@ sites:
     ip: 116.202.189.62
     upstreams:
       - 10.10.0.2:8001
-    # tls:
-    #   crt: /etc/letsencrypt/dummy/fullchain.pem
-    #   key: /etc/letsencrypt/dummy/privkey.pem
+    tls:
+      crt: /etc/nginx/ssl/dummy/fullchain.pem
+      key: /etc/nginx/ssl/dummy/privkey.pem
   - host: whoami.devops-testing.123preview.com
     ip: 116.202.189.62
     upstreams:

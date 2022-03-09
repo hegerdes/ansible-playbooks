@@ -9,7 +9,7 @@ sh /docker-entrypoint.sh nginx -g "daemon off;" &
 MAIN_PID=$!
 
 MAIL={{ conf.certbot_mail | default("info@xyz.de") }}
-DOMAINS=({% for site in sites %}{{ site.host }} {% endfor %})
+DOMAINS=({% for site in sites %}{% if not site.tls %}{{ site.host }} {% endif %}{% endfor %})
 
 
 # Start init certbot if set
