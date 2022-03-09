@@ -13,9 +13,9 @@ server {
     server_name {{ nginx_vhost.host }};
 
     # Sever settings for all sites
-    {{ ingress_hosts.nginx.common_server_settings | default("# None") | indent(4) }}
+    {{ ingress_hosts.nginx.common_server_settings | default("# None") | safe | indent(4) }}
     # Sever settings per site
-    {{ nginx_vhost.nginx.server_settings | default("# None") | indent(4) }}
+    {{ nginx_vhost.nginx.server_settings | default("# None") | safe | indent(4) }}
 
     # ACME-challenge
     location ^~ /.well-known/acme-challenge/ {
@@ -24,14 +24,14 @@ server {
 
 {% for location in nginx_vhost.nginx.locations | default([]) %}
     location {{ location.route }} {
-        {{ nginx_settings.common_header | trim | indent(8) if (nginx_settings.common_header) }}
+        {{ nginx_settings.common_header | safe | trim | indent(8) if (nginx_settings.common_header) }}
         {{ location.body | indent(8) }}
     }
 {% endfor %}
 
 {% if nginx_vhost.nginx.locations | default([]) | length == 0 -%}
     location / {
-        {{ nginx_settings.common_header | trim | indent(8) if (nginx_settings.common_header) }}
+        {{ nginx_settings.common_header | safe | trim | indent(8) if (nginx_settings.common_header) }}
         proxy_pass http://{{ nginx_vhost.host }}_upstream/;
     }
 {% endif %}
