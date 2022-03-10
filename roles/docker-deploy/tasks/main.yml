@@ -69,7 +69,7 @@
     command: '{{ item.command | default(omit)}}'
     configs: '{{ item.configs | default(omit)}}'
     publish: '{{ item.ports | default(omit)}}'
-    replicas: '{{item.networks | default(1)}}'
+    replicas: '{{item.replicas | default(1)}}'
     labels: '{{ item.labels | default(omit)}}'
     resolve_image: yes
     force_update: true

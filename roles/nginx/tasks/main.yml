@@ -6,7 +6,7 @@
   register: nginx_host_extra_files
   delegate_to: localhost
   become: False
-  tags: [ingress, nginx]
+  tags: [ingress, nginx, ingress-hosts]
 
 - name: Set floating IPs
   when: ingress_floating_ips | length > 0
