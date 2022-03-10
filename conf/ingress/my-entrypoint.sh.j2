@@ -1,5 +1,15 @@
 #!/bin/bash
 
+# Exit handling
+_term() {
+  echo "Caught SIGTERM signal!"
+  kill -TERM "$CRON_PID"
+  kill -TERM "$MAIN_PID"
+}
+
+# Trab exit signal
+trap _term SIGTERM
+
 # Start cron
 echo "Starting cron"
 cron

@@ -1,6 +1,7 @@
 
 conf:
   nginx:
+    # Header for all vhosts
     common_header: |
       proxy_set_header Host $host;
       proxy_set_header X-Real-IP $remote_addr;
@@ -11,6 +12,7 @@ conf:
       proxy_cache_bypass $http_upgrade;
       client_max_body_size 200M;
       proxy_redirect http:// $scheme://;
+    # Settings for all vhosts server section
     common_server_settings: ''
 # NOTE: Upstream
 # The upsteams are always named by the HOST prefix and the name on the current upstream
