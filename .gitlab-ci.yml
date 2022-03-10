@@ -37,6 +37,9 @@ image-build-ingress-genarator:
         - conf/ingress/ingress-hosts-traefik.yml
         - conf/ingress/generate-ingress-conf.js
         - conf/ingress/Dockerfile
+        - conf/ingress/nginx-site.conf.j2
+        - conf/ingress/my-entrypoint.sh.j2
+        - conf/ingress/nginx-site-http-only.conf.j2
 
 image-build-ingress-tester:
   extends: .build_template
@@ -45,6 +48,7 @@ image-build-ingress-tester:
     CONTEXT: $CI_PROJECT_DIR/conf/ingress/
     BUILD_IMAGE_TAG: $CI_REGISTRY_IMAGE/ingress-genarator:$CI_COMMIT_BRANCH
     KANIKO_NO_PUSH: "yes"
+    KANIKO_USE_CACHE: "no"
   rules:
     - if: $CI_COMMIT_BRANCH
       changes:
@@ -53,3 +57,6 @@ image-build-ingress-tester:
         - conf/ingress/generate-ingress-conf.js
         - conf/ingress/Dockerfile
         - conf/ingress/Dockerfile.test
+        - conf/ingress/nginx-site.conf.j2
+        - conf/ingress/my-entrypoint.sh.j2
+        - conf/ingress/nginx-site-http-only.conf.j2
