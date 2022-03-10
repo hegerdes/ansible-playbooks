@@ -75,10 +75,10 @@
 - name: Creating hosts for nginx
   when: nginx_vhost.host + ".conf" not in nginx_deployed_hosts.stdout_lines or nginx_force_reinstall_hosts
   template:
-    src: 'site.conf.j2'
+    src: '{{ "nginx-site.conf.j2" if(nginx_vhost.tls | default({}) | string != "no") else "nginx-site-http-only.conf.j2" }}'
     dest: '/etc/nginx/conf.d/{{ nginx_vhost.host }}.conf'
     mode: '0644'
-  loop: '{{ ingress_hosts.sites | default(nginx_default_hosts.sites) }}'
+  loop: '{{ ingress_hosts.sites  }}'
   loop_control:
     loop_var: nginx_vhost
     label: '{{ nginx_vhost.host }}'

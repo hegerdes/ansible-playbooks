@@ -24,7 +24,7 @@
   tags: [ingress, nginx, ingress-hosts]
 
 - name: Run Certbot
-  when: nginx_run_certbot | bool and (nginx_created_hosts.changed or nginx_force_reinstall_hosts) and nginx_vhost.tls.crt is not defined
+  when: nginx_run_certbot | bool and nginx_vhost.tls.crt is not defined and (nginx_created_hosts.changed or nginx_force_reinstall_hosts) and (nginx_vhost.tls | default("yes") != "no")
   command: 'certbot --nginx -d {{ nginx_vhost.host }} --agree-tos --non-interactive -m {{ nginx_certbot_mail }} {{"--test-cert" if (nginx_testing_certbot | default(false) ) }}'
   loop: '{{ ingress_hosts.sites | default(nginx_default_hosts.sites) }}'
   loop_control:
