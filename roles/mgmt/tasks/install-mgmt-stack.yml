@@ -36,13 +36,12 @@
   loop: '{{ mgmt_services_to_install }}'
   tags: [mgmt, mgmt-stack]
 
-
 - name: Setting Grafana password
-  no_log: true
-  template:
-    src: 'grafana.j2'
+  copy:
+    content: '{{ mgmt_grafana_pw }}'
     dest: '{{ mgmt_dst_config_files }}/mgmt-grafana/grafana_admin_pw.txt'
-    mode: '0644'
+    mode: 0644
+  when: docker_daemon_options.keys() | length > 0
   tags: [mgmt, mgmt-stack]
 
 - name: Init a new swarm

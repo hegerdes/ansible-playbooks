@@ -42,6 +42,7 @@ mgmt_chronograf_port: 8888
 
 # Grafana and Portainer setup
 mgmt_setup_portainer: yes
+mgmt_portainer_edition: ce
 mgmt_portainer_pw: mySuperSecureAdminPW
 mgmt_portainer_host: localhost:9000
 mgmt_portainer_included_agent: no

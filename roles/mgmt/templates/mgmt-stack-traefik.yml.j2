@@ -38,7 +38,7 @@ services:
       {{ mgmt_traefik_auth_labels.traefik | default("") | indent(width=6) if(not mgmt_use_swarm_mode) }}
 
   whoami:
-    image: containous/whoami
+    image: containous/whoami:latest
     networks:
       - {{ mgmt_docker_stack_name }}_mgmt_net
     deploy:

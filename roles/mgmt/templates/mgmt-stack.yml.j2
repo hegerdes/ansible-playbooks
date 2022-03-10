@@ -4,7 +4,7 @@ services:
 # ToDo: Make portainer sock configurable
 # Same for labels treafik
   portainer:
-    image: portainer/portainer-ce:latest
+    image: portainer/portainer-{{ mgmt_portainer_edition }}:latest
     environment:
       - TZ=Europe/Berlin
     networks:
