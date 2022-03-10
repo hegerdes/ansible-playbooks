@@ -26,7 +26,7 @@ server {
 {% for location in nginx_vhost.nginx.locations | default([]) %}
     location {{ location.route }} {
         {{ nginx_settings.common_header | safe | trim | indent(8) if (nginx_settings.common_header) }}
-        {{ location.body | indent(8) }}
+        {{ location.body | safe | indent(8) }}
     }
 {% endfor %}
 

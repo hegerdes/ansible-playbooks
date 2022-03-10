@@ -58,6 +58,17 @@ sites:
         - route: /not_found
           body: |
             return 404;
+        - route: /private
+          body: |
+            auth_request     /auth;
+            auth_request_set $auth_status $upstream_status;
+        - route: = /auth
+          body: |
+            internal;
+            proxy_pass              http://auth-server;
+            proxy_pass_request_body off;
+            proxy_set_header        Content-Length "";
+            proxy_set_header        X-Original-URI $request_uri;
     # Own certs 
   - host: site4.my-domain.com
     ip: 111.222.222.111

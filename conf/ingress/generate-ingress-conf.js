@@ -3,7 +3,7 @@ const fs = require('fs');
 const util = require('util');
 const jinja = require('nunjucks')
 
-// Get ingress config
+// ARGS check
 if (process.argv.length != 4) {
   console.error("Invalid parameter count!");
   console.log(`Usage: ${process.argv[1]} <nginx|traefik> <ingress_file>`);
@@ -11,6 +11,7 @@ if (process.argv.length != 4) {
 }
 let ingress_conf = process.argv[3] || "ingress-hosts-nginx.yml";
 
+// Get ingress config
 let ingress;
 try {
   ingress = yaml.load(fs.readFileSync(process.cwd() + "/" + ingress_conf));
@@ -21,11 +22,12 @@ try {
   );
   process.exit(1);
 }
-if (process.env.USE_DOCKER) ingress.conf.nginx.use_docker = true;
-
 console.log("Using the following ingress file:");
 console.log(util.inspect(ingress, false, null, true));
 
+/**
+ * Generate nginx conf and save it
+ */
 async function generateNginxConf(){
 let res = ''
   let conf_dst = `${__dirname}/nginx/conf.d`
@@ -33,7 +35,7 @@ let res = ''
     fs.mkdirSync(conf_dst);
 }
   console.log('Generating nginx conf files...')
-  for(site of ingress.sites){
+  for(let site of ingress.sites){
     res = jinja.render(__dirname + '/nginx-site.conf.j2', { nginx_vhost: site, nginx_settings: ingress.conf.nginx });
     console.log(`Writing to ${conf_dst}/${site.host}.conf`)
     fs.writeFileSync(`${conf_dst}/${site.host}.conf`, res)
@@ -45,6 +47,9 @@ let res = ''
   console.log('done')
 }
 
+/**
+ * Generate trafil conf and save it
+ */
 async function generateTraefikConf() {
   let traefik_conf = {
     global: { checkNewVersion: true, sendAnonymousUsage: false },
@@ -75,6 +80,7 @@ async function generateTraefikConf() {
       }
     },
   };
+  // Overall structure
   let traefik_hosts = {
     http: { routers: {}, services: {}, middlewares: {} },
     tcp: { routers: {}, services: {} },
@@ -88,6 +94,7 @@ async function generateTraefikConf() {
     traefik_hosts.http.middlewares = ingress.conf.traefik.middlewares;
   }
 
+  // For every site
   var uppstream_targets = [];
   for (let site of ingress.sites) {
     let service_name = site.host.split(".")[0];
@@ -152,8 +159,10 @@ async function generateTraefikConf() {
   }
   console.log(util.inspect(traefik_hosts, false, null, true));
   console.log(yaml.dump(traefik_hosts));
+  console.log(yaml.dump(traefik_conf));
 }
 
+// Start
 async function run() {
   switch (process.argv[2]) {
     case "nginx":
