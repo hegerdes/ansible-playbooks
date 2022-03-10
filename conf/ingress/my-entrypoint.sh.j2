@@ -23,7 +23,8 @@ MAIL={{ conf.certbot_mail | default("support@***REMOVED***") }}
 DOMAINS=({% for site in sites %}{% if not site.tls %}{{ site.host }} {% endif %}{% endfor %})
 
 if [ INGRESS_DEBUG = "yes" ]; then
-EXTRA_ARGS = "${EXTRA_ARGS} --test-cert"
+    EXTRA_ARGS = "${EXTRA_ARGS} --test-cert"
+fi
 
 # Start init certbot if set
 if [ $RUN_CERTBOT = "yes" ]; then
