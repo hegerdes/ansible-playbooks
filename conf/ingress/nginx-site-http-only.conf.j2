@@ -13,9 +13,10 @@
     {% endfor %}
 {% endif %}
 
-# Server
+# HTTP server
 server {
-    # Server-name will be domain name
+    listen      80;
+    listen      [::]:80;
     server_name {{ nginx_vhost.host }};
 
     # Sever settings for all sites
@@ -44,33 +45,6 @@ server {
         proxy_pass http://{{ nginx_vhost.host }}_upstream/{{ nginx_settings.common_proxypass_suffix | default("") }};
     }
     {% endif %}
-
-    listen 443 ssl http2; # managed by Certbot
-    ssl_certificate {{ nginx_vhost.tls.cert | default("/etc/nginx/ssl/dummy/fullchain.pem") }}; # managed by Certbot
-    ssl_certificate_key {{ nginx_vhost.tls.key | default("/etc/nginx/ssl/dummy/privkey.pem") }}; # managed by Certbot
-    include /etc/nginx/ssl/options-ssl-nginx.conf; # managed by Certbot
-    ssl_dhparam /etc/nginx/ssl/ssl-dhparams.pem; # managed by Certbot
-
-    # Shared sec settings
-    include shared.conf/security.conf;
-    # Shared server settings
-    include shared.conf/general.conf;
-}
-
-# HTTP redirect
-server {
-    listen      80;
-    listen      [::]:80;
-    server_name {{ nginx_vhost.host }};
-
-    # ACME-challenge
-    location ^~ /.well-known/acme-challenge/ {
-        root /var/www/_letsencrypt;
-    }
-
-    location / {
-        return 301 https://{{ nginx_vhost.host }}$request_uri;
-    }
 
     # Shared server settings
     include shared.conf/general.conf;

@@ -32,4 +32,24 @@ image-build-ingress-genarator:
     BUILD_IMAGE_TAG: $CI_REGISTRY_IMAGE/ingress-genarator:$CI_COMMIT_BRANCH
   rules:
     - if: $CI_COMMIT_BRANCH
+      changes:
+        - conf/ingress/ingress-hosts-nginx.yml
+        - conf/ingress/ingress-hosts-traefik.yml
+        - conf/ingress/generate-ingress-conf.js
+        - conf/ingress/Dockerfile
 
+image-build-ingress-tester:
+  extends: .build_template
+  variables:
+    DOCKERFILE: $CI_PROJECT_DIR/conf/ingress/Dockerfile.test
+    CONTEXT: $CI_PROJECT_DIR/conf/ingress/
+    BUILD_IMAGE_TAG: $CI_REGISTRY_IMAGE/ingress-genarator:$CI_COMMIT_BRANCH
+    KANIKO_NO_PUSH: "yes"
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      changes:
+        - conf/ingress/ingress-hosts-nginx.yml
+        - conf/ingress/ingress-hosts-traefik.yml
+        - conf/ingress/generate-ingress-conf.js
+        - conf/ingress/Dockerfile
+        - conf/ingress/Dockerfile.test
