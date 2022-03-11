@@ -18,3 +18,7 @@
     name: networking
     state: restarted
   tags: [mgmt]
+
+- name: Restart network ubuntu service
+  command: netplan apply
+  tags: [mgmt]

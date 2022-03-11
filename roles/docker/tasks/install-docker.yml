@@ -2,22 +2,21 @@
 ---
 - name: Install needed packages
   apt:
-    name: '{{ item }}'
+    name: ['ca-certificates', 'curl', 'gnupg', 'lsb-release']
     state: present
     update_cache: yes
     install_recommends: no
-  loop: [ 'ca-certificates', 'curl', 'gnupg', 'lsb-release']
   tags: [docker, docker-install]
 
 - name: Add Docker GPG apt Key
   apt_key:
-    url: https://download.docker.com/linux/debian/gpg
+    url: https://download.docker.com/linux/{{ ansible_facts.distribution | lower }}/gpg
     state: present
   tags: [docker, docker-install]
 
 - name: Add Docker repository
   apt_repository:
-    repo: 'deb https://download.docker.com/linux/debian {{ ansible_facts.lsb.codename }} stable'
+    repo: 'deb https://download.docker.com/linux/{{ ansible_facts.distribution | lower }} {{ ansible_facts.lsb.codename }} stable'
     update_cache: yes
     state: present
   tags: [docker, docker-install]

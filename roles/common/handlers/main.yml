@@ -7,3 +7,6 @@
   service:
     name: networking
     state: restarted
+
+- name: Restart network ubuntu service
+  command: netplan apply
