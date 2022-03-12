@@ -28,7 +28,7 @@ sites:
       - route: default
         targets:
         - 10.10.0.2:8001
-      - route: test
+      - route: /test
         targets:
         - 10.10.0.2:8001
         - 10.10.0.2:8001
@@ -85,7 +85,7 @@ sites:
         targets:
         - 127.0.0.1:3000
         - 127.0.0.2:3000
-      - route: /foo
+      - route: /foo/bar/batz
         targets:
         - 127.0.0.1:3000
         - 127.0.0.2:3000
