@@ -2,7 +2,6 @@
 ---
 
 - name: Log into docker registries
-  no_log: True
   docker_login:
     registry_url: '{{ item.regestry | default("https://index.docker.io/v1/") }}'
     username: '{{ item.username }}'
@@ -44,6 +43,8 @@
   set_fact:
     docker_deploy_volumes: '{{ docker_deploy_volumes | default([]) + [item.1.source] }}'
   loop: '{{ docker_deploy_services | subelements("mounts", "skip_missing=True") }}'
+  loop_control:
+    label: '{{ item.1.source }}'
   tags: [docker-deploy, docker-deploy-service]
 
 - name: Create volumes
