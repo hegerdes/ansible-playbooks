@@ -35,7 +35,7 @@ nginx_default_hosts:
         locations:
           - route: /
             body: |
-              proxy_pass http://custom.devops-testing.123preview.com_upstream;
+              proxy_pass http://custom.devops-testing.123preview.com_default;
           - route: /test
             body: |
               return 404;

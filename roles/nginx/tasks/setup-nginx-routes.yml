@@ -4,8 +4,8 @@
   debug:
     msg:
       - 'Using host: {{ item.host }} with ip: {{ item.ip }}'
-      - 'Using locations {{ item.locations | default("location / { proxy_pass http://" + item.host + "_upstream/; }") }}'
-      - 'With upstream: {{ item.host }}_upstream { {{item.upstreams | join("\n") }} }'
+      - 'Using locations {{ item.locations | default("#Auto generateded proxypass locations. Passing to: " + item.upstreams | join("\n") ) }}'
+      - 'With upstream: { {{ item.upstreams | default([]) | join("\n") }} }'
   loop: '{{ ingress_hosts.sites | default(nginx_default_hosts.sites) }}'
   loop_control:
     label: '{{ item.host }}'

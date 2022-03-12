@@ -32,7 +32,7 @@ sites:
   - host: site1.my-domain.com
     ip: 111.222.222.111
     upstreams:
-      - name: upstream
+      - name: default
         targets:
         - 127.0.0.1:3000
         - 127.0.0.2:3000
@@ -40,7 +40,7 @@ sites:
   - host: site2.my-domain.com
     ip: 111.222.222.111
     upstreams:
-      - name: upstream
+      - name: default
         targets:
         - 127.0.0.1:3000
     nginx:
@@ -52,7 +52,7 @@ sites:
   - host: site3.my-domain.com
     ip: 111.222.222.111
     upstreams:
-      - name: upstream
+      - name: default
         targets:
         - 127.0.0.1:3000
     nginx:
@@ -69,7 +69,7 @@ sites:
   - host: site4.my-domain.com
     ip: 111.222.222.111
     upstreams:
-      - name: upstream
+      - name: default
         targets:
         - 127.0.0.2:3000
     tls: 'no'
@@ -77,7 +77,7 @@ sites:
   - host: site5.my-domain.com
     ip: 111.222.222.111
     upstreams:
-      - name: upstream
+      - name: default
         targets:
         - 127.0.0.1:3000
     tls:

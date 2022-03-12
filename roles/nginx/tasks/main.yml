@@ -8,13 +8,6 @@
   become: False
   tags: [ingress, nginx, ingress-hosts]
 
-- name: Set floating IPs
-  when: ingress_floating_ips | length > 0
-  import_tasks: shared/set-floting-ip.yml
-  vars:
-    floating_ips: '{{ common_floating_ips | default([]) + ingress_floating_ips }}'
-  tags: [ingress, nginx, ingress-ip]
-
 - name: Copy from inventory_dir/host/srv to remote host/srv
   when: nginx_host_extra_files.stat.exists
   copy:

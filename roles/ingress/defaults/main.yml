@@ -16,10 +16,10 @@ ingress_conf:
       common_server_settings: ''
 ########################################################################
 # NOTE: nginx
-# The upsteams are always named after the host with the suffix _upstream
-# Resulting in <HOSTNAME>_upstream. To pass use proxy_pass http://<HOSTNAME>_upstream/;
-# Example Host: example.com; upstream: example.com_upstream
-# If no location is given a default location ("/") is created.
+# The upsteams are always named after the host with the suffix of the defined upstream nname
+# Resulting in <HOSTNAME>_<UPSTREAM_NAME>. To pass use proxy_pass http://<HOSTNAME><UPSTREAM_NAME>/;
+# Example Host: example.com; upstream: example.com_default
+# If no location is given a default location ("/") is created. It will proxy pass to <HOSTNAME>_default.
 # This location contains the common headers and the proxypass to the defined upstream ips
 ########################################################################
 # NOTE: traefik
@@ -55,7 +55,7 @@ ingress_conf:
         locations:
           - route: /
             body: |
-              proxy_pass http://custom.devops-testing.123preview.com_upstream;
+              proxy_pass http://custom.devops-testing.123preview.com_default;
           - route: /test
             body: |
               return 404;

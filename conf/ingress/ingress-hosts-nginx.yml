@@ -25,7 +25,7 @@ sites:
   - host: default.devops-testing.123preview.com
     ip: 116.202.189.62
     upstreams:
-      - name: upstream
+      - name: default
         targets:
         - 10.10.0.2:8001
       - name: test
@@ -38,13 +38,13 @@ sites:
   - host: whoami.devops-testing.123preview.com
     ip: 116.202.189.62
     upstreams:
-      - name: upstream
+      - name: default
         targets:
         - 10.10.0.2:8003
   - host: custom.devops-testing.123preview.com
     ip: 116.202.189.62
     upstreams:
-      - name: upstream
+      - name: default
         targets:
         - 10.10.0.2:8002
         - 10.10.0.2:8002
@@ -52,7 +52,7 @@ sites:
       locations:
         - route: /
           body: |
-            proxy_pass http://custom.devops-testing.123preview.com_upstream;
+            proxy_pass http://custom.devops-testing.123preview.com_default;
         - route: /test
           body: |
             return 404;
@@ -60,7 +60,7 @@ sites:
   - host: site1.my-domain.com
     ip: 111.222.222.111
     upstreams:
-      - name: upstream
+      - name: default
         targets:
         - 127.0.0.1:3000
         - 127.0.0.2:3000
@@ -68,7 +68,7 @@ sites:
   - host: site2.my-domain.com
     ip: 111.222.222.111
     upstreams:
-      - name: upstream
+      - name: default
         targets:
         - 127.0.0.1:3000
     nginx:
@@ -80,7 +80,7 @@ sites:
   - host: site3.my-domain.com
     ip: 111.222.222.111
     upstreams:
-      - name: upstream
+      - name: default
         targets:
         - 127.0.0.1:3000
     nginx:
@@ -99,7 +99,7 @@ sites:
         - route: = /auth
           body: |
             internal;
-            proxy_pass              http://site3.my-domain.com_upstream;
+            proxy_pass              http://site3.my-domain.com_default;
             proxy_pass_request_body off;
             proxy_set_header        Content-Length "";
             proxy_set_header        X-Original-URI $request_uri;
@@ -107,17 +107,19 @@ sites:
   - host: site4.my-domain.com
     ip: 111.222.222.111
     upstreams:
-      - name: upstream
-        targets:
+      - targets:
         - 127.0.0.2:3000
     tls: 'no'
     # Own certs
   - host: site5.my-domain.com
     ip: 111.222.222.111
     upstreams:
-      - name: upstream
+      - name: default
         targets:
         - 127.0.0.1:3000
     tls:
       crt: /etc/nginx/ssl/dummy/fullchain.pem
       key: /etc/nginx/ssl/dummy/privkey.pem
+    # No upstream no locations
+  - host: site6.my-domain.com
+    ip: 111.222.222.111
