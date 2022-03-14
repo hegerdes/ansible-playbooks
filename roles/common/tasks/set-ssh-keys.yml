@@ -1,0 +1,61 @@
+# Set alias ssh keys
+---
+- name: Read-write git checkout from github
+  when: common_ssh_key_repo != "none"
+  git:
+    repo: '{{ common_ssh_key_repo }}'
+    dest: data/ssh_keys
+  delegate_to: localhost
+  run_once: True
+  become: False
+  tags: [common, ssh-keys]
+
+- name: Find all ssh-keys to deploy
+  find:
+    paths: data/ssh_keys/
+    patterns: '*.pub'
+    recurse: yes
+  run_once: True
+  become: False
+  delegate_to: localhost
+  register: common_present_ssh_keys_info
+  tags: [common, ssh-keys]
+
+- name: Find all ssh-keys to revoke
+  find:
+    paths: data/ssh_keys/revoked
+    patterns: '*.pub'
+    recurse: yes
+  run_once: True
+  become: False
+  delegate_to: localhost
+  register: common_revoked_ssh_keys_info
+  tags: [common, ssh-keys]
+
+- name: Prepare active ssh-keys
+  when: '"revoked" is not in item.path'
+  set_fact:
+    common_present_ssh_keys: '{{ common_present_ssh_keys | default([]) + [{"filename": item.path, "state": "present", "user": "root" if(item.path | split("/") | length == 3) else item.path[20:] | split("/") | first }] }}'
+    patterns: '*.pub'
+  loop: '{{ common_present_ssh_keys_info.files }}'
+  loop_control:
+    label: '{{ item.path }}'
+  run_once: True
+  tags: [common, ssh-keys]
+
+- name: Prepare revoked ssh-keys
+  set_fact:
+    common_revoked_ssh_keys: '{{ common_revoked_ssh_keys | default([]) + [{"filename": item.path, "state": "absent", "user": "root" if(item.path | split("/") | length == 4) else item.path[28:] | split("/") | first }] }}'
+    patterns: '*.pub'
+  loop: '{{ common_revoked_ssh_keys_info.files }}'
+  loop_control:
+    label: '{{ item.path }}'
+  run_once: True
+  tags: [common, ssh-keys]
+
+- name: Add ssh keys
+  import_tasks: shared/set-ssh-keys.yml
+  vars:
+    ssh_key_list: '{{ common_ssh_keys + common_present_ssh_keys | default([]) + common_revoked_ssh_keys | default([]) }}'
+  tags: [common, ssh-keys]
+

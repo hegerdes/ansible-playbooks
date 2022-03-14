@@ -61,9 +61,7 @@
   tags: [common, hostnames]
 
 - name: Add ssh keys
-  import_tasks: shared/set-ssh-keys.yml
-  vars:
-    ssh_key_list: '{{ common_ssh_keys }}'
+  import_tasks: set-ssh-keys.yml
   tags: [common, ssh-keys]
 
 - name: Disable swap

@@ -33,13 +33,7 @@ image-build-ingress-genarator:
   rules:
     - if: $CI_COMMIT_BRANCH
       changes:
-        - conf/ingress/ingress-hosts-nginx.yml
-        - conf/ingress/ingress-hosts-traefik.yml
-        - conf/ingress/generate-ingress-conf.js
-        - conf/ingress/Dockerfile
-        - conf/ingress/nginx-site.conf.j2
-        - conf/ingress/my-entrypoint.sh.j2
-        - conf/ingress/nginx-site-http-only.conf.j2
+        - conf/ingress/**/*
 
 image-build-ingress-tester:
   extends: .build_template
@@ -52,11 +46,4 @@ image-build-ingress-tester:
   rules:
     - if: $CI_COMMIT_BRANCH
       changes:
-        - conf/ingress/ingress-hosts-nginx.yml
-        - conf/ingress/ingress-hosts-traefik.yml
-        - conf/ingress/generate-ingress-conf.js
-        - conf/ingress/Dockerfile
-        - conf/ingress/Dockerfile.test
-        - conf/ingress/nginx-site.conf.j2
-        - conf/ingress/my-entrypoint.sh.j2
-        - conf/ingress/nginx-site-http-only.conf.j2
+        - conf/ingress/**/*
