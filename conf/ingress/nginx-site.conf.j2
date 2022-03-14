@@ -2,16 +2,16 @@
 
 {% if(nginx_vhost.upstreams | default([]) | length != 0) -%}
 # Upstream targets
-    {% for upstream in nginx_vhost.upstreams | default([]) -%}
+    {%- for upstream in nginx_vhost.upstreams | default([]) -%}
     {% if(upstream.targets | default([]) | length != 0) %}
     upstream {{ nginx_vhost.host }}{{ upstream.route | replace("/", "_") if(upstream.route | default("default") != "default") else "_default" }} {
         {% for target in upstream.targets | default([]) -%}
             server {{ target }};
         {% endfor %}
     }
-    {% endif %}
-    {% endfor %}
-{% endif %}
+    {%- endif %}
+    {%- endfor %}
+{%- endif %}
 
 # Server
 server {
@@ -50,7 +50,7 @@ server {
 {% endif %}
 
     listen 443 ssl http2; # managed by Certbot
-    ssl_certificate {{ nginx_vhost.tls.cert | default("/etc/nginx/ssl/dummy/fullchain.pem") }}; # managed by Certbot
+    ssl_certificate {{ nginx_vhost.tls.crt | default("/etc/nginx/ssl/dummy/fullchain.pem") }}; # managed by Certbot
     ssl_certificate_key {{ nginx_vhost.tls.key | default("/etc/nginx/ssl/dummy/privkey.pem") }}; # managed by Certbot
     include /etc/nginx/ssl/options-ssl-nginx.conf; # managed by Certbot
     ssl_dhparam /etc/nginx/ssl/ssl-dhparams.pem; # managed by Certbot

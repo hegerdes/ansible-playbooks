@@ -49,4 +49,4 @@ ARG RUN_CERTBOT="yes"
 ENV INGRESS_DEBUG="yes"
 ENV RUN_CERTBOT=$RUN_CERTBOT
 
-ENTRYPOINT [ "/my-entrypoint.sh" ]
+ENTRYPOINT [ "sh", "-c", "if [ \"$RUN_CERTBOT\" = \"yes\" ]; then bash /my-entrypoint.sh; else bash /docker-entrypoint.sh nginx -g \"daemon off;\" ; fi"]

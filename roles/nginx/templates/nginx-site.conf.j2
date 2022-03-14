@@ -50,7 +50,7 @@ server {
 {% endif %}
 
     listen {{ nginx_vhost.ip | default(ansible_default_ipv4.address) }}:443 ssl http2; # managed by Certbot
-    ssl_certificate {{ nginx_vhost.tls.cert | default("/etc/letsencrypt/dummy/fullchain.pem") }}; # managed by Certbot
+    ssl_certificate {{ nginx_vhost.tls.crt | default("/etc/letsencrypt/dummy/fullchain.pem") }}; # managed by Certbot
     ssl_certificate_key {{ nginx_vhost.tls.key | default("/etc/letsencrypt/dummy/privkey.pem") }}; # managed by Certbot
     include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
