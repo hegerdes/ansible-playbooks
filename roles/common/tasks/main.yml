@@ -8,6 +8,15 @@
   with_items: '{{ groups.all }}'
   tags: [common, hostnames]
 
+- name: Setup ssh ports
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^Port {{ item }}$'
+    line: 'Port {{ item }}'
+  loop: '{{ ssh_listen_ports | default(["22", "2223"])}}'
+  notify: Restart SSHD
+  tags: [mgmt, ssh]
+
 - name: Install aptitude using apt
   apt:
     name: aptitude

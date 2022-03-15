@@ -10,3 +10,10 @@
 
 - name: Restart network ubuntu service
   command: netplan apply
+
+- name: Restart SSHD
+  service:
+    name: sshd
+    enabled: yes
+    state: reloaded
+  tags: [mgmt, ssh]
