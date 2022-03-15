@@ -5,7 +5,17 @@
     var: docker_deploy_override
   tags: [docker-deploy, docker-deploy-stack]
 
+- name: Copy compose|stack files
+  when: item[-3:] == "yml"
+  copy:
+    src: '{{ docker_deploy_src_config_files + item }}'
+    dest: '{{ docker_deploy_dst_config_files + item }}'
+    mode: '0644'
+  loop: '{{ docker_deploy_stacks }}'
+  tags: [docker-deploy]
+
 - name: Configuring compose|stack files
+  when: item[-2:] == "j2"
   template:
     src: '{{ docker_deploy_src_config_files + item }}.j2'
     dest: '{{ docker_deploy_dst_config_files + item }}'
