@@ -112,7 +112,7 @@ sites:
         - route: = /auth
           body: |
             internal;
-            proxy_pass              http://site3.my-domain.com_default;
+            proxy_pass              http://site4.my-domain.com_default;
             proxy_pass_request_body off;
             proxy_set_header        Content-Length "";
             proxy_set_header        X-Original-URI $request_uri;

@@ -54,6 +54,23 @@
   loop: '{{ docker_deploy_volumes | default([]) }}'
   tags: [docker-deploy, docker-deploy-service]
 
+- name: Generate network list
+  when: item.networks is defined
+  set_fact:
+    docker_deploy_networks: '{{ docker_deploy_networks | default([]) + item.networks }}'
+  loop: '{{ docker_deploy_services }}'
+  loop_control:
+    label: '{{ item.name }}'
+  tags: [docker-deploy, docker-deploy-service]
+
+- name: Create networks
+  docker_network:
+    name: '{{ item }}'
+    driver: overlay
+    attachable: yes
+  loop: '{{ docker_deploy_networks | default([]) }}'
+  tags: [docker-deploy, docker-deploy-service]
+
 - name: Create Service
   docker_swarm_service:
     env: '{{ item.env | default(omit)}}'
@@ -62,8 +79,8 @@
     mounts: '{{ item.mounts | default(omit)}}'
     name: '{{ item.name | default("my-service")}}'
     state: '{{ item.state | default("present")}}'
-    networks: '{{item.placment | default(omit)}}'
-    placement: '{{item.networks | default(omit)}}'
+    networks: '{{item.networks | default(omit)}}'
+    placement: '{{item.placment | default(omit)}}'
     container_labels: '{{ item.container_labels | default(omit)}}'
     mode: '{{ item.mode | default("replicated")}}'
     secrets: '{{ item.secrets | default(omit)}}'
