@@ -20,7 +20,7 @@ server {
     server_name {{ nginx_vhost.host }};
 
     # Sever settings for all sites
-    {{ ingress_hosts.nginx.common_server_settings | default("# None") | safe | indent(4) }}
+    {{ nginx_settings.common_server_settings | default("# None") | safe | indent(4) }}
     # Sever settings per site
     {{ nginx_vhost.nginx.server_settings | default("# None") | safe | indent(4) }}
 

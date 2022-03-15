@@ -42,7 +42,7 @@ let res = ''
     fs.writeFileSync(`${conf_dst}/${site.host}.conf`, res)
   }
 
-  res = jinja.render(__dirname + '/my-entrypoint.sh.j2', { sites: ingress.sites, nginx_settings: ingress.conf.nginx, conf:ingress.conf.nginx });
+  res = jinja.render(__dirname + '/my-entrypoint.sh.j2', { sites: ingress.sites, conf:ingress.conf.nginx });
   console.log(`Writing entrypoint to ${__dirname}/nginx/my-entrypoint.sh`)
   fs.writeFileSync(`${__dirname}/nginx/my-entrypoint.sh`, res)
   console.log('done')
