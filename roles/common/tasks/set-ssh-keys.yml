@@ -5,6 +5,7 @@
   git:
     repo: '{{ common_ssh_key_repo }}'
     dest: data/ssh_keys
+    accept_hostkey: yes
   delegate_to: localhost
   run_once: True
   become: False

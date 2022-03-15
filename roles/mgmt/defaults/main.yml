@@ -61,6 +61,7 @@ mgmt_grafana_dashbord_ids:
   - 7362    # SQL Metrics
   - 1229    # Docker metrics
   - 14282   # Cadvisor
+  - 13407   # Loki metrics
   - 13452   # Traefik
   - 12250   # Traefik
 
