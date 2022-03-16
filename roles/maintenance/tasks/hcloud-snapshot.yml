@@ -4,7 +4,7 @@
   when: maintenance_run_hcloud_snapshot | bool
   command: 'node {{ role_path }}/files/hcloude-snapshot.js'
   run_once: True
-  become: no
+  become: False
   delegate_to: localhost
   register: main_snapshot_res
   tags: [maintenance, backup, db-backup, hetzner-snapshot]
@@ -24,6 +24,7 @@
   tags: [maintenance, backup, db-backup, hetzner-snapshot]
 
 - name: Print Hetzner-Snapshot results
+  run_once: True
   debug:
     msg: '{{ main_snapshot_res }}'
   tags: [maintenance, backup, db-backup, hetzner-snapshot]
