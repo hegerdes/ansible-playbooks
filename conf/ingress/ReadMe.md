@@ -22,11 +22,11 @@ conf:
     common_server_settings: ''
 # NOTE: Upstream
 # The upsteams are always named by the HOST prefix and the name on the current upstream
-# Resulting in <HOSTNAME>_<UPSTREAM_NAME>. To pass use proxy_pass http://<HOSTNAME>_<UPSTREAM_NAME>/;
+# Resulting in <HOSTNAME>_<UPSTREAM_ROUTE>. To pass use proxy_pass http://<HOSTNAME>_<UPSTREAM_ROUTE>/;
 ########################################################################
 # NOTE: Locations
 # If no location is given, a default location ("/") is created.
-# This location contains the common headers and the proxypass to the defined upstream ips
+# Every location contains the common headers and the proxypass to the defined upstream ips
 sites:
     # Minimal site example
   - host: site1.my-domain.com
