@@ -20,7 +20,15 @@
 - name: Gather hcloud server infos
   hcloud_server_info:
     api_token: '{{ hetzner_api_key }}'
+    label_selector: ansible
   register: hetzner_server_info
+
+- name: Print info
+  debug:
+    msg: 'Performing on: {{ item.name }} with ip {{ item.ipv4_address }}'
+  loop: '{{ hetzner_server_info.hcloud_server_info }}'
+  loop_control:
+    label: "{{ item.name }}"
 
 - name: Inspecting server differences...
   no_log: True
