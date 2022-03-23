@@ -9,7 +9,7 @@ include:
 stages:
   - build
 
-image-build-playbooks-tags:
+image-build-playbooks-tag:
   extends: .build_template
   variables:
     COMMIT_TAG: $CI_COMMIT_TAG

@@ -138,7 +138,7 @@
 - name: Format update result string I
   when: maintenance_run_upgrades | bool
   set_fact:
-    performed_updates: '{{ performed_updates | default({}) | combine({item.item.split("/")[0]: item.stdout_lines[3:]})}}'
+    performed_updates: '{{ performed_updates | default({}) | combine({item.item.split("/")[0]: item.stdout_lines[3:] | default("") })}}'
   loop: '{{ main_updated_packages.results }}'
   loop_control:
     label: '{{ item.item.split("/")[0] }}'
