@@ -42,6 +42,11 @@ let res = ''
     fs.writeFileSync(`${conf_dst}/${site.host}.conf`, res)
   }
 
+  // Default site
+  res = jinja.render(__dirname + '/nginx-default-site.conf.j2', { sites: ingress.sites, conf:ingress.conf.nginx });
+  fs.writeFileSync(`${__dirname}/nginx/conf.d/default.conf`, res)
+  console.log(`Writing default site to ${__dirname}/nginx/conf.d/default.conf`)
+  // Entrypoint
   res = jinja.render(__dirname + '/my-entrypoint.sh.j2', { sites: ingress.sites, conf:ingress.conf.nginx });
   console.log(`Writing entrypoint to ${__dirname}/nginx/my-entrypoint.sh`)
   fs.writeFileSync(`${__dirname}/nginx/my-entrypoint.sh`, res)
