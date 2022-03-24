@@ -15,8 +15,12 @@
 
 # Server
 server {
-    # Server-name will be domain name
+    # Server-name will be domain name & aliasse if given
     server_name {{ nginx_vhost.host }};
+    {{ "server_name _;" if (nginx_vhost.default | default("no") == "yes") }}
+    {%- for alias in nginx_vhost.alias | default([]) -%}
+        server_name {{ alias }};
+    {% endfor %}
 
     # Sever settings for all sites
     {{ nginx_settings.common_server_settings | default("# None") | indent(width=4) }}
@@ -49,7 +53,7 @@ server {
     {% endif %}
 {% endif %}
 
-    listen {{ nginx_vhost.ip | default(ansible_default_ipv4.address) }}:443 ssl http2; # managed by Certbot
+    listen 443 ssl{{ " http2" if (nginx_settings.http2 | default("on") == "on") }}{{ " default_server" if (nginx_vhost.default | default("no") == "yes") }};
     ssl_certificate {{ nginx_vhost.tls.crt | default("/etc/letsencrypt/dummy/fullchain.pem") }}; # managed by Certbot
     ssl_certificate_key {{ nginx_vhost.tls.key | default("/etc/letsencrypt/dummy/privkey.pem") }}; # managed by Certbot
     include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot

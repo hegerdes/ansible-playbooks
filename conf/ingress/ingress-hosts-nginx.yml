@@ -1,6 +1,8 @@
 
 conf:
   nginx:
+    http2: on
+    create_default_server: on
     # Header for all vhosts
     common_header: |
       proxy_set_header Host $host;
@@ -13,7 +15,8 @@ conf:
       client_max_body_size 200M;
       proxy_redirect http:// $scheme://;
     # Settings for all vhosts server section
-    common_server_settings: ''
+    common_server_settings: |
+      # None
 # NOTE: Upstream
 # The upsteams are always named by the HOST prefix and the name on the current upstream
 # Resulting in <HOSTNAME>_<UPSTREAM_ROUTE>. To pass use proxy_pass http://<HOSTNAME>_<UPSTREAM_ROUTE>/;
@@ -23,6 +26,7 @@ conf:
 # Every location contains the common headers and the proxypass to the defined upstream ips
 sites:
   - host: default.devops-testing.123preview.com
+    # default: yes # only if create_default_server is off
     ip: 116.202.189.62
     upstreams:
       - route: default
@@ -77,8 +81,9 @@ sites:
         ssl_client_certificate /etc/nginx/ssl/dummy/fullchain.pem;
         ssl_verify_client on;
         proxy_set_header SSL_CLIENT_CERT $ssl_client_cert;
-    # Multible upstreams
+    # Multible upstreams & extra server names
   - host: site3.my-domain.com
+    alias: [site3-1.my-domain.com, site3-2.my-domain.com, site3-3.my-domain.com]
     ip: 111.222.222.111
     upstreams:
       - route: default

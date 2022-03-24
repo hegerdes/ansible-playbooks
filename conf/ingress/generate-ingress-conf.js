@@ -43,9 +43,12 @@ let res = ''
   }
 
   // Default site
-  res = jinja.render(__dirname + '/nginx-default-site.conf.j2', { sites: ingress.sites, conf:ingress.conf.nginx });
-  fs.writeFileSync(`${__dirname}/nginx/conf.d/default.conf`, res)
-  console.log(`Writing default site to ${__dirname}/nginx/conf.d/default.conf`)
+  let create_default_server = ingress.conf.nginx.create_default_server || 'on'
+  if(create_default_server == 'on' || create_default_server == 'yes' || create_default_server == 'true' ){
+    res = jinja.render(__dirname + '/nginx-default-site.conf.j2', { sites: ingress.sites, conf:ingress.conf.nginx });
+    fs.writeFileSync(`${__dirname}/nginx/conf.d/default.conf`, res)
+    console.log(`Writing default site to ${__dirname}/nginx/conf.d/default.conf`)
+  }
   // Entrypoint
   res = jinja.render(__dirname + '/my-entrypoint.sh.j2', { sites: ingress.sites, conf:ingress.conf.nginx });
   console.log(`Writing entrypoint to ${__dirname}/nginx/my-entrypoint.sh`)
