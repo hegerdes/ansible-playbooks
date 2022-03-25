@@ -1,0 +1,30 @@
+# Main Minio Setup
+---
+- name: Check if docker is installed
+  command: docker --version
+  register: docker_valid
+  ignore_errors: True
+  tags: [minio]
+
+- name: Run docker install
+  when: docker_valid.failed
+  include_role:
+    name: docker
+  vars:
+    docker_init_swarm: false
+    docker_install_portainer: false
+  tags: [minio]
+
+- name: Run docker deploy
+  include_role:
+    name: docker-deploy
+  vars:
+    docker_deploy_app_name: minio
+    docker_deploy_use_swarm_mode: yes
+    docker_deploy_stacks: [docker-compose-minio.yml]
+  tags: [minio]
+
+
+
+# mc alias set minio http://23.88.109.204:9000 test-user mySuperSecureAdminPW
+# mc ToDo.md minio/test
