@@ -94,6 +94,6 @@
   loop: '{{ docker_deploy_services }}'
   tags: [docker-deploy, docker-deploy-service]
 
-- name: Install app via Docker
-  import_tasks: install-app-stack.yml
+- name: Deploy Apps via Docker
+  import_tasks: deploy-stack.yml
   tags: [docker-deploy, docker-deploy-stack]
