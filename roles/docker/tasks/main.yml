@@ -20,7 +20,7 @@
 - name: Setup SWARM
   include_tasks: docker-swarm.yml
   when: docker_init_swarm | bool
-  tags: [docker, docker-swarm]
+  tags: [docker, docker-swarm, docker-tags]
 
 - name: Install Portainer
   include_tasks: docker-portainer.yml

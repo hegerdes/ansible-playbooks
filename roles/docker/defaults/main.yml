@@ -45,6 +45,19 @@ docker_swarm_worker_mapping: {}
 #     leader: raspberrypi:2377
 #     role: Worker
 
+# Add labels to nodes
+docker_swarm_node_labels: {}
+# This must be in the manager host_vars and
+# has to have the hostnames as keys with the labels as values
+# Example:
+# docker_swarm_node_labels:
+#   worker-2:
+#     mylabel: test
+#     worker: "yes"
+#   worker-1:
+#     manager: "yes"
+
+
 # Portainer
 docker_install_portainer: true
 

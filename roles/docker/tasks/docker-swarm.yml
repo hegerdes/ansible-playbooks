@@ -21,7 +21,15 @@
   docker_swarm:
     state: join
     join_token: '{{ hostvars[item.value.leader].swarm_init_res.swarm_facts.JoinTokens[item.value.role | default("Worker")] }}'
-    remote_addrs: [ '{{ item.value.leader }}' ]
+    remote_addrs: '{{ [item.value.ips] | flatten }}'
   loop: '{{ docker_swarm_worker_mapping | dict2items }}'
   tags: [docker, docker-swarm]
 
+- name: Set Docker node labels
+  when: 'inventory_hostname in docker_swarm_manager_and_advertise_addr'
+  docker_node:
+    hostname: '{{ item.key }}'
+    labels: '{{ item.value }}'
+    labels_state: replace
+  loop: '{{ docker_swarm_node_labels | dict2items }}'
+  tags: [docker, docker-swarm, docker-tags]
