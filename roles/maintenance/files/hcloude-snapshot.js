@@ -46,7 +46,7 @@ function makeRequest(options, payload = null) {
             res.on("data", function (chunk) {
                 chunks.push(chunk);
             });
-            res.on("end", function (chunk) {
+            res.on("end", function (_chunk) {
                 if (chunks.length > 0) {
                     resolve(JSON.parse(Buffer.concat(chunks).toString()));
                 } else {
@@ -227,7 +227,7 @@ async function run() {
     console.log("Approximate costs: " + (totalBackupSize * costPerGB).toFixed(2) + "€");
 
     console.log("Will delete:")
-    toDelete.forEach(image => console.log(image.description + " created on:" + image.created))
+    toDelete.forEach(image => console.log(image.description + " created on: " + image.created))
     await deleteSnapshotImages(toDelete);
 }
 

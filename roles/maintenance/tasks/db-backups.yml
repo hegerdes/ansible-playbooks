@@ -51,7 +51,11 @@
   tags: [maintenance, backup, db-backup]
 
 - name: Print DB backup script result
+  ignore_errors: True
   debug:
-    var: main_backup_res
+    msg:
+      - 'Started: {{ main_backup_res.start | default("null") }} - End: {{ main_backup_res.end | default("null") }} - Time: {{ main_backup_res.delta | default("null") }} '
+      - 'stdout: {{ main_backup_res.stdout_lines | default("null") }}'
+      - 'stderr: {{ main_backup_res.stderr_lines | default("null") }}'
   tags: [maintenance, backup, db-backup]
 
