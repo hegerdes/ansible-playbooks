@@ -4,8 +4,10 @@
   when: common_ssh_key_repo != "none"
   git:
     repo: '{{ common_ssh_key_repo }}'
-    dest: data/ssh_keys
+    dest: '{{ common_ssh_key_dir }}'
+    version: '{{ common_ssh_key_repo_branch }}'
     accept_hostkey: yes
+    update: yes
   delegate_to: localhost
   run_once: True
   become: False
@@ -13,7 +15,7 @@
 
 - name: Find all ssh-keys to deploy
   find:
-    paths: data/ssh_keys/
+    paths: '{{ common_ssh_key_dir }}'
     patterns: '*.pub'
     recurse: yes
   run_once: True
@@ -24,7 +26,7 @@
 
 - name: Find all ssh-keys to revoke
   find:
-    paths: data/ssh_keys/revoked
+    paths: '{{ common_ssh_key_dir }}/revoked'
     patterns: '*.pub'
     recurse: yes
   run_once: True
