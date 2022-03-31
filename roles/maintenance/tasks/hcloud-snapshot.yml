@@ -27,8 +27,5 @@
   ignore_errors: True
   run_once: True
   debug:
-    msg:
-      - 'Started: {{ main_snapshot_res.start | default("null") }} - End: {{ main_snapshot_res.end | default("null") }} - Time: {{ main_snapshot_res.delta | default("null") }} '
-      - 'stdout: {{ main_snapshot_res.stdout_lines | default("null") }}'
-      - 'stderr: {{ main_snapshot_res.stderr_lines | default("null") }}'
+    msg: '{{ ["Started: " + main_snapshot_res.start | default("null") + "- End: " + main_snapshot_res.end | default("null") + " - Time: " + main_snapshot_res.delta | default("null") ] + ["stdout:"] + main_snapshot_res.stdout_lines | default([]) + ["stderr:"] + main_snapshot_res.stderr_lines | default([]) }}'
   tags: [maintenance, backup, db-backup, hetzner-snapshot]
