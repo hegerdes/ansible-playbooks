@@ -39,7 +39,7 @@ services:
       - prometheus-data:/opt/bitnami/prometheus/data
       {{"- " + mgmt_dst_config_files + "mgmt-prometheus/prometheus.yml:/etc/prometheus/prometheus.yml" | indent(width=6) if(not mgmt_use_swarm_mode) }}
     configs:
-      - source: prometheus-conf-{{ mgmt_conf_counter | default(ansible_date_time.date) }}
+      - source: prometheus-conf-{{ lookup('file', '/srv/mgmt-prometheus/prometheus.yml') | default(mgmt_conf_counter) | hash('md5') }}
         target: /etc/prometheus/prometheus.yml
     deploy:
       labels:
@@ -91,13 +91,13 @@ services:
     volumes:
       - loki-data:/loki
     configs:
-      - source: loki-conf-{{ mgmt_conf_counter | default(ansible_date_time.date) }}
+      - source: {{ lookup('file', '/srv/mgmt-loki/loki-config.yml') | default(mgmt_conf_counter) | hash('md5') }}
         target: /mnt/config/loki-config.yml
 
 configs:
-  loki-conf-{{ mgmt_conf_counter | default(ansible_date_time.date) }}:
+  loki-conf-{{ lookup('file', '/srv/mgmt-loki/loki-config.yml') | default(mgmt_conf_counter) | hash('md5') }}:
     file: /srv/mgmt-loki/loki-config.yml
-  prometheus-conf-{{ mgmt_conf_counter | default(ansible_date_time.date) }}:
+  prometheus-conf-{{ lookup('file', '/srv/mgmt-prometheus/prometheus.yml') | default(mgmt_conf_counter) | hash('md5') }}:
     file: /srv/mgmt-prometheus/prometheus.yml
 
 secrets:
