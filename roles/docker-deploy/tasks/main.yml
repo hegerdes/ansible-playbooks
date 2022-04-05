@@ -20,6 +20,7 @@
   tags: [docker-deploy]
 
 - name: Synchronization of application compose|stack files
+  become: False
   synchronize:
     src: '{{ docker_deploy_src_config_files }}'
     dest: '{{ docker_deploy_dst_config_files }}'

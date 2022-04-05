@@ -72,6 +72,7 @@
     name: '{{ mgmt_docker_stack_name }}'
     resolve_image: always
     with_registry_auth: yes
+    prune: yes
     compose: '{{ mgmt_compose_files_stack | list }}'
   tags: [mgmt, mgmt-stack]
 
