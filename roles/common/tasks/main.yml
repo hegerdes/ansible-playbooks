@@ -38,6 +38,7 @@
     - 'tar'
     - 'gzip'
     - 'pass'
+    - 'rsync'
     - 'gnupg'
     - 'gnupg2'
     - 'openssl'
