@@ -13,6 +13,7 @@ common_ssh_key_repo_branch: master
 # List of key_paths
 common_ssh_keys: []
 common_ssh_key_dir: data/ssh_keys
+common_default_network_device: ens10
 # Example
 # common_ssh_keys:
 #   - filename: '{{ inventory_dir }}/key.pub'
