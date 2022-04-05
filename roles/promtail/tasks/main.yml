@@ -80,7 +80,7 @@
   notify: Restart promtail
   tags: [promtail, monitoring]
 
-- name: Verify promtail status
+- name: Verify Promtail status
   service:
     name: promtail
     state: started

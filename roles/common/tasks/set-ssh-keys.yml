@@ -8,6 +8,7 @@
     version: '{{ common_ssh_key_repo_branch }}'
     accept_hostkey: yes
     update: yes
+    force: yes
   delegate_to: localhost
   run_once: True
   become: False

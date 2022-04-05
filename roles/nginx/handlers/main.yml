@@ -7,7 +7,7 @@
 - name: Restart network ubuntu service
   command: netplan apply
 
-- name: Verify promtail status
+- name: Verify Promtail status
   service:
     name: promtail
     state: restarted

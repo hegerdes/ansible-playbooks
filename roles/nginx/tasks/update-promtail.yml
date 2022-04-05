@@ -7,7 +7,7 @@
     owner: root
     group: root
     mode: '0666'
-  notify: Verify promtail status
+  notify: Verify Promtail status
   tags: [ingress, ingress-logs]
 
 - name: Enable Promtail service

@@ -1,5 +1,25 @@
 # Install app stack
 ---
+- name: Init a new swarm
+  when: docker_deploy_use_swarm_mode | bool and not swarm_info.docker_swarm_manager
+  docker_swarm:
+    advertise_addr: '{{ ansible_host }}'
+    state: present
+  tags: [docker-deploy]
+
+- name: Install pip3
+  when: docker_deploy_use_swarm_mode | bool != true
+  apt:
+    name: python3-pip
+    state: latest
+  tags: [docker-deploy]
+
+- name: Install compose package
+  when: docker_deploy_use_swarm_mode | bool != true
+  pip:
+    name: docker-compose
+  tags: [docker-deploy]
+
 - name: Using override-file with the following content
   debug:
     var: docker_deploy_override
@@ -23,35 +43,6 @@
   loop: '{{ docker_deploy_stacks }}'
   tags: [docker-deploy]
 
-- name: Install pip3
-  when: docker_deploy_use_swarm_mode | bool != true
-  apt:
-    name: python3-pip
-    state: latest
-  tags: [docker-deploy]
-
-- name: Install compose package
-  when: docker_deploy_use_swarm_mode | bool != true
-  pip:
-    name: docker-compose
-  tags: [docker-deploy]
-
-- name: Deploy app-services via compose
-  when: docker_deploy_use_swarm_mode | bool != true
-  docker_compose:
-    project_name: '{{ docker_deploy_app_name }}'
-    remove_orphans: yes
-    project_src: '{{ docker_deploy_dst_config_files }}'
-    files: '{{ docker_deploy_stacks | list }}'
-  tags: [docker-deploy]
-
-- name: Init a new swarm
-  when: docker_deploy_use_swarm_mode | bool and not swarm_info.docker_swarm_manager
-  docker_swarm:
-    advertise_addr: '{{ ansible_host }}'
-    state: present
-  tags: [docker-deploy]
-
 - name: Create absolut paths for stack files
   when: docker_deploy_use_swarm_mode | bool
   set_fact:
@@ -70,6 +61,15 @@
     compose: '{{ compose_files_stack | list }}'
   tags: [docker-deploy]
 
+- name: Deploy app-services via compose
+  when: docker_deploy_use_swarm_mode | bool != true
+  docker_compose:
+    project_name: '{{ docker_deploy_app_name }}'
+    remove_orphans: yes
+    project_src: '{{ docker_deploy_dst_config_files }}'
+    files: '{{ docker_deploy_stacks | list }}'
+  tags: [docker-deploy]
+
 - name: Sleep for 45 seconds and continue with play
   when: compose_files_stack is defined and docker_deploy_use_swarm_mode and swarm_info.docker_swarm_manager
   wait_for:
@@ -82,22 +82,35 @@
   register: app_docker_stack_info
   tags: [docker-deploy]
 
-- name: Show stack info
-  when: docker_deploy_use_swarm_mode | bool
-  debug:
-    var: app_docker_stack_info.results
-  tags: [docker-deploy]
-
 - name: Get info on Docker Swarm
+  changed_when: False
   when: docker_deploy_use_swarm_mode | bool
   command: docker service ls
   ignore_errors: True
   register: app_docker_swarm_info
   tags: [docker-deploy]
 
-- name: Inform about swarm
+- name: Get info on Docker Containers
+  changed_when: False
+  command: 'docker ps --format "table {{ "{{" }}.Status{{ "}}" }}\t{{ "{{" }}.RunningFor{{ "}}" }}\t{{ "{{" }} .Image{{ "}}" }}\t{{ "{{" }}.Names{{ "}}" }}"'
+  ignore_errors: True
+  register: app_docker_container_info
+  tags: [docker-deploy]
+
+- name: Show stack info
+  when: docker_deploy_use_swarm_mode | bool
+  debug:
+    var: app_docker_stack_info.results
+  tags: [docker-deploy]
+
+- name: Print Swarm Info
   when: docker_deploy_use_swarm_mode | bool
   debug:
     var: app_docker_swarm_info.stdout_lines
   ignore_errors: True
+  tags: [docker-deploy]
+
+- name: Show container info
+  debug:
+    var: app_docker_container_info.stdout_lines
   tags: [docker-deploy]
