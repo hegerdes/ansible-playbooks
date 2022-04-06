@@ -15,6 +15,7 @@
   tags: [common, ssh-keys]
 
 - name: Find all ssh-keys to deploy
+  when: common_ssh_key_repo != "none"
   find:
     paths: '{{ common_ssh_key_dir }}'
     patterns: '*.pub'
@@ -26,6 +27,7 @@
   tags: [common, ssh-keys]
 
 - name: Find all ssh-keys to revoke
+  when: common_ssh_key_repo != "none"
   find:
     paths: '{{ common_ssh_key_dir }}/revoked'
     patterns: '*.pub'
@@ -37,17 +39,18 @@
   tags: [common, ssh-keys]
 
 - name: Prepare active ssh-keys
-  when: '"revoked" is not in item.path'
+  when: '"revoked" is not in item.path and common_ssh_key_repo != "none"'
   set_fact:
     common_present_ssh_keys: '{{ common_present_ssh_keys | default([]) + [{"filename": item.path, "state": "present", "user": "root" if(item.path | split("/") | length == 3) else item.path[20:] | split("/") | first }] }}'
     patterns: '*.pub'
-  loop: '{{ common_present_ssh_keys_info.files }}'
+  loop: '{{ common_present_ssh_keys_info.files | default([]) }}'
   loop_control:
     label: '{{ item.path }}'
   run_once: True
   tags: [common, ssh-keys]
 
 - name: Prepare revoked ssh-keys
+  when: common_ssh_key_repo != "none"
   set_fact:
     common_revoked_ssh_keys: '{{ common_revoked_ssh_keys | default([]) + [{"filename": item.path, "state": "absent", "user": "root" if(item.path | split("/") | length == 4) else item.path[28:] | split("/") | first }] }}'
     patterns: '*.pub'

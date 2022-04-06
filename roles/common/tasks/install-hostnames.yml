@@ -29,7 +29,7 @@
     create: yes
     path: /root/.ssh/known_hosts
     line: "{{ item }}"
-  loop: '{{ all_hostkeys }}'
+  loop: '{{ all_hostkeys | default([]) }}'
   loop_control:
     label: '{{ item[:20] }}'
   tags: [common, hostnames]
