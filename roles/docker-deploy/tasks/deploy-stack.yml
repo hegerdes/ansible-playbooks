@@ -14,6 +14,7 @@
     state: latest
   tags: [docker-deploy]
 
+# May need gcc make python3-dev gcc-multilib libffi-dev
 - name: Install compose package
   when: docker_deploy_use_swarm_mode | bool != true
   pip:

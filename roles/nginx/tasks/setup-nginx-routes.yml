@@ -50,14 +50,14 @@
 
 - name: Create directory for dummy certs
   file:
-    path: /etc/letsencrypt/dummy
+    path: /etc/nginx/ssl/dummy
     state: directory
   tags: [ingress, nginx, ingress-hosts]
 
 - name: Copy dummy certs
   copy:
     src: '{{ item }}.dummy'
-    dest: '/etc/letsencrypt/dummy/{{ item }}'
+    dest: '/etc/nginx/ssl/dummy/{{ item }}'
     owner: root
     group: root
     mode: '0777'
