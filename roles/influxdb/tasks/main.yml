@@ -6,7 +6,7 @@
     state: latest
   tags: [influxdb]
 
-- name: Check if docker is installed
+- name: Check if Docker is installed
   when: influx_use_docker | bool
   command: docker --version
   register: docker_valid

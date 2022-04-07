@@ -1,12 +1,12 @@
-# Deploy playbook
+# GtLab playbook
 
 - hosts: gitlab
   become: true
   gather_facts: True
   roles:
-    # - common
-    # - promtail
-    # - node-exporter
-    # - docker
-    # - nginx
+    - common
+    - promtail
+    - node-exporter
+    - docker
+    - nginx
     - docker-deploy

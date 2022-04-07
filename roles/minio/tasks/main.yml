@@ -1,6 +1,6 @@
 # Main Minio Setup
 ---
-- name: Check if docker is installed
+- name: Check if Docker is installed
   command: docker --version
   register: docker_valid
   ignore_errors: True

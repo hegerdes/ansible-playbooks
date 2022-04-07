@@ -32,6 +32,11 @@ ansible-playbook -i <PATH_TO_INVENTORY> <PLAYBOOK>
 ansible-playbook --ask-vault-password -i <PATH_TO_INVENTORY> <PLAYBOOK>
 ```
 
+### Encrypt data
+```bash
+ansible-vault encrypt <PATH_TO_VAULT>
+```
+
 ## Backgrund
 The script performs all plays defined in the playbook. Every play can traget all hosts, a group of hosts or one sever:
 
