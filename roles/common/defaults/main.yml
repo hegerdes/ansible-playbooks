@@ -21,6 +21,17 @@ common_default_network_device: ens10
 #     user: root                    # optional
 #     key_options: ''               # optional
 
+# Mounts
+common_device_mounts: []
+# Examle
+# common_device_mounts:
+#   - source: UUID=xyz | /dev/xyz
+#     destination: /mnt/dst
+#     filesystem: iso9660|xfs|ext4
+#     options: ro,noauto
+
+
+
 # Key value pairs of hostname: ip
 # Default is ansibe_host: ansible_ip
 internal_hostnames: []

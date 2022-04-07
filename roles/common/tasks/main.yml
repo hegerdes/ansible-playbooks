@@ -87,6 +87,18 @@
     state: absent
   tags: [common, swap]
 
+- name: Mount devices
+  mount:
+    path: '{{ item.destination }}'
+    src: '{{ item.source }}'
+    fstype: '{{ item.filesystem }}'
+    opts: '{{ item.options }}'
+    state: mounted
+    backup: yes
+    boot: yes
+  loop: '{{ common_device_mounts }}'
+  tags: [common, mounts]
+
 - name: Ensue cgroup memory support
   lineinfile:
     path: /etc/default/grub
