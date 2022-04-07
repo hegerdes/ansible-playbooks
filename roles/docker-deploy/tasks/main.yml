@@ -72,6 +72,14 @@
   loop: '{{ docker_deploy_networks | default([]) }}'
   tags: [docker-deploy, docker-deploy-service]
 
+- name: Check images
+  docker_image:
+    name: '{{ item.split(":")[0] if(item | regex_findall(":") | length == 1) else item.split(":")[0] + ":" + item.split(":")[1] }}'
+    tag: '{{ item.split(":")[1] | default("latest") if(item | regex_findall(":") | length <= 1) else item.split(":")[2] }}'
+    source: pull
+  loop: '{{ docker_deploy_services }}'
+  tags: [docker-deploy]
+
 - name: Create Service
   docker_swarm_service:
     env: '{{ item.env | default(omit)}}'

@@ -45,10 +45,32 @@
   tags: [docker-deploy]
 
 - name: Create absolut paths for stack files
-  when: docker_deploy_use_swarm_mode | bool
   set_fact:
     compose_files_stack: '{{ compose_files_stack | default([]) + ["".join((docker_deploy_dst_config_files,item))] }}'
   loop: '{{ docker_deploy_stacks | list}}'
+  tags: [docker-deploy]
+
+- name: Getting all used images
+  slurp:
+    src: '{{ docker_deploy_dst_config_files + item }}'
+  loop: '{{ docker_deploy_stacks | list}}'
+  register: deploy_compose_conetent
+
+- name: Organize images
+  when: item.content is defined
+  set_fact:
+    deploy_compose_conetent_img: '{{ deploy_compose_conetent_img | default([]) + item.content | b64decode | from_yaml | json_query("services") | dict2items | map(attribute="value.image") }}'
+  loop: '{{ deploy_compose_conetent.results | default([]) }}'
+  loop_control:
+    label: '{{ item.source }}'
+  tags: [docker-deploy]
+
+- name: Check images
+  docker_image:
+    name: '{{ item.split(":")[0] if(item | regex_findall(":") | length == 1) else item.split(":")[0] + ":" + item.split(":")[1] }}'
+    tag: '{{ item.split(":")[1] | default("latest") if(item | regex_findall(":") | length <= 1) else item.split(":")[2] }}'
+    source: pull
+  loop: '{{ deploy_compose_conetent_img | unique }}'
   tags: [docker-deploy]
 
 - name: Deploy app-stack via stack
