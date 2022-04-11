@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   health-pulse:
-    image: git.cci-net.de:5050/mycci/dm/symbic-servicemonitor:master
+    image: git.cci-net.de:5050/mycci/dm/symbic-servicemonitor:main
     environment:
       - TZ=Europe/Berlin
     env_file: {{ mgmt_dst_config_files }}health-pulse/.env
