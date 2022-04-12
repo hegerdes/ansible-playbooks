@@ -26,7 +26,7 @@ RUN npm run generate-nginx ingress-hosts-nginx.yml
 
 FROM nginx:1.20
 RUN apt-get update && apt-get install -q -y --no-install-recommends \
-    nano bash cron certbot python3-certbot-nginx \
+    bash cron certbot python3-certbot-nginx \
     && rm /etc/nginx/conf.d/*.conf \
     && rm -rf /var/lib/apt/lists/*
 
@@ -45,8 +45,11 @@ ENV COMMIT_HASH=$COMMIT_HASH
 ENV COMMIT_TAG=$COMMIT_TAG
 LABEL commit-hash=$COMMIT_HASH
 LABEL commit-tag=$COMMIT_TAG
-ARG RUN_CERTBOT="yes"
-ENV INGRESS_DEBUG="yes"
+
+# Certbot & debug
+ENV NGINX_DEBUG="no"
+ARG RUN_CERTBOT="no"
+ENV NGINX_BINARY="nginx"
 ENV RUN_CERTBOT=$RUN_CERTBOT
 
-ENTRYPOINT [ "sh", "-c", "if [ \"$RUN_CERTBOT\" = \"yes\" ]; then bash /my-entrypoint.sh; else bash /docker-entrypoint.sh nginx -g \"daemon off;\" ; fi"]
+ENTRYPOINT [ "sh", "-c", "if [ \"$NGINX_DEBUG\" = \"yes\" ]; then export NGINX_BINARY=\"nginx-debug\"; fi; if [ \"$RUN_CERTBOT\" = \"yes\" ]; then bash /my-entrypoint.sh; else bash /docker-entrypoint.sh $NGINX_BINARY -g \"daemon off;\"; fi"]

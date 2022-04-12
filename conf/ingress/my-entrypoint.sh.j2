@@ -10,13 +10,18 @@ _term() {
 # Trab exit signal
 trap _term SIGTERM
 
+# Check for debug flag
+if [ $NGINX_DEBUG = "yes" ]; then
+    export NGINX_BINARY="nginx-debug"
+fi
+
 # Start cron
 echo "Starting cron"
 cron
 CRON_PID=$!
 
 # Start nginx
-sh /docker-entrypoint.sh nginx -g "daemon off;" &
+sh /docker-entrypoint.sh $NGINX_BINARY -g "daemon off;" &
 MAIN_PID=$!
 
 MAIL={{ conf.certbot_mail | default("support@***REMOVED***") }}
