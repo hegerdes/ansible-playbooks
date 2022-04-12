@@ -1,7 +1,21 @@
 # Install docker-compose
 ---
-- name: Install Compose binary
+
+- name: Install docker compose binary v2
   block:
+
+  - name: Delete compose v1
+    file:
+      path: /usr/local/bin/docker-compose
+      state: absent
+    tags: [docker, docker-compose]
+
+  - name: Ensureing installation directory exists
+    file:
+      path: /usr/local/lib/docker/cli-plugins
+      state: directory
+    tags: [docker, docker-compose]
+
   - name: Check current docker-compose version
     command: docker-compose --version
     register: docker_compose_current_version
@@ -12,7 +26,7 @@
 
   - name: Delete existing docker-compose version if it differs to version {{ docker_compose_version }}
     file:
-      path: /usr/local/bin/docker-compose
+      path: /usr/local/lib/docker/cli-plugins/docker-compose
       state: absent
     when: >
       docker_compose_current_version.stdout is defined
@@ -35,18 +49,18 @@
   - name: Install docker-compose {{ docker_compose_version }}
     get_url:
       url: '{{ docker_compose_url.stdout }}'
-      dest: /usr/local/bin/docker-compose
+      dest: /usr/local/lib/docker/cli-plugins/docker-compose
       mode: 0755
     when: >
       docker_compose_current_version.stdout is not defined
       or docker_compose_version not in docker_compose_current_version.stdout
     tags: [docker, docker-compose]
 
-  - name: Create docker-compose symbolic link
-    file:
-      src: /usr/local/bin/docker-compose
-      dest: /usr/bin/docker-compose
-      state: link
+  - name: Create docker-compose alternative
+    alternatives:
+      name: docker-compose
+      link: /usr/bin/docker-compose
+      path: /usr/local/lib/docker/cli-plugins/docker-compose
     tags: [docker, docker-compose]
 
   - name: Check current docker-compose version
@@ -57,8 +71,7 @@
   rescue:
     - name: Error Handler
       debug:
-        msg: Error while installing compose, using fallback with pip
-        var: docker_compose_url
+        msg: 'Error while installing compose, using fallback with pip. Info: {{ docker_compose_url }}'
       tags: [docker, docker-compose]
 
     - name: Ensure needed packages are installed
