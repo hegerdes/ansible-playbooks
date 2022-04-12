@@ -72,6 +72,12 @@
   loop: '{{ docker_deploy_networks | default([]) }}'
   tags: [docker-deploy, docker-deploy-service]
 
+- name: test
+  debug:
+    msg: '{{ item.image.split(":") }}'
+  loop: '{{ docker_deploy_services }}'
+  tags: [docker-deploy]
+
 - name: Check images
   docker_image:
     name: '{{ item.image.split(":")[0] if(item | regex_findall(":") | length <= 1) else item.image.split(":")[0] + ":" + item.image.split(":")[1] }}'
