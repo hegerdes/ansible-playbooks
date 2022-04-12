@@ -1,6 +1,6 @@
 # Main Docker Setup
 ---
-- name: Install docker
+- name: Install Docker
   import_tasks: install-docker.yml
   tags: [docker, docker-install]
 

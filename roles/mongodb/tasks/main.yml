@@ -12,7 +12,7 @@
     state: latest
   tags: [mongodb]
 
-- name: Run docker install
+- name: Run Docker install
   when: mongodb_use_docker | bool
   include_role:
     name: docker

@@ -6,7 +6,7 @@
     state: latest
   tags: [mariadb]
 
-- name: Run docker install
+- name: Run Docker install
   when: mariadb_use_docker | bool
   include_role:
     name: docker

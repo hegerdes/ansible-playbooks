@@ -1,7 +1,7 @@
 # Log into regestries
 ---
 
-- name: Log into docker registries
+- name: Log into Docker registries
   no_log: True
   docker_login:
     registry_url: '{{ item.regestry | default("https://index.docker.io/v1/") }}'

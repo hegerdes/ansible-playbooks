@@ -1,7 +1,7 @@
 ---
 # Influx settings
 
-# Install via docker
+# Install via Docker
 influx_use_docker: yes
 influx_docker_version: 2.1-alpine
 
