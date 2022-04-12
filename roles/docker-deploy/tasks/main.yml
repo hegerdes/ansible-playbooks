@@ -74,7 +74,7 @@
 
 - name: Check images
   docker_image:
-    name: '{{ item.image.split(":")[0] if(item | regex_findall(":") | length == 1) else item.image.split(":")[0] + ":" + item.image.split(":")[1] }}'
+    name: '{{ item.image.split(":")[0] if(item | regex_findall(":") | length <= 1) else item.image.split(":")[0] + ":" + item.image.split(":")[1] }}'
     tag: '{{ item.image.split(":")[1] | default("latest") if(item | regex_findall(":") | length <= 1) else item.image.split(":")[2] }}'
     source: pull
   loop: '{{ docker_deploy_services }}'
