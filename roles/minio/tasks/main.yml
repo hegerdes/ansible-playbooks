@@ -4,6 +4,7 @@
   command: docker --version
   register: docker_valid
   ignore_errors: True
+  changed_when: False
   tags: [minio]
 
 - name: Run docker install

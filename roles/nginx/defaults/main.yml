@@ -52,7 +52,7 @@ promtail_config_dst_path: /srv/promtail/promtail-config.yml
 # For cert renew
 nginx_cron_jobs:
   - name: Certbot renew
-    job: echo "certbot renew" >> /var/log/cron.log && certbot renew >> /var/log/cron.log
+    job: echo "certbot renew" >> /var/log/cron.log && certbot renew --post-hook "nginx -t && nginx -s reload" >> /var/log/cron.log
     weekday: '2'
     month: '*'
     minute: '30'
