@@ -77,6 +77,7 @@ services:
       - "{{ mgmt_docker_stack_name }}=true"
       {{ mgmt_traefik_labels | replace("__SERVICE__", "grafana") | replace("__PORT__", "3000") | trim | indent(width=6) if(not mgmt_use_swarm_mode) }}
       {{ mgmt_traefik_auth_labels.grafana | default("") | trim | indent(width=6) if(not mgmt_use_swarm_mode) }}
+
   loki:
     image: grafana/loki:latest
     environment:

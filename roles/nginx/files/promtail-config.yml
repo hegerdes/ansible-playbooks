@@ -95,5 +95,5 @@ scrape_configs:
           source:     "nginx_request"
           value:      "/1.0.0/health"
       - drop:
-          source:     "nginx_http_user_agent"
-          regex: "Zabbix.*"
+          source:     "http_user_agent"
+          expression: "(Zabbix|Zabbix 4.4.5)"
