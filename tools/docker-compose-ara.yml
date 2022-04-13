@@ -1,0 +1,36 @@
+version: '3.7'
+
+services:
+  ara:
+    image: docker.io/recordsansible/ara-api:latest
+    restart: unless-stopped
+    tty: true
+    environment:
+      - ARA_DATABASE_ENGINE=django.db.backends.mysql
+      - ARA_DATABASE_HOST=db
+      - ARA_DATABASE_NAME=ara
+      - ARA_DATABASE_PASSWORD=yes
+      - ARA_DATABASE_PORT=3306
+      - ARA_DATABASE_USER=root
+      - TZ=Europe/Berlin
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    volumes:
+      - ara_data:/opt/ara:z
+
+####### Database services #######
+  db:
+    image: mariadb
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Berlin
+      - MYSQL_ROOT_PASSWORD=yes
+      - MYSQL_DATABASE=ara
+    volumes:
+      - maria_db_data:/var/lib/mysql
+
+volumes:
+  ara_data:
+  maria_db_data:
