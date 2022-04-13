@@ -50,13 +50,26 @@
   loop: '{{ docker_deploy_stacks | list}}'
   tags: [docker-deploy]
 
-- name: Getting all used images
+- name: Getting generated stack file(s)
   slurp:
     src: '{{ docker_deploy_dst_config_files + item }}'
   loop: '{{ docker_deploy_stacks | list}}'
   register: deploy_compose_conetent
 
-- name: Organize images
+- name: Saving generated file(s)
+  when: item.content is defined
+  become: false
+  run_once: True
+  copy:
+    content: "{{ item.content | b64decode | from_yaml | to_nice_yaml(indent=2) }}"
+    dest: "/tmp/{{ inventory_dir | basename + '-' + inventory_hostname + '-' + item.source.split('/') | last }}"
+  delegate_to: localhost
+  loop: '{{ deploy_compose_conetent.results | default([]) }}'
+  loop_control:
+    label: '{{ item.source }}'
+  tags: [maintenance, os-updates]
+
+- name: Extracting used images
   when: item.content is defined
   set_fact:
     deploy_compose_conetent_img: '{{ deploy_compose_conetent_img | default([]) + item.content | b64decode | from_yaml | json_query("services") | dict2items | map(attribute="value.image") }}'
