@@ -5,6 +5,7 @@ services:
   mongodb:
     image: mongo:{{ mongodb_docker_version }}
     container_name: mongodb
+    command: {{ mongodb_command_agrs }}
     restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: {{ mongodb_root_user }}
@@ -14,6 +15,21 @@ services:
       - 27017:27017
     volumes:
       - db_mongo_data:/data/db
+      - /srv/mongodb/mongo.conf:/srv/mongodb/mongo.conf
+
+#  mongo-express:
+#    image: mongo-express
+#    container_name: mongo-express
+#    restart: unless-stopped
+#    depends_on:
+#      - mongodb
+#    ports:
+#      - 8081:8081
+#    environment:
+#      - TZ=Europe/Berlin
+#      - ME_CONFIG_MONGODB_SERVER=mongodb
+#      - ME_CONFIG_MONGODB_ADMINUSERNAME={{ mongodb_root_user }}
+#      - ME_CONFIG_MONGODB_ADMINPASSWORD={{ mongodb_root_pw }}
 
 volumes:
   db_mongo_data:

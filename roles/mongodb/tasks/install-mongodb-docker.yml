@@ -6,6 +6,14 @@
     state: directory
   tags: [mongodb]
 
+- name: Copy conf files
+  copy:
+    src: '{{ mongo_src_config_files }}/'
+    dest: /srv/
+    owner: root
+    group: root
+  tags: [mongodb]
+
 - name: Copy mongodb compose file
   template:
     src: mongodb-docker-compose.yml.j2

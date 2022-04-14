@@ -28,7 +28,7 @@
   roles:
     - nginx
 
-- hosts: service-mariadb
+- hosts: mariadbs
   become: true
   gather_facts: True
   vars_files:
@@ -36,7 +36,7 @@
   roles:
     - mariadb
 
-- hosts: service-mongodb
+- hosts: mongodbs
   become: true
   gather_facts: True
   vars_files:
@@ -44,7 +44,7 @@
   roles:
     - mongodb
 
-- hosts: service-influxdb
+- hosts: influxdbs
   become: true
   gather_facts: True
   vars_files:

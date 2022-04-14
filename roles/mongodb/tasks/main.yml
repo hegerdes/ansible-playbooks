@@ -12,13 +12,17 @@
     state: latest
   tags: [mongodb]
 
-- name: Run Docker install
-  when: mongodb_use_docker | bool
+- name: Check if Docker is installed
+  command: docker --version
+  register: mongo_docker_valid
+  ignore_errors: True
+  changed_when: False
+  tags: [mongodb]
+
+- name: Docker install
+  when: mongo_docker_valid.failed
   include_role:
     name: docker
-  vars:
-    docker_init_swarm: false
-    docker_install_portainer: false
   tags: [mongodb]
 
 - name: Install MongoDB
