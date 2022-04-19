@@ -10,3 +10,13 @@
     - docker
     - nginx
     - docker-deploy
+
+- hosts: gitlab_runner
+  become: true
+  gather_facts: True
+  roles:
+    - common
+    - promtail
+    - node-exporter
+    - docker
+    - docker-deploy

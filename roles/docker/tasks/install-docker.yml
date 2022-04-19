@@ -72,7 +72,7 @@
     dest: /etc/docker/daemon.json
     mode: 0644
   when: docker_daemon_options.keys() | length > 0
-  notify: Restart docker
+  notify: Restart Docker
   tags: [docker, docker-install]
 
 - name: Ensure Docker is started and enabled at boot

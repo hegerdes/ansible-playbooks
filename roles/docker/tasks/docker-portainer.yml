@@ -31,7 +31,7 @@
   tags: [docker, docker-portainer]
 
 - name: Copy portainer compose files
-  when: docker_install_portainer and not docker_init_swarm | bool
+  when: docker_install_portainer and (not docker_init_swarm or not docker_swarm_result.docker_swarm_manager) | bool
   copy:
     src: '{{ docker_portainer_src }}'
     dest: '{{ docker_portainer_dst_stack }}'
@@ -51,24 +51,23 @@
   tags: [docker, docker-portainer]
 
 - name: Install pip3
-  when: docker_install_portainer and not docker_init_swarm | bool
+  when: docker_install_portainer and (not docker_init_swarm or not docker_swarm_result.docker_swarm_manager) | bool
   apt:
     name: python3-pip
     state: latest
   tags: [docker, docker-portainer]
 
 - name: Install docker-compose pip package
-  when: docker_install_portainer and not docker_init_swarm | bool
+  when: docker_install_portainer and (not docker_init_swarm or not docker_swarm_result.docker_swarm_manager) | bool
   pip:
     name: docker-compose
   tags: [docker, docker-portainer]
 
 - name: Deploy portainer via docker-compose
-  when: docker_install_portainer and not docker_init_swarm | bool
+  when: docker_install_portainer and (not docker_init_swarm or not docker_swarm_result.docker_swarm_manager) | bool
   docker_compose:
-    project_src: '{{ docker_portainer_dst_stack | dirname }}'
-    state: present
     project_name: portainer
-    files:
-      - '{{ docker_portainer_dst_stack }}'
+    remove_orphans: yes
+    project_src: '{{ docker_portainer_dst_stack | dirname }}'
+    files: '{{[ docker_portainer_dst_stack.split("/") | last ]}}'
   tags: [docker, docker-portainer]
