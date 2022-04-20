@@ -6,7 +6,7 @@ docker exec mongodb sh -c 'exec mongodump -u=$MONGO_INITDB_ROOT_USERNAME -p=$MON
 echo "done" | tee -a $LOGFILE
 
 # Restore
-# docker exec -i mongodb sh -c 'exec mongorestore -u=$MONGO_INITDB_ROOT_USERNAME -p=$MONGO_INITDB_ROOT_PASSWORD --gzip --archive' < /root/mongo_dump/2022-04-14-mongodb.dump.gz
+# docker exec -i mongodb sh -c 'exec mongorestore -u=$MONGO_INITDB_ROOT_USERNAME -p=$MONGO_INITDB_ROOT_PASSWORD --drop --gzip --archive' < /root/mongo_dump/mongodb.dump.gz
 
 # Options
 # --gzip              # If gziped

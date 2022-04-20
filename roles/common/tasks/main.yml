@@ -114,6 +114,22 @@
     floating_ips: '{{ common_floating_ips }}'
   tags: [common, ingress-ip]
 
+- name: Set network interfaces
+  blockinfile:
+    path: /etc/network/interfaces
+    block: |
+      auto {{ item.interface }}{{ "." + item.virtual_id | string if(item.virtual_id is defined) }}
+      iface {{ item.interface }}{{ "." + item.virtual_id | string if(item.virtual_id is defined) }} inet static
+        mtu {{ item.mtu | default(1400) }}
+        address {{ item.address }}
+        netmask {{ item.netmask | default("255.255.255.0") }}
+        up ip route add {{ item.cloud_net }} via {{ item.subnet }} dev {{ item.interface }}{{ "." + item.virtual_id | string if(item.virtual_id is defined) }}
+        down ip route del {{ item.cloud_net }} via {{ item.subnet }} dev {{ item.interface }}{{ "." + item.virtual_id | string if(item.virtual_id is defined) }}
+        {{ "vlan-raw-device " + item.interface | string if(item.virtual_id is defined) }}
+  loop: '{{ common_network_interfaces }}'
+  notify: Restart network service
+  tags: [common, network]
+
 - name: Ensure logfile for cron exists
   lineinfile:
     path: /var/log/cron.log

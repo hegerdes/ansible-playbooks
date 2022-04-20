@@ -30,7 +30,17 @@ common_device_mounts: []
 #     filesystem: iso9660|xfs|ext4
 #     options: ro,noauto
 
-
+# Sets conf in /etc/network/interfaces
+common_network_interfaces: []
+# Example
+# common_network_interfaces:
+#   - interface: enp7s0
+#     subnet: 10.10.1.1
+#     address: 10.10.1.2
+#     cloud_net: 10.10.0.0/16
+#     netmask: 255.255.255.0    # Optional - default is 255.255.255.0
+#     virtual_id: 4000          # Optional - for virtual devices (vSwitch)
+#     mtu: 1400                 # Optional - default is 1400
 
 # Key value pairs of hostname: ip
 # Default is ansibe_host: ansible_ip
