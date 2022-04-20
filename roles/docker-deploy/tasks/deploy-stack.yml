@@ -72,7 +72,7 @@
 - name: Extracting used images
   when: item.content is defined
   set_fact:
-    deploy_compose_conetent_img: '{{ deploy_compose_conetent_img | default([]) + item.content | b64decode | from_yaml | json_query("services") | dict2items | map(attribute="value.image") }}'
+    deploy_compose_conetent_img: '{{ deploy_compose_conetent_img | default([]) + item.content | b64decode | from_yaml | json_query("services") | default({}) | dict2items | map(attribute="value.image") }}'
   loop: '{{ deploy_compose_conetent.results | default([]) }}'
   loop_control:
     label: '{{ item.source }}'

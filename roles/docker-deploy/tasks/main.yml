@@ -28,6 +28,36 @@
     use_ssh_args: yes
     mode: push
     checksum: yes
+    rsync_opts: '{{ docker_deploy_rsync_args }}'
+  tags: [docker-deploy]
+
+- name: Check for auto generated files
+  stat:
+    path: '{{ item.file }}'
+  loop: '{{ docker_deploy_generated_files }}'
+  loop_control:
+    label: '{{ item.file }}'
+  register: docker_deploy_gen_files
+  tags: [docker-deploy]
+
+- name: Initial directory creation for generated files
+  when: not item.stat.exists
+  file:
+    state: directory
+    path: '{{ item.item.file | dirname }}'
+  loop: '{{ docker_deploy_gen_files.results | default([]) }}'
+  loop_control:
+    label: '{{ item.item.file }}'
+  tags: [docker-deploy]
+
+- name: Initial copy for auto generated files
+  when: not item.stat.exists
+  copy:
+    content: '{{ item.item.content }}'
+    dest: '{{ item.item.file }}'
+  loop: '{{ docker_deploy_gen_files.results | default([]) }}'
+  loop_control:
+    label: '{{ item.item.file }}'
   tags: [docker-deploy]
 
 - name: Fix permissions

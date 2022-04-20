@@ -15,6 +15,17 @@ docker_deploy_tag: latest
 docker_deploy_services: []
 docker_deploy_stacks: []
 
+docker_deploy_generated_files: []
+# Example
+# docker_deploy_generated_files:
+#   - file: my-file-path
+#     content: '{{ lookup("file", docker_deploy_src_config_files + "my-file-path") }}'
+
+docker_deploy_rsync_args: []
+# Example
+# docker_deploy_rsync_args:
+#   - "--exclude=.git"
+
 docker_deploy_file_permissions: []
 # Example
 # docker_deploy_file_permissions:
