@@ -28,6 +28,12 @@
   roles:
     - nginx
 
+- hosts: minios
+  become: true
+  gather_facts: True
+  roles:
+    - minio
+
 - hosts: mariadbs
   become: true
   gather_facts: True

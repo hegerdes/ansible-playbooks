@@ -2,19 +2,20 @@ version: '3.7'
 
 # Settings and configurations that are common for all containers
 x-minio-common: &minio-common
-  image: quay.io/minio/minio
+  image: quay.io/minio/minio:latest
   command: server --console-address ":9001" http://minio{1...4}/data{1...4}
-  expose:
-    - "9000"
-    - "9001"
   environment:
-    MINIO_ROOT_USER: myminio
-    MINIO_ROOT_PASSWORD: mySuperSecureAdminPW
-  healthcheck:
-    test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-    interval: 30s
-    timeout: 20s
-    retries: 3
+    - MINIO_ROOT_USER=myminio
+    - MINIO_ROOT_PASSWORD=mySuperSecureAdminPW
+    - TZ=Europe/Berlin
+    - MINIO_DOMAIN=minio.devops-testing.123preview.com
+  networks:
+    - minio_net
+  # healthcheck:
+  #   test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+  #   interval: 30s
+  #   timeout: 20s
+  #   retries: 3
 
 # starts 4 docker containers running minio server instances.
 # using nginx reverse proxy, load balancing, you can access
@@ -28,7 +29,10 @@ services:
       - data1-2:/data2
       - data1-3:/data3
       - data1-4:/data4
-
+    deploy:
+      placement:
+        constraints:
+          - node.labels.minio1==true
   minio2:
     <<: *minio-common
     hostname: minio2
@@ -37,6 +41,10 @@ services:
       - data2-2:/data2
       - data2-3:/data3
       - data2-4:/data4
+    deploy:
+      placement:
+        constraints:
+          - node.labels.minio2==true
 
   minio3:
     <<: *minio-common
@@ -46,6 +54,10 @@ services:
       - data3-2:/data2
       - data3-3:/data3
       - data3-4:/data4
+    deploy:
+      placement:
+        constraints:
+          - node.labels.minio3==true
 
   minio4:
     <<: *minio-common
@@ -55,20 +67,35 @@ services:
       - data4-2:/data2
       - data4-3:/data3
       - data4-4:/data4
+    deploy:
+      placement:
+        constraints:
+          - node.labels.minio4==true
 
   nginx:
-    image: nginx:1.19.2-alpine
+    image: nginx:1.21
     hostname: nginx
-    volumes:
-      - /srv/minio/nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
       - "9000:9000"
       - "9001:9001"
+    networks:
+      - minio_net
     depends_on:
       - minio1
       - minio2
       - minio3
       - minio4
+    configs:
+      - source: nginx-conf
+        target: /etc/nginx/nginx.conf
+    deploy:
+      replicas: 2
+      # placement:
+      #   constraints:
+      #     - "node.role==manager"
+configs:
+  nginx-conf:
+    file: /srv/minio/nginx.conf
 
 volumes:
   data1-1:
@@ -88,4 +115,12 @@ volumes:
   data4-3:
   data4-4:
 
-
+networks:
+  minio_net:
+    driver: overlay
+    attachable: true
+    name: minio_net
+    driver_opts:
+      com.docker.network.driver.mtu: 1450
+      # Workaround for Hetzner and GCE networks
+      # See: https://github.com/portainer/portainer/issues/4962

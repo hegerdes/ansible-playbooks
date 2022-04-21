@@ -1,7 +1,7 @@
 # Init docker swarm
 ---
 - name: Init swarm master
-  when: 'ansible_facts.hostname in docker_swarm_manager_and_advertise_addr '
+  when: 'ansible_facts.hostname in docker_swarm_manager_and_advertise_addr'
   docker_swarm:
     advertise_addr: '{{ docker_swarm_manager_and_advertise_addr[ansible_facts.hostname] | default("eth0:2377") }}'
     state: present
