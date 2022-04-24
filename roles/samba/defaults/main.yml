@@ -1,0 +1,19 @@
+---
+# samba defaults
+
+samba_listen_interface: eth0
+samba_allowed_hosts: 0.0.0.0/0
+
+samba_shares:
+ - |
+  [syslogs]
+    comment = SYS Logs
+    path = /tmp
+    browseable = yes
+    read only = no
+    guest ok = no
+    valid users = smb-test
+
+samba_users:
+  - user: smb-test
+    password: mySuperSecurePW

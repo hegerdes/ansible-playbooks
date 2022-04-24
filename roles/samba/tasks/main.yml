@@ -1,0 +1,50 @@
+# Main Minio Setup
+---
+- name: Install packages
+  apt:
+    name: [samba, samba-client, samba-common, cifs-utils]
+    state: present
+    update_cache: yes
+    install_recommends: no
+  tags: [samba]
+
+- name: Configuring smb.conf
+  template:
+    src: smb.conf.j2
+    dest: /etc/samba/smb.conf
+    mode: '0644'
+  notify: Restart Samba
+  tags: [samba]
+
+- name: Ensure handlers are notified now
+  meta: flush_handlers
+  tags: [samba]
+
+- name: Adding UNIX users for Samba
+  user:
+    name: '{{ item.user }}'
+    password: '{{ item.password | password_hash("sha512") }}'
+    comment: '{{ item.comment | default("SMB USER")}}'
+    shell: /usr/bin/bash
+    create_home: no
+    state: present
+  loop: '{{ samba_users }}'
+  loop_control:
+    label: '{{ item.user }}'
+  tags: [samba]
+
+- name: Create Samba users
+  shell: >
+    (echo {{ item.password }}; echo {{ item.password }}) | smbpasswd -s -a {{ item.user }}
+  loop: "{{ samba_users }}"
+  loop_control:
+    label: '{{ item.user }}'
+  tags: [samba]
+
+
+# ToDO
+# Create dirs and set ownership
+# Firewall
+
+
+# docker volume create --driver local --opt type=cifs --opt o=addr=127.0.0.1,rw --opt device=//127.0.0.1/syslogs --opt o=uid=0,username=smb-test,password=mySuperSecurePW,nounix,file_mode=0770,dir_mode=0770 myvolume
