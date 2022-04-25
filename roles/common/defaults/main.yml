@@ -1,6 +1,9 @@
 ---
 ##### general #####
 
+# Timezone
+common_time_zone: Europe/Berlin
+
 # Install extra packages
 common_extra_packages: []
 common_delete_packages: []

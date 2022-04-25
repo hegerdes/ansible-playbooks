@@ -1,5 +1,10 @@
 # Role common main
 ---
+- name: Set timezone
+  timezone:
+    name: '{{ common_time_zone }}'
+  tags: [common, time]
+
 - name: Getting all hostkeys
   when: hostvars[item].ansible_facts[common_default_network_device] is defined
   run_once: True
