@@ -2,10 +2,10 @@
 
 SERVERS=({{ "\"" + mgmt_backup_target_hosts | default([]) | join("\" \"") + "\"" }})
 BACKUP_DST="/db_dumps"
-PUB_KEY_FILE=$BACKUP_DST/"db-backup.key.pub"
+PUB_KEY_FILE="${BACKUP_DST}/db-backup.key.pub"
 SECRET=$(openssl rand -base64 32)
 AZURE_SAS_TOKEN="{{ mgmt_azure_token | default("\"\"") }}"
-AWS_BUCKET=""
+AWS_BUCKET="{{ mgmt_s3_uri | default("\"\"") }}"
 
 # create btk dir
 mkdir -p $BACKUP_DST
@@ -31,13 +31,22 @@ for SERVER in "${SERVERS[@]}"; do
     done
 done
 
+{% if mgmt_s3_uri | default("none") != "none" %}
 ################################ AWS ###############################
-# echo "Running: aws s3 cp ${BACKUP_DST}/$(date '+%Y-%m-%d') s3://${AWS_BUCKET}${BACKUP_DST}/$(date '+%Y-%m-%d') --recursive"
-# aws s3 cp ${BACKUP_DST}/$(date '+%Y-%m-%d') s3://${AWS_BUCKET}${BACKUP_DST}/$(date '+%Y-%m-%d') --recursive
+echo "Running: aws s3 cp ${BACKUP_DST}/$(date '+%Y-%m-%d') s3://${AWS_BUCKET}${BACKUP_DST}/$(date '+%Y-%m-%d') --recursive"
+aws s3 cp ${BACKUP_DST}/$(date '+%Y-%m-%d') s3://${AWS_BUCKET}${BACKUP_DST}/$(date '+%Y-%m-%d') --recursive
+{% endif %}
 
+{% if mgmt_azure_token | default("none") != "none" %}
 ############################### AZURE ##############################
 echo "Running: azcopy copy ${BACKUP_DST}/$(date '+%Y-%m-%d') \$TOKEN\$ --recursive=true"
 azcopy copy ${BACKUP_DST}/$(date '+%Y-%m-%d') $AZURE_SAS_TOKEN --recursive=true
+{% endif %}
+
+############################ REMOVE-OLD ############################
+echo "Will remove:"
+ls -t ${BACKUP_DST}/*.gz | sed -e '1,6d' 2> /dev/null
+ls -t ${BACKUP_DST}/*.gz | sed -e '1,6d' | xargs -r -d '\n' rm 2> /dev/null
 
 ############################ Decrypting ############################
 # Decrypt random key
