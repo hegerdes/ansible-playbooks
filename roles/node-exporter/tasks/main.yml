@@ -74,6 +74,7 @@
   tags: [node-exporter, monitoring]
 
 - name: Check is ufw installed
+  when: node_exporter_allow_ports
   shell: command -v ufw >/dev/null 2>&1
   register: ufw_installed
   ignore_errors: True
@@ -81,6 +82,7 @@
   tags: [node-exporter, monitoring, firewall]
 
 - name: Check is firewalld installed
+  when: node_exporter_allow_ports
   shell: command -v firewall-cmd >/dev/null 2>&1
   register: firewalld_installed
   ignore_errors: True
@@ -89,14 +91,14 @@
 
 - name: Allow port via ufw
   include_tasks: shared/open-port-ufw.yml
-  when: ufw_installed.rc == 0
+  when: ufw_installed.rc | default(1) == 0
   vars:
     ufw_open_port: 9100
   tags: [node-exporter, monitoring, firewall]
 
 - name: Allow port via firewalld
   include_tasks: shared/open-port-firewalld.yml
-  when: firewalld_installed.rc == 0
+  when: firewalld_installed.rc | default(1) == 0
   tags: [node-exporter, monitoring, firewall]
   vars:
     firewalld_open_port: 9100/tcp

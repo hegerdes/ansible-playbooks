@@ -3,6 +3,7 @@
 
 # Timezone
 common_time_zone: Europe/Berlin
+common_hostname: none
 
 # Install extra packages
 common_extra_packages: []

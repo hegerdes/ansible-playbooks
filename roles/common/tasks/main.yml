@@ -2,6 +2,7 @@
 ---
 - name: Set timezone
   timezone:
+    hwclock: UTC
     name: '{{ common_time_zone }}'
   tags: [common, time]
 
