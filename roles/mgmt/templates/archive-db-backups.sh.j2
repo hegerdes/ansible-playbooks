@@ -1,5 +1,9 @@
 #!/bin/bash
 
+#Make it prittttyyyy
+RED='\033[0;31m'
+NC='\033[0m'
+
 SERVERS=({{ "\"" + mgmt_backup_target_hosts | default([]) | join("\" \"") + "\"" }})
 BACKUP_DST="/db_dumps"
 PUB_KEY_FILE="${BACKUP_DST}/db-backup.key.pub"
@@ -7,18 +11,33 @@ SECRET=$(openssl rand -base64 32)
 AZURE_SAS_TOKEN="{{ mgmt_azure_token | default("\"\"") }}"
 AWS_BUCKET="{{ mgmt_s3_uri | default("\"\"") }}"
 
+checkExitCode() {
+    if [ $1 -ne 0 ]; then
+        echo -e "${RED}Last command returned none zero exit code. Please check${NC}"
+        exit 1
+    fi
+}
+
 # create btk dir
 mkdir -p $BACKUP_DST
 
 for SERVER in "${SERVERS[@]}"; do
+    # Connection check
+    ssh $SERVER "ls -t /db_dumps/*.gz" > /dev/null
+    checkExitCode $?
     for DUMP_FILE in $(ssh $SERVER "ls -t /db_dumps/*.gz"); do
         echo "${SERVER}: getting ${DUMP_FILE}..."
+
         # Extract file names
         DUMP_FILE_NAME=$(ssh $SERVER "basename ${DUMP_FILE}")
+        checkExitCode $?
         DUMP_DATE=${DUMP_FILE_NAME:0:10}
         mkdir -p $BACKUP_DST/$DUMP_DATE
+
         # Get DB dump
-        ssh $SERVER "cat ${DUMP_FILE}" | gpg --batch --yes --symmetric --passphrase $SECRET > $BACKUP_DST/$DUMP_DATE/$DUMP_FILE_NAME.gpg
+        ssh $SERVER "cat ${DUMP_FILE}" | gpg --batch --yes --compress-level 0 --symmetric --passphrase $SECRET > $BACKUP_DST/$DUMP_DATE/$DUMP_FILE_NAME.gpg
+        checkExitCode $?
+
         # Saving the key used for encryption
         echo "${SERVER}: Encrypted and saved KEY to $BACKUP_DST/$DUMP_DATE/KEY.acs"
         echo $SECRET | openssl rsautl -encrypt -inkey $PUB_KEY_FILE -pubin -out $BACKUP_DST/$DUMP_DATE/KEY.acs
@@ -27,6 +46,7 @@ for SERVER in "${SERVERS[@]}"; do
         if [[ $(date '+%Y-%m-%d') != $DUMP_DATE ]]; then
             echo "${SERVER}: Removing ${DUMP_FILE}"
             ssh $SERVER "rm ${DUMP_FILE}"
+            checkExitCode $?
         fi
     done
 done
@@ -35,12 +55,14 @@ done
 ################################ AWS ###############################
 echo "Running: aws s3 cp ${BACKUP_DST}/$(date '+%Y-%m-%d') s3://${AWS_BUCKET}${BACKUP_DST}/$(date '+%Y-%m-%d') --recursive"
 aws s3 cp ${BACKUP_DST}/$(date '+%Y-%m-%d') s3://${AWS_BUCKET}${BACKUP_DST}/$(date '+%Y-%m-%d') --recursive
+checkExitCode $?
 {% endif %}
 
 {% if mgmt_azure_token | default("none") != "none" %}
 ############################### AZURE ##############################
 echo "Running: azcopy copy ${BACKUP_DST}/$(date '+%Y-%m-%d') \$TOKEN\$ --recursive=true"
 azcopy copy ${BACKUP_DST}/$(date '+%Y-%m-%d') $AZURE_SAS_TOKEN --recursive=true
+checkExitCode $?
 {% endif %}
 
 ############################ REMOVE-OLD ############################
