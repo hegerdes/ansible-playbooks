@@ -67,8 +67,8 @@ checkExitCode $?
 
 ############################ REMOVE-OLD ############################
 echo "Will remove:"
-ls -t ${BACKUP_DST}/*.gz | sed -e '1,6d' 2> /dev/null
-ls -t ${BACKUP_DST}/*.gz | sed -e '1,6d' | xargs -r -d '\n' rm 2> /dev/null
+ls -t ${BACKUP_DST}/**/*.gpg | sed -e '1,6d' 2> /dev/null
+ls -t ${BACKUP_DST}/**/*.gpg | sed -e '1,6d' | xargs -r -d '\n' rm 2> /dev/null
 
 ############################ Decrypting ############################
 # Decrypt random key
