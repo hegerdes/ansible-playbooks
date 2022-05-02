@@ -16,6 +16,5 @@
   gather_facts: True
   roles:
     - common
-    - node-exporter
     - docker
     - docker-deploy
