@@ -55,8 +55,8 @@ server {
 {% endif %}
 
     listen 443 ssl{{ " http2" if (nginx_settings.http2 | default("on") == "on") }}{{ " default_server" if (nginx_vhost.default | default("no") == "yes") }};
-    ssl_certificate {{ nginx_vhost.tls.crt | default("/etc/nginx/ssl/dummy/fullchain.pem") }}; # managed by Certbot
-    ssl_certificate_key {{ nginx_vhost.tls.key | default("/etc/nginx/ssl/dummy/privkey.pem") }}; # managed by Certbot
+    ssl_certificate {{ nginx_vhost.tls.crt | default("/etc/letsencrypt/live/certs/fullchain.pem") }}; # managed by Certbot
+    ssl_certificate_key {{ nginx_vhost.tls.key | default("/etc/letsencrypt/live/certs/privkey.pem") }}; # managed by Certbot
     include /etc/nginx/ssl/options-ssl-nginx.conf; # managed by Certbot
     ssl_dhparam /etc/nginx/ssl/ssl-dhparams.pem; # managed by Certbot
 

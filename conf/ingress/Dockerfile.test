@@ -26,17 +26,17 @@ RUN npm run generate-nginx ingress-hosts-nginx.yml
 
 FROM nginx:1.20
 RUN apt-get update && apt-get install -q -y --no-install-recommends \
-    bash cron certbot python3-certbot-nginx \
+    bash certbot python3-certbot-nginx \
     && rm /etc/nginx/conf.d/*.conf \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /app/nginx /etc/nginx
-RUN mv /etc/nginx/my-entrypoint.sh /my-entrypoint.sh \
-    && mv /etc/nginx/certbot-renew /etc/cron.d/certbot-renew \
-    && chmod 0644 /etc/cron.d/certbot-renew \
-    && crontab /etc/cron.d/certbot-renew \
-    && chmod +x /my-entrypoint.sh \
-    && nginx -t
+RUN mv /etc/nginx/nginx-entrypoint.sh /nginx-entrypoint.sh \
+    && mkdir -p /etc/letsencrypt/live/certs \
+    && cp /etc/nginx/ssl/dummy/*.pem /etc/letsencrypt/live/certs/ \
+    && chmod +x /nginx-entrypoint.sh \
+    && nginx -t \
+    && rm /etc/letsencrypt/live/certs/*.pem
 
 # Add labes if build by CI
 ARG COMMIT_HASH="none"
@@ -49,7 +49,8 @@ LABEL commit-tag=$COMMIT_TAG
 # Certbot & debug
 ENV NGINX_DEBUG="no"
 ARG RUN_CERTBOT="no"
-ENV NGINX_BINARY="nginx"
 ENV RUN_CERTBOT=$RUN_CERTBOT
+# Comma seperated domain list
+ENV CERTBOT_DOMAINS="dev.devops-testing.123preview.com"
 
-ENTRYPOINT [ "sh", "-c", "if [ \"$NGINX_DEBUG\" = \"yes\" ]; then export NGINX_BINARY=\"nginx-debug\"; fi; if [ \"$RUN_CERTBOT\" = \"yes\" ]; then bash /my-entrypoint.sh; else bash /docker-entrypoint.sh $NGINX_BINARY -g \"daemon off;\"; fi"]
+ENTRYPOINT [ "/nginx-entrypoint.sh"]
