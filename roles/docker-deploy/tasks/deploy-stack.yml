@@ -83,6 +83,7 @@
     name: '{{ item.split(":")[0] if(item | regex_findall(":") | length <= 1) else item.split(":")[0] + ":" + item.split(":")[1] }}'
     tag: '{{ item.split(":")[1] | default("latest") if(item | regex_findall(":") | length <= 1) else item.split(":")[2] }}'
     source: pull
+    force_source: yes
   loop: '{{ deploy_compose_conetent_img | default([]) | unique }}'
   tags: [docker-deploy]
 
