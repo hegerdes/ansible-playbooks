@@ -42,6 +42,7 @@
     - 'wget'
     - 'curl'
     - 'tar'
+    - 'jq'
     - 'gzip'
     - 'pass'
     - 'rsync'
