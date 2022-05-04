@@ -67,7 +67,7 @@ if [ $RUN_CERTBOT = "yes" ]; then
         --non-interactive -m support@***REMOVED*** --agree-tos \
         --cert-name certs -d $CERTBOT_DOMAINS
         nginx -t && nginx -s reload
-    fi && while true; do certbot renew --post-hook "nginx -t && nginx -s reload"; sleep 7d; done &
+    fi && while true; do certbot renew --post-hook "nginx -t && nginx -s reload"; sleep 14d; done &
 
 fi
 
