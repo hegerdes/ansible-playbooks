@@ -31,3 +31,23 @@
   command: "azcopy --version"
   changed_when: "false"
   tags: [mgmt, backup]
+
+- name: Check if minio mc is installed
+  command: 'mc --version'
+  register: mc_check_result
+  changed_when: false
+  failed_when: false
+  tags: [mgmt, backup]
+
+- name: Install minio mc
+  when: mc_check_result.stdout == ""
+  get_url:
+    url: https://dl.min.io/client/mc/release/linux-amd64/mc
+    dest: /usr/local/bin/mc
+    mode: '0755'
+  tags: [mgmt, backup]
+
+- name: Test minio mc
+  command: "mc --version"
+  changed_when: "false"
+  tags: [mgmt, backup]

@@ -9,6 +9,7 @@ BACKUP_DST="/db_dumps"
 PUB_KEY_FILE="${BACKUP_DST}/db-backup.key.pub"
 SECRET=$(openssl rand -base64 32)
 AZURE_SAS_TOKEN="{{ mgmt_azure_token | default("\"\"") }}"
+BACKUPS_TO_KEEP="{{ mgmt_images_to_keep | default(2) }}"
 AWS_BUCKET="{{ mgmt_s3_uri | default("\"\"") }}"
 
 checkExitCode() {
@@ -20,6 +21,7 @@ checkExitCode() {
 
 # create btk dir
 mkdir -p $BACKUP_DST
+KEEP=$((${#SERVERS[@]} * BACKUPS_TO_KEEP))
 
 for SERVER in "${SERVERS[@]}"; do
     # Connection check
@@ -67,8 +69,8 @@ checkExitCode $?
 
 ############################ REMOVE-OLD ############################
 echo "Will remove:"
-ls -t ${BACKUP_DST}/**/*.gpg | sed -e '1,6d' 2> /dev/null
-ls -t ${BACKUP_DST}/**/*.gpg | sed -e '1,6d' | xargs -r -d '\n' rm 2> /dev/null
+ls -t ${BACKUP_DST}/**/*.gpg | sed -e "1,${KEEP}d" 2> /dev/null
+ls -t ${BACKUP_DST}/**/*.gpg | sed -e "1,${KEEP}d" | xargs -r -d '\n' rm 2> /dev/null
 
 ############################ Decrypting ############################
 # Decrypt random key
