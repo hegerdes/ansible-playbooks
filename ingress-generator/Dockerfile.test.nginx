@@ -50,7 +50,7 @@ LABEL commit-tag=$COMMIT_TAG
 ENV NGINX_DEBUG="no"
 ARG RUN_CERTBOT="no"
 ENV RUN_CERTBOT=$RUN_CERTBOT
-# Comma seperated domain list
+# Comma separated domain list
 ENV CERTBOT_DOMAINS="dev.devops-testing.123preview.com"
 
 ENTRYPOINT [ "/nginx-entrypoint.sh"]

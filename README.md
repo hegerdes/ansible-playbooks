@@ -27,9 +27,13 @@ You need the following:
 ## How to use
 Run
 ```bash
-ansible-playbook -i <PATH_TO_INVENTORY> <PLAYBOOK>
+ansible-playbook -i <PATH_TO_INVENTORY> <PLAYBOOK> [--limit <ONLY_THIS_HOST[S]>] [--tags <ONLY_THIS_TAGS>]
 # If the play contains secrets use:
 ansible-playbook --ask-vault-password -i <PATH_TO_INVENTORY> <PLAYBOOK>
+# If the play needs to become root use:
+ansible-playbook --ask-become-pass -i <PATH_TO_INVENTORY> <PLAYBOOK>
+# or
+ansible-playbook --become-password-file <FILE_WITH_ROOT_PW> -i <PATH_TO_INVENTORY> <PLAYBOOK>
 ```
 
 ### Encrypt data
@@ -43,6 +47,7 @@ The script performs all plays defined in the playbook. Every play can traget all
 ```yml
 - hosts: all          # all severs
   roles:
+    - common
     - node-exporter
 
 - hosts: webserver    # just webservers
@@ -62,3 +67,8 @@ promtail_config_dst_path: /srv/promtail/promtail-config.yml
 promtail_args: '--client.external-labels=hostname={{ ansible_facts.hostname }} -config.file {{ promtail_config_dst_path }}'
 ```
 Thes values can be overwritten by setting `group_vars` and `host_vars` or `--extra-vars KEY=VALUE` on the terminal
+
+# Symbic Webserver Conf-Generator
+This repo also contains a generator for different webserver configs.
+
+See: [here](ingress-generator/ReadMe.md)

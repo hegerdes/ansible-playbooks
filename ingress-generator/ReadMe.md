@@ -1,6 +1,41 @@
-# Nginx conf generator
+# Ingress conf generator
 
+## Nginx
 Create a nginx config form a simple `yml` file. Run `npm run generate-nginx <YML_FILE_PATH>`
+
+### Usage:
+To use this create a ``Dockerfile`` with the following content:
+```Dockerfile
+FROM gitlab-registry.***REMOVED***/servermgmt-tools/symbic-playbooks/ingress-genarator:main as build
+
+# Copy ingress conf files
+COPY . /app
+
+# Genarate config
+RUN npm run generate-nginx ingress-hosts-nginx.yml
+
+FROM nginx:1.20
+RUN apt-get update && apt-get install -q -y --no-install-recommends \
+    bash certbot python3-certbot-nginx \
+    && rm /etc/nginx/conf.d/*.conf \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=build /app/nginx /etc/nginx
+RUN mv /etc/nginx/nginx-entrypoint.sh /nginx-entrypoint.sh \
+    && mkdir -p /etc/letsencrypt/live/certs \
+    && cp /etc/nginx/ssl/dummy/*.pem /etc/letsencrypt/live/certs/ \
+    && chmod +x /nginx-entrypoint.sh \
+    && nginx -t \
+    && rm /etc/letsencrypt/live/certs/*.pem
+
+# Certbot & debug
+ENV NGINX_DEBUG="no"
+ARG RUN_CERTBOT="no"
+ENV RUN_CERTBOT=$RUN_CERTBOT
+# Comma separated domain list
+ENV CERTBOT_DOMAINS="mydomain.example.com"
+ENTRYPOINT [ "/nginx-entrypoint.sh"]
+```
 
 ## Supported options
 

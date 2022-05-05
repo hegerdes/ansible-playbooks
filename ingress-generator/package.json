@@ -1,7 +1,7 @@
 {
-  "name": "ingress",
+  "name": "ingress-genenerator",
   "version": "1.0.0",
-  "description": "",
+  "description": "This package uses templating to generate different webserver configs from one common file",
   "main": "generate-ingress-conf.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

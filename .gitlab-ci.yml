@@ -1,5 +1,4 @@
 variables:
-  ANSIBLE_DOACKER_IMAGE: python:3.9-bullseye
   KANIKO_USE_CACHE: 'yes'
 
 include:
@@ -31,23 +30,23 @@ image-build-playbooks-branch:
 image-build-ingress-genarator:
   extends: .build_template
   variables:
-    DOCKERFILE: $CI_PROJECT_DIR/conf/ingress/Dockerfile
-    CONTEXT: $CI_PROJECT_DIR/conf/ingress/
+    DOCKERFILE: $CI_PROJECT_DIR/ingress-generator/Dockerfile
+    CONTEXT: $CI_PROJECT_DIR/ingress-generator/
     BUILD_IMAGE_TAG: $CI_REGISTRY_IMAGE/ingress-genarator:$CI_COMMIT_BRANCH
   rules:
     - if: $CI_COMMIT_BRANCH
       changes:
-        - conf/ingress/**/*
+        - ingress-generator/**/*
 
 image-build-ingress-tester:
   extends: .build_template
   variables:
-    DOCKERFILE: $CI_PROJECT_DIR/conf/ingress/Dockerfile.test
-    CONTEXT: $CI_PROJECT_DIR/conf/ingress/
+    DOCKERFILE: $CI_PROJECT_DIR/ingress-generator/Dockerfile.test
+    CONTEXT: $CI_PROJECT_DIR/ingress-generator/
     BUILD_IMAGE_TAG: $CI_REGISTRY_IMAGE/ingress-genarator:$CI_COMMIT_BRANCH
     KANIKO_NO_PUSH: "yes"
     KANIKO_USE_CACHE: "no"
   rules:
     - if: $CI_COMMIT_BRANCH
       changes:
-        - conf/ingress/**/*
+        - ingress-generator/**/*
