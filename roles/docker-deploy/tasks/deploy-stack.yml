@@ -55,7 +55,7 @@
   become: false
   run_once: True
   file:
-    dest: '{{ "ansible-files" if(lookup("env", "CI_COMMIT_SHA") | default("no", True) != "no") else "/tmp/ansible-files/" }}'
+    dest: '{{ playbook_dir + "/ansible-files/" if(lookup("env", "CI_COMMIT_SHA") | default("no", True) != "no") else "/tmp/ansible-files/" }}'
     state: directory
   tags: [docker-deploy]
 
@@ -68,7 +68,7 @@
 
 - name: Saving generated stack file(s)
   fetch:
-    dest: '{{ "ansible-files/" if(lookup("env", "CI_COMMIT_SHA") | default("no", True) != "no") else "/tmp/ansible-files/" }}'
+    dest: '{{ playbook_dir + "/ansible-files/" if(lookup("env", "CI_COMMIT_SHA") | default("no", True) != "no") else "/tmp/ansible-files/" }}'
     flat: yes
     src: '{{ docker_deploy_dst_config_files + item }}'
   loop: '{{ docker_deploy_stacks | list}}'
