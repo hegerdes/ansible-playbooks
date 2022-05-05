@@ -43,7 +43,7 @@ image-build-ingress-genarator:
 image-build-ingress-tester:
   extends: .build_template
   variables:
-    DOCKERFILE: $CI_PROJECT_DIR/ingress-generator/Dockerfile.test
+    DOCKERFILE: $CI_PROJECT_DIR/ingress-generator/Dockerfile.test.nginx
     CONTEXT: $CI_PROJECT_DIR/ingress-generator/
     BUILD_IMAGE_TAG: $CI_REGISTRY_IMAGE/ingress-genarator:$CI_COMMIT_BRANCH
     KANIKO_NO_PUSH: "yes"
