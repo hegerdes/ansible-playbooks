@@ -26,6 +26,8 @@ image-build-playbooks-branch:
         - roles/**/*
         - shared/**/*
         - pb_*
+        - Dockerfile
+        - requirements.txt
 
 image-build-ingress-genarator:
   extends: .build_template
