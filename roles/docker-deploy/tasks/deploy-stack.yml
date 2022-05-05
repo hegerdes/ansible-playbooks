@@ -50,32 +50,29 @@
   loop: '{{ docker_deploy_stacks | list}}'
   tags: [docker-deploy]
 
-- name: Getting generated stack file(s)
-  slurp:
-    src: '{{ docker_deploy_dst_config_files + item }}'
-  loop: '{{ docker_deploy_stacks | list}}'
-  register: deploy_compose_conetent
-
 - name: Create a locals artifact directory
   delegate_to: localhost
   become: false
   run_once: True
   file:
-    path: /tmp/ansible-files
+    dest: '{{ "ansible-files" if(lookup("env", "CI_COMMIT_SHA") | default("no", True) != "no") else "/tmp/ansible-files/" }}'
     state: directory
+  tags: [docker-deploy]
 
-- name: Saving generated file(s)
-  when: item.content is defined
-  become: false
-  run_once: True
-  copy:
-    content: "{{ item.content | b64decode | from_yaml | to_nice_yaml(indent=2) }}"
-    dest: "/tmp/ansible-files/{{ inventory_dir | basename + '-' + inventory_hostname + '-' + item.source.split('/') | last }}"
-  delegate_to: localhost
-  loop: '{{ deploy_compose_conetent.results | default([]) }}'
-  loop_control:
-    label: '{{ item.source }}'
-  tags: [maintenance, os-updates]
+- name: Getting generated stack file(s)
+  slurp:
+    src: '{{ docker_deploy_dst_config_files + item }}'
+  loop: '{{ docker_deploy_stacks | list}}'
+  register: deploy_compose_conetent
+  tags: [docker-deploy]
+
+- name: Saving generated stack file(s)
+  fetch:
+    dest: '{{ "ansible-files/" if(lookup("env", "CI_COMMIT_SHA") | default("no", True) != "no") else "/tmp/ansible-files/" }}'
+    flat: yes
+    src: '{{ docker_deploy_dst_config_files + item }}'
+  loop: '{{ docker_deploy_stacks | list}}'
+  tags: [docker-deploy]
 
 - name: Extracting used images
   when: item.content is defined
