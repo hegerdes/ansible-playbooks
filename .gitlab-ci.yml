@@ -29,7 +29,7 @@ image-build-playbooks-branch:
         - Dockerfile
         - requirements.txt
 
-image-build-ingress-genarator:
+build-ingress-image-genarator:
   extends: .build_template
   variables:
     DOCKERFILE: $CI_PROJECT_DIR/ingress-generator/Dockerfile
@@ -40,7 +40,7 @@ image-build-ingress-genarator:
       changes:
         - ingress-generator/**/*
 
-image-build-ingress-tester:
+build-ingress-image-tester:
   extends: .build_template
   variables:
     DOCKERFILE: $CI_PROJECT_DIR/ingress-generator/Dockerfile.test.nginx
