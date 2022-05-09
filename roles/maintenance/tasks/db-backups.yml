@@ -2,14 +2,14 @@
 ---
 - name: Check for DB Backup folder
   stat:
-    path: '{{ "/db_dumps/backup_db.sh" if(inventory_hostname != "mgmt") else "/db_dumps/archive-db-backups.sh" }}'
-  register: main_db_dir
+    path: '{{ main_backup_dir + "run_backup.sh" if(inventory_hostname != "mgmt") else main_backup_dir + "archive-backups.sh" }}'
+  register: main_backup_stat_res
   tags: [maintenance, backup, db-backup]
 
 - name: List DB dump files older 1 day
-  when: main_db_dir.stat.exists
+  when: main_backup_stat_res.stat.exists
   find:
-    paths: /db_dumps
+    paths: '{{ main_backup_dir }}'
     patterns: '*.dump,'
     age: 1d
     recurse: yes
@@ -17,14 +17,16 @@
   tags: [maintenance, backup, db-backup]
 
 - name: DB Files
-  when: main_db_dir.stat.exists and main_db_files
+  when: main_backup_stat_res.stat.exists and main_db_files
   debug:
     var: main_db_files
   tags: [maintenance, backup, db-backup]
 
 - name: Run DB backup script
-  when: main_db_dir.stat.exists
-  shell: 'bash {{ "/db_dumps/backup_db.sh" if(inventory_hostname != "mgmt") else "/db_dumps/archive-db-backups.sh" }}'
+  when: main_backup_stat_res.stat.exists
+  shell: 'bash {{ main_backup_dir + "run_backup.sh" if(inventory_hostname != "mgmt") else main_backup_dir + "archive-backups.sh" }}'
+  environment:
+    CUSTOM_BACKUP_DIR: '{{ backup_dir }}'
   register: main_backup_res
   tags: [maintenance, backup, db-backup]
 

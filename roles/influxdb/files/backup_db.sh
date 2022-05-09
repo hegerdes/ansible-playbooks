@@ -1,13 +1,16 @@
 #!/bin/bash
 
-LOGFILE=/db_dumps/db_backup.log
-echo -n "Creating db dump to: /db_dumps/$(date '+%Y-%m-%d')-${HOSTNAME}.tar.gz.dump..." | tee -a $LOGFILE
-mkdir -p /db_dumps/$(date '+%Y-%m-%d')-${HOSTNAME} | tee -a $LOGFILE
-influx backup /db_dumps/$(date '+%Y-%m-%d')-${HOSTNAME} | tee -a $LOGFILE
-tar -cvO /db_dumps/$(date '+%Y-%m-%d')-${HOSTNAME}/ | gzip > /db_dumps/$(date '+%Y-%m-%d')-${HOSTNAME}.dump.tar.gz | tee -a $LOGFILE
-rm -r /db_dumps/$(date '+%Y-%m-%d')-${HOSTNAME} | tee -a $LOGFILE
+BACKUP_DIR=${CUSTOM_BACKUP_DIR:="/backup_dumps"}
+DATE_STR=$(date '+%Y-%m-%d')
+LOGFILE="${BACKUP_DIR}/db_backup.log"
+
+echo -n "Creating db dump to: ${BACKUP_DIR}/${DATE_STR}-${HOSTNAME}.dump.tar.gz..." | tee -a $LOGFILE
+mkdir -p $BACKUP_DIR/$DATE_STR-$HOSTNAME | tee -a $LOGFILE
+influx backup $BACKUP_DIR/$DATE_STR-$HOSTNAME | tee -a $LOGFILE
+tar -cvO $BACKUP_DIR/$DATE_STR-$HOSTNAME/ | gzip > $BACKUP_DIR/$DATE_STR-$HOSTNAME.dump.tar.gz | tee -a $LOGFILE
+rm -r $BACKUP_DIR/$DATE_STR-$HOSTNAME | tee -a $LOGFILE
 echo "done" | tee -a $LOGFILE
 
 # Restore
-# tar -xzvf $(date '+%Y-%m-%d')-${HOSTNAME}.tar.gz
+# tar -xzvf ${BACKUP_DIR}/${DATE_STR}-${HOSTNAME}.tar.gz
 # influx restore <BACKUP_DIR>

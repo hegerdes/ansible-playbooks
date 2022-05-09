@@ -1,19 +1,23 @@
 #!/bin/bash
 
-LOGFILE=/db_dumps/db_backup.log
-echo -n "Creating db dump to: /db_dumps/$(date '+%Y-%m-%d')-${HOSTNAME}.tar.gz.dump..." | tee -a $LOGFILE
+BACKUP_DIR=${CUSTOM_BACKUP_DIR:="/backup_dumps"}
+DATE_STR=$(date '+%Y-%m-%d')
+LOGFILE="${BACKUP_DIR}/db_backup.log"
 
-docker exec influxdb bash -c 'mkdir -p /db_dumps/$(date '+%Y-%m-%d')-service-influxdb' | tee -a $LOGFILE
+echo -n "Creating db dump to: ${BACKUP_DIR}/${DATE_STR}-${HOSTNAME}.dump.tar.gz..." | tee -a $LOGFILE
+mkdir -p ${BACKUP_DIR}
 
-docker exec influxdb bash -c 'influx backup --org $DOCKER_INFLUXDB_INIT_ORG --token $TOKEN /db_dumps/$(date '+%Y-%m-%d')-service-influxdb' | tee -a $LOGFILE
+docker exec influxdb bash -c "mkdir -p ${BACKUP_DIR}/${DATE_STR}-service-influxdb" | tee -a $LOGFILE
 
-docker cp influxdb:/db_dumps/$(date '+%Y-%m-%d')-service-influxdb /db_dumps/$(date '+%Y-%m-%d')-${HOSTNAME} | tee -a $LOGFILE
+docker exec influxdb bash -c 'influx backup --org $DOCKER_INFLUXDB_INIT_ORG --token $TOKEN '"${BACKUP_DIR}/${DATE_STR}-service-influxdb" | tee -a $LOGFILE
 
-docker exec influxdb bash -c 'rm -r /db_dumps/$(date '+%Y-%m-%d')-service-influxdb' | tee -a $LOGFILE
+docker cp influxdb:${BACKUP_DIR}/${DATE_STR}-service-influxdb ${BACKUP_DIR}/${DATE_STR}-${HOSTNAME} | tee -a $LOGFILE
 
-tar -cvO /db_dumps/$(date '+%Y-%m-%d')-${HOSTNAME}/ | gzip > /db_dumps/$(date '+%Y-%m-%d')-${HOSTNAME}.dump.tar.gz | tee -a $LOGFILE
+docker exec influxdb bash -c "rm -r ${BACKUP_DIR}/${DATE_STR}-service-influxdb" | tee -a $LOGFILE
 
-rm -r /db_dumps/$(date '+%Y-%m-%d')-${HOSTNAME} | tee -a $LOGFILE
+tar -cvO ${BACKUP_DIR}/${DATE_STR}-${HOSTNAME}/ | gzip > ${BACKUP_DIR}/${DATE_STR}-${HOSTNAME}.dump.tar.gz | tee -a $LOGFILE
+
+rm -r ${BACKUP_DIR}/${DATE_STR}-${HOSTNAME} | tee -a $LOGFILE
 
 echo "done" | tee -a $LOGFILE
 

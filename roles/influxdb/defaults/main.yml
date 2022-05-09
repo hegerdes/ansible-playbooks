@@ -14,7 +14,6 @@ influx_root_token: my-super-secret-auth-token
 influx_bind_hostname: '{{ ansible_default_ipv4.address }}'
 influx_listen_port: 8086
 influx_listen_addr: '{{ influx_bind_hostname }}:{{ influx_listen_port }}'
-
 influx_db_backup_script: "{{'backup_db-docker.sh' if (influx_use_docker) else 'backup_db-docker.sh'}}"
 
 # DB setup
@@ -25,9 +24,10 @@ influx_setups:
 
 
 # For backup
+backup_dir: /backup_dumps
 influx_cron_jobs:
   - name: Dump DB as backup
-    job: bash /db_dumps/backup_db.sh
+    job: 'CUSTOM_BACKUP_DIR={{ backup_dir }} bash {{ backup_dir }}/run_backup.sh'
     weekday: '*'
     month: '*'
     minute: '30'

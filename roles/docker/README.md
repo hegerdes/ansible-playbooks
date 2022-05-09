@@ -71,7 +71,7 @@ docker_cron_jobs:
     state: present
     user: root
   - name: Remove dangling images
-    job: echo "Running docker image prune -f" >> /var/log/cron.log && docker image prune -f >> /var/log/cron.log
+    job: echo "Running docker image prune --all -f" >> /var/log/cron.log && docker image prune --all -f >> /var/log/cron.log
     weekday: '6'
     month: '*'
     minute: '45'

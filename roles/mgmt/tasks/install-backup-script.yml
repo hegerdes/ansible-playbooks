@@ -1,8 +1,8 @@
 # Install Backup script
 ---
-- name: Create directory for db dumps
+- name: Create directory for backups
   file:
-    path: /db_dumps
+    path: '{{ backup_dir }}'
     state: directory
   tags: [mgmt, backup]
 
@@ -46,7 +46,7 @@
 - name: Copy public key
   copy:
     src: '{{ inventory_dir }}/secrets/db-backup.key.pub'
-    dest: /db_dumps
+    dest: '{{ backup_dir }}'
     owner: root
     group: root
   tags: [mgmt, backup]
@@ -54,7 +54,7 @@
 - name: Copy script for backup archiveal
   template:
     src: archive-db-backups.sh.j2
-    dest: /db_dumps/archive-db-backups.sh
+    dest: '{{ backup_dir }}/archive-db-backups.sh'
     owner: root
     group: root
     mode: '0655'

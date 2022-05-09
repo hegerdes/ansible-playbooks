@@ -25,9 +25,10 @@ mongodb_user_setups: []
 #     state: present # Optional
 
 # For backup
+backup_dir: /backup_dumps
 mongodb_cron_jobs:
   - name: Dump DB as backup
-    job: bash /db_dumps/backup_db.sh
+    job: 'CUSTOM_BACKUP_DIR={{ backup_dir }} bash {{ backup_dir }}/run_backup.sh'
     weekday: '*'
     month: '*'
     minute: '30'

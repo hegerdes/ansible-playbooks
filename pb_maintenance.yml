@@ -2,6 +2,6 @@
 
 - hosts: all
   become: true
-  serial: '{{"1" if (maintenance_run_upgrades) else "100%"}}'
+  serial: '{{"1" if (maintenance_run_upgrades | default(false)) else "100%"}}'
   roles:
     - maintenance

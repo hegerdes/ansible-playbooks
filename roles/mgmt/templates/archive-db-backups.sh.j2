@@ -1,11 +1,11 @@
 #!/bin/bash
 
-#Make it prittttyyyy
+# Make it prittttyyyy
 RED='\033[0;31m'
 NC='\033[0m'
 
 SERVERS=({{ "\"" + mgmt_backup_target_hosts | default([]) | join("\" \"") + "\"" }})
-BACKUP_DST="/db_dumps"
+BACKUP_DST="{{ backup_dir }}"
 PUB_KEY_FILE="${BACKUP_DST}/db-backup.key.pub"
 SECRET=$(openssl rand -base64 32)
 AZURE_SAS_TOKEN="{{ mgmt_azure_token | default("\"\"") }}"
@@ -19,15 +19,15 @@ checkExitCode() {
     fi
 }
 
-# create btk dir
+# Create btk dir
 mkdir -p $BACKUP_DST
-KEEP=$((${#SERVERS[@]} * BACKUPS_TO_KEEP))
+{{ "KEEP=$((${#SERVERS[@]} * BACKUPS_TO_KEEP))" }}
 
 for SERVER in "${SERVERS[@]}"; do
     # Connection check
-    ssh $SERVER "ls -t /db_dumps/*.gz" > /dev/null
+    ssh $SERVER "ls -t ${BACKUP_DST}/*.gz" > /dev/null
     checkExitCode $?
-    for DUMP_FILE in $(ssh $SERVER "ls -t /db_dumps/*.gz"); do
+    for DUMP_FILE in $(ssh $SERVER "ls -t ${BACKUP_DST}/*.gz"); do
         echo "${SERVER}: getting ${DUMP_FILE}..."
 
         # Extract file names
@@ -53,6 +53,9 @@ for SERVER in "${SERVERS[@]}"; do
     done
 done
 
+# Copy done
+echo -e "Copied all dumps from target hosts!\n"
+
 {% if mgmt_s3_uri | default("none") != "none" %}
 ################################ AWS ###############################
 echo "Running: aws s3 cp ${BACKUP_DST}/$(date '+%Y-%m-%d') s3://${AWS_BUCKET}${BACKUP_DST}/$(date '+%Y-%m-%d') --recursive"
@@ -71,6 +74,11 @@ checkExitCode $?
 echo "Will remove:"
 ls -t ${BACKUP_DST}/**/*.gpg | sed -e "1,${KEEP}d" 2> /dev/null
 ls -t ${BACKUP_DST}/**/*.gpg | sed -e "1,${KEEP}d" | xargs -r -d '\n' rm 2> /dev/null
+
+ls -t ${BACKUP_DST}/**/*.acs | sed -e "1,${BACKUPS_TO_KEEP}d" 2> /dev/null
+ls -t ${BACKUP_DST}/**/*.acs | sed -e "1,${BACKUPS_TO_KEEP}d" | xargs -r -d '\n' rm 2> /dev/null
+
+find ${BACKUP_DST} -type d -empty -delete
 
 ############################ Decrypting ############################
 # Decrypt random key

@@ -1,5 +1,7 @@
 # settings
 
+# Configurable
+backup_dir: /backup_dumps
 maintenance_run_backup: yes
 maintenance_post_to_git: yes
 maintenance_run_hcloud_snapshot: no
@@ -11,3 +13,6 @@ maintenance_git_branch: main
 maintenance_git_name: Gitlab CI
 maintenance_git_mail: git-ci@***REMOVED***
 maintenance_git_assignee_id: '{{ lookup("env", "GITLAB_USER_ID") | default("13", True) }}' # Henrik Gerdes
+
+# Internal
+main_backup_dir: '{{ backup_dir if(backup_dir | last == "/") else backup_dir + "/" }}'
