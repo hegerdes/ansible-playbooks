@@ -168,7 +168,7 @@ async function waitForImageCreation() {
 
     while (snapshots.length != 0) {
         console.log("Waiting for image creation...")
-        await sleep(5000)
+        await sleep(10000)
         snapshots = await getImages(null, "creating")
     }
 }
