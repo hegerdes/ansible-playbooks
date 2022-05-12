@@ -51,6 +51,26 @@ services:
       {{ mgmt_traefik_labels | replace("__SERVICE__", "prometheus") | replace("__PORT__", "9090") | trim | indent(width=6) if(not mgmt_use_swarm_mode) }}
       {{ mgmt_traefik_auth_labels.prometheus | default("") | trim | indent(width=6) if(not mgmt_use_swarm_mode) }}
 
+  alertmanager:
+    image: prom/alertmanager:latest
+    command: --config.file=/config/alertmanager.yml
+    networks:
+      - {{ mgmt_docker_stack_name }}_mgmt_net
+    configs:
+      - source: alertmanager-conf-{{ lookup('file', mgmt_src_config_files + 'mgmt-prometheus/alertmanager.yml') | default(mgmt_conf_counter) | hash('md5') }}
+        target: /config/alertmanager.yml
+    volumes:
+      - alertmanager-data:/data
+    deploy:
+      labels:
+        - "{{ mgmt_docker_stack_name }}=true"
+        {{ mgmt_traefik_labels | replace("__SERVICE__", "alertmanager") | replace("__PORT__", "9093") | trim | indent(width=8) if(mgmt_use_swarm_mode) }}
+        {{ mgmt_traefik_auth_labels.alertmanager | default("") | trim | indent(width=8) if(mgmt_use_swarm_mode) }}
+    labels:
+      - "{{ mgmt_docker_stack_name }}=true"
+      {{ mgmt_traefik_labels | replace("__SERVICE__", "alertmanager") | replace("__PORT__", "9093") | trim | indent(width=6) if(not mgmt_use_swarm_mode) }}
+      {{ mgmt_traefik_auth_labels.alertmanager | default("") | trim | indent(width=6) if(not mgmt_use_swarm_mode) }}
+
   grafana:
     image: grafana/grafana:latest
     environment:
@@ -100,6 +120,8 @@ configs:
     file: /srv/mgmt-loki/loki-config.yml
   prometheus-conf-{{ lookup('file', mgmt_src_config_files + 'mgmt-prometheus/prometheus.yml') | default(mgmt_conf_counter) | hash('md5') }}:
     file: /srv/mgmt-prometheus/prometheus.yml
+  alertmanager-conf-{{ lookup('file', mgmt_src_config_files + 'mgmt-prometheus/alertmanager.yml') | default(mgmt_conf_counter) | hash('md5') }}:
+    file: /srv/mgmt-prometheus/alertmanager.yml
 
 secrets:
   grafana_admin_password:
@@ -110,12 +132,15 @@ volumes:
   grafana-data:
   prometheus-data:
   portainer-data:
+  alertmanager-data:
 
 networks:
   {{ mgmt_docker_stack_name }}_mgmt_net:
     external: true
-# INFO: None templated
-#  mgmt_net:
+
+
+# INFO: None templated version
+#  _mgmt_net:
 #    driver: overlay
 #    attachable: true
 #    driver_opts:

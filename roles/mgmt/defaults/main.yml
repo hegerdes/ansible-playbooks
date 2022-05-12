@@ -66,6 +66,7 @@ mgmt_grafana_dashbord_ids:
   - 13452   # Traefik
   - 12250   # Traefik
   - 3662    # Prometheus
+  - 8010    # Alertmanager
 
 # Proxy settings
 mgmt_domain: localhost
