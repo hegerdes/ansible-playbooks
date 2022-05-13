@@ -48,8 +48,8 @@
       content: '{{ all_main_backup_res }}'
       email: '{{ maintenance_git_mail }}'
       name: '{{ maintenance_git_name }}'
-      commit_message: 'Added db dump logs {{ansible_date_time.date}}'
-      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/backups%2F{{ ansible_date_time.date + "-" + ansible_date_time.hour + "-" + ansible_date_time.minute }}-db-dump.json'
+      commit_message: 'Added backup dump logs {{ansible_date_time.date}}'
+      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/backups%2F{{ ansible_date_time.date + "-" + ansible_date_time.hour + "-" + ansible_date_time.minute }}-backup-log.json'
   tags: [maintenance, backup]
 
 - name: Print backup script result
