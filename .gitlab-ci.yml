@@ -28,6 +28,8 @@ image-build-playbooks-branch:
         - pb_*
         - Dockerfile
         - requirements.txt
+        - ansible-entrypoint.sh
+        - .gitlab-ci.yml
 
 build-ingress-image-genarator:
   extends: .build_template

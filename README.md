@@ -24,7 +24,7 @@ docker run --rm -it -v <MY/PVT_KEY>:/pvt_key -v <MY/INVENTROY_DIR>:/inventory> g
 docker run --rm -it -v <MY/PVT_KEY>:/pvt_key -v <MY/INVENTROY_DIR>:/inventory> gitlab-registry.***REMOVED***/servermgmt-tools/symbic-playbooks:main playbooks/<PLAYBOOK_TO_USE> [--tags <ONLY_THIS_TAGS>][--limit <ONLY_THESE_HOSTS>] [--ask-vault-password] [--ask-become-pass]
 
 # Example
-docker run --rm -it -v ~/.ssh/id_rsa:/pvt_key -v /d/servermgmt/cci:/inventory gitlab-registry.***REMOVED***/servermgmt-tools/ symbic-playbooks:main --limit mgmt --tags backup 
+docker run --rm -it -v ~/.ssh/id_rsa:/pvt_key -v /d/servermgmt/cci:/inventory gitlab-registry.***REMOVED***/servermgmt-tools/symbic-playbooks:main --limit mgmt --tags backup 
 ```
 ### Lokal usage
 Run
@@ -49,7 +49,6 @@ ansible-vault encrypt <PATH_TO_VAULT>
  * pb_deploy_app.yml - Deploys one or more apps via Docker - use with the limit option
 
 ## Supported Tasks
-
  * **common:** Install basic packages (like ``curl``, ``wget``, ``tar``... ) to any Debian based host 
  * **promtail:** Install a log shipper to send *authlog*, *syslog*, *daemonlog*... to a management host (hostname mgmt)
  * **node-exporter:** Install system metrics exporter that can be scraped by Prometheus (listens on port 9100)
