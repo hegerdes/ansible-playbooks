@@ -5,17 +5,16 @@ This project can do batch processes on any number of servers and perform defined
 ## How to use
 ### Required Tools
 You need the following:
-### Docker usage - (recommended)
+#### Docker usage - (recommended)
  * Your public key on the server you want to deploy to
  * Docker installed & access to our container registry: [gitlab-registry.***REMOVED***](gitlab-registry.***REMOVED***)
-### Lokal usage
+#### Lokal usage
  * Your public key on the server you want to deploy to
  * openssh - use the one from git-bash or the WSL (not putty) [Download](https://gitforwindows.org/)
  * python 3.7+ [Download](https://www.python.org/)
  * ansible [Download](https://docs.ansible.com/ansible/latest/index.html)
 
-**Tipp:** Run it on a Linux system or use the [WSL](https://docs.microsoft.com/de-de/windows/wsl/about)
-### Docker usage - (recommended)
+#### Docker usage - (recommended)
 Run
 ```bash
 docker run --rm -it -v <MY/PVT_KEY>:/pvt_key -v <MY/INVENTROY_DIR>:/inventory> gitlab-registry.***REMOVED***/servermgmt-tools/symbic-playbooks:main playbooks/<PLAYBOOK_TO_USE> [--tags <ONLY_THIS_TAGS>][--limit <ONLY_THESE_HOSTS>] 
@@ -26,7 +25,8 @@ docker run --rm -it -v <MY/PVT_KEY>:/pvt_key -v <MY/INVENTROY_DIR>:/inventory> g
 # Example
 docker run --rm -it -v ~/.ssh/id_rsa:/pvt_key -v /d/servermgmt/cci:/inventory gitlab-registry.***REMOVED***/servermgmt-tools/symbic-playbooks:main --limit mgmt --tags backup 
 ```
-### Lokal usage
+#### Lokal usage
+**Tipp:** Run it on a Linux system or use the [WSL](https://docs.microsoft.com/de-de/windows/wsl/about)
 Run
 ```bash
 ansible-playbook -i <PATH_TO_INVENTORY> <PLAYBOOK> [--limit <ONLY_THIS_HOST[S]>] [--tags <ONLY_THIS_TAGS>]
