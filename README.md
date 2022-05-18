@@ -2,6 +2,52 @@
 
 This project can do batch processes on any number of servers and perform defined tasks written in a playbook.
 
+## How to use
+### Required Tools
+You need the following:
+### Docker usage - (recommended)
+ * Your public key on the server you want to deploy to
+ * Docker installed & access to our container registry: [gitlab-registry.***REMOVED***](gitlab-registry.***REMOVED***)
+### Lokal usage
+ * Your public key on the server you want to deploy to
+ * openssh - use the one from git-bash or the WSL (not putty) [Download](https://gitforwindows.org/)
+ * python 3.7+ [Download](https://www.python.org/)
+ * ansible [Download](https://docs.ansible.com/ansible/latest/index.html)
+
+**Tipp:** Run it on a Linux system or use the [WSL](https://docs.microsoft.com/de-de/windows/wsl/about)
+### Docker usage - (recommended)
+Run
+```bash
+docker run --rm -it -v <MY/PVT_KEY>:/pvt_key -v <MY/INVENTROY_DIR>:/inventory> gitlab-registry.***REMOVED***/servermgmt-tools/symbic-playbooks:main playbooks/<PLAYBOOK_TO_USE> [--tags <ONLY_THIS_TAGS>][--limit <ONLY_THESE_HOSTS>] 
+
+# If the play contains secrets or a sudo pw use:
+docker run --rm -it -v <MY/PVT_KEY>:/pvt_key -v <MY/INVENTROY_DIR>:/inventory> gitlab-registry.***REMOVED***/servermgmt-tools/symbic-playbooks:main playbooks/<PLAYBOOK_TO_USE> [--tags <ONLY_THIS_TAGS>][--limit <ONLY_THESE_HOSTS>] [--ask-vault-password] [--ask-become-pass]
+
+# Example
+docker run --rm -it -v ~/.ssh/id_rsa:/pvt_key -v /d/servermgmt/cci:/inventory gitlab-registry.***REMOVED***/servermgmt-tools/ symbic-playbooks:main --limit mgmt --tags backup 
+```
+### Lokal usage
+Run
+```bash
+ansible-playbook -i <PATH_TO_INVENTORY> <PLAYBOOK> [--limit <ONLY_THIS_HOST[S]>] [--tags <ONLY_THIS_TAGS>]
+# If the play contains secrets or a sudo pw use:
+ansible-playbook --ask-vault-password -i <PATH_TO_INVENTORY> <PLAYBOOK>
+# If the play needs to become root use:
+ansible-playbook --ask-become-pass --ask-become-pass -i <PATH_TO_INVENTORY> <PLAYBOOK>
+# or
+ansible-playbook --become-password-file <FILE_WITH_ROOT_PW> -i <PATH_TO_INVENTORY> <PLAYBOOK>
+```
+
+### Encrypt data
+```bash
+ansible-vault encrypt <PATH_TO_VAULT>
+```
+
+## Available playbooks
+ * pb_main.yml - Runs all of the Tasks below on the hosts configured in the inventory
+ * pb_maintenance.yml - Checks for updates (and eventually performs them) on all hosts & runs the backup scripts on the host if it is present
+ * pb_deploy_app.yml - Deploys one or more apps via Docker - use with the limit option
+
 ## Supported Tasks
 
  * **common:** Install basic packages (like ``curl``, ``wget``, ``tar``... ) to any Debian based host 
@@ -16,30 +62,6 @@ This project can do batch processes on any number of servers and perform defined
  * **influxdb:** Installs InfluxDB - either via docker or directly on the host
  * **maintenance:** Check for updates, and perform them
 
-## Required Tools
-You need the following:
- * Your public key on the server you want to deploy to
- * openssh - use the one from git-bash or the WSL (not putty) [Download](https://gitforwindows.org/)
- * python 3.7+ [Download](https://www.python.org/)
- * ansible [Download](https://docs.ansible.com/ansible/latest/index.html)
-
-**Tipp:** Run it on a Linux system or use the [WSL](https://docs.microsoft.com/de-de/windows/wsl/about)
-## How to use
-Run
-```bash
-ansible-playbook -i <PATH_TO_INVENTORY> <PLAYBOOK> [--limit <ONLY_THIS_HOST[S]>] [--tags <ONLY_THIS_TAGS>]
-# If the play contains secrets use:
-ansible-playbook --ask-vault-password -i <PATH_TO_INVENTORY> <PLAYBOOK>
-# If the play needs to become root use:
-ansible-playbook --ask-become-pass -i <PATH_TO_INVENTORY> <PLAYBOOK>
-# or
-ansible-playbook --become-password-file <FILE_WITH_ROOT_PW> -i <PATH_TO_INVENTORY> <PLAYBOOK>
-```
-
-### Encrypt data
-```bash
-ansible-vault encrypt <PATH_TO_VAULT>
-```
 
 ## Backgrund
 The script performs all plays defined in the playbook. Every play can traget all hosts, a group of hosts or one sever:

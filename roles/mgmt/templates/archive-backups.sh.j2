@@ -28,7 +28,7 @@ for SERVER in "${SERVERS[@]}"; do
     ssh $SERVER "ls -t ${BACKUP_DST}/*.gz" > /dev/null
     checkExitCode $?
     for DUMP_FILE in $(ssh $SERVER "ls -t ${BACKUP_DST}/*.gz"); do
-        echo "${SERVER}: getting ${DUMP_FILE}..."
+        echo "${SERVER}: Getting ${DUMP_FILE}..."
 
         # Extract file names
         DUMP_FILE_NAME=$(ssh $SERVER "basename ${DUMP_FILE}")

@@ -25,3 +25,5 @@ ENV TZ=Europe/Berlin
 LABEL commit-hash=$COMMIT_HASH
 LABEL commit-tag=$COMMIT_TAG
 ENV ANSIBLE_CONFIG=/app/playbooks/ansible.cfg
+
+ENTRYPOINT [ "/app/playbooks/ansible-entrypoint.sh" ]

@@ -53,8 +53,8 @@
 
 - name: Copy script for backup archiveal
   template:
-    src: archive-db-backups.sh.j2
-    dest: '{{ backup_dir }}/archive-db-backups.sh'
+    src: archive-backups.sh.j2
+    dest: '{{ backup_dir }}/archive-backups.sh'
     owner: root
     group: root
     mode: '0655'
