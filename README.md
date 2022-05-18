@@ -3,8 +3,7 @@
 This project can do batch processes on any number of servers and perform defined tasks written in a playbook.
 
 ## How to use
-### Required Tools
-You need the following:
+**Required Tools - You need the following:**
 #### Docker usage - (recommended)
  * Your public key on the server you want to deploy to
  * Docker installed & access to our container registry: [gitlab-registry.***REMOVED***](gitlab-registry.***REMOVED***)
