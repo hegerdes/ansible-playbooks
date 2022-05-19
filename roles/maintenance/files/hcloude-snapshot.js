@@ -118,6 +118,9 @@ async function createAllSnapshotImages(servers) {
     var createdImages = []
     var res = []
 
+    // Wait till previous images are created
+    await waitForImageCreation()
+
     // Only on Jan first
     if (today.getDate() === 1 && today.getMonth() === 1) {
         console.log("Creating yearly...")
@@ -168,7 +171,7 @@ async function waitForImageCreation() {
 
     while (snapshots.length != 0) {
         console.log("Waiting for image creation...")
-        await sleep(10000)
+        await sleep(15000)
         snapshots = await getImages(null, "creating")
     }
 }
