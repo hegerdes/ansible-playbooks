@@ -3,6 +3,7 @@
 
 # Default
 NGINX_BINARY="nginx"
+CERBOT_MAIL_USE="${CERBOT_MAIL:-"support@***REMOVED***"}"
 
 # Check for debug flag
 if [ $NGINX_DEBUG = "yes" ]; then
@@ -64,7 +65,7 @@ if [ $RUN_CERTBOT = "yes" ]; then
         sleep 10s
         rm -r /etc/letsencrypt/live/certs
         certbot certonly --webroot --webroot-path /var/www/_letsencrypt/ \
-        --non-interactive -m support@***REMOVED*** --agree-tos \
+        --non-interactive -m $CERBOT_MAIL_USE --agree-tos \
         --cert-name certs -d $CERTBOT_DOMAINS
         nginx -t && nginx -s reload
     fi && while true; do certbot renew --post-hook "nginx -t && nginx -s reload"; sleep 14d; done &
