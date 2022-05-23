@@ -3,6 +3,7 @@ version: '3.7'
 services:
   wireguard:
     image: linuxserver/wireguard:latest
+    hostname: {{ inventory_dir | basename }}-wireguard
     cap_add:
       - NET_ADMIN
       - SYS_MODULE

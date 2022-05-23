@@ -3,6 +3,7 @@ version: '3.7'
 services:
   traefik:
     image: traefik:{{ mgmt_traefik_version | default("latest") }}
+    hostname: {{ inventory_dir | basename }}-traefik
     command:
       - "--accesslog"
       - "--log.level=DEBUG"

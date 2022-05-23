@@ -5,6 +5,7 @@ services:
 # Same for labels treafik
   portainer:
     image: portainer/portainer-{{ mgmt_portainer_edition }}:latest
+    hostname: {{ inventory_dir | basename }}-portainer
     environment:
       - TZ=Europe/Berlin
     networks:
@@ -31,6 +32,7 @@ services:
   prometheus:
     image: bitnami/prometheus:latest
     command: --storage.tsdb.retention.time 30d --config.file=/etc/prometheus/prometheus.yml
+    hostname: {{ inventory_dir | basename }}-prometheus
     environment:
       - TZ=Europe/Berlin
     networks:
@@ -54,6 +56,7 @@ services:
   alertmanager:
     image: prom/alertmanager:latest
     command: --config.file=/config/alertmanager.yml
+    hostname: {{ inventory_dir | basename }}-alertmanager
     networks:
       - {{ mgmt_docker_stack_name }}_mgmt_net
     configs:
@@ -73,6 +76,7 @@ services:
 
   grafana:
     image: grafana/grafana:latest
+    hostname: {{ inventory_dir | basename }}-grafana
     environment:
       - TZ=Europe/Berlin
       - GF_SECURITY_ADMIN_PASSWORD__FILE=/run/secrets/grafana_admin_password
@@ -100,6 +104,7 @@ services:
 
   loki:
     image: grafana/loki:latest
+    hostname: {{ inventory_dir | basename }}-loki
     environment:
       - TZ=Europe/Berlin
     networks:

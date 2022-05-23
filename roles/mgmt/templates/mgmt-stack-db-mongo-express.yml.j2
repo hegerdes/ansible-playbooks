@@ -3,6 +3,7 @@ version: '3.7'
 services:
   mongo-express:
     image: mongo-express:latest
+    hostname: {{ inventory_dir | basename }}-mongo-express
     environment:
       - TZ=Europe/Berlin
       - ME_CONFIG_MONGODB_SERVER={{ mgmt_mongodb_target_host }}

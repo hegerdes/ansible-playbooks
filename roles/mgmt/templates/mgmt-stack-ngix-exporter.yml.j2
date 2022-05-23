@@ -4,6 +4,7 @@ services:
   nginx-prometheus-exporter:
     image: nginx/nginx-prometheus-exporter:latest
     command: -nginx.scrape-uri=http://{{ mgmt_waf_target_host }}/nginx_status
+    hostname: {{ inventory_dir | basename }}-nginx-prometheus-exporter
     networks:
       - {{ mgmt_docker_stack_name }}_mgmt_net
 

@@ -3,6 +3,7 @@ version: '3.7'
 services:
   phpmyadmin:
     image: phpmyadmin:latest
+    hostname: {{ inventory_dir | basename }}-phpmyadmin
     environment:
       - {{ mgmt_sql_taget_host_template }}
       - TZ=Europe/Berlin

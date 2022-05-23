@@ -3,6 +3,7 @@ version: '3.7'
 services:
   chronograf:
     image: chronograf:{{ mgmt_chronograf_version }}
+    hostname: {{ inventory_dir | basename }}-chronograf
     environment:
       - TZ=Europe/Berlin
     networks:

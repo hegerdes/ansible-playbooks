@@ -3,6 +3,7 @@ version: '3.7'
 services:
   sql-exporter:
     image: prom/mysqld-exporter:latest
+    hostname: {{ inventory_dir | basename }}-sql-exporter
     environment:
       - TZ=Europe/Berlin
       - DATA_SOURCE_NAME={{ mgmt_sql_exporter_connection_string }}/
