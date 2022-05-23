@@ -22,7 +22,7 @@ docker run --rm -it -v <MY/PVT_KEY>:/pvt_key -v <MY/INVENTROY_DIR>:/inventory gi
 docker run --rm -it -v <MY/PVT_KEY>:/pvt_key -v <MY/INVENTROY_DIR>:/inventory gitlab-registry.***REMOVED***/servermgmt-tools/symbic-playbooks:main playbooks/<PLAYBOOK_TO_USE> [--tags <ONLY_THIS_TAGS>] [--limit <ONLY_THESE_HOST[S]>] [--ask-vault-password] [--ask-become-pass]
 
 # Example
-docker run --rm -it -v ~/.ssh/id_rsa:/pvt_key -v /d/servermgmt/cci:/inventory gitlab-registry.***REMOVED***/servermgmt-tools/symbic-playbooks:main --limit mgmt --tags backup 
+docker run --rm -it -v ~/.ssh/id_rsa:/pvt_key -v /d/servermgmt/cci:/inventory gitlab-registry.***REMOVED***/servermgmt-tools/symbic-playbooks:main playbooks/pb_deploy_app.yml --limit mgmt --tags backup 
 ```
 #### Lokal usage
 **Tipp:** Run it on a Linux system or use the [WSL](https://docs.microsoft.com/de-de/windows/wsl/about)
