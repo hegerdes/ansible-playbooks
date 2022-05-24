@@ -6,7 +6,7 @@ services:
     hostname: {{ inventory_dir | basename }}-sql-exporter
     environment:
       - TZ=Europe/Berlin
-      - DATA_SOURCE_NAME={{ mgmt_sql_exporter_connection_string }}/
+      - DATA_SOURCE_NAME="{{ mgmt_sql_exporter_connection_string }}/"
     networks:
       - {{ mgmt_docker_stack_name }}_mgmt_net
 
