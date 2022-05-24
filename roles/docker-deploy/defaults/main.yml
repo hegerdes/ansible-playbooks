@@ -7,6 +7,7 @@ docker_deploy_src_config_files: srv/
 docker_deploy_dst_config_files: /srv/
 docker_deploy_override_file: docker-deploy-override.yml
 docker_deploy_override: '{{ lookup("file", docker_deploy_override_file) | from_yaml }}'
+docker_deploy_base_dir: '{{ inventory_dir }}/{{ inventory_hostname }}'
 docker_deploy_prune_old_services: no
 docker_deploy_app_name: myapp
 docker_deploy_backup_script: none
