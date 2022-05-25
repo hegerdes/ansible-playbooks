@@ -63,7 +63,7 @@ services:
       - source: alertmanager-conf-{{ lookup('file', mgmt_src_config_files + 'mgmt-prometheus/alertmanager.yml') | default(mgmt_conf_counter) | hash('md5') }}
         target: /config/alertmanager.yml
     volumes:
-      - alertmanager-data:/data
+      - alertmanager-data:/alertmanager
     deploy:
       labels:
         - "{{ mgmt_docker_stack_name }}=true"
