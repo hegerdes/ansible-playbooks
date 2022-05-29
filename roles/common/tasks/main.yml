@@ -50,6 +50,7 @@
     - 'gnupg'
     - 'gnupg2'
     - 'openssl'
+    - 'apparmor'
     - 'lsb-release'
     - 'python3-pip'
     - 'python3-requests'
