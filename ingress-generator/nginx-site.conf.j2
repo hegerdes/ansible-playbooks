@@ -48,7 +48,7 @@ server {
     {% for upstream in nginx_vhost.upstreams | default([]) %}
     location {{ "/" if (upstream.route | default("default") == "default") else upstream.route }} {
         {{ nginx_settings.common_header | safe | trim | indent(8) if (nginx_settings.common_header) }}
-        proxy_pass http://{{ nginx_vhost.host }}{{ upstream.route | replace("/", "_") | replace(".", "-") + upstream.route if(upstream.route | default("default") != "default") else "_default/" }};
+        proxy_pass http{{"s" if (nginx_vhost.tls_pass | default(false)) }}://{{ nginx_vhost.host }}{{ upstream.route | replace("/", "_") | replace(".", "-") + upstream.route if(upstream.route | default("default") != "default") else "_default/" }};
     }
         {% endfor %}
     {% endif %}
