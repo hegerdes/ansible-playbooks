@@ -4,6 +4,7 @@
   when: common_hostname != "none"
   hostname:
     name: '{{ common_hostname }}'
+  tags: [common, hostnames]
 
 - name: Create hosts dictionary
   set_fact:

@@ -83,7 +83,7 @@
 - name: Verify Promtail status
   service:
     name: promtail
-    state: started
+    state: restarted
   tags: [promtail, monitoring]
 
 - name: Ensure handlers are notified now
