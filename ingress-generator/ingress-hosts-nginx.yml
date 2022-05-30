@@ -25,41 +25,12 @@ conf:
 # If no location is given, a default location ("/") is created.
 # Every location contains the common headers and the proxypass to the defined upstream ips
 sites:
-  - host: default.devops-testing.123preview.com
-    ip: 116.202.189.62
-    upstreams:
-      - route: default
-        targets:
-        - 10.10.0.2:8001
-      - route: /test
-        targets:
-        - 10.10.0.2:8001
-        - 10.10.0.2:8001
-        path:
-    tls:
-      crt: /etc/nginx/ssl/dummy/fullchain.pem
-      key: /etc/nginx/ssl/dummy/privkey.pem
   - host: whoami.devops-testing.123preview.com
     ip: 116.202.189.62
     upstreams:
       - route: default
         targets:
         - 10.10.0.2:8003
-  - host: custom.devops-testing.123preview.com
-    ip: 116.202.189.62
-    upstreams:
-      - route: default
-        targets:
-        - 10.10.0.2:8002
-        - 10.10.0.2:8002
-    nginx:
-      locations:
-        - route: /
-          body: |
-            proxy_pass http://custom.devops-testing.123preview.com_default;
-        - route: /test
-          body: |
-            return 404;
     # Minimal site example
   - host: site1.my-domain.com
     # default: yes # only if conf.nginx.create_default_server is off
@@ -128,9 +99,10 @@ sites:
       - targets:
         - 127.0.0.2:3000
     tls: 'no'
-    # Own certs
+    # Own certs with tls pass through upstream
   - host: site6.my-domain.com
     ip: 111.222.222.111
+    tls_pass: yes
     upstreams:
       - route: default
         targets:
