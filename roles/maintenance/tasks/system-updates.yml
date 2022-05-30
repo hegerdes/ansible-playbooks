@@ -36,7 +36,7 @@
   when: hostvars[item].updates is defined
   run_once: True
   set_fact:
-    all_updates: '{{ all_updates | default({}) | combine({"failed_hosts": ansible_play_hosts_all | difference(ansible_play_batch) | default([])}) }}'
+    all_updates: '{{ all_updates | default({}) | combine({"failed_hosts": ansible_play_hosts_all | difference(ansible_play_batch) | default([]), "project_info:": {"project_url": lookup("env", "CI_PROJECT_URL") | default("none", True), "project_id": lookup("env", "CI_PROJECT_ID") | default("none", True)} }, recursive=True ) }}'
   with_items: '{{ groups.all }}'
   tags: [maintenance, os-updates]
 
@@ -54,7 +54,7 @@
   run_once: True
   copy:
     content: "{{ all_updates }}"
-    dest: "/tmp/{{ inventory_dir | basename + lookup('pipe', 'date +\"-%Y-%m-%d\"') }}.json"
+    dest: "/tmp/{{ inventory_dir | basename + '-updates' + lookup('pipe', 'date +\"-%Y-%m-%d\"') }}.json"
   delegate_to: localhost
   tags: [maintenance, os-updates]
 
