@@ -25,7 +25,7 @@ ENTRYPOINT [ "sh" ]
 # # Genarate config
 # RUN npm run generate-nginx ingress-hosts-nginx.yml
 
-# FROM nginx:1.20
+# FROM nginx:1.21
 # ARG RUN_CERTBOT="no"
 # ENV RUN_CERTBOT=$RUN_CERTBOT
 # RUN apt-get update && apt-get install -q -y --no-install-recommends \
