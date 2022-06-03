@@ -18,14 +18,14 @@
   when: item[-2:] == "j2"
   template:
     src: '{{ docker_deploy_src_config_files + item }}'
-    dest: '{{ docker_deploy_dst_config_files + item }}'
+    dest: '{{ docker_deploy_dst_config_files + item[:-3] }}'
     mode: '0644'
   loop: '{{ docker_deploy_stacks }}'
   tags: [docker-deploy]
 
 - name: Create absolut paths for stack files
   set_fact:
-    compose_files_stack: '{{ compose_files_stack | default([]) + ["".join((docker_deploy_dst_config_files,item))] }}'
+    compose_files_stack: '{{ compose_files_stack | default([]) + ["".join((docker_deploy_dst_config_files,item if(item[-3:] == "yml") else item[:-3] ))] }}'
   loop: '{{ docker_deploy_stacks | list}}'
   tags: [docker-deploy]
 
@@ -40,8 +40,8 @@
 
 - name: Getting generated stack file(s)
   slurp:
-    src: '{{ docker_deploy_dst_config_files + item }}'
-  loop: '{{ docker_deploy_stacks | list}}'
+    src: '{{ item }}'
+  loop: '{{ compose_files_stack | list}}'
   register: deploy_compose_conetent
   tags: [docker-deploy]
 
@@ -49,8 +49,8 @@
   fetch:
     dest: '{{ playbook_dir + "/ansible-files/" if(lookup("env", "CI_COMMIT_SHA") | default("no", True) != "no") else "/tmp/ansible-files/" }}'
     flat: yes
-    src: '{{ docker_deploy_dst_config_files + item }}'
-  loop: '{{ docker_deploy_stacks | list}}'
+    src: '{{ item }}'
+  loop: '{{ deploy_compose_conetent | list}}'
   tags: [docker-deploy]
 
 - name: Extracting used images
@@ -88,7 +88,7 @@
     project_name: '{{ docker_deploy_app_name }}'
     remove_orphans: yes
     project_src: '{{ docker_deploy_dst_config_files }}'
-    files: '{{ docker_deploy_stacks | list }}'
+    files: '{{ compose_files_stack | list }}'
   tags: [docker-deploy]
 
 - name: Sleep for 45 seconds and continue with play
