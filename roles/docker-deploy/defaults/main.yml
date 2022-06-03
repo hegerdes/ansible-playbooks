@@ -13,6 +13,7 @@ docker_deploy_app_name: myapp
 docker_deploy_backup_script: none
 docker_deploy_conf_version: '{{ lookup("env","CI_COMMIT_SHORT_SHA") | default(ansible_date_time.iso8601_basic_short, True) }}'
 docker_deploy_tag: latest
+docker_deploy_artifact_dir: '{{ playbook_dir + "/ansible-files/" if(lookup("env", "CI_COMMIT_SHA") | default("no", True) != "no") else "/tmp/ansible-files/" }}'
 docker_deploy_services: []
 docker_deploy_stacks: []
 
