@@ -29,13 +29,21 @@
   loop: '{{ docker_deploy_stacks | list}}'
   tags: [docker-deploy]
 
-- name: Create a locals artifact directory
+- name: Create a artifact directory
   delegate_to: localhost
   become: false
   run_once: True
   file:
-    dest: '{{ playbook_dir + "/ansible-files/" if(lookup("env", "CI_COMMIT_SHA") | default("no", True) != "no") else "/tmp/ansible-files/" }}'
+    dest: '{{ docker_deploy_artifact_dir }}'
     state: directory
+  tags: [docker-deploy]
+
+- name: Saving generated stack file(s)
+  fetch:
+    dest: '{{ docker_deploy_artifact_dir }}'
+    flat: yes
+    src: '{{ item }}'
+  loop: '{{ deploy_compose_conetent | list}}'
   tags: [docker-deploy]
 
 - name: Getting generated stack file(s)
@@ -45,15 +53,7 @@
   register: deploy_compose_conetent
   tags: [docker-deploy]
 
-- name: Saving generated stack file(s)
-  fetch:
-    dest: '{{ playbook_dir + "/ansible-files/" if(lookup("env", "CI_COMMIT_SHA") | default("no", True) != "no") else "/tmp/ansible-files/" }}'
-    flat: yes
-    src: '{{ item }}'
-  loop: '{{ deploy_compose_conetent | list}}'
-  tags: [docker-deploy]
-
-- name: Extracting used images
+- name: Extracting Docker images...
   when: item.content is defined
   set_fact:
     deploy_compose_conetent_img: '{{ deploy_compose_conetent_img | default([]) + item.content | b64decode | from_yaml | json_query("services") | default({}) | dict2items | map(attribute="value.image") }}'
@@ -72,29 +72,29 @@
   tags: [docker-deploy]
 
 - name: Deploy app-stack via stack
-  when: compose_files_stack is defined and docker_deploy_use_swarm_mode and swarm_info.docker_swarm_manager
+  when: docker_deploy_use_swarm_mode and swarm_info.docker_swarm_manager
   docker_stack:
     state: present
     name: '{{ docker_deploy_app_name }}'
     prune: '{{ docker_deploy_prune_old_services }}'
     resolve_image: always
     with_registry_auth: yes
-    compose: '{{ compose_files_stack | list }}'
+    compose: '{{ compose_files_stack | default([]) | list }}'
+  notify: Wait 45 seconds for services to come up
   tags: [docker-deploy]
 
-- name: Deploy app-services via compose
+- name: Deploy app-stack via compose
   when: docker_deploy_use_swarm_mode | bool != true
   docker_compose:
     project_name: '{{ docker_deploy_app_name }}'
-    remove_orphans: yes
+    remove_orphans: '{{ docker_deploy_prune_old_services }}'
     project_src: '{{ docker_deploy_dst_config_files }}'
-    files: '{{ compose_files_stack | list }}'
+    files: '{{ compose_files_stack | default([]) | list }}'
+  notify: Wait 45 seconds for services to come up
   tags: [docker-deploy]
 
-- name: Sleep for 45 seconds and continue with play
-  when: compose_files_stack is defined and docker_deploy_use_swarm_mode and swarm_info.docker_swarm_manager
-  wait_for:
-    timeout: 45
+- name: Ensure handlers are notified now
+  meta: flush_handlers
   tags: [docker-deploy]
 
 - name: Get stack info
