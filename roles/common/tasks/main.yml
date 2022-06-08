@@ -116,6 +116,16 @@
   tags: [common, sys]
   notify: Update grub
 
+- name: Setting system limits
+  pam_limits:
+    domain: '{{ item.user }}'
+    limit_type: '{{ item.type | default("-") }}'
+    limit_item: '{{ item.limit }}'
+    value: '{{ item.value }}'
+    comment: '{{ item.comment | default(omit) }}'
+  loop: '{{ common_limits }}'
+  tags: [common, sys]
+
 - name: Set floating IPs
   when: common_floating_ips | length > 0
   import_tasks: shared/set-floting-ip.yml

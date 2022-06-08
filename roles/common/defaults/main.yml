@@ -34,6 +34,21 @@ common_device_mounts: []
 #     filesystem: iso9660|xfs|ext4
 #     options: ro,noauto
 
+# System limets
+common_limits: []
+# Example
+# common_limits:
+#   - user: "*"
+#     type: "hard"    # optional
+#     limit: "nofile"
+#     value: 1048576
+#     comment: ""
+#   - user: "docker"
+#     type: "-"       # hard & soft
+#     limit: "core"
+#     value: 1048576
+#     comment: ""     # optional
+
 # Sets conf in /etc/network/interfaces
 common_network_interfaces: []
 # Example
