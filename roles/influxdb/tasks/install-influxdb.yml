@@ -11,6 +11,7 @@
     repo: deb https://repos.influxdata.com/{{ ansible_distribution | lower }} {{ ansible_facts.lsb.codename }} stable
     update_cache: yes
     state: present
+    filename: influx
   tags: [influxdb]
 
 - name: Ensure /etc/influxdb2/ directory exists

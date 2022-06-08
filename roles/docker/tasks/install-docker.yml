@@ -19,6 +19,7 @@
     repo: 'deb https://download.docker.com/linux/{{ ansible_facts.distribution | lower }} {{ ansible_facts.lsb.codename }} stable'
     update_cache: yes
     state: present
+    filename: docker
   tags: [docker, docker-install]
 
 - name: Install docker

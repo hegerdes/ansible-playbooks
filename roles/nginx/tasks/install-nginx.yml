@@ -11,6 +11,7 @@
     repo: deb http://nginx.org/packages/debian/ {{ ansible_facts.lsb.codename }} nginx
     update_cache: yes
     state: present
+    filename: nginx
   tags: [ingress, nginx]
 
 - name: Install nginx
