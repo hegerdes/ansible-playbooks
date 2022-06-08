@@ -97,7 +97,7 @@ sites:
     ip: 111.222.222.111
     upstreams:
       - targets:
-        - 127.0.0.2:3000
+        - 127.0.0.1:3000
     tls: 'no'
     # Own certs with tls pass through upstream
   - host: site6.my-domain.com
@@ -111,5 +111,5 @@ sites:
       crt: /etc/nginx/ssl/dummy/fullchain.pem
       key: /etc/nginx/ssl/dummy/privkey.pem
     # No upstream no locations
-  - host: site6.my-domain.com
+  - host: site7.my-domain.com
     ip: 111.222.222.111

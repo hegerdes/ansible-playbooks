@@ -2,6 +2,7 @@ const yaml = require('js-yaml');
 const fs = require('fs');
 const util = require('util');
 const jinja = require('nunjucks')
+const net = require('net')
 
 // ARGS check
 if (process.argv.length != 4) {
@@ -24,6 +25,15 @@ try {
 }
 console.log("Using the following ingress file:");
 console.log(util.inspect(ingress, false, null, true));
+var domains = []
+
+async function createDummyHosts(hosts){
+  var etchosts = ''
+  for(var host of hosts){
+    etchosts += `127.0.0.1 ${host}\n`
+  }
+  // fs.writeFileSync(`${__dirname}/nginx/etcDummyHosts`, etchosts)
+}
 
 /**
  * Generate nginx conf and save it
@@ -36,7 +46,14 @@ let res = ''
 }
   console.log('Generating nginx conf files...')
   for(let site of ingress.sites){
-    let template_file =  (site.tls && site.tls === 'no') ? '/nginx-site-http-only.conf.j2' : '/nginx-site.conf.j2'
+    if(site.upstreams){
+      for(var upstream of site.upstreams){
+        for(var target of upstream.targets){
+          if(!net.isIP(target.split(':')[0])) domains.push(target.split(':')[0])
+        }
+      }
+    }
+    let template_file = (site.tls && site.tls === 'no') ? '/nginx-site-http-only.conf.j2' : '/nginx-site.conf.j2'
     res = jinja.render(__dirname + template_file, { nginx_vhost: site, nginx_settings: ingress.conf.nginx });
     console.log(`Writing to ${conf_dst}/${site.host}.conf`)
     fs.writeFileSync(`${conf_dst}/${site.host}.conf`, res)
@@ -50,6 +67,7 @@ let res = ''
     console.log(`Writing default site to ${__dirname}/nginx/conf.d/default.conf`)
   }
   console.log('done')
+  createDummyHosts(domains)
 }
 
 /**

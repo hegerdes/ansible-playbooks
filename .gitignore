@@ -8,3 +8,4 @@ conf/ingress/nginx/my-entrypoint.sh
 conf/ingress/nginx/conf.d/*.conf
 !conf/ingress/nginx/conf.d/internal-status.conf
 tests/
+ingress-generator/nginx/etcDummyHosts
