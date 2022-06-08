@@ -4,7 +4,7 @@ services:
   ara:
     image: docker.io/recordsansible/ara-api:latest
     restart: unless-stopped
-    tty: true
+    depends_on: [db]
     environment:
       - ARA_DATABASE_ENGINE=django.db.backends.mysql
       - ARA_DATABASE_HOST=db
@@ -15,10 +15,6 @@ services:
       - TZ=Europe/Berlin
     ports:
       - "8000:8000"
-    depends_on:
-      - db
-    volumes:
-      - ara_data:/opt/ara:z
 
 ####### Database services #######
   db:
