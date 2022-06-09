@@ -28,10 +28,10 @@ console.log(util.inspect(ingress, false, null, true));
 var domains = []
 
 async function createDummyHosts(hosts){
-  var etchosts = ''
-  for(var host of hosts){
-    etchosts += `127.0.0.1 ${host}\n`
-  }
+  // var etchosts = ''
+  // for(var host of hosts){
+  //   etchosts += `127.0.0.1 ${host}\n`
+  // }
   // fs.writeFileSync(`${__dirname}/nginx/etcDummyHosts`, etchosts)
 }
 
@@ -41,9 +41,9 @@ async function createDummyHosts(hosts){
 async function generateNginxConf(){
 let res = ''
   let conf_dst = `${__dirname}/nginx/conf.d`
-  if (!fs.existsSync(conf_dst)){
+  if (!fs.existsSync(conf_dst)) {
     fs.mkdirSync(conf_dst);
-}
+  }
   console.log('Generating nginx conf files...')
   for(let site of ingress.sites){
     if(site.upstreams){
@@ -53,6 +53,39 @@ let res = ''
         }
       }
     }
+
+    // copy common locations into site
+    if (Object.prototype.hasOwnProperty.call(site, 'nginx') && Object.prototype.hasOwnProperty.call(site.nginx, 'common_locations')) {
+      for(let i = 0; i < site.nginx.common_locations.length; i++) {
+        let myLocation = Object.assign({}, ingress.conf.nginx.common_locations[site.nginx.common_locations[i].name]);
+        if (Object.prototype.hasOwnProperty.call(site.nginx.common_locations[i], 'body_params')) {
+          myLocation['body_params'] = site.nginx.common_locations[i].body_params;
+        }
+        else {
+          myLocation['body_params'] = {};
+        }
+        if (!Object.prototype.hasOwnProperty.call(site.nginx, 'locations')) {
+          site.nginx.locations = [];
+        }
+        site.nginx.locations.push(myLocation);
+      }
+    }
+
+    // preprocess location body templates
+    if (Object.prototype.hasOwnProperty.call(site, 'nginx') && Object.prototype.hasOwnProperty.call(site.nginx, 'locations')) {
+      for(let i = 0; i < site.nginx.locations.length; i++) {
+        if (Object.prototype.hasOwnProperty.call(site.nginx.locations[i], 'body_template')) {
+          // TODO: check if body_params exists
+          site.nginx.locations[i].body = jinja.renderString(site.nginx.locations[i].body_template, site.nginx.locations[i].body_params);
+        }
+
+        else if (Object.prototype.hasOwnProperty.call(site.nginx.locations[i], 'body_template_name')) {
+          // TODO: check if ingress.conf.body_templates[site.locations[i].body_template_name] exists
+          site.nginx.locations[i].body = jinja.renderString(ingress.conf.nginx.body_templates[site.nginx.locations[i].body_template_name], site.nginx.locations[i].body_params);
+        }
+      }
+    }
+
     let template_file = (site.tls && site.tls === 'no') ? '/nginx-site-http-only.conf.j2' : '/nginx-site.conf.j2'
     res = jinja.render(__dirname + template_file, { nginx_vhost: site, nginx_settings: ingress.conf.nginx });
     console.log(`Writing to ${conf_dst}/${site.host}.conf`)
