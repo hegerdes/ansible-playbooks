@@ -56,10 +56,23 @@ if [ ! -f "/etc/letsencrypt/live/certs/privkey.pem" ]; then
 fi
 
 if [ $RUN_CERTBOT = "yes" ]; then
+    # Check if domains are given
     if [ -z "${CERTBOT_DOMAINS}" ]; then
         echo "No domains for certbot provided. Exit"
         exit 1
     fi
+
+    # Check if domain save file exist
+    if [ ! -f /etc/letsencrypt/live/certs/domain-list.pem ]; then
+        echo -n "${CERTBOT_DOMAINS}" > /etc/letsencrypt/live/certs/domain-list.pem
+    fi
+
+    if [ $(< /etc/letsencrypt/live/certs/domain-list.pem) != "$CERTBOT_DOMAINS" ]; then
+        echo -e "Domain list has changed!\nWill remove old certs and generate new owns..."
+        echo "Dummy Certs" > /etc/letsencrypt/live/certs/dummy-marker.pem
+    fi
+
+
     if [ -f "/etc/letsencrypt/live/certs/dummy-marker.txt" ]; then
         echo "Found dummy-certs! Running certbot"
         sleep 10s

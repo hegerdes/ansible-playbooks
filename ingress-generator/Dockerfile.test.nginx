@@ -45,6 +45,7 @@ ENV COMMIT_HASH=$COMMIT_HASH
 ENV COMMIT_TAG=$COMMIT_TAG
 LABEL commit-hash=$COMMIT_HASH
 LABEL commit-tag=$COMMIT_TAG
+VOLUME [ "/etc/letsencrypt" ]
 
 # Certbot & debug
 ENV NGINX_DEBUG="no"
