@@ -126,6 +126,12 @@
   loop: '{{ common_limits }}'
   tags: [common, sys]
 
+- name: Creates backup directory
+  file:
+    path: /backup_dumps
+    state: directory
+  tags: [common, sys]
+
 - name: Set floating IPs
   when: common_floating_ips | length > 0
   import_tasks: shared/set-floting-ip.yml

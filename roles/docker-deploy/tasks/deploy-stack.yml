@@ -31,19 +31,11 @@
 
 - name: Create a artifact directory
   delegate_to: localhost
-  become: false
+  become: False
   run_once: True
   file:
     dest: '{{ docker_deploy_artifact_dir }}'
     state: directory
-  tags: [docker-deploy]
-
-- name: Saving generated stack file(s)
-  fetch:
-    dest: '{{ docker_deploy_artifact_dir }}'
-    flat: yes
-    src: '{{ item }}'
-  loop: '{{ deploy_compose_conetent | list}}'
   tags: [docker-deploy]
 
 - name: Getting generated stack file(s)
@@ -51,6 +43,14 @@
     src: '{{ item }}'
   loop: '{{ compose_files_stack | list}}'
   register: deploy_compose_conetent
+  tags: [docker-deploy]
+
+- name: Saving generated stack file(s)
+  fetch:
+    dest: '{{ docker_deploy_artifact_dir }}'
+    flat: yes
+    src: '{{ item }}'
+  loop: '{{ compose_files_stack | list}}'
   tags: [docker-deploy]
 
 - name: Extracting Docker images...
