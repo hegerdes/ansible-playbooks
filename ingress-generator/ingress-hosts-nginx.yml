@@ -61,10 +61,12 @@ sites:
         targets:
         - 127.0.0.1:3000
         - 127.0.0.2:3000
+        - site3-1.my-domain:3000
       - route: /foo/bar/batz
         targets:
         - 127.0.0.1:3000
         - 127.0.0.2:3000
+        - site3-2.my-domain:3000
     # Own routes
   - host: site4.my-domain.com
     ip: 111.222.222.111
@@ -72,6 +74,7 @@ sites:
       - route: default
         targets:
         - 127.0.0.1:3000
+        - site4.my-domain:3000
     nginx:
       locations:
         - route: /
@@ -98,6 +101,7 @@ sites:
     upstreams:
       - targets:
         - 127.0.0.1:3000
+        - mytest
     tls: 'no'
     # Own certs with tls pass through upstream
   - host: site6.my-domain.com

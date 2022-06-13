@@ -9,3 +9,4 @@ conf/ingress/nginx/conf.d/*.conf
 !conf/ingress/nginx/conf.d/internal-status.conf
 tests/
 ingress-generator/nginx/etcDummyHosts
+ingress-generator/domain.list

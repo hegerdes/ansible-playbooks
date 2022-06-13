@@ -15,7 +15,8 @@ let ingress_conf = process.argv[3] || "ingress-hosts-nginx.yml";
 // Get ingress config
 let ingress;
 try {
-  ingress = yaml.load(fs.readFileSync(process.cwd() + "/" + ingress_conf));
+  var filename = (ingress_conf.at(0) == "/") ? ingress_conf: process.cwd() + "/" + ingress_conf
+  ingress = yaml.load(fs.readFileSync(filename));
 } catch (e) {
   console.error(
     "Unable to read specified ingress file.\nPlease check path and format!\nError: " +
@@ -25,14 +26,21 @@ try {
 }
 console.log("Using the following ingress file:");
 console.log(util.inspect(ingress, false, null, true));
-var domains = []
 
-async function createDummyHosts(hosts){
-  // var etchosts = ''
-  // for(var host of hosts){
-  //   etchosts += `127.0.0.1 ${host}\n`
-  // }
-  // fs.writeFileSync(`${__dirname}/nginx/etcDummyHosts`, etchosts)
+async function createUpstreamHosts(){
+  console.log('Generating upstream domain list...')
+  var domains = []
+  for(let site of ingress.sites){
+    if(site.upstreams){
+      for(var upstream of site.upstreams){
+        for(var target of upstream.targets){
+          if(!net.isIP(target.split(':')[0])) domains.push(target.split(':')[0])
+        }
+      }
+    }
+  }
+  fs.writeFileSync(`${__dirname}/domain.list`, domains.join("\n") + "\n")
+  console.log('Upstreams:', domains, "\ndone")
 }
 
 /**
@@ -46,14 +54,6 @@ let res = ''
   }
   console.log('Generating nginx conf files...')
   for(let site of ingress.sites){
-    if(site.upstreams){
-      for(var upstream of site.upstreams){
-        for(var target of upstream.targets){
-          if(!net.isIP(target.split(':')[0])) domains.push(target.split(':')[0])
-        }
-      }
-    }
-
     // copy common locations into site
     if (Object.prototype.hasOwnProperty.call(site, 'nginx') && Object.prototype.hasOwnProperty.call(site.nginx, 'common_locations')) {
       for(let i = 0; i < site.nginx.common_locations.length; i++) {
@@ -100,7 +100,6 @@ let res = ''
     console.log(`Writing default site to ${__dirname}/nginx/conf.d/default.conf`)
   }
   console.log('done')
-  createDummyHosts(domains)
 }
 
 /**
@@ -226,6 +225,9 @@ async function run() {
       break;
     case "traefik":
       generateTraefikConf();
+      break;
+    case "upstream-domains":
+      createUpstreamHosts();
       break;
     default:
       console.error("Target config not supported right now");

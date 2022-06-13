@@ -1,11 +1,16 @@
 variables:
   KANIKO_USE_CACHE: 'yes'
+  INGRESS_BASE_DIR: $CI_PROJECT_DIR/ingress-generator
+  INGRESS_DOCKERFILE: $INGRESS_BASE_DIR/Dockerfile.test.nginx
 
 include:
   - project: 'symbic-intern/symbic-templates'
     file: '/GitlabCI/kaniko-build.yml'
+  - project: 'symbic-intern/symbic-templates'
+    file: '/GitlabCI/kaniko-build-ingress.yml'
 
 stages:
+  - prebuild
   - build
 
 image-build-playbooks-tag:
@@ -29,27 +34,13 @@ image-build-playbooks-branch:
         - Dockerfile
         - requirements.txt
         - ansible-entrypoint.sh
-        - .gitlab-ci.yml
 
-build-ingress-image-genarator:
+build-ingress-genarator:
   extends: .build_template
   variables:
     DOCKERFILE: $CI_PROJECT_DIR/ingress-generator/Dockerfile
     CONTEXT: $CI_PROJECT_DIR/ingress-generator/
     BUILD_IMAGE_TAG: $CI_REGISTRY_IMAGE/ingress-genarator:$CI_COMMIT_BRANCH
-  rules:
-    - if: $CI_COMMIT_BRANCH
-      changes:
-        - ingress-generator/**/*
-
-build-ingress-image-tester:
-  extends: .build_template
-  variables:
-    DOCKERFILE: $CI_PROJECT_DIR/ingress-generator/Dockerfile.test.nginx
-    CONTEXT: $CI_PROJECT_DIR/ingress-generator/
-    BUILD_IMAGE_TAG: $CI_REGISTRY_IMAGE/ingress-genarator:$CI_COMMIT_BRANCH
-    KANIKO_NO_PUSH: "yes"
-    KANIKO_USE_CACHE: "no"
   rules:
     - if: $CI_COMMIT_BRANCH
       changes:
