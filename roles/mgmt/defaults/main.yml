@@ -41,6 +41,9 @@ mgmt_wireguard_port: 51820
 mgmt_chronograf_version: 1.9-alpine
 mgmt_chronograf_port: 8888
 
+# PGAdmin
+mgmt_pgadmin_pw: mySuperSecureAdminPW
+
 # Grafana and Portainer setup
 mgmt_setup_portainer: yes
 mgmt_portainer_edition: ce

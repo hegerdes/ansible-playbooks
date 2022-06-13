@@ -1,0 +1,30 @@
+version: '3.7'
+
+services:
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    hostname: {{ inventory_dir | basename }}-pgadmin
+    environment:
+      - TZ=Europe/Berlin
+      - PGADMIN_DEFAULT_EMAIL=support@***REMOVED***
+      - PGADMIN_DEFAULT_PASSWORD={{ mgmt_pgadmin_pw }}
+    networks:
+      - {{ mgmt_docker_stack_name }}_mgmt_net
+    ports:
+      - target: 80
+        published: 8083
+        protocol: tcp
+        mode: host
+    deploy:
+      labels:
+        - "{{ mgmt_docker_stack_name }}=true"
+        {{ mgmt_traefik_labels | replace("__SERVICE__", "pgadmin") | replace("__PORT__", "80") | indent(width=8) if(mgmt_use_swarm_mode) }}
+        {{ mgmt_traefik_auth_labels.pgadmin | default("") | indent(width=8) if(mgmt_use_swarm_mode) }}
+    labels:
+      - "{{ mgmt_docker_stack_name }}=true"
+      {{ mgmt_traefik_labels | replace("__SERVICE__", "pgadmin") | replace("__PORT__", "80") | indent(width=6) if(not mgmt_use_swarm_mode) }}
+      {{ mgmt_traefik_auth_labels.pgadmin | default("") | indent(width=6) if(not mgmt_use_swarm_mode) }}
+
+networks:
+  {{ mgmt_docker_stack_name }}_mgmt_net:
+    external: true
