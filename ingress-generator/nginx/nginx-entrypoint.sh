@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 # Default
 NGINX_BINARY="nginx"
 CERBOT_MAIL_USE="${CERBOT_MAIL:-"support@***REMOVED***"}"
@@ -16,26 +15,22 @@ else
     exec 3>/dev/null
 fi
 
-if [ $CERTBOT_STAGING = "yes" ]; then
-    CERTBOT_EXTRA_ARGS="--test-cert ${CERTBOT_EXTRA_ARGS}"
-fi
-
 if /usr/bin/find "/docker-entrypoint.d/" -mindepth 1 -maxdepth 1 -type f -print -quit 2>/dev/null | read v; then
     echo >&3 "$0: /docker-entrypoint.d/ is not empty, will attempt to perform configuration"
 
     echo >&3 "$0: Looking for shell scripts in /docker-entrypoint.d/"
     find "/docker-entrypoint.d/" -follow -type f -print | sort -V | while read -r f; do
         case "$f" in
-            *.sh)
-                if [ -x "$f" ]; then
-                    echo >&3 "$0: Launching $f";
-                    "$f"
-                else
-                    # warn on shell scripts without exec bit
-                    echo >&3 "$0: Ignoring $f, not executable";
-                fi
-                ;;
-            *) echo >&3 "$0: Ignoring $f";;
+        *.sh)
+            if [ -x "$f" ]; then
+                echo >&3 "$0: Launching $f"
+                "$f"
+            else
+                # warn on shell scripts without exec bit
+                echo >&3 "$0: Ignoring $f, not executable"
+            fi
+            ;;
+        *) echo >&3 "$0: Ignoring $f" ;;
         esac
     done
 
@@ -50,12 +45,12 @@ mkdir -p /var/www/_letsencrypt
 if [ ! -f "/etc/letsencrypt/live/certs/fullchain.pem" ]; then
     cp /etc/nginx/ssl/dummy/fullchain.pem /etc/letsencrypt/live/certs/fullchain.pem
     echo "Creating dummy certs"
-    echo "Dummy Certs" > /etc/letsencrypt/live/certs/dummy-marker.txt
+    echo "Dummy Certs" >/etc/letsencrypt/live/certs/dummy-marker.txt
 fi
 if [ ! -f "/etc/letsencrypt/live/certs/privkey.pem" ]; then
     cp /etc/nginx/ssl/dummy/privkey.pem /etc/letsencrypt/live/certs/privkey.pem
     echo "Creating dummy certs"
-    echo "Dummy Certs" > /etc/letsencrypt/live/certs/dummy-marker.pem
+    echo "Dummy Certs" >/etc/letsencrypt/live/certs/dummy-marker.pem
 fi
 
 if [ $RUN_CERTBOT = "yes" ]; then
@@ -67,24 +62,32 @@ if [ $RUN_CERTBOT = "yes" ]; then
 
     # Check if domain save file exist
     if [ ! -f /etc/letsencrypt/live/certs/domain-list.pem ]; then
-        echo -n "${CERTBOT_DOMAINS}" > /etc/letsencrypt/live/certs/domain-list.pem
+        echo -n "${CERTBOT_DOMAINS}" >/etc/letsencrypt/live/certs/domain-list.pem
     fi
 
-    if [ $(< /etc/letsencrypt/live/certs/domain-list.pem) != "$CERTBOT_DOMAINS" ]; then
+    if [ $(</etc/letsencrypt/live/certs/domain-list.pem) != "$CERTBOT_DOMAINS" ]; then
         echo -e "Domain list has changed!\nWill remove old certs and generate new owns..."
-        echo "Dummy Certs" > /etc/letsencrypt/live/certs/dummy-marker.pem
+        echo "Dummy Certs" >/etc/letsencrypt/live/certs/dummy-marker.pem
     fi
-
 
     if [ -f "/etc/letsencrypt/live/certs/dummy-marker.txt" ]; then
         echo "Found dummy-certs! Running certbot"
+
+        if [ $CERTBOT_STAGING = "yes" ]; then
+            CERTBOT_EXTRA_ARGS="--test-cert ${CERTBOT_EXTRA_ARGS}"
+            echo "Using certbot staging server"
+        fi
+
         sleep 10s
         rm -r /etc/letsencrypt/live/certs
         certbot certonly --webroot --webroot-path /var/www/_letsencrypt/ \
-        --non-interactive -m $CERBOT_MAIL_USE --agree-tos \
-        --cert-name certs -d $CERTBOT_DOMAINS $CERTBOT_EXTRA_ARGS
+            --non-interactive -m $CERBOT_MAIL_USE --agree-tos \
+            --cert-name certs -d $CERTBOT_DOMAINS $CERTBOT_EXTRA_ARGS
         nginx -t && nginx -s reload
-    fi && while true; do certbot renew --post-hook "nginx -t && nginx -s reload"; sleep 14d; done &
+    fi && while true; do
+        certbot renew --post-hook "nginx -t && nginx -s reload"
+        sleep 14d
+    done &
 
 fi
 
