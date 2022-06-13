@@ -16,6 +16,9 @@ else
     exec 3>/dev/null
 fi
 
+if [ $CERTBOT_STAGING = "yes" ]; then
+    CERTBOT_EXTRA_ARGS="--test-cert ${CERTBOT_EXTRA_ARGS}"
+fi
 
 if /usr/bin/find "/docker-entrypoint.d/" -mindepth 1 -maxdepth 1 -type f -print -quit 2>/dev/null | read v; then
     echo >&3 "$0: /docker-entrypoint.d/ is not empty, will attempt to perform configuration"
@@ -79,7 +82,7 @@ if [ $RUN_CERTBOT = "yes" ]; then
         rm -r /etc/letsencrypt/live/certs
         certbot certonly --webroot --webroot-path /var/www/_letsencrypt/ \
         --non-interactive -m $CERBOT_MAIL_USE --agree-tos \
-        --cert-name certs -d $CERTBOT_DOMAINS
+        --cert-name certs -d $CERTBOT_DOMAINS $CERTBOT_EXTRA_ARGS
         nginx -t && nginx -s reload
     fi && while true; do certbot renew --post-hook "nginx -t && nginx -s reload"; sleep 14d; done &
 
