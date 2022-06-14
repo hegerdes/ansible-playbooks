@@ -15,7 +15,7 @@ let ingress_conf = process.argv[3] || "ingress-hosts-nginx.yml";
 // Get ingress config
 let ingress;
 try {
-  var filename = (ingress_conf.at(0) == "/") ? ingress_conf: process.cwd() + "/" + ingress_conf
+  var filename = (ingress_conf[0] == "/") ? ingress_conf: process.cwd() + "/" + ingress_conf
   ingress = yaml.load(fs.readFileSync(filename));
 } catch (e) {
   console.error(
@@ -27,14 +27,31 @@ try {
 console.log("Using the following ingress file:");
 console.log(util.inspect(ingress, false, null, true));
 
+// eslint-disable-next-line no-unused-vars
+var is_domain = new RegExp(/^((?:(?:(?:\w[\.\-\+]?)*)\w)+)((?:(?:(?:\w[\.\-\+]?){0,62})\w)+)\.(\w{2,6})$/);
+
 async function createUpstreamHosts(){
   console.log('Generating upstream domain list...')
   var domains = []
+  // Upstream domains
   for(let site of ingress.sites){
     if(site.upstreams){
       for(var upstream of site.upstreams){
         for(var target of upstream.targets){
           if(!net.isIP(target.split(':')[0])) domains.push(target.split(':')[0])
+        }
+      }
+    }
+    // Location domains
+    if(site.nginx && site.nginx.locations){
+      for(var location of site.nginx.locations){
+        for(var line of location.body.split('\n')){
+          if (line.includes("proxy_pass ")){
+            var pass_target = line.trim().split(/(\s+)/).pop()
+            var pass_domain = pass_target.split("//").pop().slice(0,-1)
+            domains.push(pass_domain)
+            // if(pass_domain.match(is_domain)) console.log(pass_domain)
+          }
         }
       }
     }
