@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 BACKUP_DIR=${CUSTOM_BACKUP_DIR:="/backup_dumps"}
 DATE_STR=$(date '+%Y-%m-%d')

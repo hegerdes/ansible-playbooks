@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 ZIPPER=pigz
 BACKUP_DIR=${CUSTOM_BACKUP_DIR:="/backup_dumps"}
