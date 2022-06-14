@@ -59,7 +59,6 @@ ingress-test-image-build:
     INGRESS_BASE_DIR: $CI_PROJECT_DIR/ingress-generator
     INGRESS_DOCKERFILE: $INGRESS_BASE_DIR/Dockerfile.test.nginx
     INGRESS_IMAGE_NAME: $CI_REGISTRY_IMAGE/ingress-test-image
-    ARTIFACT_DIR: /etc/nginx/conf.d/*
   rules:
     - if: $CI_COMMIT_REF_NAME
       changes:

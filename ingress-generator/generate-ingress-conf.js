@@ -33,6 +33,8 @@ var is_domain = new RegExp(/^((?:(?:(?:\w[\.\-\+]?)*)\w)+)((?:(?:(?:\w[\.\-\+]?)
 async function createUpstreamHosts(){
   console.log('Generating upstream domain list...')
   var domains = []
+  if(ingress.conf.internal_extra_domains)
+    domains = domains.concat(ingress.conf.internal_extra_domains)
   // Upstream domains
   for(let site of ingress.sites){
     if(site.upstreams){
@@ -49,7 +51,12 @@ async function createUpstreamHosts(){
           if (line.includes("proxy_pass ")){
             var pass_target = line.trim().split(/(\s+)/).pop()
             var pass_domain = pass_target.split("//").pop().slice(0,-1)
-            domains.push(pass_domain)
+            if(pass_domain.includes(":")){
+              if(!net.isIP(pass_domain.split(':')[0])) domains.push(pass_domain.split(':')[0])
+            }else{
+              domains.push(pass_domain)
+
+            }
             // if(pass_domain.match(is_domain)) console.log(pass_domain)
           }
         }

@@ -17,6 +17,7 @@ conf:
     # Settings for all vhosts server section
     common_server_settings: |
       # None
+  internal_extra_domains: [myservice, xyz]
 # NOTE: Upstream
 # The upsteams are always named by the HOST prefix and the name on the current upstream
 # Resulting in <HOSTNAME>_<UPSTREAM_ROUTE>. To pass use proxy_pass http://<HOSTNAME>_<UPSTREAM_ROUTE>/;
