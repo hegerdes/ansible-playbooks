@@ -117,7 +117,7 @@ let res = ''
   }
 
   // Default site
-  let create_default_server = (ingress.conf && ingress.conf.nginx.create_default_server) ? ingress.conf.nginx.create_default_server : 'on'
+  let create_default_server = (ingress.conf && ingress.conf.nginx && ingress.conf.nginx.create_default_server) ? ingress.conf.nginx.create_default_server : 'on'
   if(create_default_server == 'on' || create_default_server == 'yes' || create_default_server == 'true' ){
     res = jinja.render(__dirname + '/nginx-default-site.conf.j2', { sites: ingress.sites, nginx_settings:ingress.conf.nginx });
     fs.writeFileSync(`${__dirname}/nginx/conf.d/default.conf`, res)
