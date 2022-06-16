@@ -5,8 +5,9 @@ NGINX_BINARY="nginx"
 CERBOT_MAIL_USE="${CERBOT_MAIL:-"support@***REMOVED***"}"
 
 # Check for debug flag
-if [ $NGINX_DEBUG = "yes" ]; then
-    export NGINX_BINARY="nginx-debug"
+if [ "$NGINX_DEBUG" = "yes" ]; then
+    echo "Running nginx in debug mode!"
+    NGINX_BINARY="nginx-debug"
 fi
 
 if [ -z "${NGINX_ENTRYPOINT_QUIET_LOGS:-}" ]; then
@@ -92,4 +93,5 @@ if [ $RUN_CERTBOT = "yes" ]; then
 fi
 
 # Start main
+echo "Running: ${NGINX_BINARY} -g \"daemon off;\""
 exec ${NGINX_BINARY} -g "daemon off;"
