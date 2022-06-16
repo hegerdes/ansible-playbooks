@@ -111,6 +111,7 @@ let res = ''
     }
 
     let template_file = (site.tls && site.tls === 'no') ? '/nginx-site-http-only.conf.j2' : '/nginx-site.conf.j2'
+    if (!ingress.conf || !ingress.conf.nginx) ingress.conf.nginx = {}
     res = jinja.render(__dirname + template_file, { nginx_vhost: site, nginx_settings: ingress.conf.nginx });
     console.log(`Writing to ${conf_dst}/${site.host}.conf`)
     fs.writeFileSync(`${conf_dst}/${site.host}.conf`, res)
