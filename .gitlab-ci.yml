@@ -3,6 +3,7 @@ stages:
   - test
   - prebuild
   - build
+  - scan
   - distribute
   - deploy
 
@@ -14,6 +15,8 @@ include:
     file: '/GitlabCI/kaniko-build.yml'
   - project: 'symbic-intern/symbic-templates'
     file: '/GitlabCI/kaniko-build-ingress.yml'
+  - project: 'symbic-intern/symbic-templates'
+    file: '/GitlabCI/container-scan.yml'
 
 image-build-playbooks:
   extends: .build_template
