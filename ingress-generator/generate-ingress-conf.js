@@ -33,7 +33,7 @@ var is_domain = new RegExp(/^((?:(?:(?:\w[\.\-\+]?)*)\w)+)((?:(?:(?:\w[\.\-\+]?)
 async function createUpstreamHosts(){
   console.log('Generating upstream domain list...')
   var domains = []
-  if(ingress.conf.internal_extra_domains)
+  if(ingress.conf && ingress.conf.internal_extra_domains)
     domains = domains.concat(ingress.conf.internal_extra_domains)
   // Upstream domains
   for(let site of ingress.sites){
