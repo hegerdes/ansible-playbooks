@@ -4,6 +4,7 @@ stages:
   - prebuild
   - build
   - scan
+  - pages
   - distribute
   - deploy
 

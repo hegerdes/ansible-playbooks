@@ -9,7 +9,7 @@
   include_tasks: hcloud-snapshot.yml
   tags: [maintenance, backup, db-backup, host-backup, hetzner-snapshot]
 
-- name: Run DB-Backup scripts
+- name: Run Backup-Scripts
   when: maintenance_run_backup | bool
   include_tasks: host-backups.yml
   tags: [maintenance, backup, db-backup]
