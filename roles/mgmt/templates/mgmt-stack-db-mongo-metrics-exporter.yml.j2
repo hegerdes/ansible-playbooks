@@ -1,0 +1,15 @@
+version: '3.7'
+
+services:
+  mongodb-exporter:
+    image: percona/mongodb_exporter:0.32
+    hostname: {{ inventory_dir | basename }}-mongodb-exporter
+    command: --log.level="info" --discovering-mode --mongodb.uri=mongodb://{{ mgmt_mongodb_exporter_uri }}
+    environment:
+      - TZ=Europe/Berlin
+    networks:
+      - {{ mgmt_docker_stack_name }}_mgmt_net
+
+networks:
+  {{ mgmt_docker_stack_name }}_mgmt_net:
+    external: true

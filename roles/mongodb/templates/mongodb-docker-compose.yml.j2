@@ -5,6 +5,7 @@ services:
   mongodb:
     image: mongo:{{ mongodb_docker_version }}
     container_name: mongodb
+    hostname: {{ inventory_dir | basename }}-mongodb
     command: {{ mongodb_command_agrs }}
     restart: always
     environment:
