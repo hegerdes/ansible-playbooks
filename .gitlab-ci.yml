@@ -17,7 +17,7 @@ include:
   - project: 'symbic-intern/symbic-templates'
     file: '/GitlabCI/kaniko-build-ingress.yml'
   - project: 'symbic-intern/symbic-templates'
-    file: '/GitlabCI/container-scan.yml'
+    file: '/GitlabCI/sec-container-scan.yml'
 
 image-build-playbooks:
   extends: .build_template
