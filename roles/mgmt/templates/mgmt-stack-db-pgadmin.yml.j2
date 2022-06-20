@@ -10,6 +10,8 @@ services:
       - PGADMIN_DEFAULT_PASSWORD={{ mgmt_pgadmin_pw }}
     networks:
       - {{ mgmt_docker_stack_name }}_mgmt_net
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
     ports:
       - target: 80
         published: 8083
@@ -28,3 +30,6 @@ services:
 networks:
   {{ mgmt_docker_stack_name }}_mgmt_net:
     external: true
+
+volumes:
+  pgadmin-data:
