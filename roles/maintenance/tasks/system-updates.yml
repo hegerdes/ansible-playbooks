@@ -103,16 +103,17 @@
     gitlab_conf:
       url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/issues/{{ main_reop_get_issue_res.json | json_query("[0].iid") if (main_reop_get_issue_res.json is defined and main_reop_get_issue_res.json | length > 0) else ""}}'
       method: '{{"PUT" if (main_reop_get_issue_res.json is defined and main_reop_get_issue_res.json | length > 0) else "POST"}}'
-      labels: 'maintenance,aptPendingUpdates'
-      title: '{{ ansible_date_time.date }} System Updates'
-      assignee_id: '{{ maintenance_git_assignee_id }}'
       token: '{{ maintenance_git_token }}'
       response_status: '{{ 200 if (main_reop_get_issue_res.json is defined and main_reop_get_issue_res.json | length > 0) else 201 }}'
-      description: |
-        Updates:
-        ```yml
-        {{ all_updates | to_nice_yaml(width=512) }}
-        ```
+      body:
+        title: '{{ ansible_date_time.date }} System Updates'
+        labels: 'maintenance,aptPendingUpdates'
+        assignee_id: '{{ maintenance_git_assignee_id }}'
+        description: |
+          Updates:
+          ```yml
+          {{ all_updates | to_nice_yaml(width=512) }}
+          ```
   tags: [maintenance, os-updates]
 
 - name: Upgrade packages
@@ -163,5 +164,29 @@
       email: '{{ maintenance_git_mail }}'
       name: '{{ maintenance_git_name }}'
       commit_message: 'Installed the following updates on {{ansible_date_time.date}}'
-      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/host-updates%2F{{ansible_date_time.date + "-" + ansible_date_time.hour + "-" + ansible_date_time.minute }}-performed-updates.json'
+      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/host-updates%2F{{ ansible_date_time.date + "-" + ansible_date_time.hour + "-" + ansible_date_time.minute }}-performed-updates.json'
+  tags: [maintenance, os-updates]
+
+- name: Comment on issue on GitLab
+  when: ansible_play_hosts_all | last == inventory_hostname and all_updates is defined and maintenance_post_to_git and maintenance_run_upgrades
+  import_tasks: shared/gitlab-post-issue.yml
+  vars:
+    gitlab_conf:
+      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/issues/{{ main_reop_get_issue_res.json | json_query("[0].iid") if (main_reop_get_issue_res.json is defined and main_reop_get_issue_res.json | length > 0) else ""}}/discussions'
+      method: POST
+      response_status: 201
+      body:
+        body: 'Updates performed on {{ ansible_date_time.date + "-" + ansible_date_time.hour + "-" + ansible_date_time.minute }} via CI {{"[Job " + lookup("env", "CI_JOB_ID") + "](" + lookup("env", "CI_JOB_URL") + ")" if(lookup("env", "CI_JOB_URL") |default("none", True) != "none") }}\n Log: {{ main_reop_get_issue_res.json | json_query("[0].web_url | split("-") | first + "-/blob/main/host-updates/" + ansible_date_time.date + "-" + ansible_date_time.hour + "-" + ansible_date_time.minute + "-performed-updates.json" }}'
+  tags: [maintenance, os-updates]
+
+- name: Close issue on GitLab
+  when: ansible_play_hosts_all | last == inventory_hostname and all_updates is defined and maintenance_post_to_git and maintenance_run_upgrades
+  import_tasks: shared/gitlab-post-issue.yml
+  vars:
+    gitlab_conf:
+      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/issues/{{ main_reop_get_issue_res.json | json_query("[0].iid") if (main_reop_get_issue_res.json is defined and main_reop_get_issue_res.json | length > 0) else ""}}?state_event=close'
+      token: '{{ maintenance_git_token }}'
+      method: PUT
+      body: '{{ omit }}'
+      response_status: 200
   tags: [maintenance, os-updates]

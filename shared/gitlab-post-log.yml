@@ -16,3 +16,8 @@
     status_code: 201
   ignore_errors: True
   register: main_reop_logs_res
+
+- name: debug
+  debug:
+    var: main_reop_logs_res
+  ignore_errors: True
