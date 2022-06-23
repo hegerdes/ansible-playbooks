@@ -1,12 +1,15 @@
 version: '3.7'
 
 services:
-  nginx-prometheus-exporter:
+
+  {% for exporter in mgmt_waf_exporter | default([]) -%}
+  nginx-prometheus-exporter-{{ exporter.name | lower }}:
     image: nginx/nginx-prometheus-exporter:latest
-    command: -nginx.scrape-uri=http://{{ mgmt_waf_target_host }}/nginx_status
-    hostname: {{ inventory_dir | basename }}-nginx-prometheus-exporter
+    command: -nginx.scrape-uri=http://{{ exporter.target }}/nginx_status
+    hostname: {{ inventory_dir | basename }}-nginx-prometheus-exporter-{{ exporter.name | lower }}
     networks:
       - {{ mgmt_docker_stack_name }}_mgmt_net
+  {% endfor %}
 
 networks:
   {{ mgmt_docker_stack_name }}_mgmt_net:

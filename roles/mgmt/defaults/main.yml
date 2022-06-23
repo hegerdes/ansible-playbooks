@@ -23,7 +23,15 @@ mgmt_services_to_install:
   - mgmt-stack.yml
   - mgmt-stack-heimdall.yml
 
-mgmt_waf_target_host: '{{ nginx_metrics_server_addr | default("127.0.0.1:80")}}'
+# Nginx exporter targets
+mgmt_waf_exporter: []
+# Example
+# mgmt_waf_exporter:
+#   - name: waf-1
+#     target: 10.200.3.10
+#   - name: waf-2
+#     target: 10.200.3.2
+
 mgmt_mongodb_target_host: null
 mgmt_sql_taget_host: null
 mgmt_sql_taget_port: 3306
