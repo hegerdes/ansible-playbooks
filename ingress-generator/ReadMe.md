@@ -14,7 +14,7 @@ COPY . /app
 # Genarate config
 RUN npm run generate-nginx ingress-hosts-nginx.yml
 
-FROM nginx:1.21
+FROM nginx:1.22
 RUN apt-get update && apt-get install -q -y --no-install-recommends \
     bash certbot python3-certbot-nginx \
     && rm /etc/nginx/conf.d/*.conf \

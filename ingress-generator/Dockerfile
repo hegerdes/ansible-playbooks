@@ -14,7 +14,6 @@ ENV COMMIT_HASH=$COMMIT_HASH
 ENV COMMIT_TAG=$COMMIT_TAG
 LABEL commit-hash=$COMMIT_HASH
 LABEL commit-tag=$COMMIT_TAG
-LABEL maintainer=Symbic
 ENV TZ=Europe/Berlin
 ENV USE_DOCKER=true
 
@@ -25,7 +24,7 @@ ENTRYPOINT [ "sh" ]
 # # Genarate config
 # RUN npm run generate-nginx ingress-hosts-nginx.yml
 
-# FROM nginx:1.21
+# FROM nginx:1.22
 # ARG RUN_CERTBOT="no"
 # ENV RUN_CERTBOT=$RUN_CERTBOT
 # RUN apt-get update && apt-get install -q -y --no-install-recommends \
