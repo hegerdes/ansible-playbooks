@@ -1,17 +1,12 @@
 # Install app stack
 ---
-- name: Using override-file with the following content
-  debug:
-    var: docker_deploy_override
-  tags: [docker-deploy, docker-deploy-stack]
-
 - name: Copy compose|stack files
   when: item[-3:] == "yml"
   copy:
     src: '{{ docker_deploy_src_config_files + item }}'
     dest: '{{ docker_deploy_dst_config_files + item }}'
     mode: '0644'
-  loop: '{{ docker_deploy_stacks }}'
+  loop: '{{ docker_project.compose_files }}'
   tags: [docker-deploy]
 
 - name: Configuring compose|stack files
@@ -20,23 +15,18 @@
     src: '{{ docker_deploy_src_config_files + item }}'
     dest: '{{ docker_deploy_dst_config_files + item[:-3] }}'
     mode: '0644'
-  loop: '{{ docker_deploy_stacks }}'
+  loop: '{{ docker_project.compose_files }}'
   tags: [docker-deploy]
 
 - name: Create absolut paths for stack files
   set_fact:
     compose_files_stack: '{{ compose_files_stack | default([]) + ["".join((docker_deploy_dst_config_files,item if(item[-3:] == "yml") else item[:-3] ))] }}'
-  loop: '{{ docker_deploy_stacks | list}}'
+  loop: '{{ docker_project.compose_files | list}}'
   tags: [docker-deploy]
 
-- name: Create a artifact directory
-  delegate_to: localhost
-  become: False
-  run_once: True
-  file:
-    dest: '{{ docker_deploy_artifact_dir }}'
-    state: directory
-  tags: [docker-deploy]
+- name: debug
+  debug:
+    var: docker_project
 
 - name: Getting generated stack file(s)
   slurp:
@@ -75,7 +65,7 @@
   when: docker_deploy_use_swarm_mode and swarm_info.docker_swarm_manager
   docker_stack:
     state: present
-    name: '{{ docker_deploy_app_name }}'
+    name: '{{ docker_project.name }}'
     prune: '{{ docker_deploy_prune_old_services }}'
     resolve_image: always
     with_registry_auth: yes
@@ -86,52 +76,20 @@
 - name: Deploy app-stack via compose
   when: docker_deploy_use_swarm_mode | bool != true
   docker_compose:
-    project_name: '{{ docker_deploy_app_name }}'
+    project_name: '{{ docker_project.name }}'
     remove_orphans: '{{ docker_deploy_prune_old_services }}'
     project_src: '{{ docker_deploy_dst_config_files }}'
     files: '{{ compose_files_stack | default([]) | list }}'
   notify: Wait 45 seconds for services to come up
   tags: [docker-deploy]
 
+- name: Cleaning up facts
+  set_fact:
+    compose_files_stack: []
+    deploy_compose_conetent_img: []
+  tags: [docker-deploy]
+
 - name: Ensure handlers are notified now
   meta: flush_handlers
   tags: [docker-deploy]
 
-- name: Get stack info
-  when: docker_deploy_use_swarm_mode | bool
-  community.docker.docker_stack_info:
-  register: app_docker_stack_info
-  tags: [docker-deploy]
-
-- name: Get info on Docker Swarm
-  changed_when: False
-  when: docker_deploy_use_swarm_mode | bool
-  command: docker service ls
-  ignore_errors: True
-  register: app_docker_swarm_info
-  tags: [docker-deploy]
-
-- name: Get info on Docker Containers
-  changed_when: False
-  command: 'docker ps --format "table {{ "{{" }}.Status{{ "}}" }}\t{{ "{{" }}.RunningFor{{ "}}" }}\t{{ "{{" }} .Image{{ "}}" }}\t{{ "{{" }}.Names{{ "}}" }}"'
-  ignore_errors: True
-  register: app_docker_container_info
-  tags: [docker-deploy]
-
-- name: Show stack info
-  when: docker_deploy_use_swarm_mode | bool
-  debug:
-    var: app_docker_stack_info.results
-  tags: [docker-deploy]
-
-- name: Print Swarm Info
-  when: docker_deploy_use_swarm_mode | bool
-  debug:
-    var: app_docker_swarm_info.stdout_lines
-  ignore_errors: True
-  tags: [docker-deploy]
-
-- name: Show container info
-  debug:
-    var: app_docker_container_info.stdout_lines
-  tags: [docker-deploy]

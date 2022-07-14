@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   symbic-status-monitor:
-    image: {{ mgmt_status_monitor_image | default("gitlab-registry.***REMOVED***/servermgmt-tools/symbic-status-monitor:main") }}
+    image: {{ mgmt_status_monitor_image | default("gitlab-registry.***REMOVED***/servermgmt-tools/symbic-status-monitor:stable") }}
     hostname: {{ inventory_dir | basename }}-symbic-health-pulse
     environment:
       - TZ=Europe/Berlin

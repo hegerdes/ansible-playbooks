@@ -9,13 +9,23 @@ docker_deploy_dst_config_files: /srv/
 docker_deploy_override_file: docker-deploy-override.yml
 docker_deploy_override: '{{ lookup("file", docker_deploy_override_file) | from_yaml }}'
 docker_deploy_prune_old_services: no
-docker_deploy_app_name: myapp
 docker_deploy_backup_script: none
 docker_deploy_conf_version: '{{ lookup("env","CI_COMMIT_SHORT_SHA") | default(ansible_date_time.iso8601_basic_short, True) }}'
 docker_deploy_tag: latest
 docker_deploy_artifact_dir: '{{ playbook_dir + "/ansible-files/" if(lookup("env", "CI_COMMIT_SHA") | default("no", True) != "no") else "/tmp/ansible-files/" }}'
 docker_deploy_services: []
-docker_deploy_stacks: []
+
+# Porjects to deploy
+docker_deploy_projects: []
+# Example
+# docker_deploy_projects:
+#   - name: myname1
+#     compose_files:
+#       - file1.yml
+#       - file2.yml
+#   - name: myname1
+#     compose_files:
+#       - file3.yml
 
 # Settings for individual files
 backup_dir: /backup_dumps

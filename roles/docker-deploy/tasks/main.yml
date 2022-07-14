@@ -51,6 +51,11 @@
     rsync_opts: '{{ docker_deploy_rsync_args }}'
   tags: [docker-deploy]
 
+- name: Using override-file with the following content
+  debug:
+    var: docker_deploy_override
+  tags: [docker-deploy, docker-deploy-stack]
+
 - name: Copy backup script
   when: docker_deploy_backup_script | default("none") != "none"
   copy:
@@ -99,71 +104,61 @@
   loop: '{{ docker_deploy_file_permissions }}'
   tags: [docker-deploy]
 
-- name: Generate volume list
-  when: item.1.type is defined and item.1.type == "volume"
-  set_fact:
-    docker_deploy_volumes: '{{ docker_deploy_volumes | default([]) + [item.1.source] }}'
-  loop: '{{ docker_deploy_services | subelements("mounts", "skip_missing=True") }}'
-  loop_control:
-    label: '{{ item.1.source }}'
-  tags: [docker-deploy, docker-deploy-service]
-
-- name: Create volumes
-  docker_volume:
-    name: '{{ item }}'
-    state: present
-  loop: '{{ docker_deploy_volumes | default([]) }}'
-  tags: [docker-deploy, docker-deploy-service]
-
-- name: Generate network list
-  when: item.networks is defined
-  set_fact:
-    docker_deploy_networks: '{{ docker_deploy_networks | default([]) + item.networks }}'
-  loop: '{{ docker_deploy_services }}'
-  loop_control:
-    label: '{{ item.name }}'
-  tags: [docker-deploy, docker-deploy-service]
-
-- name: Create networks
-  docker_network:
-    name: '{{ item }}'
-    driver: overlay
-    attachable: yes
-  loop: '{{ docker_deploy_networks | default([]) }}'
-  tags: [docker-deploy, docker-deploy-service]
-
-- name: Check images
-  docker_image:
-    name: '{{ item.image.split(":")[0] if(item | regex_findall(":") | length <= 1) else item.image.split(":")[0] + ":" + item.image.split(":")[1] }}'
-    tag: '{{ item.image.split(":")[1] | default("latest") if(item.image | regex_findall(":") | length <= 1) else item.image.split(":")[2] }}'
-    source: pull
-    force_source: yes
-  loop: '{{ docker_deploy_services }}'
+- name: Create a artifact directory
+  delegate_to: localhost
+  become: False
+  run_once: True
+  file:
+    dest: '{{ docker_deploy_artifact_dir }}'
+    state: directory
   tags: [docker-deploy]
 
-- name: Create Service
-  docker_swarm_service:
-    env: '{{ item.env | default(omit)}}'
-    user: '{{ item.user | default(omit)}}'
-    image: '{{ item.image | default(omit)}}'
-    mounts: '{{ item.mounts | default(omit)}}'
-    name: '{{ item.name | default("my-service")}}'
-    state: '{{ item.state | default("present")}}'
-    networks: '{{item.networks | default(omit)}}'
-    placement: '{{item.placment | default(omit)}}'
-    container_labels: '{{ item.container_labels | default(omit)}}'
-    mode: '{{ item.mode | default("replicated")}}'
-    secrets: '{{ item.secrets | default(omit)}}'
-    command: '{{ item.command | default(omit)}}'
-    configs: '{{ item.configs | default(omit)}}'
-    publish: '{{ item.ports | default(omit)}}'
-    replicas: '{{item.replicas | default(1)}}'
-    labels: '{{ item.labels | default(omit)}}'
-    resolve_image: yes
-    force_update: true
-  loop: '{{ docker_deploy_services }}'
+- name: Deploy Apps via Docker-Service-CLI
+  include_tasks: doploy-service.yml
   tags: [docker-deploy, docker-deploy-service]
 
-- name: Deploy Apps via Docker
-  import_tasks: deploy-stack.yml
+- name: Deploy Apps via Docker-Compose-File
+  include_tasks: deploy-stack.yml
+  loop: '{{ docker_deploy_projects }}'
+  loop_control:
+    loop_var: docker_project
   tags: [docker-deploy, docker-deploy-stack]
+
+- name: Get stack info
+  when: docker_deploy_use_swarm_mode | bool
+  community.docker.docker_stack_info:
+  register: app_docker_stack_info
+  tags: [docker-deploy]
+
+- name: Get info on Docker Swarm
+  changed_when: False
+  when: docker_deploy_use_swarm_mode | bool
+  command: docker service ls
+  ignore_errors: True
+  register: app_docker_swarm_info
+  tags: [docker-deploy]
+
+- name: Get info on Docker Containers
+  changed_when: False
+  command: 'docker ps --format "table {{ "{{" }}.Status{{ "}}" }}\t{{ "{{" }}.RunningFor{{ "}}" }}\t{{ "{{" }} .Image{{ "}}" }}\t{{ "{{" }}.Names{{ "}}" }}"'
+  ignore_errors: True
+  register: app_docker_container_info
+  tags: [docker-deploy]
+
+- name: Show stack info
+  when: docker_deploy_use_swarm_mode | bool
+  debug:
+    var: app_docker_stack_info.results
+  tags: [docker-deploy]
+
+- name: Print Swarm Info
+  when: docker_deploy_use_swarm_mode | bool
+  debug:
+    var: app_docker_swarm_info.stdout_lines
+  ignore_errors: True
+  tags: [docker-deploy]
+
+- name: Show container info
+  debug:
+    var: app_docker_container_info.stdout_lines
+  tags: [docker-deploy]

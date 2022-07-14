@@ -1,0 +1,67 @@
+# Docker service deploy
+
+- name: Generate volume list
+  when: item.1.type is defined and item.1.type == "volume"
+  set_fact:
+    docker_deploy_volumes: '{{ docker_deploy_volumes | default([]) + [item.1.source] }}'
+  loop: '{{ docker_deploy_services | subelements("mounts", "skip_missing=True") }}'
+  loop_control:
+    label: '{{ item.1.source }}'
+  tags: [docker-deploy, docker-deploy-service]
+
+- name: Create volumes
+  docker_volume:
+    name: '{{ item }}'
+    state: present
+  loop: '{{ docker_deploy_volumes | default([]) }}'
+  tags: [docker-deploy, docker-deploy-service]
+
+- name: Generate network list
+  when: item.networks is defined
+  set_fact:
+    docker_deploy_networks: '{{ docker_deploy_networks | default([]) + item.networks }}'
+  loop: '{{ docker_deploy_services }}'
+  loop_control:
+    label: '{{ item.name }}'
+  tags: [docker-deploy, docker-deploy-service]
+
+- name: Create networks
+  docker_network:
+    name: '{{ item }}'
+    driver: overlay
+    attachable: yes
+  loop: '{{ docker_deploy_networks | default([]) }}'
+  tags: [docker-deploy, docker-deploy-service]
+
+- name: Check images
+  docker_image:
+    name: '{{ item.image.split(":")[0] if(item | regex_findall(":") | length <= 1) else item.image.split(":")[0] + ":" + item.image.split(":")[1] }}'
+    tag: '{{ item.image.split(":")[1] | default("latest") if(item.image | regex_findall(":") | length <= 1) else item.image.split(":")[2] }}'
+    source: pull
+    force_source: yes
+  loop: '{{ docker_deploy_services }}'
+  tags: [docker-deploy]
+
+- name: Create Service
+  docker_swarm_service:
+    env: '{{ item.env | default(omit)}}'
+    user: '{{ item.user | default(omit)}}'
+    image: '{{ item.image | default(omit)}}'
+    mounts: '{{ item.mounts | default(omit)}}'
+    name: '{{ item.name | default("my-service")}}'
+    state: '{{ item.state | default("present")}}'
+    networks: '{{item.networks | default(omit)}}'
+    placement: '{{item.placment | default(omit)}}'
+    container_labels: '{{ item.container_labels | default(omit)}}'
+    mode: '{{ item.mode | default("replicated")}}'
+    secrets: '{{ item.secrets | default(omit)}}'
+    command: '{{ item.command | default(omit)}}'
+    configs: '{{ item.configs | default(omit)}}'
+    publish: '{{ item.ports | default(omit)}}'
+    replicas: '{{item.replicas | default(1)}}'
+    labels: '{{ item.labels | default(omit)}}'
+    resolve_image: yes
+    force_update: true
+  loop: '{{ docker_deploy_services }}'
+  tags: [docker-deploy, docker-deploy-service]
+
