@@ -24,10 +24,6 @@
   loop: '{{ docker_project.compose_files | list}}'
   tags: [docker-deploy]
 
-- name: debug
-  debug:
-    var: docker_project
-
 - name: Getting generated stack file(s)
   slurp:
     src: '{{ item }}'
