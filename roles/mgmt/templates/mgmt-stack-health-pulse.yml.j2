@@ -4,12 +4,16 @@ services:
   symbic-status-monitor:
     image: {{ mgmt_status_monitor_image | default("gitlab-registry.***REMOVED***/servermgmt-tools/symbic-status-monitor:stable") }}
     hostname: {{ inventory_dir | basename }}-symbic-health-pulse
-    environment:
-      - TZ=Europe/Berlin
     env_file: {{ mgmt_dst_config_files }}health-pulse/.env
+    environment: [ TZ=Europe/Berlin ]
+    networks:
+      - {{ mgmt_docker_stack_name }}_mgmt_net
     volumes:
       - {{ mgmt_dst_config_files }}health-pulse:/app/config
       - status-monitor-data:/app/data
-
 volumes:
   status-monitor-data:
+
+networks:
+  {{ mgmt_docker_stack_name }}_mgmt_net:
+    external: true
