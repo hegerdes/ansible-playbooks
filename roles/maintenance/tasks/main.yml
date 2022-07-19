@@ -4,7 +4,7 @@
   include_tasks: system-updates.yml
   tags: [maintenance, os-updates]
 
-- name: Run snapshot-backups
+- name: Run Snapshot-Backups
   when: maintenance_run_hcloud_snapshot | bool
   include_tasks: hcloud-snapshot.yml
   tags: [maintenance, backup, db-backup, host-backup, hetzner-snapshot]
