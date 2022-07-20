@@ -1,0 +1,32 @@
+# Install & Setup SimpleProxy
+---
+- name: Copy simpleproxy service config
+  template:
+    src: simpleproxy.service.j2
+    dest: '/etc/systemd/system/simpleproxy-{{ simpleproxy_conf.name | replace(" " ","-") }}.service'
+    owner: root
+    group: root
+    mode: '0644'
+  register: simpleproxy_copy
+  tags: [simpleproxy]
+
+- name: Enable simpleproxy service
+  systemd:
+    name: simpleproxy-{{ simpleproxy_conf.name | replace(" " ","-") }}.service
+    state: started
+    daemon_reload: yes
+    enabled: yes
+  tags: [simpleproxy]
+
+- name: Restart simpleproxy
+  when: simpleproxy_copy.changed
+  service:
+    name: simpleproxy-{{ simpleproxy_conf.name | replace(" " ","-") }}
+    state: restarted
+  tags: [simpleproxy]
+
+- name: Verify simpleproxy status
+  service:
+    name: simpleproxy-{{ simpleproxy_conf.name | replace(" " ","-") }}.service
+    state: started
+  tags: [simpleproxy]

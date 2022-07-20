@@ -1,0 +1,15 @@
+[Unit]
+Description=Forwording TCP/UDP Socket for {{ simpleproxy_conf.name | replace(" " ","-") }}
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=root
+ExecStart=/usr/bin/simpleproxy {{ simpleproxy_conf.parameters }}
+
+[Install]
+WantedBy=multi-user.target
+

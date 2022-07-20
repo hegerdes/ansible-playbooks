@@ -1,0 +1,37 @@
+# Install & Setup SimpleProxy
+---
+- name: Check if simpleproxy is installed
+  command: 'simpleproxy -V'
+  register: simpleproxy_check_result
+  changed_when: false
+  failed_when: false
+  tags: [simpleproxy]
+
+- name: Install simpleproxy
+  when: simpleproxy_check_result.stdout == ""
+  apt:
+    name: simpleproxy
+    state: latest
+    update_cache: yes
+    install_recommends: no
+
+- name: Test simpleproxy
+  command: "simpleproxy -V"
+  changed_when: "false"
+  tags: [simpleproxy]
+
+- name: Add simpleproxy user
+  user:
+    name: simpleproxy
+    shell: /usr/sbin/nologin
+    create_home: no
+    system: yes
+    state: present
+  tags: [simpleproxy]
+
+- name: Adding simpleproxy service
+  include_tasks: service.yml
+  loop: '{{ simpleproxy_confs }}'
+  loop_control:
+    loop_var: simpleproxy_conf
+  tags: [simpleproxy]

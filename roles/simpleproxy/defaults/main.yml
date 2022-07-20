@@ -1,0 +1,5 @@
+---
+# simpleproxy options.
+simpleproxy_confs:
+  - name: example 6500 to 6501
+    parameters: -L 127.0.0.1:6500 -R 127.0.0.1:6501 -v
