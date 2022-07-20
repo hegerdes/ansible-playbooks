@@ -7,7 +7,7 @@ StartLimitIntervalSec=0
 Type=simple
 Restart=always
 RestartSec=1
-User=root
+User={{ simpleproxy_conf.user | default("root") }}
 ExecStart=/usr/bin/simpleproxy {{ simpleproxy_conf.parameters }}
 
 [Install]

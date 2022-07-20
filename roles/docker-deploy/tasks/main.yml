@@ -22,7 +22,7 @@
   tags: [docker-deploy]
 
 - name: Init a new swarm
-  when: docker_deploy_use_swarm_mode | bool and not swarm_info.docker_swarm_manager
+  when: docker_deploy_use_swarm_mode | bool and not swarm_info.docker_swarm_manager and docker_deploy_projects | length > 0
   docker_swarm:
     advertise_addr: '{{ ansible_host }}'
     state: present
@@ -125,14 +125,14 @@
   tags: [docker-deploy, docker-deploy-stack]
 
 - name: Get stack info
-  when: docker_deploy_use_swarm_mode | bool
+  when: docker_deploy_use_swarm_mode | bool and swarm_info.docker_swarm_manager
   community.docker.docker_stack_info:
   register: app_docker_stack_info
   tags: [docker-deploy]
 
 - name: Get info on Docker Swarm
   changed_when: False
-  when: docker_deploy_use_swarm_mode | bool
+  when: docker_deploy_use_swarm_mode | bool and swarm_info.docker_swarm_manager
   command: docker service ls
   ignore_errors: True
   register: app_docker_swarm_info
@@ -146,13 +146,13 @@
   tags: [docker-deploy]
 
 - name: Show stack info
-  when: docker_deploy_use_swarm_mode | bool
+  when: docker_deploy_use_swarm_mode | bool and swarm_info.docker_swarm_manager
   debug:
     var: app_docker_stack_info.results
   tags: [docker-deploy]
 
 - name: Print Swarm Info
-  when: docker_deploy_use_swarm_mode | bool
+  when: docker_deploy_use_swarm_mode | bool and swarm_info.docker_swarm_manager
   debug:
     var: app_docker_swarm_info.stdout_lines
   ignore_errors: True

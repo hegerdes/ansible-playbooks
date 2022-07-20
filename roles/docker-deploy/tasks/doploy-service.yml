@@ -33,7 +33,7 @@
   loop: '{{ docker_deploy_networks | default([]) }}'
   tags: [docker-deploy, docker-deploy-service]
 
-- name: Check images
+- name: Check & Download images
   docker_image:
     name: '{{ item.image.split(":")[0] if(item | regex_findall(":") | length <= 1) else item.image.split(":")[0] + ":" + item.image.split(":")[1] }}'
     tag: '{{ item.image.split(":")[1] | default("latest") if(item.image | regex_findall(":") | length <= 1) else item.image.split(":")[2] }}'
