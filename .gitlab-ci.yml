@@ -22,7 +22,6 @@ include:
 image-build-playbooks:
   extends: .build_template
   variables:
-    COMMIT_TAG: $CI_COMMIT_TAG
     BUILD_IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
   rules:
     - if: $CI_COMMIT_REF_NAME
