@@ -172,3 +172,9 @@
 - name: Ensure handlers are notified now
   meta: flush_handlers
   tags: [common]
+
+- name: Setup simpleproxy
+  when: simpleproxy_confs | default([]) | length > 0
+  include_role:
+    name: simpleproxy
+  tags: [common, simpleproxy]
