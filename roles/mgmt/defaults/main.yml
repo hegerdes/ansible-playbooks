@@ -32,6 +32,7 @@ mgmt_waf_exporter: []
 #   - name: waf-2
 #     target: 10.200.3.2
 
+mgmt_prometheus_retention_time: 42d
 mgmt_mongodb_target_host: null
 mgmt_sql_taget_host: null
 mgmt_sql_taget_port: 3306

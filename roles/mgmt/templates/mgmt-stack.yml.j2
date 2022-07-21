@@ -31,7 +31,7 @@ services:
 
   prometheus:
     image: bitnami/prometheus:latest
-    command: --storage.tsdb.retention.time 30d --config.file=/etc/prometheus/prometheus.yml
+    command: --storage.tsdb.retention.time {{ mgmt_prometheus_retention_time }} --config.file=/etc/prometheus/prometheus.yml
     hostname: {{ inventory_dir | basename }}-prometheus
     environment:
       - TZ=Europe/Berlin
