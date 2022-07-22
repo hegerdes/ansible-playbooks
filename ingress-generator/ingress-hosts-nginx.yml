@@ -52,7 +52,7 @@ sites:
       server_settings: |
         ssl_client_certificate /etc/nginx/ssl/dummy/fullchain.pem;
         ssl_verify_client on;
-        proxy_set_header SSL_CLIENT_CERT $ssl_client_cert;
+        proxy_set_header SSL_CLIENT_CERT $ssl_client_escaped_cert;
     # Multible upstreams & extra server names
   - host: site3.my-domain.com
     alias: [site3-1.my-domain.com, site3-2.my-domain.com, site3-3.my-domain.com]
