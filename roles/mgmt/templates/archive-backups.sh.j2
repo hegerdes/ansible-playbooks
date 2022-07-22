@@ -19,6 +19,11 @@ checkExitCode() {
     fi
 }
 
+if [ "${SERVERS[0]}" == "" ]; then
+    echo "Nothing to do."
+    exit 0
+fi
+
 # Create btk dir
 mkdir -p $BACKUP_DST
 {{ "KEEP=$((${#SERVERS[@]} * BACKUPS_TO_KEEP))" }}
