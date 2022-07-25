@@ -56,7 +56,7 @@ if [ ! -f "/etc/letsencrypt/live/certs/privkey.pem" ]; then
     echo "Dummy Certs" >/etc/letsencrypt/live/certs/dummy-marker.txt
 fi
 
-if [ $RUN_CERTBOT = "yes" ]; then
+if [ "$RUN_CERTBOT" = "yes" ]; then
     # Check if domains are given
     if [ -z "${CERTBOT_DOMAINS}" ]; then
         echo "No domains for certbot provided. Exit"
@@ -76,15 +76,15 @@ if [ $RUN_CERTBOT = "yes" ]; then
     if [ -f "/etc/letsencrypt/live/certs/dummy-marker.txt" ]; then
         echo "Found dummy-certs! Running certbot"
 
-        if [ $CERTBOT_STAGING = "yes" ]; then
+        if [ "$CERTBOT_STAGING" = "yes" ]; then
             CERTBOT_EXTRA_ARGS="--test-cert ${CERTBOT_EXTRA_ARGS}"
             echo "Using certbot staging server"
         fi
 
         sleep 10s
         # Archive and remove old stuff
-        tar -cvzf /etc/letsencrypt/$DATE_STR-letsencrypt-state.tar.gz --exclude="/etc/letsencrypt/old-states" /etc/letsencrypt/*
-        rm -rf accounts archive cli.ini csr keys live renewal renewal-hooks
+        tar -cvzf /etc/letsencrypt/old-states/$DATE_STR-letsencrypt-state.tar.gz --exclude="/etc/letsencrypt/old-states" /etc/letsencrypt/*
+        rm -rf /etc/letsencrypt/accounts /etc/letsencrypt/archive /etc/letsencrypt/csr /etc/letsencrypt/keys /etc/letsencrypt/live /etc/letsencrypt/renewal /etc/letsencrypt/renewal-hooks
         mkdir -p /etc/letsencrypt/live/certs
 
         # Create new cert
