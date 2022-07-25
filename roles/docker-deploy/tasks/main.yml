@@ -114,10 +114,12 @@
   tags: [docker-deploy]
 
 - name: Deploy Apps via Docker-Service-CLI
+  when: swarm_info.docker_swarm_manager
   include_tasks: doploy-service.yml
   tags: [docker-deploy, docker-deploy-service]
 
 - name: Deploy Apps via Docker-Compose-File
+  when: swarm_info.docker_swarm_manager
   include_tasks: deploy-stack.yml
   loop: '{{ docker_deploy_projects }}'
   loop_control:
