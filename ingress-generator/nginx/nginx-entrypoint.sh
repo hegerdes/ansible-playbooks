@@ -64,11 +64,12 @@ if [ "$RUN_CERTBOT" = "yes" ]; then
     fi
 
     # Check if domain save file exist
-    if [ ! -f /etc/letsencrypt/live/certs/domain-list.txt ]; then
-        echo -n "${CERTBOT_DOMAINS}" > /etc/letsencrypt/live/certs/domain-list.txt
+    if [ ! -f /etc/letsencrypt/domain-list.txt ]; then
+        echo "Creating new domain-list.txt"
+        echo -n "${CERTBOT_DOMAINS}" > /etc/letsencrypt/domain-list.txt
     fi
 
-    if [ $(</etc/letsencrypt/live/certs/domain-list.txt) != "$CERTBOT_DOMAINS" ]; then
+    if [ $(</etc/letsencrypt/domain-list.txt) != "$CERTBOT_DOMAINS" ]; then
         echo -e "Domain list has changed!\nWill remove old certs and generate new owns..."
         echo "Dummy Certs" > /etc/letsencrypt/live/certs/dummy-marker.txt
     fi
@@ -92,6 +93,12 @@ if [ "$RUN_CERTBOT" = "yes" ]; then
             --non-interactive -m $CERBOT_MAIL_USE --agree-tos \
             --cert-name certs -d $CERTBOT_DOMAINS $CERTBOT_EXTRA_ARGS
         nginx -t && nginx -s reload
+
+
+        # Renew manually:
+        # certbot certonly --webroot --webroot-path /var/www/_letsencrypt/ --non-interactive \
+        #   -m $CERBOT_MAIL_USE --agree-tos --cert-name certs \
+        #   -d $CERTBOT_DOMAINS && nginx -t && nginx -s reload
 
     fi && while true; do
         certbot renew --post-hook "nginx -t && nginx -s reload"
