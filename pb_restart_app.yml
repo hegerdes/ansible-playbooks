@@ -1,0 +1,35 @@
+# Deploy playbook
+
+- hosts: docker_hosts
+  become: true
+  gather_facts: false
+  tasks:
+
+  - name: Restarting docker services
+    environment:
+      RESTART_SERVICES: '{{ lookup("env","RESTART_SERVICES") | default("", True) }}'
+    args:
+      executable: /bin/bash
+    shell: |
+        if [ -z "$RESTART_SERVICES" ]; then
+          echo "No servces provided! Nothing to do."
+          exit 0
+        fi
+
+        echo $RESTART_SERVICES
+        for SERVICE_NAME in ${RESTART_SERVICES//,/ }; do
+          if [ "$(docker ps -f name="$SERVICE_NAME" --quiet)" != "" ]; then
+            docker ps -f name="$SERVICE_NAME" --format "table {{ "{{" }}.Status{{ "}}" }}\t{{ "{{" }}.RunningFor{{ "}}" }}\t{{ "{{" }} .Image{{ "}}" }}\t{{ "{{" }}.Names{{ "}}" }}"
+            docker stop $(docker ps -f name="$SERVICE_NAME" --quiet) > /dev/null
+          else
+            echo "Unknown service ${SERVICE_NAME}! Skipping"
+          fi
+        done
+        sleep 10s
+        echo -e "------\nNow running:"
+        docker ps --format "table {{ "{{" }}.Status{{ "}}" }}\t{{ "{{" }}.RunningFor{{ "}}" }}\t{{ "{{" }} .Image{{ "}}" }}\t{{ "{{" }}.Names{{ "}}" }}"
+    register: service_restart_res
+
+  - name: Show results
+    debug:
+      var: service_restart_res.stdout_lines
