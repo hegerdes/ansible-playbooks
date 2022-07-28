@@ -6,6 +6,8 @@ BACKUP_DIR=${CUSTOM_BACKUP_DIR:="/backup_dumps"}
 DATE_STR=$(date '+%Y-%m-%d')
 LOGFILE="${BACKUP_DIR}/db_backup.log"
 
+# Trim filesystem
+fstrim -av
 if ! [ -x "$(command -v pigz)" ]; then
   echo 'Error: pigz is not installed! Fallback to gzip' | tee -a $LOGFILE
   ZIPPER=gzip

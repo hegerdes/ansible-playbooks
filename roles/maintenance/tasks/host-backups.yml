@@ -40,7 +40,6 @@
 - name: Run archive script
   when: main_backup_mgmt_res.stat.exists
   shell: 'bash {{ main_backup_dir + "archive-backups.sh" }}'
-  # shell: 'echo HI'
   environment:
     CUSTOM_BACKUP_DIR: '{{ backup_dir }}'
   register: main_archive_res

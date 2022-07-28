@@ -1,5 +1,5 @@
 - name: Create GitLab issue
-  when: gitlab_conf.description is defined
+  when: gitlab_conf.body is defined
   uri:
     url: '{{ gitlab_conf.url }}'
     method: '{{ gitlab_conf.method | default("POST") }}'
@@ -7,6 +7,6 @@
     headers:
       PRIVATE-TOKEN: '{{ gitlab_conf.token }}'
     body: '{{ gitlab_conf.body }}'
-    status_code: '{{ gitlab_conf.response_status | default(201)}}'
+    status_code: '{{ gitlab_conf.response_status | default(201) }}'
   ignore_errors: True
   register: main_reop_issue_res
