@@ -25,7 +25,11 @@
 - name: List backup dump files
   when: main_backup_stat_res.stat.exists and main_backup_dump_files
   debug:
-    var: main_backup_dump_files
+    msg: '{{ item.mode }}  {{ item.pw_name }}:{{ item.gr_name}}  {{ item.size | human_readable }}  {{ "%Y%m%d-%H%M%S" | strftime(item.mtime) }}  {{ item.path }}'
+  loop: '{{ main_backup_dump_files.files }}'
+  loop_control:
+    label: '{{ item.path }}'
+  ignore_errors: True
   tags: [maintenance, backup]
 
 - name: Run backup script
