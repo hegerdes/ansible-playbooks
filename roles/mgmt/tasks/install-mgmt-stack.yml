@@ -8,7 +8,7 @@
 
 - name: Set docker node labels
   docker_node:
-    hostname: mgmt
+    hostname: '{{ mgmt_node_name | default("mgmt") }}'
     labels:
       mgmt: "true"
     labels_state: merge
