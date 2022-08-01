@@ -18,6 +18,9 @@ services:
         protocol: tcp
         mode: host
     deploy:
+      placement:
+        constraints:
+          - "node.labels.mgmt==true"
       labels:
         - "{{ mgmt_docker_stack_name }}=true"
         {{ mgmt_traefik_labels | replace("__SERVICE__", "pgadmin") | replace("__PORT__", "80") | indent(width=8) if(mgmt_use_swarm_mode) }}

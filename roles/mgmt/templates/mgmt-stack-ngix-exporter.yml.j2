@@ -7,6 +7,10 @@ services:
     image: nginx/nginx-prometheus-exporter:latest
     command: -nginx.scrape-uri=http://{{ exporter.target }}/nginx_status
     hostname: {{ inventory_dir | basename }}-nginx-prometheus-exporter-{{ exporter.name | lower }}
+    deploy:
+      placement:
+        constraints:
+          - "node.labels.mgmt==true"
     networks:
       - {{ mgmt_docker_stack_name }}_mgmt_net
   {% endfor %}

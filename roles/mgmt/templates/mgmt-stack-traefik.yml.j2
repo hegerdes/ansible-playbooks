@@ -29,6 +29,7 @@ services:
       placement:
         constraints:
           - "node.role==manager"
+          - "node.labels.mgmt==true"
       labels:
         - "{{ mgmt_docker_stack_name }}=true"
         {{ mgmt_traefik_labels | replace("__SERVICE__", "traefik") | replace("__PORT__", "8080") | indent(width=8) if(mgmt_use_swarm_mode) }}

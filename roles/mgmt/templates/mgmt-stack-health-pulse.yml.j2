@@ -11,6 +11,11 @@ services:
     volumes:
       - {{ mgmt_dst_config_files }}health-pulse:/app/config
       - status-monitor-data:/app/data
+    deploy:
+      placement:
+        constraints:
+          - "node.labels.mgmt==true"
+
 volumes:
   status-monitor-data:
 

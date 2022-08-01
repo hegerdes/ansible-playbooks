@@ -9,7 +9,10 @@ services:
       - TZ=Europe/Berlin
     networks:
       - {{ mgmt_docker_stack_name }}_mgmt_net
-
+    deploy:
+      placement:
+        constraints:
+          - "node.labels.mgmt==true"
 
 networks:
   {{ mgmt_docker_stack_name }}_mgmt_net:

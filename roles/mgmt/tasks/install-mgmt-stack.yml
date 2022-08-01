@@ -1,15 +1,17 @@
 # Install mgmt stack
 ---
-- name: Install pip3
-  apt:
-    name: ['python3-pip', 'libffi-dev']
-    state: latest
-  tags: [mgmt, mgmt-stack]
-
 - name: Install compose package
   when: mgmt_use_swarm_mode | bool != true
   pip:
     name: docker-compose
+  tags: [mgmt, mgmt-stack]
+
+- name: Set docker node labels
+  docker_node:
+    hostname: mgmt
+    labels:
+      mgmt: "true"
+    labels_state: merge
   tags: [mgmt, mgmt-stack]
 
 - name: Copy MGMT compose|stack base files
@@ -18,15 +20,19 @@
     dest: '{{ mgmt_dst_config_files }}'
     owner: root
     group: root
-  tags: [mgmt, mgmt-stack, mgmt-nginx]
+  tags: [mgmt, mgmt-stack]
 
 - name: Copy MGMT compose|stack custom files
-  copy:
+  synchronize:
     src: '{{ mgmt_src_config_files }}'
     dest: '{{ mgmt_dst_config_files }}'
-    owner: root
-    group: root
-  tags: [mgmt, mgmt-stack, mgmt-nginx]
+    owner: no
+    group: no
+    recursive: yes
+    use_ssh_args: yes
+    mode: push
+    checksum: yes
+  tags: [mgmt, mgmt-stack]
 
 - name: Configuring compose|stack files
   template:

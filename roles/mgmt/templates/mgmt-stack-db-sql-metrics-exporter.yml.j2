@@ -9,6 +9,10 @@ services:
       - DATA_SOURCE_NAME={{ mgmt_sql_exporter_connection_string }}/
     networks:
       - {{ mgmt_docker_stack_name }}_mgmt_net
+    deploy:
+      placement:
+        constraints:
+          - "node.labels.mgmt==true"
 
 networks:
   {{ mgmt_docker_stack_name }}_mgmt_net:

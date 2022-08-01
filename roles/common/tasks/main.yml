@@ -51,6 +51,7 @@
     - 'gnupg2'
     - 'openssl'
     - 'apparmor'
+    - 'libffi-dev'
     - 'lsb-release'
     - 'python3-pip'
     - 'python3-requests'

@@ -26,6 +26,10 @@ services:
       - {{ mgmt_wireguard_port }}:{{ mgmt_wireguard_port }}/udp
     sysctls:
       - net.ipv4.conf.all.src_valid_mark=1
+    deploy:
+      placement:
+        constraints:
+          - "node.labels.mgmt==true"
 
 volumes:
   wireguard-data:
