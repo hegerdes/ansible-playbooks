@@ -116,6 +116,21 @@
           ```
   tags: [maintenance, os-updates]
 
+- name: Notify via Mattermost
+  when: ansible_play_hosts_all | last == inventory_hostname and maintenance_post_to_git and not maintenance_run_upgrades and all_updates is defined and main_reop_issue_res.json is defined and maintenance_mattermost_hook is defiend
+  uri:
+    url: '{{ maintenance_mattermost_hook }}'
+    method: POST
+    body_format: json
+    headers:
+      Content-Type: application/json
+    body:
+      text: ':mailbox: Found new OS-Updates for {{ lookup("env", "CI_PROJECT_NAME") | default(inventory_dir | basename, True) }}. [Take a look here!]({{ main_reop_issue_res.json.web_url }})'
+      username: GitLab-CI
+    status_code: 200
+  ignore_errors: True
+  tags: [maintenance, os-updates]
+
 - name: Upgrade packages
   when: maintenance_run_upgrades | bool
   apt:
