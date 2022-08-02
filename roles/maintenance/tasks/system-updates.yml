@@ -117,7 +117,7 @@
   tags: [maintenance, os-updates]
 
 - name: Notify via Mattermost
-  when: ansible_play_hosts_all | last == inventory_hostname and maintenance_post_to_git and not maintenance_run_upgrades and all_updates is defined and main_reop_issue_res.json is defined and maintenance_mattermost_hook is defiend
+  when: ansible_play_hosts_all | last == inventory_hostname and maintenance_post_to_git and not maintenance_run_upgrades and all_updates is defined and main_reop_issue_res.json is defined and maintenance_mattermost_hook is defined
   uri:
     url: '{{ maintenance_mattermost_hook }}'
     method: POST
