@@ -5,8 +5,8 @@ RED='\033[0;31m'
 NC='\033[0m'
 
 
-PVT_KEY=/pvt_key
 INVENTORY_DIR=/inventory
+PVT_KEY=$INVENTORY_DIR/secrets/maintenance.key
 
 
 echo "Running Symbic Ansible-Playbook image at commit=${COMMIT_HASH}; tag=${COMMIT_TAG}"

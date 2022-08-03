@@ -119,7 +119,7 @@
   tags: [docker-deploy, docker-deploy-service]
 
 - name: Deploy Apps via Docker-Compose-File
-  when: swarm_info.docker_swarm_manager
+  when: swarm_info.docker_swarm_manager or not docker_deploy_use_swarm_mode
   include_tasks: deploy-stack.yml
   loop: '{{ docker_deploy_projects }}'
   loop_control:
