@@ -1,32 +1,30 @@
 version: '3.7'
 
 services:
-  phpmyadmin:
+
+  {% for gui in mgmt_php_my_admin_hosts | default([{"name": "default"}]) -%}
+  phpmyadmin-{{ gui.name }}:
     image: phpmyadmin:latest
-    hostname: {{ inventory_dir | basename }}-phpmyadmin
+    hostname: {{ inventory_dir | basename }}-phpmyadmin-{{ gui.name }}
     environment:
-      - {{ mgmt_sql_taget_host_template }}
+      - {{ "PMA_HOST=" + gui.host if (gui.host is defined ) else "PMA_ARBITRARY=1" }}
       - TZ=Europe/Berlin
       - UPLOAD_LIMIT=2G
     networks:
       - {{ mgmt_docker_stack_name }}_mgmt_net
-    ports:
-      - target: 80
-        published: 8082
-        protocol: tcp
-        mode: host
     deploy:
       placement:
         constraints:
           - "node.labels.mgmt==true"
       labels:
         - "{{ mgmt_docker_stack_name }}=true"
-        {{ mgmt_traefik_labels | replace("__SERVICE__", "phpmyadmin") | replace("__PORT__", "80") | indent(width=8) if(mgmt_use_swarm_mode) }}
+        {{ mgmt_traefik_labels | replace("__SERVICE__", "phpmyadmin" if(gui.name == "default") else "phpmyadmin-" + gui.name ) | replace("__PORT__", "80") | indent(width=8) if(mgmt_use_swarm_mode) }}
         {{ mgmt_traefik_auth_labels.phpmyadmin | default("") | indent(width=8) if(mgmt_use_swarm_mode) }}
     labels:
       - "{{ mgmt_docker_stack_name }}=true"
-      {{ mgmt_traefik_labels | replace("__SERVICE__", "phpmyadmin") | replace("__PORT__", "80") | indent(width=6) if(not mgmt_use_swarm_mode) }}
+      {{ mgmt_traefik_labels | replace("__SERVICE__", "phpmyadmin" if(gui.name == "default") else "phpmyadmin-" + gui.name ) | replace("__PORT__", "80") | indent(width=6) if(not mgmt_use_swarm_mode) }}
       {{ mgmt_traefik_auth_labels.phpmyadmin | default("") | indent(width=6) if(not mgmt_use_swarm_mode) }}
+  {% endfor %}
 
 networks:
   {{ mgmt_docker_stack_name }}_mgmt_net:
