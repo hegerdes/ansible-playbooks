@@ -6,7 +6,7 @@ COPY requirements.txt /app/requirements.txt
 # Install nodejs, ssh, rsync and other needed packages
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl gpg ssh-client jq rsync ca-certificates \
+    curl nano gpg ssh-client jq rsync ca-certificates \
     && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key \
     | gpg --dearmor -o /usr/share/keyrings/nodejs-archive-keyring.gpg \
     && export NODE_ARCH="arch=amd64 signed-by=/usr/share/keyrings/nodejs-archive-keyring.gpg" \

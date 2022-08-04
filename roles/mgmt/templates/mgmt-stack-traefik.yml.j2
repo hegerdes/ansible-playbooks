@@ -14,12 +14,16 @@ services:
       - "--providers.docker.exposedbydefault=false"
       - "--metrics.prometheus.addEntryPointsLabels=true"
       - "--providers.docker.network={{ mgmt_docker_stack_name }}_mgmt_net"
+      - "--entryPoints.tcpep.address=:8888"
       - "--entrypoints.web.address=:80"
       {{ mgmt_traefik_tls_flags | indent(width=6) if(mgmt_proxy_use_tls) }}
       {{'- "--providers.docker.swarmMode=true"' | indent(width=6) if(mgmt_use_swarm_mode) }}
     ports:
       - "80:80"
       - "443:443"
+      - target: 8888
+        published: 8888
+        mode: host
     networks:
       - {{ mgmt_docker_stack_name }}_mgmt_net
     volumes:

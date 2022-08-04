@@ -51,6 +51,13 @@ mgmt_wireguard_port: 51820
 mgmt_chronograf_version: 1.9-alpine
 mgmt_chronograf_port: 8888
 
+# phpMyAdmin
+# mgmt_php_my_admin_hosts:
+#   - name: dev
+#     host: 10.20.0.4
+#   - name: prod
+#     host: 10.10.0.7
+
 # PGAdmin
 mgmt_pgadmin_pw: mySuperSecureAdminPW
 

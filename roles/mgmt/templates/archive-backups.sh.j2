@@ -5,7 +5,7 @@ RED='\033[0;31m'
 NC='\033[0m'
 
 SERVERS=({{ "\"" + mgmt_backup_target_hosts | default([]) | join("\" \"") + "\"" }})
-BACKUP_DST="{{ backup_dir }}"
+BACKUP_DST=${CUSTOM_BACKUP_DIR:="{{ backup_dir }}"}
 PUB_KEY_FILE="${BACKUP_DST}/db-backup.key.pub"
 SECRET=$(openssl rand -base64 32)
 AZURE_SAS_TOKEN="{{ mgmt_azure_token | default("\"\"") }}"

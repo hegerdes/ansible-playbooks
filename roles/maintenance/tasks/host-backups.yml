@@ -42,6 +42,7 @@
   tags: [maintenance, backup]
 
 - name: Run archive script
+  become: false
   when: main_backup_mgmt_res.stat.exists
   shell: 'bash {{ main_backup_dir + "archive-backups.sh" }}'
   environment:
