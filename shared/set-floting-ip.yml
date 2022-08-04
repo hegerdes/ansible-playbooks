@@ -3,6 +3,8 @@
 - name: Add floting ip
   when: ansible_facts.distribution | lower == "debian"
   blockinfile:
+    marker_begin: 'BEGIN {{ item }}'
+    marker_end: 'BEGIN {{ item }}'
     path: /etc/network/interfaces.d/60-my-floating-ip.cfg
     create: yes
     block: |
