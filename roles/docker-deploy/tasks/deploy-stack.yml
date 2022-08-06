@@ -1,7 +1,7 @@
 # Install app stack
 ---
 - name: Copy compose|stack files
-  when: item[-3:] == "yml"
+  when: item[-3:] == "yml" or item[-4:] == "ymal"
   copy:
     src: '{{ docker_deploy_src_config_files + item }}'
     dest: '{{ docker_deploy_dst_config_files + item }}'
@@ -20,7 +20,7 @@
 
 - name: Create absolut paths for stack files
   set_fact:
-    compose_files_stack: '{{ compose_files_stack | default([]) + ["".join((docker_deploy_dst_config_files,item if(item[-3:] == "yml") else item[:-3] ))] }}'
+    compose_files_stack: '{{ compose_files_stack | default([]) + ["".join((docker_deploy_dst_config_files, item if(item[-3:] == "yml") else item[:-3] ))] }}'
   loop: '{{ docker_project.compose_files | list}}'
   tags: [docker-deploy]
 

@@ -1,5 +1,14 @@
 # Main Docker deploy
 ---
+- name: Create a artifact directory
+  delegate_to: localhost
+  become: False
+  run_once: True
+  file:
+    dest: '{{ docker_deploy_artifact_dir }}'
+    state: directory
+  tags: [docker-deploy]
+
 - name: Install pip3
   when: docker_deploy_use_swarm_mode | bool != true
   apt:
@@ -104,17 +113,8 @@
   loop: '{{ docker_deploy_file_permissions }}'
   tags: [docker-deploy]
 
-- name: Create a artifact directory
-  delegate_to: localhost
-  become: False
-  run_once: True
-  file:
-    dest: '{{ docker_deploy_artifact_dir }}'
-    state: directory
-  tags: [docker-deploy]
-
 - name: Deploy Apps via Docker-Service-CLI
-  when: swarm_info.docker_swarm_manager
+  when: swarm_info.docker_swarm_manager and (docker_deploy_services | length > 0 or docker_deploy_volumes | length > 0 or docker_deploy_networks | length > 0 )
   include_tasks: doploy-service.yml
   tags: [docker-deploy, docker-deploy-service]
 
@@ -126,13 +126,13 @@
     loop_var: docker_project
   tags: [docker-deploy, docker-deploy-stack]
 
-- name: Get stack info
+- name: Get Stack Info
   when: docker_deploy_use_swarm_mode | bool and swarm_info.docker_swarm_manager
   community.docker.docker_stack_info:
   register: app_docker_stack_info
   tags: [docker-deploy]
 
-- name: Get info on Docker Swarm
+- name: Get Info on Docker Swarm
   changed_when: False
   when: docker_deploy_use_swarm_mode | bool and swarm_info.docker_swarm_manager
   command: docker service ls
@@ -140,14 +140,14 @@
   register: app_docker_swarm_info
   tags: [docker-deploy]
 
-- name: Get info on Docker Containers
+- name: Get Info on Docker Containers
   changed_when: False
   command: 'docker ps --format "table {{ "{{" }}.Status{{ "}}" }}\t{{ "{{" }}.RunningFor{{ "}}" }}\t{{ "{{" }} .Image{{ "}}" }}\t{{ "{{" }}.Names{{ "}}" }}"'
   ignore_errors: True
   register: app_docker_container_info
   tags: [docker-deploy]
 
-- name: Show stack info
+- name: Show Stack info
   when: docker_deploy_use_swarm_mode | bool and swarm_info.docker_swarm_manager
   debug:
     var: app_docker_stack_info.results
@@ -160,7 +160,7 @@
   ignore_errors: True
   tags: [docker-deploy]
 
-- name: Show container info
+- name: Show Container Info
   debug:
     var: app_docker_container_info.stdout_lines
   tags: [docker-deploy]
