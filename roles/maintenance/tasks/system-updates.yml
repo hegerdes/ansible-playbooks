@@ -83,7 +83,7 @@
       email: '{{ maintenance_git_mail }}'
       name: '{{ maintenance_git_name }}'
       commit_message: 'Added pending updates on {{ansible_date_time.date}}'
-      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/host-updates%2F{{ ansible_date_time.date + "-" + ansible_date_time.hour + "-" + ansible_date_time.minute }}-updates.json'
+      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/{{ inventory_dir | basename }}-host-updates%2F{{ ansible_date_time.date + "-" + ansible_date_time.hour + "-" + ansible_date_time.minute }}-updates.json'
   tags: [maintenance, os-updates]
 
 - name: Get issue on GitLab
@@ -91,7 +91,7 @@
   import_tasks: shared/gitlab-get-issue.yml
   vars:
     gitlab_conf:
-      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/issues?labels=aptPendingUpdates&state=opened'
+      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/issues?labels=aptPendingUpdates,{{ inventory_dir | basename }}&state=opened'
       token: '{{ maintenance_git_token }}'
   run_once: True
   tags: [maintenance, os-updates]
@@ -106,8 +106,8 @@
       token: '{{ maintenance_git_token }}'
       response_status: '{{ 200 if (main_reop_get_issue_res.json is defined and main_reop_get_issue_res.json | length > 0) else 201 }}'
       body:
-        title: '{{ ansible_date_time.date }} System Updates'
-        labels: 'maintenance,aptPendingUpdates'
+        title: '{{ inventory_dir | basename }}-{{ ansible_date_time.date }} System Updates'
+        labels: 'maintenance,aptPendingUpdates,{{ inventory_dir | basename }}'
         assignee_id: '{{ maintenance_git_assignee_id }}'
         description: |
           Updates:
@@ -179,7 +179,7 @@
       email: '{{ maintenance_git_mail }}'
       name: '{{ maintenance_git_name }}'
       commit_message: 'Installed the following updates on {{ansible_date_time.date}}'
-      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/host-updates%2F{{ ansible_date_time.date + "-" + ansible_date_time.hour + "-" + ansible_date_time.minute }}-performed-updates.json'
+      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/{{ inventory_dir | basename }}-host-updates%2F{{ ansible_date_time.date + "-" + ansible_date_time.hour + "-" + ansible_date_time.minute }}-performed-updates.json'
   tags: [maintenance, os-updates]
 
 - name: Comment on issue on GitLab
@@ -195,7 +195,7 @@
         body: |
           Updates performed on {{ ansible_date_time.date + "-" + ansible_date_time.hour + "-" + ansible_date_time.minute }} via CI {{"[Job " + lookup("env", "CI_JOB_ID") + "](" + lookup("env", "CI_JOB_URL") + ")" if(lookup("env", "CI_JOB_URL") | default("none", True) != "none") }}
 
-          Log: {{ main_reop_get_issue_res.json | json_query("[0].web_url") | split("/-/") | first + "/-/blob/main/host-updates/" + ansible_date_time.date + "-" + ansible_date_time.hour "-performed-updates.json" }}
+        # Log: {{ main_reop_get_issue_res.json | json_query("[0].web_url") | split("/-/") | first + "/-/blob/main/host-updates/" + ansible_date_time.date + "-" + ansible_date_time.hour "-performed-updates.json" }}
   tags: [maintenance, os-updates]
 
 - name: Close issue on GitLab
