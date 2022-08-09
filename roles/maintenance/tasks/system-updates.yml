@@ -195,13 +195,7 @@
         body: |
           Updates performed on {{ ansible_date_time.date + "-" + ansible_date_time.hour + "-" + ansible_date_time.minute }} via CI {{"[Job " + lookup("env", "CI_JOB_ID") + "](" + lookup("env", "CI_JOB_URL") + ")" if(lookup("env", "CI_JOB_URL") | default("none", True) != "none") }}
 
-          Log: {{ main_reop_get_issue_res.json | json_query("[0].web_url") | split("/-/") | first }}/-/blob/main/{{ inventory_dir | basename }}-host-updates/{{ ansible_date_time.date }}-{{ ansible_date_time.hour }}-performed-updates.json
-  tags: [maintenance, os-updates]
-
-- name: DEBUG
-  debug:
-    var: main_reop_get_issue_res
-  run_once: True
+          See the log here: {{ main_reop_get_issue_res.json | json_query("[0].web_url") | split("/-/") | first }}/-/blob/main/{{ inventory_dir | basename }}-host-updates/{{ ansible_date_time.date }}-{{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-performed-updates.json
   tags: [maintenance, os-updates]
 
 
