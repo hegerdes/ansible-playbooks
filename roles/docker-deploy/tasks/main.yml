@@ -114,7 +114,7 @@
   tags: [docker-deploy]
 
 - name: Deploy Apps via Docker-Service-CLI
-  when: swarm_info.docker_swarm_manager and (docker_deploy_services | length > 0 or docker_deploy_volumes | length > 0 or docker_deploy_networks | length > 0 )
+  when: swarm_info.docker_swarm_manager and (docker_deploy_services | default([]) | length > 0 or docker_deploy_volumes | default([]) | length > 0 or docker_deploy_networks | default([]) | length > 0 )
   include_tasks: doploy-service.yml
   tags: [docker-deploy, docker-deploy-service]
 
