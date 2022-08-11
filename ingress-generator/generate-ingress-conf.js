@@ -1,8 +1,8 @@
-const yaml = require('js-yaml');
 const fs = require('fs');
-const util = require('util');
-const jinja = require('nunjucks')
 const net = require('net')
+const util = require('util');
+const yaml = require('js-yaml');
+const jinja = require('nunjucks')
 
 // ARGS check
 if (process.argv.length != 4) {
@@ -27,20 +27,17 @@ try {
 console.log("Using the following ingress file:");
 console.log(util.inspect(ingress, false, null, true));
 
-// eslint-disable-next-line no-unused-vars
-var is_domain = new RegExp(/^((?:(?:(?:\w[\.\-\+]?)*)\w)+)((?:(?:(?:\w[\.\-\+]?){0,62})\w)+)\.(\w{2,6})$/);
-
 async function createUpstreamHosts(){
   console.log('Generating upstream domain list...')
-  var domains = []
+  var upstream_domains = []
   if(ingress.conf && ingress.conf.internal_extra_domains)
-    domains = domains.concat(ingress.conf.internal_extra_domains)
+    upstream_domains = upstream_domains.concat(ingress.conf.internal_extra_domains)
   // Upstream domains
   for(let site of ingress.sites){
     if(site.upstreams){
       for(var upstream of site.upstreams){
         for(var target of upstream.targets){
-          if(!net.isIP(target.split(':')[0])) domains.push(target.split(':')[0])
+          if(!net.isIP(target.split(':')[0])) upstream_domains.push(target.split(':')[0])
         }
       }
     }
@@ -52,9 +49,9 @@ async function createUpstreamHosts(){
             var pass_target = line.trim().split(/(\s+)/).pop()
             var pass_domain = pass_target.split("//").pop().slice(0,-1)
             if(pass_domain.includes(":")){
-              if(!net.isIP(pass_domain.split(':')[0])) domains.push(pass_domain.split(':')[0])
+              if(!net.isIP(pass_domain.split(':')[0])) upstream_domains.push(pass_domain.split(':')[0])
             }else{
-              domains.push(pass_domain)
+              upstream_domains.push(pass_domain)
 
             }
             // if(pass_domain.match(is_domain)) console.log(pass_domain)
@@ -63,21 +60,24 @@ async function createUpstreamHosts(){
       }
     }
   }
-  fs.writeFileSync(`${__dirname}/domain.list`, domains.join("\n") + "\n")
-  console.log('Upstreams:', domains, "\ndone")
+  fs.writeFileSync(`${__dirname}/domain.list`, upstream_domains.join("\n") + "\n")
+  console.log('Upstreams:', upstream_domains, "\ndone")
 }
 
 /**
  * Generate nginx conf and save it
  */
 async function generateNginxConf(){
-let res = ''
+  let domains = [];
+  let res = ''
   let conf_dst = `${__dirname}/nginx/conf.d`
   if (!fs.existsSync(conf_dst)) {
     fs.mkdirSync(conf_dst);
   }
   console.log('Generating nginx conf files...')
   for(let site of ingress.sites){
+    domains.push(site.host)
+
     // copy common locations into site
     if (Object.prototype.hasOwnProperty.call(site, 'nginx') && Object.prototype.hasOwnProperty.call(site.nginx, 'common_locations')) {
       for(let i = 0; i < site.nginx.common_locations.length; i++) {
@@ -124,6 +124,7 @@ let res = ''
     fs.writeFileSync(`${__dirname}/nginx/conf.d/default.conf`, res)
     console.log(`Writing default site to ${__dirname}/nginx/conf.d/default.conf`)
   }
+  fs.writeFileSync(`${__dirname}/nginx/conf.d/domains.info`, domains.join('\r\n'))
   console.log('done')
 }
 
