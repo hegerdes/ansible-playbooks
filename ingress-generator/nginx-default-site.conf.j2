@@ -33,6 +33,7 @@ server {
     server_name _;
 
     location /nginx_status {
+        access_log    off;
         stub_status on;
         allow 127.0.0.1;
         allow 10.0.0.0/16;         # only allow requests from docker net

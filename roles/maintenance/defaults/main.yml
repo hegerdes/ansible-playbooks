@@ -13,7 +13,7 @@ maintenance_git_branch: main
 maintenance_git_name: Gitlab CI
 maintenance_git_mail: git-ci@***REMOVED***
 maintenance_git_assignee_id: '{{ lookup("env", "GITLAB_USER_ID") | default("13", True) }}' # Henrik Gerdes
-maintenance_mattermost_hook: https://mattermost.***REMOVED***/hooks/dyqdgdsncfbbpqif1eyba96d5r
+maintenance_mattermost_hook: '{{ lookup("env", "MM_WEB_HOOK") | default("https://mattermost.***REMOVED***/hooks/dyqdgdsncfbbpqif1eyba96d5r", True) }}'
 
 maintenance_hold_back_updates: '{{ lookup("env", "ANSIBE_HOLD_BACK_UPDATES") | default("[]", True) | from_yaml | list }}'
 
