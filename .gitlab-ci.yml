@@ -32,11 +32,23 @@ image-build-playbooks:
         - ansible-entrypoint.sh
     - if: $CI_COMMIT_TAG
 
+image-build-webhhok-handler:
+  extends: .build_template
+  variables:
+    BUILD_IMAGE_TAG: $CI_REGISTRY_IMAGE/webhook-handler:$CI_COMMIT_REF_NAME
+    CONTEXT: $CI_PROJECT_DIR/tools/webhooks
+    DOCKERFILE: $CI_PROJECT_DIR/tools/webhooks/Dockerfile
+  rules:
+    - if: $CI_COMMIT_REF_NAME
+      changes:
+        - tools/**/*
+    - if: $CI_COMMIT_TAG
+
 image-build-ingress-genarator:
   extends: .build_template
   variables:
     DOCKERFILE: $CI_PROJECT_DIR/ingress-generator/Dockerfile
-    CONTEXT: $CI_PROJECT_DIR/ingress-generator/
+    CONTEXT: $CI_PROJECT_DIR/ingress-generator
     BUILD_IMAGE_TAG: $CI_REGISTRY_IMAGE/ingress-genarator:$CI_COMMIT_REF_NAME
   rules:
     - if: $CI_COMMIT_REF_NAME
