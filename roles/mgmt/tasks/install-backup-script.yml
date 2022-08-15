@@ -51,7 +51,7 @@
     group: root
   tags: [mgmt, backup]
 
-- name: Copy script for backup archiveal
+- name: Copy script for backup archival
   template:
     src: archive-backups.sh.j2
     dest: '{{ backup_dir }}/archive-backups.sh'

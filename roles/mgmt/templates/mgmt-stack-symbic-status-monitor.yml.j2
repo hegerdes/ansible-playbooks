@@ -15,9 +15,6 @@ services:
         constraints:
           - "node.labels.mgmt==true"
 
-volumes:
-  status-monitor-data:
-
 networks:
   {{ mgmt_docker_stack_name }}_mgmt_net:
     external: true

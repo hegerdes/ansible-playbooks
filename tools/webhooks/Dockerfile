@@ -2,7 +2,7 @@ ARG VARIANT="3"
 FROM alpine:$VARIANT
 
 # Install
-RUN apk add curl jq webhook
+RUN apk add curl jq bash webhook
 
 ENV TZ=Europe/Berlin
 ARG COMMIT_HASH="none"
