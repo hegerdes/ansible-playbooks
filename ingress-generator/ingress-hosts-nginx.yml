@@ -118,3 +118,16 @@ sites:
     # No upstream no locations
   - host: site7.my-domain.com
     ip: 111.222.222.111
+  - host: site7.my-domain.com
+    ip: 111.222.222.111
+    upstreams:
+      - route: default
+        targets:
+        - 127.0.0.1:3000
+    tls:
+      crt: /etc/nginx/ssl/dummy/fullchain.pem
+      key: /etc/nginx/ssl/dummy/privkey.pem
+      create_http: no
+    # No upstream no locations
+  - host: site7.my-domain.com
+    ip: 111.222.222.111

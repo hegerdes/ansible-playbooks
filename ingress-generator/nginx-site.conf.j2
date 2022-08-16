@@ -67,6 +67,7 @@ server {
     include shared.conf/general.conf;
 }
 
+{%- if(nginx_vhost.tls.create_http | default(yes)) %}
 # HTTP redirect
 server {
     listen      80;
@@ -85,3 +86,4 @@ server {
     # Shared server settings
     include shared.conf/general.conf;
 }
+{% endif %}
