@@ -1,7 +1,6 @@
 version: '3.7'
 
 services:
-
   portainer:
     image: portainer/portainer-{{ mgmt_portainer_edition }}:latest
     hostname: {{ inventory_dir | basename }}-portainer
@@ -43,6 +42,11 @@ services:
     configs:
       - source: prometheus-conf-{{ lookup('file', mgmt_src_config_files + 'mgmt-prometheus/prometheus.yml') | default(mgmt_conf_counter) | hash('md5') }}
         target: /etc/prometheus/prometheus.yml
+    extra_hosts:
+    {% for host in mgmt_prometheus_host_aliases | default(["myhost:127.0.0.1"]) %}
+      - "{{ host | indent(width=6) }}"
+    {% endfor %}
+
     deploy:
       placement:
         constraints:

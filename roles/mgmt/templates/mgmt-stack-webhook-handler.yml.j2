@@ -1,0 +1,15 @@
+version: '3.7'
+
+services:
+  webhook-handler:
+    image: docker-registry.***REMOVED***/symbic-general/symbic-webhook-handler:stable
+    hostname: {{ inventory_dir | basename }}-webhook-handler
+    command: -hooks /app/hooks/hooks.yml -verbose -hotreload
+    volumes:
+      - {{ mgmt_dst_config_files }}mgmt-webhooks:/app/hooks
+    networks:
+      - {{ mgmt_docker_stack_name }}_mgmt_net
+
+networks:
+  {{ mgmt_docker_stack_name }}_mgmt_net:
+    external: true

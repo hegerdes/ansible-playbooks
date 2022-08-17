@@ -1,8 +1,0 @@
-# Define all hooks here
-
-  # Demo
-- id: demo-webhook
-  execute-command: "/app/hooks/hook-demo.sh"
-  command-working-directory: "/app/hooks"
-  pass-arguments-to-command:
-    - source: entire-payload
