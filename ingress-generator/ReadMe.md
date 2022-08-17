@@ -137,7 +137,7 @@ sites:
     upstreams:
       - targets:
         - 127.0.0.2:3000
-    tls: 'no'
+    tls: no
     # Own certs with tls pass through upstream
   - host: site6.my-domain.com
     ip: 111.222.222.111

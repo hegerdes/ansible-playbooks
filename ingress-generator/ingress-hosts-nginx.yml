@@ -103,7 +103,7 @@ sites:
       - targets:
         - 127.0.0.1:3000
         - mytest
-    tls: 'no'
+    tls: no
     # Own certs with tls pass through upstream
   - host: site6.my-domain.com
     ip: 111.222.222.111

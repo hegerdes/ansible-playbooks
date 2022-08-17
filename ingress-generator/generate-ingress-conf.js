@@ -110,8 +110,8 @@ async function generateNginxConf(){
       }
     }
 
-    let template_file = (site.tls && site.tls === 'no') ? '/nginx-site-http-only.conf.j2' : '/nginx-site.conf.j2'
-    let file_dst_name = (site.tls && site.tls === 'no') ? `${conf_dst}/${site.host}-http.conf` : `${conf_dst}/${site.host}.conf`
+    let template_file = (site.tls && (site.tls === 'no' || !site.tls)) ? '/nginx-site-http-only.conf.j2' : '/nginx-site.conf.j2'
+    let file_dst_name = (site.tls && (site.tls === 'no' || !site.tls)) ? `${conf_dst}/${site.host}-http.conf` : `${conf_dst}/${site.host}.conf`
     if (!ingress.conf || !ingress.conf.nginx) ingress.conf = {nginx: {}}
     res = jinja.render(__dirname + template_file, { nginx_vhost: site, nginx_settings: ingress.conf.nginx });
     console.log(`Writing to ${file_dst_name}`)
