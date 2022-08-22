@@ -20,7 +20,7 @@
     username: '{{ item.username }}'
     password: '{{ item.password }}'
     reauthorize: yes
-  loop: '{{ docker_regesties }}'
+  loop: '{{ docker_regesties | default([]) }}'
   loop_control:
     label: '{{ item.regestry | default("https://index.docker.io/v1/") }}'
   tags: [mgmt, mgmt-stack]
