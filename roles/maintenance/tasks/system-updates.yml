@@ -125,7 +125,7 @@
     headers:
       Content-Type: application/json
     body:
-      text: ':mailbox: Found new OS-Updates for {{ lookup("env", "CI_PROJECT_NAME") | default(inventory_dir | basename, True) }}. [Take a look here!]({{ main_reop_issue_res.json.web_url }})'
+      text: ':mailbox: Found new System-Updates for {{ lookup("env", "CI_PROJECT_NAME") | default(inventory_dir | basename, True) }}. [Take a look here!]({{ main_reop_issue_res.json.web_url }})'
       username: GitLab-CI
     status_code: 200
   ignore_errors: True

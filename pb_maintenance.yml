@@ -1,7 +1,16 @@
 # Maintenance
 
+# Hosts that can be auto upgraded
+- hosts: auto_updable
+  become: true
+  serial: 1
+  tasks:
+  roles:
+    - maintenance
+
+# All other hosts
 - hosts: all
   become: true
-  serial: '{{"1" if (maintenance_run_upgrades | default(false)) else "100%"}}'
+  serial: '{{"1" if (maintenance_run_upgrades | default(false) | bool) else "100%"}}'
   roles:
     - maintenance
