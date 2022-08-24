@@ -210,3 +210,11 @@
       method: PUT
       response_status: 200
   tags: [maintenance, os-updates]
+
+- name: Resetting vars
+  when: ansible_play_hosts_all | last == inventory_hostname and all_updates is defined and maintenance_post_to_git and maintenance_run_upgrades
+  run_once: True
+  set_fact:
+    all_updates: {}
+    main_updates: {}
+  tags: [maintenance, os-updates]
