@@ -1,8 +1,8 @@
 
 conf:
   nginx:
-    http2: on
-    create_default_server: on
+    http2: yes
+    create_default_server: yes
     # Header for all vhosts
     common_header: |
       proxy_set_header Host $host;
