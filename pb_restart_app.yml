@@ -16,9 +16,10 @@
           exit 0
         fi
 
-        echo $RESTART_SERVICES
+        echo "Restarting ${RESTART_SERVICES}..."
         for SERVICE_NAME in ${RESTART_SERVICES//,/ }; do
           if [ "$(docker ps -f name="$SERVICE_NAME" --quiet)" != "" ]; then
+            echo "Will restart:"
             docker ps -f name="$SERVICE_NAME" --format "table {{ "{{" }}.Status{{ "}}" }}\t{{ "{{" }}.RunningFor{{ "}}" }}\t{{ "{{" }} .Image{{ "}}" }}\t{{ "{{" }}.Names{{ "}}" }}"
             docker stop $(docker ps -f name="$SERVICE_NAME" --quiet) > /dev/null
           else
