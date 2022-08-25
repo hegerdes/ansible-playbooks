@@ -3,7 +3,6 @@ conf:
   nginx:
     http2: on
     create_default_server: on
-    default_server_https_redirect: on
     # Header for all vhosts
     common_header: |
       proxy_set_header Host $host;

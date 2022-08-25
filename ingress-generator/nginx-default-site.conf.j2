@@ -9,7 +9,7 @@ server {
     }
 
     server_name _;
-    listen 443 ssl{{ " http2" if (nginx_settings.http2 | default(on)) }} default_server;
+    listen 443 ssl{{ " http2" if (nginx_settings.http2 | default("on") == "on") }} default_server;
     ssl_certificate {{ nginx_vhost.tls.crt | default("/etc/nginx/ssl/dummy/fullchain.pem") }}; # managed by Certbot
     ssl_certificate_key {{ nginx_vhost.tls.key | default("/etc/nginx/ssl/dummy/privkey.pem") }}; # managed by Certbot
     include /etc/nginx/ssl/options-ssl-nginx.conf; # managed by Certbot
@@ -43,16 +43,8 @@ server {
         deny all;                  # deny all other hosts
     }
 
-
-{%- if nginx_settings.default_server_https_redirect | default(no) %}
-
-    location / {
-        return 301 https://$host$request_uri;
-    }
-{% else %}
     location / {
         default_type application/json;
         return 418 '{"code":"404", "message": "Routing Error"}';
     }
-{% endif %}
 }
