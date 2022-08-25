@@ -73,7 +73,7 @@
     owner: root
     group: root
     mode: '0755'
-  tags: [docker-deploy]
+  tags: [docker-deploy, backup]
 
 - name: Check for auto generated files
   stat:

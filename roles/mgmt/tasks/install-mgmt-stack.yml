@@ -34,15 +34,11 @@
   tags: [mgmt, mgmt-stack]
 
 - name: Copy MGMT compose|stack custom files
-  synchronize:
+  copy:
     src: '{{ mgmt_src_config_files }}'
     dest: '{{ mgmt_dst_config_files }}'
-    owner: no
-    group: no
-    recursive: yes
-    use_ssh_args: yes
-    mode: push
-    checksum: yes
+    owner: root
+    group: root
   tags: [mgmt, mgmt-stack]
 
 - name: Configuring compose|stack files
