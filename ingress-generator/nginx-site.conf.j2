@@ -13,6 +13,8 @@
     {%- endfor %}
 {% endif %}
 
+# HTTP settings per site
+{{ nginx_vhost.nginx.settings_http_context | default("# None") | safe | indent(0) }}
 
 # Server
 server {
