@@ -125,6 +125,11 @@ async function generateNginxConf(){
     fs.writeFileSync(`${__dirname}/nginx/conf.d/default.conf`, res)
     console.log(`Writing default site to ${__dirname}/nginx/conf.d/default.conf`)
   }
+  // Additional nginx settings in http context
+  if (ingress.conf && ingress.conf.nginx && ingress.conf.nginx.http_context){
+    fs.writeFileSync(`${__dirname}/nginx/conf.d/nginx-extra.conf`, ingress.conf.nginx.http_context)
+  }
+
   fs.writeFileSync(`${__dirname}/nginx/conf.d/domains.info`, domains.join('\r\n'))
   console.log('done')
 }
