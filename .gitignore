@@ -10,3 +10,7 @@ conf/ingress/nginx/conf.d/*.conf
 tests/
 ingress-generator/nginx/etcDummyHosts
 ingress-generator/domain.list
+tools/terraform/hetzner/.*.lock.hcl
+tools/terraform/hetzner/*.tfstate.backup
+tools/terraform/hetzner/*.backup
+tools/terraform/hetzner/.terraform/providers

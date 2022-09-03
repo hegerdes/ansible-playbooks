@@ -7,3 +7,6 @@ hetzner
 jmespath
 passlib
 ara
+kubernetes
+jsonpatch
+PyYAML

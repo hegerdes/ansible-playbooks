@@ -1,0 +1,32 @@
+- name: Reset Kubernetes component
+  shell: "kubeadm reset --force"
+  register: reset_cluster
+
+- name: Init Kubernetes cluster
+  when: reset_cluster is succeeded
+  shell: |
+    kubeadm init --kubernetes-version {{ k8s_version }} \
+                 --pod-network-cidr {{ k8s_pod_network_cidr }} \
+                 --token {{ k8s_token }} \
+                 --upload-certs \
+                 --ignore-preflight-errors=NumCPU \
+                 --apiserver-advertise-address {{ k8s_api_server }} \
+                 --apiserver-cert-extra-sans={{ k8s_cert_extra_sans }}
+                 {{ k8s_kubeadm_opts }} \
+                 {{ k8s_init_opts }}
+  register: init_cluster
+
+- name: debug
+  debug:
+    var: init_cluster
+
+
+
+
+# kubeadm init --kubernetes-version stable-1 \
+#              --pod-network-cidr 10.244.0.0/16 \
+#              --token xzqdcd.qwgaj3p6da3xx931 \
+#              --upload-certs \
+#              --ignore-preflight-errors=NumCPU \
+#              --apiserver-advertise-address 10.10.0.2 \
+#              --apiserver-cert-extra-sans=127.0.0.1,10.10.0.2,10.10.0.1,116.203.124.54

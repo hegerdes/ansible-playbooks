@@ -1,0 +1,14 @@
+# Deploy playbook
+
+- hosts: k8s
+  become: true
+  gather_facts: true
+  roles:
+    - k8s/common
+
+- hosts: k8s_master
+  become: true
+  gather_facts: true
+  roles:
+    - k8s/master
+

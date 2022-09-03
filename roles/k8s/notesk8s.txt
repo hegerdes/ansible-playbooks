@@ -1,0 +1,142 @@
+# K8s Generall install notes
+
+
+
+ansible-galaxy collection install kubernetes.core
+
+
+/etc/systemd/system/kubelet.service.d/20-vpc-cloud.conf
+[Service]
+Environment="KUBELET_EXTRA_ARGS= --cgroup-driver=systemd"
+
+/etc/systemd/system/docker.service.d/00-cgroup-systemd.conf
+[Service]
+ExecStart=
+ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock --exec-opt native.cgroupdriver=systemd
+
+
+# container ip forwording
+cat <<EOF >>/etc/sysctl.conf
+# Allow IP forwarding for kubernetes
+net.bridge.bridge-nf-call-iptables = 1
+net.ipv4.ip_forward = 1
+net.ipv6.conf.default.forwarding = 1
+EOF
+# apply
+sysctl -p
+
+apt update
+apt install -y gnupg lsb-release ca-certificates curl
+mkdir -p /etc/apt/keyrings
+
+curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list
+echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" > /etc/apt/sources.list.d/kubernetes.list
+
+apt-get update
+apt-get install -y docker-ce kubeadm kubectl kubelet
+
+
+
+/etc/containerd/config.toml
+############### containerd config.toml ###############
+version = 2
+[plugins]
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+  runtime_type = "io.containerd.runc.v2"
+  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+    SystemdCgroup = true
+
+
+############### k8s init ###############
+kubeadm init --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=NumCPU --upload-certs --apiserver-cert-extra-sans=localhost,127.0.0.1,10.10.0.2,10.10.0.1,PUBLIC-IP --apiserver-advertise-address 10.10.0.2
+
+
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+
+
+# Remove taints:
+kubectl taint nodes --all node-role.kubernetes.io/control-plane:NoSchedule-
+kubectl taint nodes --all node-role.kubernetes.io/master-
+
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hcloud
+  namespace: kube-system
+stringData:
+  token: ***REMOVED***
+  network: "1793444"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hcloud-csi
+  namespace: kube-system
+stringData:
+  token: ***REMOVED***
+EOF
+
+
+# Show ingress
+kubectl get pods --all-namespaces -o wide
+
+https://docs.nginx.com/nginx-ingress-controller/installation/installation-with-manifests/
+
+
+# Clone nginx ingress definitions
+git clone https://github.com/nginxinc/kubernetes-ingress.git --branch v2.3.0
+cd kubernetes-ingress/deployments
+
+#Configure RBAC
+kubectl apply -f common/ns-and-sa.yaml
+kubectl apply -f rbac/rbac.yaml
+
+#Create ressources
+kubectl apply -f common/default-server-secret.yaml
+kubectl apply -f common/nginx-config.yaml
+kubectl apply -f common/ingress-class.yaml
+kubectl apply -f common/crds/k8s.nginx.org_virtualservers.yaml
+kubectl apply -f common/crds/k8s.nginx.org_virtualserverroutes.yaml
+kubectl apply -f common/crds/k8s.nginx.org_transportservers.yaml
+kubectl apply -f common/crds/k8s.nginx.org_policies.yaml
+kubectl apply -f common/crds/k8s.nginx.org_globalconfigurations.yaml
+
+#Deploy
+kubectl apply -f daemon-set/nginx-ingress.yaml
+
+#Verify
+kubectl get pods --namespace=nginx-ingress
+
+
+kubeadm join 10.10.0.2:6443 --token xzqdcd.qwgaj3p6da3xx931 \
+        --discovery-token-ca-cert-hash sha256:75a35ccb7d784e167f30a7f8b051163d7119907820e652144a3b80c25661d1dc
+
+
+# Dashboard
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.6.1/aio/deploy/recommended.yaml
+# Dashboard user:
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admin
+  namespace: kubernetes-dashboard
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: admin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: admin
+  namespace: kubernetes-dashboard
+
+
+kubeadm token create ihrzqt.hpey9y3y65l86wr4 --print-join-command --ttl=0

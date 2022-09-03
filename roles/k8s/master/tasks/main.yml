@@ -1,0 +1,83 @@
+# Main k8s Setup
+---
+- name: Check if kubeadm has already run
+  stat:
+    path: "/etc/kubernetes/pki/ca.key"
+  register: kubeadm_ca
+  tags: [k8s, k8-init]
+
+- name: Init cluster if needed
+  include_tasks: kubeadm-init.yml
+  when: not kubeadm_ca.stat.exists
+  run_once: true
+  tags: [k8s, k8-init]
+
+- name: Enable and check kubelet service
+  systemd:
+    name: kubelet
+    daemon_reload: yes
+    state: started
+    enabled: yes
+  register: started_kubelet
+  tags: [k8s, k8-init]
+
+- name: Deploy network CNI.
+  get_url:
+    url: https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+    dest: ~/cri-flannel.yaml
+    mode: '0664'
+  tags: [k8s, k8-init]
+
+- name: Apply flannel-cri manifest to the cluster.
+  k8s:
+    kubeconfig: /etc/kubernetes/admin.conf
+    state: present
+    src: ~/cri-flannel.yaml
+  tags: [k8s, k8-init]
+
+- name: Create kube conf dir
+  file:
+    path: '{{ ansible_facts.env.HOME }}/.kube'
+    state: directory
+  tags: [k8s, k8-init]
+
+- name: Copy config file
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: '{{ ansible_facts.env.HOME }}/.kube/admin.conf'
+    remote_src: yes
+  tags: [k8s, k8-init]
+
+- name: Creating local config file
+  fetch:
+    src: /etc/kubernetes/admin.conf
+    dest: "{{ lookup('env', 'HOME') }}/admin.conf"
+    flat: yes
+  run_once: true
+  ignore_errors: true
+  tags: [k8s, k8-init]
+
+- name: Install Helm
+  include_tasks: install-helm.yml
+  when: k8s_install_helm
+  run_once: true
+  tags: [k8s, k8s-init, k8s-helm]
+
+
+# - name: Taint node "foo"
+#   kubernetes.core.k8s_taint:
+#     state: absent
+#     name: all
+#     taints:
+#     - key: node-role.kubernetes.io/control-plane
+#       effect: NoSchedule
+#     - key: dedicated
+
+# - name: Kubeadm check
+#   shell: kubectl cluster-info
+#   tags: [k8s, k8s-prepare, k8s-base]
+
+
+# - name: Ensure handlers are notified now
+#   meta: flush_handlers
+

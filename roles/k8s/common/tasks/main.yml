@@ -1,0 +1,114 @@
+# Main k8s Setup
+---
+- debug:
+    var: k8s_token
+
+- name: Ensue required packages are installed
+  apt:
+    name: [gnupg, lsb-release, ca-certificates, curl, apparmor, python3-kubernetes, apt-transport-https]
+    state: present
+    update_cache: yes
+    install_recommends: no
+  tags: [k8s, k8s-prepare, k8s-base, apt]
+
+- name: Remove swapfile from /etc/fstab
+  mount:
+    name: "{{ item }}"
+    fstype: swap
+    state: absent
+  with_items:
+    - swap
+    - none
+  tags: [k8s, k8s-prepare, k8s-base]
+
+- name: Disable swap
+  command: swapoff -a
+  tags: [k8s, k8s-prepare, k8s-base]
+
+- name: Create conf dirs
+  file:
+    path: '{{ item }}'
+    state: directory
+  loop: [/etc/systemd/system/docker.service.d, /etc/systemd/system/kubelet.service.d]
+  tags: [k8s, k8s-prepare, k8s-base]
+
+- name: Copy docker service conf
+  template:
+    src: 00-docker-cgroup.conf.j2
+    dest: /etc/systemd/system/docker.service.d/00-cgroup-systemd.conf
+    mode: '0644'
+  tags: [k8s, k8s-prepare, k8s-base]
+
+- name: Copy kubelet service conf
+  template:
+    src: 00-kublet-service.conf.j2
+    dest: /etc/systemd/system/kubelet.service.d/20-vpc-cloud.conf
+    mode: '0644'
+  tags: [k8s, k8s-prepare, k8s-base]
+
+- name: Ensure br_netfilter is enabled
+  modprobe:
+    name: br_netfilter
+    state: present
+  tags: [k8s, k8s-prepare, k8s-base]
+
+- name: Allow container ip forwording
+  sysctl:
+    name: '{{ item.key }}'
+    value: '{{ item.val }}'
+    state: present
+    sysctl_set: yes
+    reload: yes
+  with_items:
+    - { key: net.bridge.bridge-nf-call-iptables, val: 1}
+    - { key: net.ipv4.ip_forward, val: 1}
+    - { key: net.ipv6.conf.default.forwarding, val: 1}
+  tags: [k8s, k8s-prepare, k8s-base]
+  loop_control:
+    label: "{{ item.key }}={{ item.val }}"
+
+- name: Adding apt GPG Keys
+  apt_key:
+    url: '{{ item }}'
+    state: present
+  loop:
+    - 'https://download.docker.com/linux/{{ ansible_facts.distribution | lower }}/gpg'
+    - 'https://packages.cloud.google.com/apt/doc/apt-key.gpg'
+  tags: [k8s, k8s-prepare, k8s-base, apt]
+
+- name: Add Docker repository
+  apt_repository:
+    repo: '{{ item.repo }}'
+    update_cache: yes
+    state: present
+    filename: '{{ item.name }}.list'
+  with_items:
+    - {name: docker, repo: 'deb https://download.docker.com/linux/{{ ansible_facts.distribution | lower }} {{ ansible_facts.lsb.codename }} stable' }
+    - {name: k8s, repo: deb https://apt.kubernetes.io/ kubernetes-xenial main}
+  loop_control:
+    label: "{{ item.name }}"
+  tags: [k8s, k8s-prepare, k8s-base, apt]
+
+- name: Install container runtime, kubelet and admin tools
+  apt:
+    name: [docker-ce, kubeadm, kubectl, kubelet, containerd.io]
+    state: present
+    update_cache: yes
+    install_recommends: no
+  tags: [k8s, k8s-prepare, k8s-base, apt]
+
+- name: Copy containerd-conf
+  copy:
+    src: containerd-config.toml
+    dest: /etc/containerd/config.toml
+    mode: '0644'
+  tags: [k8s, k8s-prepare, k8s-base]
+  register: run_containerd_conf
+
+- name: Restart containerd
+  when: run_containerd_conf.changed
+  service:
+    name: containerd
+    daemon_reload: yes
+    state: restarted
+  tags: [k8s, k8s-prepare, k8s-base]
