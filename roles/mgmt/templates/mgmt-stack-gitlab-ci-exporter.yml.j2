@@ -1,0 +1,18 @@
+version: '3.7'
+
+# See https://github.com/mvisonneau/gitlab-ci-pipelines-exporter
+services:
+  gitlab-ci-exporter:
+    image: mvisonneau/gitlab-ci-pipelines-exporter:latest
+    command: run --config /etc/config.yml
+    hostname: {{ inventory_dir | basename }}-gitlab-ci-pipelines-exporter
+    networks:
+      - {{ mgmt_docker_stack_name }}_mgmt_net
+    volumes:
+      {{"- " + mgmt_dst_config_files + "mgmt-prometheus/gitlab-ci-exporter-config.yml:/etc/config.yml" | indent(width=6) }}
+    ports:
+      - 1234:8080
+
+networks:
+  {{ mgmt_docker_stack_name }}_mgmt_net:
+    external: true

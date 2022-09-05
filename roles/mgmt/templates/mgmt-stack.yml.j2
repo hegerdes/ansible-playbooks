@@ -38,7 +38,7 @@ services:
       - {{ mgmt_docker_stack_name }}_mgmt_net
     volumes:
       - prometheus-data:/opt/bitnami/prometheus/data
-      {{"- " + mgmt_dst_config_files + "mgmt-prometheus/rules:/etc/prometheus/rules" | indent(width=6) if(mgmt_use_swarm_mode) }}
+      {{"- " + mgmt_dst_config_files + "mgmt-prometheus/rules:/etc/prometheus/rules" | indent(width=6) }}
     configs:
       - source: prometheus-conf-{{ lookup('file', mgmt_src_config_files + 'mgmt-prometheus/prometheus.yml') | default(mgmt_conf_counter) | hash('md5') }}
         target: /etc/prometheus/prometheus.yml
@@ -90,7 +90,7 @@ services:
     environment:
       - TZ=Europe/Berlin
       - GF_SECURITY_ADMIN_PASSWORD__FILE=/run/secrets/grafana_admin_password
-      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource,grafana-piechart-panel,alexanderzobnin-zabbix-app,grafana-worldmap-panel,camptocamp-prometheus-alertmanager-datasource
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-polystat-panel,grafana-simple-json-datasource,grafana-piechart-panel,alexanderzobnin-zabbix-app,grafana-worldmap-panel,camptocamp-prometheus-alertmanager-datasource
     networks:
       - {{ mgmt_docker_stack_name }}_mgmt_net
     ports:
