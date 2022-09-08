@@ -1,6 +1,6 @@
 ---
 k8s_version: stable-1
-k8s_api_server: 10.10.0.2
+k8s_api_server: 10.10.0.8
 k8s_pod_network_cidr: 10.244.0.0/16
 k8s_cert_extra_sans: '{{ (["127.0.0.1", "10.10.0.3", "10.10.0.4"] + ansible_facts.all_ipv4_addresses) | unique | join(",") }}'
 

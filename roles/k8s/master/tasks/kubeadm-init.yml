@@ -16,11 +16,20 @@
                  {{ k8s_init_opts }}
   register: init_cluster
 
+- name: Remove no NoSchedule taint form master nodes
+  kubernetes.core.k8s_taint:
+    kubeconfig: /etc/kubernetes/admin.conf
+    state: absent
+    name: '{{ ansible_facts.hostname }}'
+    taints:
+    - key: node-role.kubernetes.io/control-plane
+      effect: NoSchedule
+    - key: dedicated
+  tags: [k8s, k8-init, k8-master-init, k8-taint]
+
 - name: debug
   debug:
     var: init_cluster
-
-
 
 
 # kubeadm init --kubernetes-version stable-1 \

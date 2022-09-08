@@ -1,16 +1,17 @@
 # Main k8s Setup
 ---
 - name: Check if kubeadm has already run
+  when: '"k8s_master" in group_names'
   stat:
     path: "/etc/kubernetes/pki/ca.key"
   register: kubeadm_ca
-  tags: [k8s, k8-init]
+  tags: [k8s, k8-init, k8-master-init]
 
 - name: Init cluster if needed
   include_tasks: kubeadm-init.yml
-  when: not kubeadm_ca.stat.exists
+  when: '"k8s_master" in group_names and not kubeadm_ca.stat.exists'
   run_once: true
-  tags: [k8s, k8-init]
+  tags: [k8s, k8-init, k8-master-init]
 
 - name: Enable and check kubelet service
   systemd:
@@ -18,60 +19,40 @@
     daemon_reload: yes
     state: started
     enabled: yes
-  register: started_kubelet
-  tags: [k8s, k8-init]
+  tags: [k8s, k8-init, k8-master-init]
 
-- name: Deploy network CNI.
-  get_url:
-    url: https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
-    dest: ~/cri-flannel.yaml
-    mode: '0664'
-  tags: [k8s, k8-init]
-
-- name: Apply flannel-cri manifest to the cluster.
-  k8s:
-    kubeconfig: /etc/kubernetes/admin.conf
-    state: present
-    src: ~/cri-flannel.yaml
-  tags: [k8s, k8-init]
-
-- name: Create kube conf dir
-  file:
-    path: '{{ ansible_facts.env.HOME }}/.kube'
-    state: directory
-  tags: [k8s, k8-init]
-
-- name: Copy config file
-  copy:
-    src: /etc/kubernetes/admin.conf
-    dest: '{{ ansible_facts.env.HOME }}/.kube/admin.conf'
-    remote_src: yes
-  tags: [k8s, k8-init]
-
-- name: Creating local config file
-  fetch:
-    src: /etc/kubernetes/admin.conf
-    dest: "{{ lookup('env', 'HOME') }}/admin.conf"
-    flat: yes
+- name: Setup CNI and Ingress
+  when: '"k8s_master" in group_names'
+  include_tasks: setup-cni-and-ingress.yml
   run_once: true
-  ignore_errors: true
-  tags: [k8s, k8-init]
+  tags: [k8s, k8-init, k8-master-init, k8-cri, k8-ingress]
+
+- name: Setup configs
+  when: '"k8s_master" in group_names'
+  include_tasks: setup-cni-and-ingress.yml
+  run_once: true
+  tags: [k8s, k8-init, k8-master-init]
 
 - name: Install Helm
+  when: '"k8s_master" in group_names and k8s_install_helm'
   include_tasks: install-helm.yml
-  when: k8s_install_helm
   run_once: true
   tags: [k8s, k8s-init, k8s-helm]
 
+- name: Get Join Command
+  when: '"k8s_master" in group_names'
+  command: kubeadm token create --print-join-command
+  register: tmp_k8_join_command
+  tags: [k8s, k8s-init, k8s-join]
 
-# - name: Taint node "foo"
-#   kubernetes.core.k8s_taint:
-#     state: absent
-#     name: all
-#     taints:
-#     - key: node-role.kubernetes.io/control-plane
-#       effect: NoSchedule
-#     - key: dedicated
+- name: Setting Join command for all nodes
+  when: '"k8s_master" in group_names'
+  run_once: true
+  set_fact:
+    k8_join_command: '{{ tmp_k8_join_command.stdout }}'
+  delegate_to: "{{ item }}"
+  with_items: "{{ play_hosts }}"
+  tags: [k8s, k8s-init, k8s-join]
 
 # - name: Kubeadm check
 #   shell: kubectl cluster-info

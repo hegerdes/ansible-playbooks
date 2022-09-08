@@ -6,9 +6,10 @@
   roles:
     - k8s/common
 
-- hosts: k8s_master
+- hosts: k8s
   become: true
   gather_facts: true
   roles:
     - k8s/master
+    - k8s/worker
 

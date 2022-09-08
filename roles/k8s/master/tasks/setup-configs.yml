@@ -1,0 +1,23 @@
+# Main k8s Setup
+
+- name: Create kube conf dir
+  file:
+    path: '{{ ansible_facts.env.HOME }}/.kube'
+    state: directory
+  tags: [k8s, k8-init, k8-master-init]
+
+- name: Copy config file
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: '{{ ansible_facts.env.HOME }}/.kube/config'
+    remote_src: yes
+  tags: [k8s, k8-init, k8-master-init]
+
+- name: Creating local config file
+  fetch:
+    src: /etc/kubernetes/admin.conf
+    dest: "{{ lookup('env', 'HOME') }}/config"
+    flat: yes
+  run_once: true
+  ignore_errors: true
+  tags: [k8s, k8-init, k8-master-init]

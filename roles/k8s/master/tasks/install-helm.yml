@@ -4,7 +4,7 @@
     state: present
   tags: [k8s, k8s-init, k8s-helm]
 
-- name: Add Docker repository
+- name: Add helm repository
   apt_repository:
     repo: deb https://baltocdn.com/helm/stable/debian/ all main
     update_cache: yes

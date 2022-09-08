@@ -1,0 +1,94 @@
+# Main k8s Setup
+- name: Deploy network CNI.
+  get_url:
+    url: https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+    dest: ~/cri-flannel.yaml
+    mode: '0664'
+  tags: [k8s, k8-init, k8-master-init, k8-cri]
+
+- name: Apply flannel-cri manifest to the cluster
+  k8s:
+    kubeconfig: /etc/kubernetes/admin.conf
+    state: present
+    src: ~/cri-flannel.yaml
+  tags: [k8s, k8-init, k8-master-init, k8-cri]
+
+- name: Checking ingress conf dir
+  file:
+    path: /srv/ingress
+    state: directory
+  tags: [k8s, k8-init, k8-master-init, k8-ingress]
+
+- name: Copy ingress definitions files
+  copy:
+    src: files/ingress/
+    dest: /srv/ingress
+  tags: [k8s, k8-init, k8-master-init, k8-ingress]
+
+- name: Apply ingress manifest to the cluster
+  k8s:
+    kubeconfig: /etc/kubernetes/admin.conf
+    state: present
+    src: '{{ item }}'
+  loop:
+    - /srv/ingress/common/ns-and-sa.yaml
+    - /srv/ingress/rbac/rbac.yaml
+    - /srv/ingress/common/default-server-secret.yaml
+    - /srv/ingress/common/nginx-config.yaml
+    - /srv/ingress/common/ingress-class.yaml
+    - /srv/ingress/common/crds/k8s.nginx.org_virtualservers.yaml
+    - /srv/ingress/common/crds/k8s.nginx.org_virtualserverroutes.yaml
+    - /srv/ingress/common/crds/k8s.nginx.org_transportservers.yaml
+    - /srv/ingress/common/crds/k8s.nginx.org_policies.yaml
+    - /srv/ingress/common/crds/k8s.nginx.org_globalconfigurations.yaml
+    - /srv/ingress/daemon-set/nginx-ingress.yaml
+  tags: [k8s, k8-init, k8-master-init, k8-ingress]
+
+- name: Create kube conf dir
+  file:
+    path: '{{ ansible_facts.env.HOME }}/.kube'
+    state: directory
+  tags: [k8s, k8-init, k8-master-init]
+
+- name: Copy config file
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: '{{ ansible_facts.env.HOME }}/.kube/config'
+    remote_src: yes
+  tags: [k8s, k8-init, k8-master-init]
+
+- name: Creating local config file
+  fetch:
+    src: /etc/kubernetes/admin.conf
+    dest: "{{ lookup('env', 'HOME') }}/config"
+    flat: yes
+  run_once: true
+  ignore_errors: true
+  tags: [k8s, k8-init, k8-master-init]
+
+- name: Install Helm
+  include_tasks: install-helm.yml
+  run_once: true
+  tags: [k8s, k8s-init, k8s-helm]
+
+- name: Get Join Command
+  command: kubeadm token create --print-join-command
+  register: tmp_k8_join_command
+  tags: [k8s, k8s-init, k8s-join]
+
+- name: Setting Join command for all nodes
+  run_once: true
+  set_fact:
+    k8_join_command: '{{ tmp_k8_join_command.stdout }}'
+  delegate_to: "{{ item }}"
+  with_items: "{{ play_hosts }}"
+  tags: [k8s, k8s-init, k8s-join]
+
+# - name: Kubeadm check
+#   shell: kubectl cluster-info
+#   tags: [k8s, k8s-prepare, k8s-base]
+
+
+# - name: Ensure handlers are notified now
+#   meta: flush_handlers
+
