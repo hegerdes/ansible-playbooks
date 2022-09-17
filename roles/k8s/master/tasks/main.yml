@@ -29,7 +29,7 @@
 
 - name: Setup configs
   when: '"k8s_master" in group_names'
-  include_tasks: setup-cni-and-ingress.yml
+  include_tasks: setup-configs.yml
   run_once: true
   tags: [k8s, k8-init, k8-master-init]
 
@@ -54,10 +54,16 @@
   with_items: "{{ play_hosts }}"
   tags: [k8s, k8s-init, k8s-join]
 
+- name: Install Helm
+  when: '"k8s_master" in group_names and k8s_install_helm'
+  include_tasks: setup-rancher.yml
+  run_once: true
+  tags: [k8s, k8-init, k8-master-init, k8-helm, k8s-monitor]
+
+
 # - name: Kubeadm check
 #   shell: kubectl cluster-info
 #   tags: [k8s, k8s-prepare, k8s-base]
-
 
 # - name: Ensure handlers are notified now
 #   meta: flush_handlers

@@ -1,11 +1,12 @@
 - name: Reset Kubernetes component
   shell: "kubeadm reset --force"
   register: reset_cluster
+  tags: [k8s, k8-init, k8-master-init]
 
 - name: Init Kubernetes cluster
   when: reset_cluster is succeeded
   shell: |
-    kubeadm init --kubernetes-version {{ k8s_version }} \
+    kubeadm init --kubernetes-version={{ k8s_version }} \
                  --pod-network-cidr {{ k8s_pod_network_cidr }} \
                  --token {{ k8s_token }} \
                  --upload-certs \
@@ -15,6 +16,7 @@
                  {{ k8s_kubeadm_opts }} \
                  {{ k8s_init_opts }}
   register: init_cluster
+  tags: [k8s, k8-init, k8-master-init]
 
 - name: Remove no NoSchedule taint form master nodes
   kubernetes.core.k8s_taint:

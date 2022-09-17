@@ -76,7 +76,7 @@
     - 'https://packages.cloud.google.com/apt/doc/apt-key.gpg'
   tags: [k8s, k8s-prepare, k8s-base, apt]
 
-- name: Add Docker repository
+- name: Add Docker/K8s repository
   apt_repository:
     repo: '{{ item.repo }}'
     update_cache: yes
@@ -91,10 +91,16 @@
 
 - name: Install container runtime, kubelet and admin tools
   apt:
-    name: [docker-ce, kubeadm, kubectl, kubelet, containerd.io]
+    name:
+      - docker-ce
+      - kubeadm={{ k8s_version }}-00
+      - kubectl={{ k8s_version }}-00
+      - kubelet={{ k8s_version }}-00
+      - containerd.io
     state: present
     update_cache: yes
     install_recommends: no
+    allow_downgrade: yes
   tags: [k8s, k8s-prepare, k8s-base, apt]
 
 - name: Copy containerd-conf

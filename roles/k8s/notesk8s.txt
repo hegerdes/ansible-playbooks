@@ -140,3 +140,19 @@ subjects:
 
 
 kubeadm token create ihrzqt.hpey9y3y65l86wr4 --print-join-command --ttl=0
+
+
+helm install \
+  cert-manager jetstack/cert-manager \
+  --namespace cert-manager \
+  --create-namespace \
+  --version v1.9.1 \
+  --set installCRDs=true
+
+helm install rancher rancher-stable/rancher \
+  --namespace cattle-system \
+  --set hostname=rancher.henrikgerdes.me \
+  --set bootstrapPassword=admin \
+  --set ingress.tls.source=letsEncrypt \
+  --set letsEncrypt.email=hegerdes@uni-osnabrueck.de \
+  --set letsEncrypt.ingress.class=nginx

@@ -14,3 +14,6 @@ tools/terraform/hetzner/.*.lock.hcl
 tools/terraform/hetzner/*.tfstate.backup
 tools/terraform/hetzner/*.backup
 tools/terraform/hetzner/.terraform/providers
+kryptex.py
+tools/terraform/hetzner/terraform.tfstate
+tools/terraform/hetzner/vars.tfvars
