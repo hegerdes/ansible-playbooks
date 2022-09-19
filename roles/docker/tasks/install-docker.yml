@@ -65,7 +65,7 @@
     state: directory
     mode: 0755
   when: docker_daemon_options.keys() | length > 0
-  tags: [docker, docker-install]
+  tags: [docker, docker-install, docker-deamon]
 
 - name: Configure Docker daemon options
   copy:
