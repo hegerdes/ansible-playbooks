@@ -136,6 +136,14 @@ services:
       placement:
         constraints:
           - "node.labels.mgmt==true"
+      labels:
+        - "{{ mgmt_docker_stack_name }}=true"
+        {{ mgmt_traefik_labels | replace("__SERVICE__", "loki") | replace("__PORT__", "3100") | trim | indent(width=8) if(mgmt_use_swarm_mode and mgmt_proxy_loki) }}
+        {{ mgmt_traefik_auth_labels.loki | default("") | trim | indent(width=8) if(mgmt_use_swarm_mode and mgmt_proxy_loki) }}
+    labels:
+      - "{{ mgmt_docker_stack_name }}=true"
+      {{ mgmt_traefik_labels | replace("__SERVICE__", "loki") | replace("__PORT__", "3100") | trim | indent(width=6) if(not mgmt_use_swarm_mode and mgmt_proxy_loki) }}
+      {{ mgmt_traefik_auth_labels.loki | default("") | trim | indent(width=6) if(not mgmt_use_swarm_mode and mgmt_proxy_loki) }}
 
 configs:
   loki-conf-{{ lookup('file', mgmt_src_config_files + 'mgmt-loki/loki-config.yml') | default(mgmt_conf_counter) | hash('md5') }}:
