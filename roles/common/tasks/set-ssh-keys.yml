@@ -64,5 +64,5 @@
   import_tasks: shared/set-ssh-keys.yml
   vars:
     ssh_key_list: '{{ common_ssh_keys + common_present_ssh_keys | default([]) + common_revoked_ssh_keys | default([]) }}'
-  tags: [common, ssh-keys]
+  tags: [common, ssh-keys, ssh-keys-manuel]
 
