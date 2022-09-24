@@ -73,7 +73,7 @@ services:
           - node.labels.minio4==true
 
   nginx:
-    image: nginx:1.21
+    image: nginx:1.23
     hostname: nginx
     ports:
       - "9000:9000"
