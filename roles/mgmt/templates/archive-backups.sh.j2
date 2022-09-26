@@ -5,6 +5,7 @@ RED='\033[0;31m'
 NC='\033[0m'
 
 SERVERS=({{ "\"" + mgmt_backup_target_hosts | default([]) | join("\" \"") + "\"" }})
+SSH_EXTRA_ARGS="{{ gmt_backup_target_ssh_args }}"
 BACKUP_DST=${CUSTOM_BACKUP_DIR:="{{ backup_dir }}"}
 PUB_KEY_FILE="${BACKUP_DST}/db-backup.key.pub"
 SECRET=$(openssl rand -base64 32)
@@ -28,21 +29,22 @@ fi
 mkdir -p $BACKUP_DST
 {{ "KEEP=$((${#SERVERS[@]} * BACKUPS_TO_KEEP))" }}
 
+set -e
 for SERVER in "${SERVERS[@]}"; do
     # Connection check
-    ssh $SERVER "ls -t ${BACKUP_DST}/*.gz" > /dev/null
+    ssh $SERVER $SSH_EXTRA_ARGS "ls -t ${BACKUP_DST}/*.gz" > /dev/null
     checkExitCode $?
-    for DUMP_FILE in $(ssh $SERVER "ls -t ${BACKUP_DST}/*.gz"); do
+    for DUMP_FILE in $(ssh $SERVER $SSH_EXTRA_ARGS "ls -t ${BACKUP_DST}/*.gz"); do
         echo "${SERVER}: Getting ${DUMP_FILE}..."
 
         # Extract file names
-        DUMP_FILE_NAME=$(ssh $SERVER "basename ${DUMP_FILE}")
+        DUMP_FILE_NAME=$(ssh $SERVER $SSH_EXTRA_ARGS "basename ${DUMP_FILE}")
         checkExitCode $?
         DUMP_DATE=${DUMP_FILE_NAME:0:10}
         mkdir -p $BACKUP_DST/$DUMP_DATE
 
         # Get DB dump
-        ssh $SERVER "cat ${DUMP_FILE}" | gpg --batch --yes --compress-level 0 --symmetric --passphrase $SECRET > $BACKUP_DST/$DUMP_DATE/$DUMP_FILE_NAME.gpg
+        ssh $SERVER $SSH_EXTRA_ARGS "cat ${DUMP_FILE}" | gpg --batch --yes --compress-level 0 --symmetric --passphrase $SECRET > $BACKUP_DST/$DUMP_DATE/$DUMP_FILE_NAME.gpg
         checkExitCode $?
 
         # Saving the key used for encryption
@@ -52,7 +54,7 @@ for SERVER in "${SERVERS[@]}"; do
         # Remove old backups
         if [[ $(date '+%Y-%m-%d') != $DUMP_DATE ]]; then
             echo "${SERVER}: Removing ${DUMP_FILE}"
-            ssh $SERVER "rm ${DUMP_FILE}"
+            ssh $SERVER $SSH_EXTRA_ARGS "rm ${DUMP_FILE}"
             checkExitCode $?
         fi
     done
@@ -80,8 +82,8 @@ echo "Will remove:"
 ls -t ${BACKUP_DST}/**/*.gpg | sed -e "1,${KEEP}d" 2> /dev/null
 ls -t ${BACKUP_DST}/**/*.gpg | sed -e "1,${KEEP}d" | xargs -r -d '\n' rm 2> /dev/null
 
-ls -t ${BACKUP_DST}/**/*.acs | sed -e "1,${BACKUPS_TO_KEEP}d" 2> /dev/null
-ls -t ${BACKUP_DST}/**/*.acs | sed -e "1,${BACKUPS_TO_KEEP}d" | xargs -r -d '\n' rm 2> /dev/null
+ls -t ${BACKUP_DST}/**/*.acs | sed -e "1,${KEEP}d" 2> /dev/null
+ls -t ${BACKUP_DST}/**/*.acs | sed -e "1,${KEEP}d" | xargs -r -d '\n' rm 2> /dev/null
 
 find ${BACKUP_DST} -type d -empty -delete
 
