@@ -34,7 +34,7 @@
     state: present
   tags: [mgmt, ssh]
 
-- name: Ensure .ssh directory exists
+- name: Ensure ssh directory exists
   file:
     path: '/home/{{ mgmt_jumphost_user }}/.ssh'
     state: directory
