@@ -4,12 +4,12 @@
   when: ansible_facts.distribution | lower == "debian"
   blockinfile:
     marker_begin: 'BEGIN {{ item }}'
-    marker_end: 'BEGIN {{ item }}'
+    marker_end: 'END {{ item }}'
     path: /etc/network/interfaces.d/60-my-floating-ip.cfg
     create: yes
     block: |
       auto eth0:1
-       iface eth0:1 inet static
+       iface eth0:{{ item_index + 1 }} inet static
        address {{ item }}
        netmask 32
   loop: '{{ floating_ips }}'
