@@ -1,35 +1,26 @@
 # Main k8s Setup
-- name: Download network CNI manifest
-  get_url:
-    url: https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
-    dest: ~/cri-flannel.yaml
-    mode: '0664'
-  tags: [k8s, k8-init, k8-master-init, k8-cri]
-
-- name: Apply flannel-cri manifest to the cluster
-  k8s:
-    kubeconfig: /etc/kubernetes/admin.conf
-    state: present
-    src: ~/cri-flannel.yaml
-  tags: [k8s, k8-init, k8-master-init, k8-cri]
-
+---
 - name: Checking ingress conf dir
   file:
     path: /srv/ingress
     state: directory
-  tags: [k8s, k8-init, k8-master-init, k8-ingress]
+  tags: [k8s, k8-init, k8-ingress, k8s-ingress-nginx]
 
 - name: Copy ingress definitions files
+  when: groups.k8s_master | first == inventory_hostname
   copy:
-    src: files/ingress/
+    src: files/
     dest: /srv/ingress
-  tags: [k8s, k8-init, k8-master-init, k8-ingress]
+  run_once: true
+  tags: [k8s, k8-init, k8-ingress, k8s-ingress-nginx]
 
 - name: Apply ingress manifest to the cluster
+  when: groups.k8s_master | first == inventory_hostname
   k8s:
     kubeconfig: /etc/kubernetes/admin.conf
     state: present
     src: '{{ item }}'
+  run_once: true
   loop:
     - /srv/ingress/common/ns-and-sa.yaml
     - /srv/ingress/rbac/rbac.yaml
@@ -42,5 +33,4 @@
     - /srv/ingress/common/crds/k8s.nginx.org_policies.yaml
     - /srv/ingress/common/crds/k8s.nginx.org_globalconfigurations.yaml
     - /srv/ingress/daemon-set/nginx-ingress.yaml
-  tags: [k8s, k8-init, k8-master-init, k8-ingress]
-
+  tags: [k8s, k8-init, k8-ingress, k8s-ingress-nginx]

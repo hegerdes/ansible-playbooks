@@ -6,10 +6,22 @@
   roles:
     - k8s/common
 
-- hosts: k8s
+- hosts: k8s_master
   become: true
   gather_facts: true
   roles:
     - k8s/master
-    - k8s/worker
+    - k8s/ingress-nginx
+
+- hosts: k8s_worker
+  become: true
+  gather_facts: true
+  roles:
+    - k8s/worker-join
+
+# - hosts: k8s_worker
+#   become: true
+#   gather_facts: true
+#   roles:
+#     - k8s/worker-leave
 
