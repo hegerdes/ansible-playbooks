@@ -6,7 +6,7 @@ services:
     hostname: {{ inventory_dir | basename }}-traefik
     command:
       - "--accesslog"
-      - "--log.level=DEBUG"
+      - "--log.level=INFO"
       - "--api.insecure=true"
       - "--api.dashboard=true"
       - "--metrics.prometheus"

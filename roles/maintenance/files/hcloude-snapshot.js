@@ -172,13 +172,13 @@ async function waitForImageCreation() {
 
     while (snapshots.length != 0) {
         console.log("Waiting for image creation...");
-        await sleep(15000);
+        await sleep(30000);
         try {
             snapshots = await getImages(null, "creating");
         }catch(err){
             err_counter += 1;
             console.error("Error making http request: " + err.massage);
-            await sleep(15000);
+            await sleep(30000);
             if(err_counter > 3) process.exit(1);
         }
     }
