@@ -4,6 +4,7 @@ services:
   wireguard:
     image: linuxserver/wireguard:latest
     hostname: {{ inventory_dir | basename }}-wireguard
+    restart: always
     cap_add:
       - NET_ADMIN
       - SYS_MODULE

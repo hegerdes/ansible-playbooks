@@ -15,9 +15,3 @@
     files: ['mgmt-stack-wiregurd.yml']
   tags: [mgmt, mgmt-stack, wireguard]
 
-- name: Wait for containers to start
-  wait_for:
-    port: '{{ mgmt_wireguard_port }}'
-    delay: 5
-    timeout: 30
-  tags: [mgmt, mgmt-stack, wireguard]
