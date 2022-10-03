@@ -57,7 +57,7 @@
 
 - name: Debug - Print join command
   debug:
-    var: k8_cp_join_command
+    var: k8_cp_join_command.stdout
   run_once: true
   tags: [k8s, k8-init, k8-master-init]
 
