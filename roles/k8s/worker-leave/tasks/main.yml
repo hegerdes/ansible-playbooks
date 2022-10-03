@@ -1,0 +1,45 @@
+# k8s leave
+---
+- name: Get aktive nodes
+  command: kubectl get nodes -o name
+  register: k8_aktive_nodes
+  run_once: true
+  delegate_to: '{{ groups.k8s_master | first }}'
+  tags: [k8s, k8s-leave]
+  check_mode: no
+  changed_when: false
+
+- name: Show operations to be performed
+  debug:
+    msg: |
+      {% if ("node/" + inventory_hostname) in k8_aktive_nodes.stdout_lines %}
+      Will remove the node {{ inventory_hostname }}
+      {% else %}
+      The node {{ inventory_hostname }} is not in the cluster - skipping it
+      {% endif %}
+  tags: [k8s, k8s-leave]
+
+- name: Drain the node
+  when: '("node/" + inventory_hostname) in k8_aktive_nodes.stdout_lines'
+  kubernetes.core.k8s_drain:
+    kubeconfig: /etc/kubernetes/admin.conf
+    state: drain
+    name: '{{ inventory_hostname }}'
+    delete_options:
+      ignore_daemonsets: yes
+      delete_emptydir_data : yes
+      # force: yes
+  delegate_to: '{{ groups.k8s_master | first }}'
+  tags: [k8s, k8s-leave]
+
+- name: Delete the node
+  when: '("node/" + inventory_hostname) in k8_aktive_nodes.stdout_lines'
+  command: 'kubectl delete node {{ inventory_hostname }}'
+  register: k8_delete_res
+  delegate_to: '{{ groups.k8s_master | first }}'
+  tags: [k8s, k8s-leave]
+
+- name: Reset the node
+  when: '("node/" + inventory_hostname) in k8_aktive_nodes.stdout_lines'
+  command: kubeadm reset --force
+  tags: [k8s, k8s-leave]

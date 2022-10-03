@@ -1,0 +1,32 @@
+# k8s join
+---
+
+- name: Get Worker join Command
+  command: kubeadm token create --print-join-command
+  register: k8_worker_join_command
+  run_once: true
+  delegate_to: '{{ groups.k8s_master | first }}'
+  tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
+
+- name: Debug - Print join command
+  debug:
+    var: k8_worker_join_command
+  run_once: true
+  tags: [k8s, k8-init, k8-master-init, k8s-worker-join]
+
+- name: Check if kubeadm has already run
+  stat:
+    path: /etc/kubernetes/kubelet.conf
+  register: k8s_kubeadm_worker_ca
+  tags: [k8s, k8-init, k8s-join, k8s-worker-join]
+
+- name: Join Nodes
+  when: not k8s_kubeadm_worker_ca.stat.exists
+  command: '{{ k8_worker_join_command.stdout }}'
+  tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
+  register: k8s_join_res
+
+- name: Enable and check kubelet service
+  debug:
+    var: k8s_join_res
+  tags: [k8s, k8s-init, k8s-join, k8s-worker-join]

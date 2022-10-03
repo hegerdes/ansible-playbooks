@@ -1,20 +1,39 @@
+# Set up k8s with kubeadm
+---
 - name: Reset Kubernetes component
   shell: "kubeadm reset --force"
   register: reset_cluster
   tags: [k8s, k8-init, k8-master-init]
 
+- name: Debug - Kubeamd init
+  debug:
+    msg: |
+      Running:
+      kubeadm init --kubernetes-version={{ k8s_version }} \
+                  --pod-network-cidr {{ k8s_pod_network_cidr }} \
+                  --token {{ k8s_token }} \
+                  --upload-certs \
+                  --ignore-preflight-errors=NumCPU \
+                  --control-plane-endpoint {{ k8s_api_server }} \
+                  --apiserver-cert-extra-sans={{ k8s_cert_extra_sans }} \
+                  {{ "--certificate-key=" + k8_cert_key if(k8_cert_key != "none") else ""}} \
+                  {{ k8s_kubeadm_opts }} \
+                  {{ k8s_init_opts }}
+  tags: [k8s, k8s-prepare, k8s-base, k8s-test]
+
 - name: Init Kubernetes cluster
   when: reset_cluster is succeeded
   shell: |
-    kubeadm init --kubernetes-version={{ k8s_version }} \
-                 --pod-network-cidr {{ k8s_pod_network_cidr }} \
-                 --token {{ k8s_token }} \
-                 --upload-certs \
-                 --ignore-preflight-errors=NumCPU \
-                 --apiserver-advertise-address {{ k8s_api_server }} \
-                 --apiserver-cert-extra-sans={{ k8s_cert_extra_sans }}
-                 {{ k8s_kubeadm_opts }} \
-                 {{ k8s_init_opts }}
+      kubeadm init --kubernetes-version={{ k8s_version }} \
+                  --pod-network-cidr {{ k8s_pod_network_cidr }} \
+                  --token {{ k8s_token }} \
+                  --upload-certs \
+                  --ignore-preflight-errors=NumCPU \
+                  --control-plane-endpoint {{ k8s_api_server }} \
+                  --apiserver-cert-extra-sans={{ k8s_cert_extra_sans }} \
+                  {{ "--certificate-key=" + k8_cert_key if(k8_cert_key != "none") else ""}} \
+                  {{ k8s_kubeadm_opts }} \
+                  {{ k8s_init_opts }}
   register: init_cluster
   tags: [k8s, k8-init, k8-master-init]
 
@@ -29,9 +48,10 @@
     - key: dedicated
   tags: [k8s, k8-init, k8-master-init, k8-taint]
 
-- name: debug
+- name: Debug - Kubeadm init res
   debug:
-    var: init_cluster
+    var: init_cluster.stderr_lines + init_cluster.stdout_lines
+  tags: [k8s, k8-init, k8-master-init]
 
 
 # kubeadm init --kubernetes-version stable-1 \

@@ -18,7 +18,6 @@
     src: /etc/kubernetes/admin.conf
     dest: "{{ lookup('env', 'HOME') }}/config"
     flat: yes
-  run_once: true
   ignore_errors: true
   tags: [k8s, k8-init, k8s-monitor]
 
