@@ -62,7 +62,7 @@ ansible-vault encrypt <PATH_TO_VAULT>
 
 
 ## Backgrund
-The script performs all plays defined in the playbook. Every play can traget all hosts, a group of hosts or one sever:
+The script performs all plays (here it is two) defined in the playbook. Every play can traget all hosts, a group of hosts or only one sever:
 
 ```yml
 - hosts: all          # all severs
@@ -75,9 +75,9 @@ The script performs all plays defined in the playbook. Every play can traget all
     - promtail
 ```
 Each play can have multiple roles or tasks that are performed.  
-To configure a role with custom settings to fit your server you can create `group_vars` and `host_vars` in your inventory folder.
+To configure a role with custom settings to fit your server you can create `group_vars/<group_name>.yml` and `host_vars/<host_name>.yml` files in your inventory folder. These files can contain variables to override the defaults.
 
-The default values for each role are defined in `<role_name/defaults/main.yml>` and can look like that:
+The default values for each role are defined in `<role_name>/defaults/main.yml` and can look like this:
 ```yml
 # promtail options
 promtail_config_client_target: 'mgmt'
@@ -88,7 +88,3 @@ promtail_args: '--client.external-labels=hostname={{ ansible_facts.hostname }} -
 ```
 Thes values can be overwritten by setting `group_vars` and `host_vars` or `--extra-vars KEY=VALUE` on the terminal
 
-# Symbic Webserver Conf-Generator
-This repo also contains a generator for different webserver configs.
-
-See: [here](ingress-generator/ReadMe.md)
