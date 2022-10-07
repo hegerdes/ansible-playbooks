@@ -24,14 +24,14 @@
 - name: Setup CNI
   when: groups.k8s_master | first == inventory_hostname
   include_tasks: setup-cni.yml
-  tags: [k8s, k8-init, k8-master-init, k8-cri, k8-ingress]
+  tags: [k8s, k8-init, k8-master-init, k8-cri]
 
 - name: Get ControlPlane certificate-key
   when: groups.k8s_master | first == inventory_hostname and k8_cert_key == "none"
   command: kubeadm certs certificate-key
   register: auto_k8_cert_key
   run_once: true
-  tags: [k8s, k8s-init, k8s-join]
+  tags: [k8s, k8s-init, k8-master-init]
 
 - name: Debug - Print cert-key
   debug:
@@ -44,7 +44,7 @@
   command: kubeadm token create --print-join-command
   register: tmp_k8_join_command
   run_once: true
-  tags: [k8s, k8s-init, k8s-join]
+  tags: [k8s, k8s-init, k8-master-init]
 
 - name: Setting join command for all master-nodes
   when: groups.k8s_master | first == inventory_hostname
@@ -53,7 +53,7 @@
     k8_cp_join_command: '{{ tmp_k8_join_command.stdout }} --control-plane --certificate-key {{ k8_cert_key if(k8_cert_key != "none") else auto_k8_cert_key.stdout }}'
   delegate_to: "{{ item }}"
   with_items: "{{ play_hosts }}"
-  tags: [k8s, k8s-init, k8s-join]
+  tags: [k8s, k8s-init, k8-master-init]
 
 - name: Debug - Print join command
   debug:
@@ -65,12 +65,12 @@
   stat:
     path: /etc/kubernetes/kubelet.conf
   register: k8s_kubeadm_all_init
-  tags: [k8s, k8-init, k8s-join]
+  tags: [k8s, k8-init, k8-master-init]
 
 - name: Join ControlPlane nodes
   when: not k8s_kubeadm_all_init.stat.exists
   command: '{{ k8_cp_join_command }}'
-  tags: [k8s, k8s-init, k8s-join]
+  tags: [k8s, k8s-init, k8-master-init]
   register: k8s_join_res
 
 - name: Show join results
@@ -95,18 +95,18 @@
 
 - name: Install Helm
   include_tasks: install-helm.yml
-  tags: [k8s, k8s-init, k8s-helm]
+  tags: [k8s, k8s-init, k8-master-init, k8s-helm]
 
 # - name: Install Rancher
 #   when: '"k8s_master" in group_names and k8s_install_helm'
 #   include_tasks: setup-rancher.yml
 #   run_once: true
-#   tags: [k8s, k8-init, k8-master-init, k8-helm, k8s-monitor]
+#   tags: [k8s, k8-init, k8-master-init, k8s-rancher, k8s-monitor]
 
 - name: Kubeadm check
   shell: kubectl cluster-info
   register: k8s_cluster_info
-  tags: [k8s, k8s-prepare, k8s-base]
+  tags: [k8s, k8-init, k8-master-init]
 
 - name: Debug - Print cluser info
   debug:
