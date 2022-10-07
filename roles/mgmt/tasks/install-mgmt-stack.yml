@@ -33,12 +33,18 @@
     group: root
   tags: [mgmt, mgmt-stack]
 
+- name: Copy MGMT compose|stack custom files (rsync)
+  when: mgmt_use_srync_copy
+  synchronize:
+    src: '{{ mgmt_src_config_files }}'
+    dest: '{{ mgmt_dst_config_files }}'
+  tags: [mgmt, mgmt-stack]
+
 - name: Copy MGMT compose|stack custom files
+  when: not mgmt_use_srync_copy
   copy:
     src: '{{ mgmt_src_config_files }}'
     dest: '{{ mgmt_dst_config_files }}'
-    owner: root
-    group: root
   tags: [mgmt, mgmt-stack]
 
 - name: Configuring compose|stack files
