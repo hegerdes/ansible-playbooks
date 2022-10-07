@@ -1,0 +1,142 @@
+# Install NFS Server
+---
+
+- name: Install nfs packages
+  apt:
+    name: nfs-kernel-server
+    state: latest
+    install_recommends: no
+  tags: [nfs]
+
+- name: Ensure export directory exists
+  file:
+    path: '{{ nfs_export_dir }}'
+    state: directory
+    mode: 0777
+    group: nogroup
+    owner: nobody
+  tags: [nfs]
+
+- name: Ensure export directory exists
+  file:
+    path: '{{ item.directory }}'
+    state: directory
+    mode: 0777
+    group: nogroup
+    owner: nobody
+  loop: '{{ nfs_exports }}'
+  tags: [nfs]
+
+- name: Setting exports
+  lineinfile:
+    path: '{{ nfs_exports_file_path }}'
+    create: yes
+    line: '{{ item.directory }} {{ item.host }}'
+  loop: '{{ nfs_exports }}'
+  loop_control:
+    index_var: item_index
+  tags: [nfs]
+
+# - name: Check if node-exporter is installed
+#   command: 'node_exporter --version'
+#   register: node_exporter_check_result
+#   changed_when: false
+#   failed_when: false
+#   tags: [node-exporter, monitoring]
+
+# - name: Get node-exporter URL
+#   when: node_exporter_check_result.stdout == ""
+#   shell: |
+#     curl --silent https://api.github.com/repos/prometheus/node_exporter/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep linux-amd64
+#   register: node_exporter_url
+#   tags: [node-exporter, monitoring]
+
+# - name: Download and un-tar node-exporter
+#   when: node_exporter_check_result.stdout == ""
+#   unarchive:
+#     src: '{{ node_exporter_url.stdout }}'
+#     dest: /tmp
+#     remote_src: yes
+#   tags: [node-exporter, monitoring]
+
+# - name: Install node-exporter
+#   when: node_exporter_check_result.stdout == ""
+#   shell: |
+#     mv /tmp/node_exporter-*/node_exporter /usr/local/bin/node_exporter
+#   notify: Restart node-exporter
+#   tags: [node-exporter, monitoring]
+
+# - name: Test node-exporter
+#   command: "node_exporter --version"
+#   changed_when: "false"
+#   tags: [node-exporter, monitoring]
+
+# - name: Add node-exporter user
+#   user:
+#     name: node-exporter
+#     shell: /usr/sbin/nologin
+#     create_home: no
+#     group: adm
+#     system: yes
+#     state: present
+#   notify: Restart node-exporter
+#   tags: [node-exporter, monitoring]
+
+# - name: Copy node-exporter service config
+#   template:
+#     src: node-exporter.service.j2
+#     dest: /etc/systemd/system/node-exporter.service
+#     owner: root
+#     group: root
+#     mode: '0644'
+#   notify: Restart node-exporter
+#   tags: [node-exporter, monitoring]
+
+# - name: Enable node-exporter service
+#   systemd:
+#     name: node-exporter.service
+#     state: started
+#     daemon_reload: yes
+#     enabled: yes
+#   tags: [node-exporter, monitoring]
+
+# - name: Verify node-exporter status
+#   service:
+#     name: node-exporter.service
+#     state: started
+#   tags: [node-exporter, monitoring]
+
+# - name: Ensure handlers are notified now
+#   meta: flush_handlers
+#   tags: [node-exporter, monitoring]
+
+# - name: Check is ufw installed
+#   when: node_exporter_allow_ports
+#   shell: command -v ufw >/dev/null 2>&1
+#   register: ufw_installed
+#   ignore_errors: True
+#   changed_when: false
+#   tags: [node-exporter, monitoring, firewall]
+
+# - name: Check is firewalld installed
+#   when: node_exporter_allow_ports
+#   shell: command -v firewall-cmd >/dev/null 2>&1
+#   register: firewalld_installed
+#   ignore_errors: True
+#   changed_when: false
+#   tags: [node-exporter, monitoring, firewall]
+
+# - name: Allow port via ufw
+#   include_tasks: shared/open-port-ufw.yml
+#   when: ufw_installed.rc | default(1) == 0
+#   vars:
+#     ufw_open_port: 9100
+#   tags: [node-exporter, monitoring, firewall]
+
+# - name: Allow port via firewalld
+#   include_tasks: shared/open-port-firewalld.yml
+#   when: firewalld_installed.rc | default(1) == 0
+#   tags: [node-exporter, monitoring, firewall]
+#   vars:
+#     firewalld_open_port: 9100/tcp
+#     firewalld_zone: internal

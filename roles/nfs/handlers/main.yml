@@ -1,0 +1,4 @@
+---
+- name: NFS apply
+  shell: systemctl reload nfs && exportfs -ar
+  tags: [nfs]
