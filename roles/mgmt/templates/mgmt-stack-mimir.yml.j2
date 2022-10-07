@@ -1,0 +1,61 @@
+version: '3.7'
+
+services:
+  mimir-1:
+    image: grafana/mimir:latest
+    command: ["-config.file=/etc/mimir.yml"]
+    hostname: mimir-1
+    networks:
+      - mimir-net
+    volumes:
+      - mimir-1-data:/data
+    configs:
+      - source: alertmanager-conf-{{ lookup('file', mgmt_src_config_files + 'mgmt-prometheus/alertmanager.yml') | default(mgmt_conf_counter) | hash('md5') }}
+        target: /etc/alertmanager.yml
+      - source: mimir-conf-{{ lookup('file', mgmt_src_config_files + 'mgmt-mimir/mimir.yml') | default(mgmt_conf_counter) | hash('md5') }}
+        target: /etc/mimir.yml
+
+  mimir-proxy:
+    image: nginx:1.23
+    hostname: mimir-proxy
+    networks:
+      - {{ mgmt_docker_stack_name }}_mgmt_net
+      - mimir-net
+    configs:
+      - source: mimir-proxy-conf-{{ lookup('file', mgmt_src_config_files + 'mgmt-mimir/nginx.conf') | default(mgmt_conf_counter) | hash('md5') }}
+        target: /etc/nginx/nginx.conf
+    deploy:
+      placement:
+        constraints:
+          - "node.labels.mgmt==true"
+      labels:
+        - "{{ mgmt_docker_stack_name }}=true"
+        {{ mgmt_traefik_labels | replace("__SERVICE__", "mimir") | replace("__PORT__", "8080") | indent(width=8) if(mgmt_use_swarm_mode) }}
+        {{ mgmt_traefik_auth_labels.mimir | default("") | indent(width=8) if(mgmt_use_swarm_mode) }}
+    labels:
+      - "{{ mgmt_docker_stack_name }}=true"
+      {{ mgmt_traefik_labels | replace("__SERVICE__", "mimir") | replace("__PORT__", "8080") | indent(width=6) if(not mgmt_use_swarm_mode) }}
+      {{ mgmt_traefik_auth_labels.mimir | default("") | indent(width=6) if(not mgmt_use_swarm_mode) }}
+
+
+configs:
+  alertmanager-conf-{{ lookup('file', mgmt_src_config_files + 'mgmt-prometheus/alertmanager.yml') | default(mgmt_conf_counter) | hash('md5') }}:
+    file: /srv/mgmt-prometheus/alertmanager.yml
+  mimir-conf-{{ lookup('file', mgmt_src_config_files + 'mgmt-mimir/mimir.yml') | default(mgmt_conf_counter) | hash('md5') }}:
+    file: /srv/mgmt-mimir/mimir.yml
+  mimir-proxy-conf-{{ lookup('file', mgmt_src_config_files + 'mgmt-mimir/nginx.conf') | default(mgmt_conf_counter) | hash('md5') }}:
+    file: /srv/mgmt-mimir/nginx.conf
+
+volumes:
+  mimir-1-data:
+  mimir-2-data:
+  mimir-3-data:
+
+networks:
+  {{ mgmt_docker_stack_name }}_mgmt_net:
+    external: true
+  mimir-net:
+    driver: overlay
+    attachable: true
+    driver_opts:
+      com.docker.network.driver.mtu: 1450

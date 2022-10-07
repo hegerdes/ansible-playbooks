@@ -1,0 +1,44 @@
+# Do not use this configuration in production.
+# It is for demonstration purposes only.
+# Run Mimir in single process mode, with all components running in 1 process.
+target: all,alertmanager,overrides-exporter
+
+
+common:
+  storage:
+    backend: s3
+    s3:
+      endpoint: minio.example.com
+      bucket_name: mimir
+      access_key_id: xxx
+      secret_access_key: xxx
+
+# Configure Mimir to use Minio as its object storage backend.
+blocks_storage:
+  storage_prefix: blocks
+
+# # Use memberlist, a gossip-based protocol, to enable the 3 Mimir replicas to communicate
+# memberlist:
+#   join_members: [ mimir-1, mimir-2, mimir-3 ]
+
+ruler:
+  rule_path: /data/ruler
+  alertmanager_url: http://127.0.0.1:8080/alertmanager
+  ring:
+    # Quickly detect unhealthy rulers to speed up the tutorial.
+    heartbeat_period: 2s
+    heartbeat_timeout: 10s
+
+ruler_storage:
+  storage_prefix: ruler
+
+alertmanager:
+  data_dir: /data/alertmanager
+  fallback_config_file: /etc/alertmanager.yml
+  external_url: http://localhost:9009/alertmanager
+
+alertmanager_storage:
+  storage_prefix: alertmanager
+
+server:
+  log_level: warn
