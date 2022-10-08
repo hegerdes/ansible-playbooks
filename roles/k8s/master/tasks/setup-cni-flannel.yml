@@ -4,7 +4,7 @@
     url: https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
     dest: ~/cri-flannel.yaml
     mode: '0664'
-  tags: [k8s, k8-init, k8-master-init, k8-cri]
+  tags: [k8s, k8-init, k8-master-init, k8-cri, k8-flannel]
 
 - name: Apply flannel-cri manifest to the cluster
   k8s:
@@ -12,5 +12,4 @@
     state: present
     src: ~/cri-flannel.yaml
   run_once: true
-  tags: [k8s, k8-init, k8-master-init, k8-cri]
-
+  tags: [k8s, k8-init, k8-master-init, k8-cri, k8-flannel]

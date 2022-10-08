@@ -1,0 +1,26 @@
+# Main k8s CNI - Calico
+
+- name: Add projectcalico helm chart repo
+  kubernetes.core.helm_repository:
+    name: projectcalico
+    repo_url: https://projectcalico.docs.tigera.io/charts
+  tags: [k8s, k8-init, k8-master-init, k8-cri, k8s-calico]
+
+- name: Install Calico
+  kubernetes.core.helm:
+    kubeconfig: /etc/kubernetes/admin.conf
+    name: calico
+    chart_ref: projectcalico/tigera-operator
+    update_repo_cache: true
+    release_namespace: tigera-operator
+    create_namespace: true
+    values: '{{ k8s_calico_values }}'
+  tags: [k8s, k8-init, k8-master-init, k8-cri, k8s-calico]
+
+- name: Download calicoctl
+  get_url:
+    url: https://github.com/projectcalico/calico/releases/download/v3.24.1/calicoctl-linux-amd64
+    dest: /usr/bin/kubectl-calico
+    mode: '0754'
+  tags: [k8s, k8-init, k8-master-init, k8-cri, k8s-calico]
+

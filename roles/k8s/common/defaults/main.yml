@@ -1,2 +1,8 @@
 ---
 k8s_version: 1.24.4
+
+k8s_etc_hosts: []
+# Exmaple
+# k8s_etc_hosts:
+#   - name: k8s-hetzner-test-cp
+#     ip: 127.0.0.1

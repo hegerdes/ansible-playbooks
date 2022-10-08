@@ -1,0 +1,30 @@
+# Main k8s Rancher setup
+
+- name: Add Certmanager und Rancher Helm-Chart repo
+  kubernetes.core.helm_repository:
+    name: '{{ item.name }}'
+    repo_url: '{{ item.url }}'
+  with_items:
+    - { name: jetstack, url: https://charts.jetstack.io }
+    - { name: rancher-stable, url: https://releases.rancher.com/server-charts/stable }
+  tags: [k8s, k8-init, k8-master-init, k8-helm, k8s-helm-rancher]
+
+- name: Deploy Cert manager
+  kubernetes.core.helm:
+    name: cert-manager
+    chart_version: v1.7.1
+    chart_ref: jetstack/cert-manager
+    release_namespace: cert-manager
+    create_namespace: true
+    wait: true
+    values:
+      installCRDs: true
+  tags: [k8s, k8-init, k8-master-init, k8-helm, k8s-helm-rancher]
+
+- name: Create a Rancher namespace
+  kubernetes.core.k8s:
+    name: cattle-system
+    api_version: v1
+    kind: Namespace
+    state: present
+  tags: [k8s, k8-init, k8-master-init, k8-helm, k8s-helm-rancher]

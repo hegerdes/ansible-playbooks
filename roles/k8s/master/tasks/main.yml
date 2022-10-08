@@ -21,10 +21,14 @@
     enabled: yes
   tags: [k8s, k8-init, k8-master-init]
 
+- name: Install Helm
+  include_tasks: install-helm.yml
+  tags: [k8s, k8s-init, k8-master-init, k8s-helm]
+
 - name: Setup CNI
   when: groups.k8s_master | first == inventory_hostname
-  include_tasks: setup-cni.yml
-  tags: [k8s, k8-init, k8-master-init, k8-cri]
+  include_tasks: 'setup-cni-{{ k8s_cni | lower }}.yml'
+  tags: [k8s, k8-init, k8-master-init, k8-cri, k8s-flannel, k8s-calico]
 
 - name: Get ControlPlane certificate-key
   when: groups.k8s_master | first == inventory_hostname and k8_cert_key == "none"
@@ -43,6 +47,7 @@
   when: groups.k8s_master | first == inventory_hostname
   command: kubeadm token create --print-join-command
   register: tmp_k8_join_command
+  changed_when: false
   run_once: true
   tags: [k8s, k8s-init, k8-master-init]
 
@@ -86,22 +91,25 @@
     taints:
     - key: node-role.kubernetes.io/control-plane
       effect: NoSchedule
+    - key: node-role.kubernetes.io/master
+      effect: NoSchedule
     - key: dedicated
+  tags: [k8s, k8-init, k8-master-init, k8-taint]
+
+- name: Setting taints
+  kubernetes.core.k8s_taint:
+    kubeconfig: /etc/kubernetes/admin.conf
+    state: '{{ item.state | default("present") }}'
+    name: '{{ item.node }}'
+    taints:
+    - key: '{{ item.key }}'
+      effect: '{{ item.effect | default(omit) }}'
+  loop: '{{ k8s_taints }}'
   tags: [k8s, k8-init, k8-master-init, k8-taint]
 
 - name: Setup configs
   include_tasks: setup-configs.yml
   tags: [k8s, k8-init, k8-master-init]
-
-- name: Install Helm
-  include_tasks: install-helm.yml
-  tags: [k8s, k8s-init, k8-master-init, k8s-helm]
-
-# - name: Install Rancher
-#   when: '"k8s_master" in group_names and k8s_install_helm'
-#   include_tasks: setup-rancher.yml
-#   run_once: true
-#   tags: [k8s, k8-init, k8-master-init, k8s-rancher, k8s-monitor]
 
 - name: Kubeadm check
   shell: kubectl cluster-info

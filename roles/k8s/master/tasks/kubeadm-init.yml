@@ -1,63 +1,88 @@
 # Set up k8s with kubeadm
 ---
-- name: Reset Kubernetes component
-  shell: "kubeadm reset --force"
-  register: reset_cluster
-  tags: [k8s, k8-init, k8-master-init]
 
-- name: Debug - Kubeamd init
-  debug:
-    msg: |
-      Running:
-      kubeadm init --kubernetes-version={{ k8s_version }} \
-                  --pod-network-cidr {{ k8s_pod_network_cidr }} \
-                  --token {{ k8s_token }} \
-                  --upload-certs \
-                  --ignore-preflight-errors=NumCPU \
-                  --control-plane-endpoint {{ k8s_api_server }} \
-                  --apiserver-cert-extra-sans={{ k8s_cert_extra_sans }} \
-                  {{ "--certificate-key=" + k8_cert_key if(k8_cert_key != "none") else ""}} \
-                  {{ k8s_kubeadm_opts }} \
-                  {{ k8s_init_opts }}
-  tags: [k8s, k8s-prepare, k8s-base, k8s-test]
+- name: Init first master node with kubeadm
+  block:
+    - name: Reset Kubernetes component
+      shell: "kubeadm reset --force"
+      register: reset_cluster
+      tags: [k8s, k8-init, k8-master-init]
 
-- name: Init Kubernetes cluster
-  when: reset_cluster is succeeded
-  shell: |
-      kubeadm init --kubernetes-version={{ k8s_version }} \
-                  --pod-network-cidr {{ k8s_pod_network_cidr }} \
-                  --token {{ k8s_token }} \
-                  --upload-certs \
-                  --ignore-preflight-errors=NumCPU \
-                  --control-plane-endpoint {{ k8s_api_server }} \
-                  --apiserver-cert-extra-sans={{ k8s_cert_extra_sans }} \
-                  {{ "--certificate-key=" + k8_cert_key if(k8_cert_key != "none") else ""}} \
-                  {{ k8s_kubeadm_opts }} \
-                  {{ k8s_init_opts }}
-  register: init_cluster
-  tags: [k8s, k8-init, k8-master-init]
+    - name: Debug - Kubeamd init
+      debug:
+        msg: |
+          Running:
+          kubeadm init --kubernetes-version={{ k8s_version }} \
+                      --pod-network-cidr {{ k8s_pod_network_cidr }} \
+                      --token {{ k8s_token }} \
+                      --upload-certs \
+                      --ignore-preflight-errors=NumCPU \
+                      --control-plane-endpoint {{ k8s_api_server }} \
+                      --apiserver-cert-extra-sans={{ (k8s_cert_extra_sans + [k8s_api_server]) | unique | join(",") }} \
+                      {{ "--certificate-key=" + k8_cert_key if(k8_cert_key != "none") else ""}} \
+                      {{ k8s_kubeadm_opts }} \
+                      {{ k8s_init_opts }}
+      tags: [k8s, k8s-prepare, k8s-base, k8s-test]
 
-- name: Remove no NoSchedule taint form master nodes
-  kubernetes.core.k8s_taint:
-    kubeconfig: /etc/kubernetes/admin.conf
-    state: absent
-    name: '{{ ansible_facts.hostname }}'
-    taints:
-    - key: node-role.kubernetes.io/control-plane
-      effect: NoSchedule
-    - key: dedicated
-  tags: [k8s, k8-init, k8-master-init, k8-taint]
+    - name: Init Kubernetes cluster
+      when: reset_cluster is succeeded
+      shell: |
+          kubeadm init --kubernetes-version={{ k8s_version }} \
+                      --pod-network-cidr {{ k8s_pod_network_cidr }} \
+                      --token {{ k8s_token }} \
+                      --upload-certs \
+                      --ignore-preflight-errors=NumCPU \
+                      --control-plane-endpoint {{ k8s_api_server }} \
+                      --apiserver-cert-extra-sans={{ (k8s_cert_extra_sans + [k8s_api_server]) | unique | join(",") }} \
+                      {{ "--certificate-key=" + k8_cert_key if(k8_cert_key != "none") else ""}} \
+                      {{ k8s_kubeadm_opts }} \
+                      {{ k8s_init_opts }}
+      register: init_cluster
+      tags: [k8s, k8-init, k8-master-init]
 
-- name: Debug - Kubeadm init res
-  debug:
-    var: init_cluster.stderr_lines + init_cluster.stdout_lines
-  tags: [k8s, k8-init, k8-master-init]
+    - name: Remove no NoSchedule taint form master nodes
+      kubernetes.core.k8s_taint:
+        kubeconfig: /etc/kubernetes/admin.conf
+        state: absent
+        name: '{{ ansible_facts.hostname }}'
+        taints:
+        - key: node-role.kubernetes.io/control-plane
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+        - key: dedicated
+      tags: [k8s, k8-init, k8-master-init, k8-taint]
 
+    - name: Debug - Kubeadm init res
+      debug:
+        var: init_cluster.stderr_lines + init_cluster.stdout_lines
+      tags: [k8s, k8-init, k8-master-init]
 
-# kubeadm init --kubernetes-version stable-1 \
-#              --pod-network-cidr 10.244.0.0/16 \
-#              --token xzqdcd.qwgaj3p6da3xx931 \
-#              --upload-certs \
-#              --ignore-preflight-errors=NumCPU \
-#              --apiserver-advertise-address 10.10.0.2 \
-#              --apiserver-cert-extra-sans=127.0.0.1,10.10.0.2,10.10.0.1,116.203.124.54
+  rescue:
+    - name: Cleanup - Reset Kubernetes component
+      shell: "kubeadm reset --force"
+      register: reset_cluster
+      tags: [k8s, k8-init, k8-master-init]
+
+    - name: Print Error Info
+      debug:
+        msg: 'A error occured while bootstraping the first master node. The cluster was reset. Please see the error meassage below:'
+      tags: [k8s, k8-init, k8-master-init]
+
+    - name: Kubeadm Error
+      debug:
+        var: init_cluster
+      tags: [k8s, k8-init, k8-master-init]
+
+    - name: Exit with error code!
+      command: /bin/false
+      tags: [k8s, k8-init, k8-master-init]
+
+# kubeadm init --kubernetes-version=1.24.4 \
+#             --pod-network-cidr 10.244.0.0/16 \
+#             --token xzqdcd.qwgaj3p6da3xx931 \
+#             --upload-certs \
+#             --ignore-preflight-errors=NumCPU \
+#             --control-plane-endpoint k8s-hetzner-test-cp \
+#             --apiserver-cert-extra-sans=127.0.0.1,10.10.0.2,10.10.0.3,10.10.0.4,172.17.0.1,168.119.237.211,k8s-hetzner-test-cp \
+#             --certificate-key=663dd2a3afa3ac6cf05a93ee88c22ed7bf66c10d6536ce8e3a2d207683967d42

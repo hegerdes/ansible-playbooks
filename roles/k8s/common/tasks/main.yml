@@ -28,6 +28,16 @@
   command: swapoff -a
   tags: [k8s, k8s-prepare, k8s-base]
 
+- name: Add entries to /etc/hosts
+  lineinfile:
+     path: /etc/hosts
+     line: '{{ item.ip }} {{ item.name }}'
+     create: yes
+  loop: '{{ k8s_etc_hosts }}'
+  loop_control:
+    label: '{{ item.name }}'
+  tags: [k8s, k8s-prepare, k8s-base]
+
 - name: Create conf dirs
   file:
     path: '{{ item }}'
