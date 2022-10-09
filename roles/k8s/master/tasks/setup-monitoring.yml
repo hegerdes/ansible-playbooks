@@ -6,13 +6,13 @@
     api_version: v1
     kind: Namespace
     state: present
-  tags: [k8s, k8-init, k8-master-init, k8-helm, k8s-helm-rancher]
+  tags: [k8s, k8-init, k8-master-init]
 
 - name: Copy monitoring definitions files
   copy:
     src: files/monitoring/
     dest: /srv/monitoring
-  tags: [k8s, k8-init, k8-master-init, k8-helm, k8s-helm-rancher, k8s-monitor]
+  tags: [k8s, k8-init, k8-master-init, k8s-monitor]
 
 - name: Apply Grafana Agent Manifest & K8s Dashboad
   k8s:
@@ -29,13 +29,13 @@
     - /srv/monitoring/grafana-traces-agent.yml
     - /srv/monitoring/k8s-dashboard.yml
     - /srv/monitoring/k8s-dashboard-user.yml
-  tags: [k8s, k8-init, k8-master-init, k8-helm, k8s-helm-rancher, k8s-monitor]
+  tags: [k8s, k8-init, k8-master-init, k8s-monitor]
 
 - name: Add stable chart repo
   kubernetes.core.helm_repository:
     name: prometheus-community
     repo_url: https://prometheus-community.github.io/helm-charts
-  tags: [k8s, k8-init, k8-master-init, k8-helm, k8s-helm-rancher, k8s-monitor]
+  tags: [k8s, k8-init, k8-master-init, k8s-monitor]
 
 - name: Deploy latest version of Prometheus chart inside monitoring namespace (and create it)
   kubernetes.core.helm:
@@ -47,4 +47,4 @@
     values:
       image:
         tag: v2.4.2
-  tags: [k8s, k8-init, k8-master-init, k8-helm, k8s-helm-rancher, k8s-monitor]
+  tags: [k8s, k8-init, k8-master-init, k8s-monitor]
