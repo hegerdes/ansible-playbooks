@@ -1,1 +1,16 @@
 ---
+k8s_nginx_helm_values:
+  controller:
+    name: controller
+    # -- Use a `DaemonSet` or `Deployment`
+    kind: DaemonSet
+
+    service:
+      enabled: true
+      # type: LoadBalancer
+      type: NodePort
+      nodePorts:
+        http: 32080
+        https: 32443
+        tcp:
+          8080: 32808

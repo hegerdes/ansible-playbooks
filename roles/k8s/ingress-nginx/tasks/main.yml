@@ -1,36 +1,21 @@
 # Main k8s Setup
 ---
-- name: Checking ingress conf dir
-  file:
-    path: /srv/ingress
-    state: directory
+- name: Add Nginx-Ingress Helm-Chart repo
+  kubernetes.core.helm_repository:
+    name: ingress-nginx
+    repo_url: https://kubernetes.github.io/ingress-nginx
   tags: [k8s, k8-init, k8-ingress, k8s-ingress-nginx]
 
-- name: Copy ingress definitions files
-  when: groups.k8s_master | first == inventory_hostname
-  copy:
-    src: files/
-    dest: /srv/ingress
-  run_once: true
-  tags: [k8s, k8-init, k8-ingress, k8s-ingress-nginx]
-
-- name: Apply ingress manifest to the cluster
-  when: groups.k8s_master | first == inventory_hostname
-  k8s:
+- name: Deploy Nginx-Ingress
+  kubernetes.core.helm:
+    name: ingress-nginx
     kubeconfig: /etc/kubernetes/admin.conf
-    state: present
-    src: '{{ item }}'
-  run_once: true
-  loop:
-    - /srv/ingress/common/ns-and-sa.yaml
-    - /srv/ingress/rbac/rbac.yaml
-    - /srv/ingress/common/default-server-secret.yaml
-    - /srv/ingress/common/nginx-config.yaml
-    - /srv/ingress/common/ingress-class.yaml
-    - /srv/ingress/common/crds/k8s.nginx.org_virtualservers.yaml
-    - /srv/ingress/common/crds/k8s.nginx.org_virtualserverroutes.yaml
-    - /srv/ingress/common/crds/k8s.nginx.org_transportservers.yaml
-    - /srv/ingress/common/crds/k8s.nginx.org_policies.yaml
-    - /srv/ingress/common/crds/k8s.nginx.org_globalconfigurations.yaml
-    - /srv/ingress/daemon-set/nginx-ingress.yaml
+    chart_ref: ingress-nginx/ingress-nginx
+    release_namespace: ingress-nginx
+    create_namespace: true
+    wait: true
+    values: '{{ k8s_nginx_helm_values }}'
+    # state: absent
   tags: [k8s, k8-init, k8-ingress, k8s-ingress-nginx]
+
+
