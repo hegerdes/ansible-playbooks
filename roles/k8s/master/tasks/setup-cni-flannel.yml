@@ -2,7 +2,7 @@
 - name: Download network CNI manifest
   get_url:
     url: https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
-    dest: ~/cri-flannel.yaml
+    dest: ~/cri-flannel.yml
     mode: '0664'
   tags: [k8s, k8-init, k8-master-init, k8-cri, k8-flannel]
 
@@ -10,6 +10,6 @@
   k8s:
     kubeconfig: /etc/kubernetes/admin.conf
     state: present
-    src: ~/cri-flannel.yaml
+    src: ~/cri-flannel.yml
   run_once: true
   tags: [k8s, k8-init, k8-master-init, k8-cri, k8-flannel]

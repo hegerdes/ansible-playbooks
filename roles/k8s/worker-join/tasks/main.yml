@@ -1,6 +1,5 @@
 # k8s join
 ---
-
 - name: Get Worker join Command
   command: kubeadm token create --print-join-command
   register: k8_worker_join_command

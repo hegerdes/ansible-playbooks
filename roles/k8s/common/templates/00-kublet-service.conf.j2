@@ -1,2 +1,2 @@
 [Service]
-Environment="KUBELET_EXTRA_ARGS=--cgroup-driver=systemd --node-ip={{ k8s_node_ip | default(ansible_facts.default_ipv4.address) }}"
+Environment="KUBELET_EXTRA_ARGS=--cgroup-driver=systemd --node-ip={{ k8s_kubelet_advertise_address_bind | default(ansible_facts.default_ipv4.address) }}"

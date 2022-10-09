@@ -1,10 +1,29 @@
 # Main k8s Setup
 ---
+- name: Test reachability to shared KubeControlPlaneHost
+  shell: 'ping -c 5 {{ k8s_shared_api_server_endpoint }}'
+  changed_when: false
+  tags: [k8s, k8-init, k8-master-init]
+
 - name: Check if kubeadm has already run
   when: groups.k8s_master | first == inventory_hostname
   stat:
     path: "/etc/kubernetes/pki/ca.key"
   register: kubeadm_ca
+  tags: [k8s, k8-init, k8-master-init]
+
+- name: Generate certificat key
+  when: groups.k8s_master | first == inventory_hostname
+  shell: kubeadm certs certificate-key
+  register: k8s_kubeadm_cert_key_res
+  run_once: true
+  tags: [k8s, k8-init, k8-master-init]
+
+- name: Save certificat key
+  when: groups.k8s_master | first == inventory_hostname
+  set_fact:
+    k8s_kubeadm_cert_key: '{{ k8s_kubeadm_cert_key_res.stdout }}'
+  run_once: true
   tags: [k8s, k8-init, k8-master-init]
 
 - name: Init cluster if needed
@@ -30,19 +49,6 @@
   include_tasks: 'setup-cni-{{ k8s_cni | lower }}.yml'
   tags: [k8s, k8-init, k8-master-init, k8-cri, k8s-flannel, k8s-calico]
 
-- name: Get ControlPlane certificate-key
-  when: groups.k8s_master | first == inventory_hostname and k8_cert_key == "none"
-  command: kubeadm certs certificate-key
-  register: auto_k8_cert_key
-  run_once: true
-  tags: [k8s, k8s-init, k8-master-init]
-
-- name: Debug - Print cert-key
-  debug:
-    var: k8_cert_key
-  run_once: true
-  tags: [k8s, k8-init, k8-master-init]
-
 - name: Get ControlPlane join Command
   when: groups.k8s_master | first == inventory_hostname
   command: kubeadm token create --print-join-command
@@ -55,14 +61,14 @@
   when: groups.k8s_master | first == inventory_hostname
   run_once: true
   set_fact:
-    k8_cp_join_command: '{{ tmp_k8_join_command.stdout }} --control-plane --certificate-key {{ k8_cert_key if(k8_cert_key != "none") else auto_k8_cert_key.stdout }}'
+    k8_cp_join_command: '{{ tmp_k8_join_command.stdout }} --control-plane --certificate-key {{ k8_cert_key if(k8_cert_key != "none") else k8s_kubeadm_cert_key }}'
   delegate_to: "{{ item }}"
   with_items: "{{ play_hosts }}"
   tags: [k8s, k8s-init, k8-master-init]
 
 - name: Debug - Print join command
   debug:
-    var: k8_cp_join_command.stdout
+    var: k8_cp_join_command
   run_once: true
   tags: [k8s, k8-init, k8-master-init]
 
@@ -110,6 +116,16 @@
 - name: Setup configs
   include_tasks: setup-configs.yml
   tags: [k8s, k8-init, k8-master-init]
+
+- name: Setup monitoring
+  when: groups.k8s_master | first == inventory_hostname
+  include_tasks: setup-monitoring.yml
+  tags: [k8s, k8-init, k8-master-init, k8s-monitor]
+
+- name: Setup monitoring
+  when: groups.k8s_master | first == inventory_hostname and k8s_install_certmanager
+  include_tasks: install-certmanager.yml
+  tags: [k8s, k8-init, k8-master-init, k8-helm, k8s-certmanager]
 
 - name: Kubeadm check
   shell: kubectl cluster-info

@@ -11,8 +11,8 @@
   gather_facts: true
   roles:
     - k8s/master
-    - k8s/ingress-nginx
     - k8s/metallb
+    - k8s/ingress-nginx
 
 - hosts: k8s_worker
   become: true

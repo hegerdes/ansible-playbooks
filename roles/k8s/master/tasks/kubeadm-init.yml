@@ -17,10 +17,10 @@
                       --token {{ k8s_token }} \
                       --upload-certs \
                       --ignore-preflight-errors=NumCPU \
-                      --control-plane-endpoint {{ k8s_api_server }} \
-                      --apiserver-cert-extra-sans={{ (k8s_cert_extra_sans + [k8s_api_server]) | unique | join(",") }} \
-                      --apiserver-advertise-address {{ k8s_api_server_bind | default(ansible_facts.default_ipv4.address) ansible_host }}
-                      {{ "--certificate-key=" + k8_cert_key if(k8_cert_key != "none") else ""}} \
+                      --control-plane-endpoint {{ k8s_shared_api_server_endpoint }} \
+                      --apiserver-cert-extra-sans={{ (k8s_cert_extra_sans + [k8s_shared_api_server_endpoint]) | unique | join(",") }} \
+                      --apiserver-advertise-address {{ k8s_kubelet_advertise_address_bind | default(ansible_facts.default_ipv4.address) }} \
+                      --certificate-key={{ k8_cert_key if(k8_cert_key != "none") else k8s_kubeadm_cert_key }} \
                       {{ k8s_kubeadm_opts }} \
                       {{ k8s_init_opts }}
       tags: [k8s, k8s-prepare, k8s-base, k8s-test]
@@ -33,10 +33,10 @@
                       --token {{ k8s_token }} \
                       --upload-certs \
                       --ignore-preflight-errors=NumCPU \
-                      --control-plane-endpoint {{ k8s_api_server }} \
-                      --apiserver-cert-extra-sans={{ (k8s_cert_extra_sans + [k8s_api_server]) | unique | join(",") }} \
-                      --apiserver-advertise-address {{ k8s_api_server_bind | default(ansible_facts.default_ipv4.address) ansible_host }}
-                      {{ "--certificate-key=" + k8_cert_key if(k8_cert_key != "none") else ""}} \
+                      --control-plane-endpoint {{ k8s_shared_api_server_endpoint }} \
+                      --apiserver-cert-extra-sans={{ (k8s_cert_extra_sans + [k8s_shared_api_server_endpoint]) | unique | join(",") }} \
+                      --apiserver-advertise-address {{ k8s_kubelet_advertise_address_bind | default(ansible_facts.default_ipv4.address) }} \
+                      --certificate-key={{ k8_cert_key if(k8_cert_key != "none") else k8s_kubeadm_cert_key }} \
                       {{ k8s_kubeadm_opts }} \
                       {{ k8s_init_opts }}
       register: init_cluster
