@@ -1,0 +1,3 @@
+---
+k8s_metallb_helm_values: {}
+k8s_metallb_addresses: []

@@ -19,6 +19,7 @@
                       --ignore-preflight-errors=NumCPU \
                       --control-plane-endpoint {{ k8s_api_server }} \
                       --apiserver-cert-extra-sans={{ (k8s_cert_extra_sans + [k8s_api_server]) | unique | join(",") }} \
+                      --apiserver-advertise-address {{ k8s_api_server_bind | default(ansible_facts.default_ipv4.address) ansible_host }}
                       {{ "--certificate-key=" + k8_cert_key if(k8_cert_key != "none") else ""}} \
                       {{ k8s_kubeadm_opts }} \
                       {{ k8s_init_opts }}
@@ -34,6 +35,7 @@
                       --ignore-preflight-errors=NumCPU \
                       --control-plane-endpoint {{ k8s_api_server }} \
                       --apiserver-cert-extra-sans={{ (k8s_cert_extra_sans + [k8s_api_server]) | unique | join(",") }} \
+                      --apiserver-advertise-address {{ k8s_api_server_bind | default(ansible_facts.default_ipv4.address) ansible_host }}
                       {{ "--certificate-key=" + k8_cert_key if(k8_cert_key != "none") else ""}} \
                       {{ k8s_kubeadm_opts }} \
                       {{ k8s_init_opts }}

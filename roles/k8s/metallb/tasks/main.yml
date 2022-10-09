@@ -1,0 +1,45 @@
+# Main k8s Rancher setup
+
+- name: Add MetalLB Helm-Chart repo
+  kubernetes.core.helm_repository:
+    name: metallb
+    repo_url: https://metallb.github.io/metallb
+  tags: [k8s, k8-init, k8-loadbalancer, k8-metallb]
+
+- name: Deploy MetalLB
+  kubernetes.core.helm:
+    name: metallb
+    chart_ref: metallb/metallb
+    release_namespace: metallb-system
+    create_namespace: true
+    wait: true
+    values: '{{ k8s_metallb_helm_values }}'
+  run_once: true
+  tags: [k8s, k8-init, k8-loadbalancer, k8-metallb]
+
+- name: Checking MetalLB conf dir
+  file:
+    path: /srv/metallb
+    state: directory
+  tags: [k8s, k8-init, k8-loadbalancer, k8-metallb]
+
+- name: Checking MetalLB IP-Pool
+  debug:
+    msg: '{{ "Will deploy IP Pool" + k8s_metallb_addresses | to_yaml + "to MetalLB" if(k8s_metallb_addresses | length != 0) else "No IP-Pool given. Aborting" }}'
+  failed_when: k8s_metallb_addresses | length == 0
+  tags: [k8s, k8-init, k8-loadbalancer, k8-metallb]
+
+- name: Creating IP-Pool File
+  template:
+    src: metallb-address-pool.yml.j2
+    dest: /srv/metallb/metallb-address-pool.yml
+    mode: '0644'
+  tags: [k8s, k8-init, k8-loadbalancer, k8-metallb]
+
+- name: Apply MetalLB IP Pool
+  k8s:
+    kubeconfig: /etc/kubernetes/admin.conf
+    state: present
+    src: /srv/metallb/metallb-address-pool.yml
+  run_once: true
+  tags: [k8s, k8-init, k8-loadbalancer, k8-metallb]

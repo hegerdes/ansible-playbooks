@@ -12,6 +12,7 @@
   roles:
     - k8s/master
     - k8s/ingress-nginx
+    - k8s/metallb
 
 - hosts: k8s_worker
   become: true

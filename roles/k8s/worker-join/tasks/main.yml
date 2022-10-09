@@ -27,6 +27,15 @@
   register: k8s_join_res
 
 - name: Enable and check kubelet service
+  when: groups.k8s_master | first == inventory_hostname
+  systemd:
+    name: kubelet
+    daemon_reload: yes
+    state: started
+    enabled: yes
+  tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
+
+- name: Debug - Print join res
   debug:
     var: k8s_join_res
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
