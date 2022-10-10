@@ -126,7 +126,14 @@
       Content-Type: application/json
     body:
       text: ':mailbox: Found new System-Updates for {{ lookup("env", "CI_PROJECT_NAME") | default(inventory_dir | basename, True) }}. [Take a look here!]({{ main_reop_issue_res.json.web_url }})'
-      username: GitLab-CI
+      username: GitLab-CI-Maintenance
+      icon_url: "https://about.gitlab.com/images/press/logo/png/gitlab-logo-500.png"
+      props:
+        card: |
+          Updates:
+          ```yml
+          {{ all_updates | to_nice_yaml(width=512) }}
+          ```
     status_code: 200
   ignore_errors: True
   tags: [maintenance, os-updates]
