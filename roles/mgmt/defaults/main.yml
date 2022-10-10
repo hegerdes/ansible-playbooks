@@ -5,8 +5,9 @@ mgmt_jumphost_user: gitlab
 # List of ssh key_paths for mgmt_jumphost_user
 mgmt_ssh_keys: []
 mgmt_init_backup: yes
-# Ports for sshd
-ssh_listen_ports: [22]
+# Options for sshd
+sshd_options:
+  - Port 22
 # Backup
 backup_dir: /backup_dumps
 mgmt_backup_target_hosts: []
