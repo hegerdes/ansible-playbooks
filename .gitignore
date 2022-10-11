@@ -10,3 +10,4 @@ conf/ingress/nginx/conf.d/*.conf
 tests/
 ingress-generator/nginx/etcDummyHosts
 ingress-generator/domain.list
+pb_test.yml
