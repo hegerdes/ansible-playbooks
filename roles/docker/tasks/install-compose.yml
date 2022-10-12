@@ -1,7 +1,7 @@
 # Install docker-compose
 ---
 
-- name: Install docker compose binary v2
+- name: Install Docker compose binary v2
   block:
 
   - name: Delete compose v1

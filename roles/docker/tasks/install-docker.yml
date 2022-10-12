@@ -1,4 +1,4 @@
-# Install docker
+# Install Docker
 ---
 - name: Install needed packages
   apt:

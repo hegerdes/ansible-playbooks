@@ -1,4 +1,4 @@
-# Init docker swarm
+# Init Docker swarm
 ---
 - name: Init swarm master
   when: 'ansible_facts.hostname in docker_swarm_manager_and_advertise_addr'
