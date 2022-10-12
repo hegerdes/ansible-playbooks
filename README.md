@@ -7,7 +7,7 @@ This project can do batch processes on any number of servers and perform defined
 #### Docker usage - (recommended)
  * Your public key on the server you want to deploy to
  * Docker installed & access to our container registry: [gitlab-registry.***REMOVED***](gitlab-registry.***REMOVED***)
-#### Lokal usage
+#### Local usage
  * Your public key on the server you want to deploy to
  * openssh - use the one from git-bash or the WSL (not putty) [Download](https://gitforwindows.org/)
  * python 3.7+ [Download](https://www.python.org/)
@@ -24,7 +24,7 @@ docker run --rm -it -v <MY/PVT_KEY>:/pvt_key -v <MY/INVENTROY_DIR>:/inventory gi
 # Example
 docker run --rm -it -v ~/.ssh/id_rsa:/pvt_key -v /d/servermgmt/cci:/inventory gitlab-registry.***REMOVED***/servermgmt-tools/symbic-playbooks:main /app/playbooks/pb_deploy_app.yml --limit mgmt --tags backup 
 ```
-#### Lokal usage
+#### Local usage
 **Tipp:** Run it on a Linux system or use the [WSL](https://docs.microsoft.com/de-de/windows/wsl/about)
 Run
 ```bash
@@ -58,10 +58,10 @@ ansible-vault encrypt <PATH_TO_VAULT>
  * **mariadb:** Installs MariaDB - either via docker or directly on the host
  * **mongodb:** Installs MongoDB - either via docker or directly on the host
  * **influxdb:** Installs InfluxDB - either via docker or directly on the host
- * **maintenance:** Check for updates, and perform them
+ * **maintenance:** Check for updates, and perform them. Does Backups
 
 
-## Backgrund
+## Background
 The script performs all plays (here it is two) defined in the playbook. Every play can traget all hosts, a group of hosts or only one sever:
 
 ```yml

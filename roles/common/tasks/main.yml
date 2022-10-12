@@ -14,14 +14,14 @@
   with_items: '{{ groups.all }}'
   tags: [common, hostnames]
 
-- name: Setup ssh ports
+- name: Setup ssh options
   lineinfile:
     path: /etc/ssh/sshd_config
-    regexp: '^Port {{ item }}$'
-    line: 'Port {{ item }}'
-  loop: '{{ ssh_listen_ports | default(["22", "2223"])}}'
+    regexp: '^{{ item }}$'
+    line: '{{ item }}'
+  loop: '{{ sshd_options }}'
   notify: Restart SSHD
-  tags: [mgmt, ssh]
+  tags: [common, ssh]
 
 - name: Install aptitude using apt
   apt:
@@ -103,7 +103,7 @@
     src: '{{ item.source }}'
     fstype: '{{ item.filesystem }}'
     opts: '{{ item.options }}'
-    state: mounted
+    state: '{{ item.state | default("mounted") }}'
     backup: yes
     boot: yes
   loop: '{{ common_device_mounts }}'

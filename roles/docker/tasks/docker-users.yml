@@ -1,6 +1,6 @@
 # Add users to docker group
 ---
-- name: Create users are added to the docker group.
+- name: Ensue users are created and added to the Docker group
   user:
     name: '{{ item }}'
     groups: [docker]

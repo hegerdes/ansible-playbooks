@@ -1,15 +1,15 @@
 # Reconfig sshd
 ---
-- name: Setup ssh ports
+- name: Setup ssh options
   lineinfile:
     path: /etc/ssh/sshd_config
-    regexp: '^Port {{ item }}$'
-    line: 'Port {{ item }}'
-  loop: '{{ ssh_listen_ports | default(["22", "2223"])}}'
+    regexp: '^{{ item }}$'
+    line: '{{ item }}'
+  loop: '{{ sshd_options  }}'
   notify: Restart SSHD
   tags: [mgmt, ssh]
 
-- name: Disable password login
+- name: Disable ssh password login
   lineinfile:
     path: /etc/ssh/sshd_config
     regexp: '^#?PasswordAuthentication'
@@ -17,7 +17,7 @@
   notify: Restart SSHD
   tags: [mgmt, ssh]
 
-- name: Disable X11
+- name: Disable ssh X11
   lineinfile:
     path: /etc/ssh/sshd_config
     regexp: '^#?X11Forwarding*'

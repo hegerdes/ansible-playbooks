@@ -69,7 +69,7 @@
       email: '{{ maintenance_git_mail }}'
       name: '{{ maintenance_git_name }}'
       commit_message: 'Searched for updates on {{ansible_date_time.date}}'
-      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/host-updates%2Fsearched-update-log.json'
+      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/{{ inventory_dir | basename }}-host-updates%2Fsearched-update-log.json'
   tags: [maintenance, os-updates]
 
 - name: Post update log to GitLab
@@ -126,7 +126,21 @@
       Content-Type: application/json
     body:
       text: ':mailbox: Found new System-Updates for {{ lookup("env", "CI_PROJECT_NAME") | default(inventory_dir | basename, True) }}. [Take a look here!]({{ main_reop_issue_res.json.web_url }})'
-      username: GitLab-CI
+      username: GitLab-CI-Maintenance
+      icon_url: "https://about.gitlab.com/images/press/logo/png/gitlab-logo-500.png"
+      props:
+        origin: gitlab
+        job: os-updates-info
+        project: '{{ lookup("env", "CI_PROJECT_NAME") | default(inventory_dir | basename, True) }}'
+        card: |
+          # Pending Updates:
+          {% for key, update_list in all_updates.items() if key not in ("failed_hosts", "project_info")  %}
+          **{{key}}:**
+            {% for update in update_list %}
+           * [{{update}}](https://packages.debian.org/search?keywords={{update.split("/")[0]}})
+            {% endfor %}
+
+          {% endfor %}
     status_code: 200
   ignore_errors: True
   tags: [maintenance, os-updates]

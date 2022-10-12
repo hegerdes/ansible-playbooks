@@ -1,7 +1,7 @@
 version: '3.7'
 
 services:
-
+# Expose port 8082 if mgmt_php_my_admin_hosts is only one or undefined
   {% for gui in mgmt_php_my_admin_hosts | default([{"name": "default"}]) -%}
   phpmyadmin-{{ gui.name }}:
     image: phpmyadmin:latest
@@ -10,6 +10,10 @@ services:
       - {{ "PMA_HOST=" + gui.host if (gui.host is defined ) else "PMA_ARBITRARY=1" }}
       - TZ=Europe/Berlin
       - UPLOAD_LIMIT=2G
+{% if (mgmt_php_my_admin_hosts | default([{"name": "default"}]) | length == 1 and mgmt_php_my_admin_expose_port | default(false) ) %}
+    ports:
+      {{ "- 8082:80" | indent(width=8) }}
+{% endif %}
     networks:
       - {{ mgmt_docker_stack_name }}_mgmt_net
     deploy:

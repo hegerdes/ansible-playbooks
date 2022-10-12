@@ -48,13 +48,33 @@
     label: '{{ item.source }}'
   tags: [docker-deploy]
 
-- name: Check images
+- name: Check Docker images
   docker_image:
     name: '{{ item.split(":")[0] if(item | regex_findall(":") | length <= 1) else item.split(":")[0] + ":" + item.split(":")[1] }}'
     tag: '{{ item.split(":")[1] | default("latest") if(item | regex_findall(":") | length <= 1) else item.split(":")[2] }}'
     source: pull
     force_source: yes
   loop: '{{ deploy_compose_conetent_img | default([]) | unique }}'
+  tags: [docker-deploy]
+
+- name: Inspect Docker images
+  docker_image_info:
+    name: '{{ item }}'
+  register: docker_image_info_res
+  loop: '{{ deploy_compose_conetent_img | default([]) | unique }}'
+  tags: [docker-deploy]
+
+- name: Format Docker image facts
+  set_fact:
+    image_info_data: '{{ image_info_data | default([]) + [ {(item.item | string | replace(":","-")  ): item.images[0].Config.Labels }] }}'
+  loop: '{{ docker_image_info_res.results }}'
+  loop_control:
+    label: '{{ item.item }}'
+  tags: [docker-deploy]
+
+- name: Show image labels
+  debug:
+    var: image_info_data
   tags: [docker-deploy]
 
 - name: Deploy app-stack via stack

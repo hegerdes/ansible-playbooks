@@ -5,7 +5,7 @@
   gather_facts: false
   tasks:
 
-  - name: Restarting docker services
+  - name: Restarting Docker services
     environment:
       RESTART_SERVICES: '{{ lookup("env","RESTART_SERVICES") | default("", True) }}'
     args:
