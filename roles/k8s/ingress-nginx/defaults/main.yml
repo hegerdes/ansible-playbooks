@@ -1,4 +1,5 @@
 ---
+# See: https://github.com/kubernetes/ingress-nginx/blob/main/charts/ingress-nginx/values.yaml
 k8s_nginx_helm_values:
   controller:
     name: controller
