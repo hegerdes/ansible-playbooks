@@ -13,6 +13,7 @@ services:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--metrics.prometheus.addEntryPointsLabels=true"
+      - "--metrics.prometheus.addRoutersLabels=true"
       - "--providers.docker.network={{ mgmt_docker_stack_name }}_mgmt_net"
       - "--entrypoints.web.address=:80"
       {{ mgmt_traefik_tls_flags | indent(width=6) if(mgmt_proxy_use_tls) }}

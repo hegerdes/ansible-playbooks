@@ -3,9 +3,9 @@
 - name: Setup ssh options
   lineinfile:
     path: /etc/ssh/sshd_config
-    regexp: '^{{ item }}$'
+    regexp: '^#?{{ item }}$'
     line: '{{ item }}'
-  loop: '{{ sshd_options  }}'
+  loop: '{{ sshd_options }}'
   notify: Restart SSHD
   tags: [mgmt, ssh]
 
@@ -22,6 +22,22 @@
     path: /etc/ssh/sshd_config
     regexp: '^#?X11Forwarding*'
     line: 'X11Forwarding no'
+  notify: Restart SSHD
+  tags: [mgmt, ssh]
+
+- name: Set ssh banner
+  template:
+    src: ssh_banner.txt.j2
+    dest: /etc/ssh/mgmt_banner.txt
+    mode: '0644'
+  notify: Restart SSHD
+  tags: [mgmt, ssh]
+
+- name: Enable ssh banner
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#Banner none*'
+    line: 'Banner /etc/ssh/mgmt_banner.txt'
   notify: Restart SSHD
   tags: [mgmt, ssh]
 

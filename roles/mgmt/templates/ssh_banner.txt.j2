@@ -1,0 +1,15 @@
+.___  ___.   _______ .___  ___. .___________.         _______. _______ .______     ____    ____  _______ .______
+|   \/   |  /  _____||   \/   | |           |        /       ||   ____||   _  \    \   \  /   / |   ____||   _  \
+|  \  /  | |  |  __  |  \  /  | `---|  |----`______ |   (----`|  |__   |  |_)  |    \   \/   /  |  |__   |  |_)  |
+|  |\/|  | |  | |_ | |  |\/|  |     |  |    |______| \   \    |   __|  |      /      \      /   |   __|  |      /
+|  |  |  | |  |__| | |  |  |  |     |  |         .----)   |   |  |____ |  |\  \----.  \    /    |  |____ |  |\  \----.
+|__|  |__|  \______| |__|  |__|     |__|         |_______/    |_______|| _| `._____|   \__/     |_______|| _| `._____|
+
+
+Welcome to the management server for {{ inventory_dir | basename  }}.
+
+Most likely all management tools for this server and the entire cluster are now
+available on your localhost via http://heimdall.{{ mgmt_domain }}:{{ mgmt_traefik_access_port | default(4242) }}. If you have not setup
+port-forwarding yet see here: https://***REMOVED***/symbic-intern/symbic-docs/-/wikis/home.
+
+The password for the tools are in the shared password manager.
