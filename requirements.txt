@@ -1,5 +1,6 @@
 cryptography==36.0.2
 ansible
+ansible-lint
 paramiko
 jsondiff
 hcloud
@@ -7,3 +8,7 @@ hetzner
 jmespath
 passlib
 ara
+kubernetes
+jsonpatch
+PyYAML
+netaddr
