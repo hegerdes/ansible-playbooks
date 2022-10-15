@@ -1,16 +1,23 @@
 # k8s join
 ---
-- name: Get Worker join Command
+- name: Test reachability to shared KubeControlPlaneHost
+  shell: 'ping -c 5 {{ k8s_shared_api_server_endpoint }}'
+  changed_when: false
+  tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
+
+- name: Get Worker join command
   command: kubeadm token create --print-join-command
-  register: k8_worker_join_command
+  register: k8_worker_join_command_res
   run_once: true
-  delegate_to: '{{ groups.k8s_master | first }}'
+  changed_when: false
+  delegate_to: '{{ groups.k8s_master | flatten | first }}'
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
 - name: Debug - Print join command
   debug:
-    var: k8_worker_join_command.stdout
-  run_once: true
+    msg: |
+      {{ k8_worker_join_command_res.stdout }} \
+        --apiserver-advertise-address {{ ansible_facts.all_ipv4_addresses | ansible.utils.reduce_on_network(k8s_cloud_subnet) | first if(k8s_cloud_subnet | default("none") != "none") else k8s_kubelet_advertise_address_bind | default(ansible_facts.default_ipv4.address) }}
   tags: [k8s, k8-init, k8-master-init, k8s-worker-join]
 
 - name: Check if kubeadm has already run
@@ -21,12 +28,11 @@
 
 - name: Join Nodes
   when: not k8s_kubeadm_worker_ca.stat.exists
-  command: '{{ k8_worker_join_command.stdout }}'
+  command: '{{ k8_worker_join_command_res.stdout }} --apiserver-advertise-address {{ ansible_facts.all_ipv4_addresses | ansible.utils.reduce_on_network(k8s_cloud_subnet) | first if(k8s_cloud_subnet | default("none") != "none") else k8s_kubelet_advertise_address_bind | default(ansible_facts.default_ipv4.address) }}'
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
   register: k8s_join_res
 
 - name: Enable and check kubelet service
-  when: groups.k8s_master | flatten | first == inventory_hostname
   systemd:
     name: kubelet
     daemon_reload: yes

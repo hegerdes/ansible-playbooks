@@ -1,5 +1,6 @@
 # K8s install certmanager
 
+# TODO make sure helm is installed
 - name: Add Certmanager Helm-Chart repo
   kubernetes.core.helm_repository:
     name: jetstack

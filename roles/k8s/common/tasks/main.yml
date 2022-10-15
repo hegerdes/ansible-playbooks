@@ -1,11 +1,5 @@
 # Main k8s Setup
 ---
-- name: Debug - k8s token
-  debug:
-    var: k8s_token
-  run_once: true
-  tags: [k8s, k8s-prepare, k8s-base, apt]
-
 - name: Ensue required packages are installed
   apt:
     name: [gnupg, git, lsb-release, ca-certificates, curl, apparmor, python3-kubernetes, apt-transport-https, jq, unzip, wget, socat, mtr, logrotate]

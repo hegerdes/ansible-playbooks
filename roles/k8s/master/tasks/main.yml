@@ -31,24 +31,6 @@
   include_tasks: kubeadm-init.yml
   tags: [k8s, k8-init, k8-master-init]
 
-- name: Enable and check kubelet service
-  when: groups.k8s_master | flatten | first == inventory_hostname
-  systemd:
-    name: kubelet
-    daemon_reload: yes
-    state: started
-    enabled: yes
-  tags: [k8s, k8-init, k8-master-init]
-
-- name: Install Helm
-  include_tasks: install-helm.yml
-  tags: [k8s, k8s-init, k8-master-init, k8s-helm]
-
-- name: Setup CNI
-  when: groups.k8s_master | flatten | first == inventory_hostname
-  include_tasks: 'setup-cni-{{ k8s_cni | lower }}.yml'
-  tags: [k8s, k8-init, k8-master-init, k8-cri, k8s-flannel, k8s-calico]
-
 - name: Get ControlPlane join Command
   when: groups.k8s_master | flatten | first == inventory_hostname
   command: kubeadm token create --print-join-command
@@ -68,7 +50,9 @@
 
 - name: Debug - Print join command
   debug:
-    var: k8_cp_join_command
+    msg: |
+      {{k8_cp_join_command}} \
+        --apiserver-advertise-address {{ ansible_facts.all_ipv4_addresses | ansible.utils.reduce_on_network(k8s_cloud_subnet) | first if(k8s_cloud_subnet | default("none") != "none") else k8s_kubelet_advertise_address_bind | default(ansible_facts.default_ipv4.address) }}
   run_once: true
   tags: [k8s, k8-init, k8-master-init]
 
@@ -80,9 +64,17 @@
 
 - name: Join ControlPlane nodes
   when: not k8s_kubeadm_all_init.stat.exists
-  command: '{{ k8_cp_join_command }}'
+  command: '{{ k8_cp_join_command }} --apiserver-advertise-address {{ ansible_facts.all_ipv4_addresses | ansible.utils.reduce_on_network(k8s_cloud_subnet) | first if(k8s_cloud_subnet | default("none") != "none") else k8s_kubelet_advertise_address_bind | default(ansible_facts.default_ipv4.address) }}'
   tags: [k8s, k8s-init, k8-master-init]
   register: k8s_join_res
+
+- name: Enable and check kubelet service
+  systemd:
+    name: kubelet
+    daemon_reload: yes
+    state: started
+    enabled: yes
+  tags: [k8s, k8-init, k8-master-init]
 
 - name: Show join results
   debug:
@@ -117,15 +109,23 @@
   include_tasks: setup-configs.yml
   tags: [k8s, k8-init, k8-master-init]
 
-- name: Setup monitoring
-  when: groups.k8s_master | flatten | first == inventory_hostname
-  include_tasks: setup-monitoring.yml
-  tags: [k8s, k8-init, k8-master-init, k8s-monitor]
+- name: Install Helm
+  include_role:
+    name: k8s/helm
+    public: yes
+  tags: [k8s, k8s-init, k8-master-init, k8s-helm]
 
-- name: Setup monitoring
+- name: Setup CNI
+  when: groups.k8s_master | flatten | first == inventory_hostname
+  include_tasks: 'setup-cni-{{ k8s_cni | lower }}.yml'
+  tags: [k8s, k8-init, k8-master-init, k8-cri, k8s-flannel, k8s-calico]
+
+- name: Install Certmanager
   when: groups.k8s_master | flatten | first == inventory_hostname and k8s_install_certmanager
-  include_tasks: install-certmanager.yml
-  tags: [k8s, k8-init, k8-master-init, k8-helm, k8s-certmanager]
+  include_role:
+    name: k8s/certmanager
+    public: yes
+  tags: [k8s, k8-init, k8-master-init, k8s-certmanager]
 
 - name: Kubeadm check
   shell: kubectl cluster-info

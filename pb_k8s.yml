@@ -13,6 +13,7 @@
     - k8s/master
     - k8s/metallb
     - k8s/ingress-nginx
+    - k8s/ingress-traefik
 
 - hosts: k8s_worker
   become: true

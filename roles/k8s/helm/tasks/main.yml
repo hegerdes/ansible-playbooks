@@ -1,11 +1,12 @@
 # K8s install helm
+
 - name: Adding apt GPG Keys
   apt_key:
     url: https://baltocdn.com/helm/signing.asc
     state: present
   tags: [k8s, k8s-init, k8s-helm]
 
-- name: Add helm repository
+- name: Add Helm repository
   apt_repository:
     repo: deb https://baltocdn.com/helm/stable/debian/ all main
     update_cache: yes
@@ -13,7 +14,7 @@
     filename: helm.list
   tags: [k8s, k8s-init, k8s-helm]
 
-- name: Install helm package
+- name: Install Helm package
   apt:
     name: helm
     state: present
