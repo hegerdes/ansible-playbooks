@@ -22,3 +22,8 @@
   ignore_errors: true
   tags: [k8s, k8-init, k8s-monitor]
 
+- name: Enable kubectl bash completion
+  lineinfile:
+    path: '{{ ansible_facts.env.HOME }}/.bashrc'
+    line: source <(kubectl completion bash)
+  tags: [k8s, k8-init, k8s-monitor]

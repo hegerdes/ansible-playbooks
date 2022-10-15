@@ -26,7 +26,7 @@
   register: k8s_join_res
 
 - name: Enable and check kubelet service
-  when: groups.k8s_master | first == inventory_hostname
+  when: groups.k8s_master | flatten | first == inventory_hostname
   systemd:
     name: kubelet
     daemon_reload: yes

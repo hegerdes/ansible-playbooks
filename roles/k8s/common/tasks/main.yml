@@ -8,7 +8,7 @@
 
 - name: Ensue required packages are installed
   apt:
-    name: [gnupg, lsb-release, ca-certificates, curl, apparmor, python3-kubernetes, apt-transport-https, git]
+    name: [gnupg, git, lsb-release, ca-certificates, curl, apparmor, python3-kubernetes, apt-transport-https, jq, unzip, wget, socat, mtr, logrotate]
     state: present
     update_cache: yes
     install_recommends: no
@@ -26,6 +26,8 @@
 
 - name: Disable swap
   command: swapoff -a
+  register: k8s_swap_diable_tmp
+  changed_when: k8s_swap_diable_tmp.stdout != ""
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: Add entries to /etc/hosts
@@ -73,12 +75,20 @@
     sysctl_set: yes
     reload: yes
   with_items:
-    - { key: net.bridge.bridge-nf-call-iptables, val: 1}
     - { key: net.ipv4.ip_forward, val: 1}
+    - { key: net.bridge.bridge-nf-call-iptables, val: 1}
+    - { key: net.bridge.bridge-nf-call-ip6tables, val: 1}
     - { key: net.ipv6.conf.default.forwarding, val: 1}
   tags: [k8s, k8s-prepare, k8s-base]
   loop_control:
     label: "{{ item.key }}={{ item.val }}"
+
+- name: Install crun
+  get_url:
+    url: https://github.com/containers/crun/releases/download/{{ k8s_crun_version }}/crun-{{ k8s_crun_version }}-linux-amd64
+    dest: /usr/local/sbin/crun
+    mode: '0754'
+  tags: [k8s, k8s-prepare, k8s-base]
 
 - name: Adding apt GPG Keys
   apt_key:
@@ -109,7 +119,7 @@
       - kubeadm={{ k8s_version }}-00
       - kubectl={{ k8s_version }}-00
       - kubelet={{ k8s_version }}-00
-      - containerd.io
+      - containerd.io{{ "=" + k8s_containerd_version + "-1" if (k8s_containerd_version != "latest") }}
     state: present
     update_cache: yes
     install_recommends: no
@@ -117,8 +127,8 @@
   tags: [k8s, k8s-prepare, k8s-base, apt]
 
 - name: Copy containerd-conf
-  copy:
-    src: containerd-config.toml
+  template:
+    src: containerd-config.toml.j2
     dest: /etc/containerd/config.toml
     mode: '0644'
   tags: [k8s, k8s-prepare, k8s-base]
