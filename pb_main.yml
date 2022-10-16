@@ -2,7 +2,7 @@
 
 - hosts: all
   become: true
-  gather_facts: True
+  gather_facts: true
   roles:
     - common
     - promtail
@@ -10,13 +10,13 @@
 
 - hosts: docker_hosts
   become: true
-  gather_facts: True
+  gather_facts: true
   roles:
     - docker
 
 - hosts: mgmt_hosts
   become: true
-  gather_facts: True
+  gather_facts: true
   vars_files:
     - '{{ inventory_dir }}/secrets/vault.yml'
   roles:
@@ -24,25 +24,25 @@
 
 - hosts: gateways
   become: true
-  gather_facts: True
+  gather_facts: true
   roles:
     - nginx
 
 - hosts: minios
   become: true
-  gather_facts: True
+  gather_facts: true
   roles:
     - minio
 
 - hosts: sambas
   become: true
-  gather_facts: True
+  gather_facts: true
   roles:
     - samba
 
 - hosts: mariadbs
   become: true
-  gather_facts: True
+  gather_facts: true
   vars_files:
     - '{{ inventory_dir }}/secrets/vault.yml'
   roles:
@@ -50,7 +50,7 @@
 
 - hosts: mongodbs
   become: true
-  gather_facts: True
+  gather_facts: true
   vars_files:
     - '{{ inventory_dir }}/secrets/vault.yml'
   roles:
@@ -58,7 +58,7 @@
 
 - hosts: influxdbs
   become: true
-  gather_facts: True
+  gather_facts: true
   vars_files:
     - '{{ inventory_dir }}/secrets/vault.yml'
   roles:
@@ -66,7 +66,7 @@
 
 - hosts: dev-docker-db
   become: true
-  gather_facts: True
+  gather_facts: true
   vars_files:
     - '{{ inventory_dir }}/secrets/vault.yml'
   roles:

@@ -1,7 +1,7 @@
 # Hetzner init
 
 - hosts: localhost
-  gather_facts: False
+  gather_facts: false
   connection: local
   roles:
     - hetzner

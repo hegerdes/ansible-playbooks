@@ -34,7 +34,7 @@
   when: not mgmt_backup_key.stat.exists
   delegate_to: localhost
   become: false
-  run_once: True
+  run_once: true
   environment:
     KEY_FILE: '{{ inventory_dir }}/secrets/db-backup.key'
     KEY_PASS: '{{ lookup("file", inventory_dir + "/secrets/db-backup.key.pass") }}'

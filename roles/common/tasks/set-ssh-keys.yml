@@ -10,8 +10,8 @@
     update: yes
     force: yes
   delegate_to: localhost
-  run_once: True
-  become: False
+  run_once: true
+  become: false
   tags: [common, ssh-keys]
 
 - name: Find all ssh-keys to deploy
@@ -20,8 +20,8 @@
     paths: '{{ common_ssh_key_dir }}'
     patterns: '*.pub'
     recurse: yes
-  run_once: True
-  become: False
+  run_once: true
+  become: false
   delegate_to: localhost
   register: common_present_ssh_keys_info
   tags: [common, ssh-keys]
@@ -32,8 +32,8 @@
     paths: '{{ common_ssh_key_dir }}/revoked'
     patterns: '*.pub'
     recurse: yes
-  run_once: True
-  become: False
+  run_once: true
+  become: false
   delegate_to: localhost
   register: common_revoked_ssh_keys_info
   tags: [common, ssh-keys]
@@ -46,7 +46,7 @@
   loop: '{{ common_present_ssh_keys_info.files | default([]) }}'
   loop_control:
     label: '{{ item.path }}'
-  run_once: True
+  run_once: true
   tags: [common, ssh-keys]
 
 - name: Prepare revoked ssh-keys
@@ -57,7 +57,7 @@
   loop: '{{ common_revoked_ssh_keys_info.files }}'
   loop_control:
     label: '{{ item.path }}'
-  run_once: True
+  run_once: true
   tags: [common, ssh-keys]
 
 - name: Add ssh keys

@@ -3,8 +3,8 @@
 - name: Create and rotate HetznerSnapshots
   when: maintenance_run_hcloud_snapshot | bool
   command: 'node {{ role_path }}/files/hcloude-snapshot.js'
-  run_once: True
-  become: False
+  run_once: true
+  become: false
   delegate_to: localhost
   register: main_snapshot_res
   tags: [maintenance, backup, db-backup, hetzner-snapshot]
@@ -19,13 +19,13 @@
       content: '{{ main_snapshot_res.stdout_lines }}'
       email: '{{ maintenance_git_mail }}'
       name: '{{ maintenance_git_name }}'
-      commit_message: 'Created Hetzner-Snapshot on {{ansible_date_time.date}}'
+      commit_message: 'Created Hetzner-Snapshot on {{ ansible_date_time.date }}'
       url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/hetzner-snapshots%2F{{ ansible_date_time.date + "-" + ansible_date_time.hour + "-" + ansible_date_time.minute }}-snapshot.json'
   tags: [maintenance, backup, db-backup, hetzner-snapshot]
 
 - name: Print Hetzner-Snapshot results
-  ignore_errors: True
-  run_once: True
+  ignore_errors: true
+  run_once: true
   debug:
     msg: '{{ ["Started: " + main_snapshot_res.start | default("null") + "- End: " + main_snapshot_res.end | default("null") + " - Time: " + main_snapshot_res.delta | default("null") ] + ["stdout:"] + main_snapshot_res.stdout_lines | default([]) + ["stderr:"] + main_snapshot_res.stderr_lines | default([]) }}'
   tags: [maintenance, backup, db-backup, hetzner-snapshot]

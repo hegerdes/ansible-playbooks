@@ -29,8 +29,8 @@
 - name: Check if Docker is installed
   command: docker --version
   register: docker_valid
-  ignore_errors: True
-  changed_when: False
+  ignore_errors: true
+  changed_when: false
   tags: [mgmt, docker]
 
 - name: Docker install

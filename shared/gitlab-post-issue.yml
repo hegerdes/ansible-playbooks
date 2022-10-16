@@ -7,5 +7,5 @@
       PRIVATE-TOKEN: '{{ gitlab_conf.token }}'
     body: '{{ gitlab_conf.body | default("{}") }}'
     status_code: '{{ gitlab_conf.response_status | default(201) }}'
-  ignore_errors: True
+  ignore_errors: true
   register: main_reop_issue_res

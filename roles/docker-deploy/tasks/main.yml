@@ -2,15 +2,15 @@
 ---
 - name: Create a artifact directory
   delegate_to: localhost
-  become: False
-  run_once: True
+  become: false
+  run_once: true
   file:
     dest: '{{ docker_deploy_artifact_dir }}'
     state: directory
   tags: [docker-deploy]
 
 - name: Install pip3
-  when: docker_deploy_use_swarm_mode | bool != true
+  when: not docker_deploy_use_swarm_mode
   apt:
     name: python3-pip
     state: latest
@@ -18,14 +18,14 @@
 
 # May need gcc make python3-dev gcc-multilib libffi-dev
 - name: Install compose package
-  when: docker_deploy_use_swarm_mode | bool != true
+  when: not docker_deploy_use_swarm_mode
   pip:
     name: docker-compose
   tags: [docker-deploy]
 
 - name: Get the info on Docker host
   docker_swarm_info:
-  ignore_errors: True
+  ignore_errors: true
   register: swarm_info
   failed_when: 'not swarm_info.can_talk_to_docker'
   tags: [docker-deploy]
@@ -49,7 +49,7 @@
   tags: [docker-deploy]
 
 - name: Synchronization of application compose|stack files
-  become: False
+  become: false
   synchronize:
     src: '{{ docker_deploy_src_config_files }}'
     dest: '{{ docker_deploy_dst_config_files }}'
@@ -133,17 +133,17 @@
   tags: [docker-deploy]
 
 - name: Get Info on Docker Swarm
-  changed_when: False
+  changed_when: false
   when: docker_deploy_use_swarm_mode | bool and swarm_info.docker_swarm_manager
   command: docker service ls
-  ignore_errors: True
+  ignore_errors: true
   register: app_docker_swarm_info
   tags: [docker-deploy]
 
 - name: Get Info on Docker Containers
-  changed_when: False
+  changed_when: false
   command: 'docker ps --format "table {{ "{{" }}.Status{{ "}}" }}\t{{ "{{" }}.RunningFor{{ "}}" }}\t{{ "{{" }} .Image{{ "}}" }}\t{{ "{{" }}.Names{{ "}}" }}"'
-  ignore_errors: True
+  ignore_errors: true
   register: app_docker_container_info
   tags: [docker-deploy]
 
@@ -157,7 +157,7 @@
   when: docker_deploy_use_swarm_mode | bool and swarm_info.docker_swarm_manager
   debug:
     var: app_docker_swarm_info.stdout_lines
-  ignore_errors: True
+  ignore_errors: true
   tags: [docker-deploy]
 
 - name: Show Container Info

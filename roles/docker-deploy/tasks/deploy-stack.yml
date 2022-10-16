@@ -90,7 +90,7 @@
   tags: [docker-deploy]
 
 - name: Deploy app-stack via compose
-  when: docker_deploy_use_swarm_mode | bool != true
+  when: not docker_deploy_use_swarm_mode
   docker_compose:
     project_name: '{{ docker_project.name }}'
     remove_orphans: '{{ docker_deploy_prune_old_services }}'

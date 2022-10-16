@@ -63,5 +63,5 @@
 - name: Run Influx init
   command: 'influx setup --org {{ influx_organization }} --bucket {{ influx_root_bucket }} --username {{ influx_root_user }} --password {{ influx_root_pw }} --host http://{{ influx_listen_addr }} --force'
   register: influx_setup_res
-  ignore_errors: True
+  ignore_errors: true
   tags: [influxdb]

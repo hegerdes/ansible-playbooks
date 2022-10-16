@@ -31,7 +31,7 @@
     label: "{{ item.name }}"
 
 - name: Inspecting server differences...
-  no_log: True
+  no_log: true
   when: item[0].server_type != item[1].size | default(hetzner_default_server_size)
   set_fact:
     rescale: '{{ rescale | default({}) | combine({item[0].name: item[1].size | default(hetzner_default_server_size)}) }}'
@@ -77,7 +77,7 @@
   hcloud_server:
     api_token: '{{ hetzner_api_key }}'
     name: '{{ item.name }}'
-    labels: '{{ item.labels | default({}) | combine({"ansible": "True", "all": "True"}) }}'
+    labels: '{{ item.labels | default({}) | combine({"ansible": "true", "all": "true"}) }}'
     server_type: '{{ item.size | default(hetzner_default_server_size) }}'
     location: '{{ item.location | default(hetzner_default_server_location) }}'
     image: '{{ item.image | default(hetzner_default_server_image) }}'
@@ -122,15 +122,15 @@
 
 - name: Creating inventory[I]...
   when: hetzner_server_info.hcloud_server_info | length > 0
-  no_log: True
+  no_log: true
   set_fact:
-    hetzner_inventory: '{{ hetzner_inventory | combine({"all": {"hosts":{item.hcloud_server_network.server if (hetzner_use_internal_ip) else item.hcloud_server.name : {"ansible_host": item.hcloud_server_network.ip if (hetzner_use_internal_ip) else item.hcloud_server.ipv4_address, "ansible_port": ansible_default_port, "ansible_user": ansible_default_user }}}},recursive=True) }}'
+    hetzner_inventory: '{{ hetzner_inventory | combine({"all": {"hosts":{item.hcloud_server_network.server if (hetzner_use_internal_ip) else item.hcloud_server.name : {"ansible_host": item.hcloud_server_network.ip if (hetzner_use_internal_ip) else item.hcloud_server.ipv4_address, "ansible_port": ansible_default_port, "ansible_user": ansible_default_user }}}},recursive=true) }}'
   loop: '{{ hetzner_vnet_res.results if (hetzner_use_internal_ip) else hetzner_servers.results }}'
   tags: [hetzner]
 
 - name: Creating inventory[II]...
   when: hetzner_server_info.hcloud_server_info | length > 0
-  no_log: True
+  no_log: true
   set_fact:
     servers: '{{ servers | default({}) | combine({item.hcloud_server.name: item.hcloud_server}) }}'
   loop: '{{ hetzner_servers.results }}'
@@ -138,7 +138,7 @@
 
 - name: Creating inventory[III] ...
   when: hetzner_server_info.hcloud_server_info | length > 0 and servers.mgmt is defined
-  no_log: True
+  no_log: true
   set_fact:
     hetzner_inventory_tmp:
       all:
@@ -148,17 +148,17 @@
 
 - name: Creating inventory[IV]...
   when: hetzner_server_info.hcloud_server_info | length > 0 and hetzner_inventory_tmp is defined
-  no_log: True
+  no_log: true
   set_fact:
-    hetzner_inventory: '{{ hetzner_inventory | combine(hetzner_inventory_tmp, recursive=True) }}'
+    hetzner_inventory: '{{ hetzner_inventory | combine(hetzner_inventory_tmp, recursive=true) }}'
   tags: [hetzner]
 
 - name: Creating inventory[V]...
   when: hetzner_server_info.hcloud_server_info | length > 0
-  no_log: True
+  no_log: true
   set_fact:
-    hetzner_inventory: '{{ hetzner_inventory | combine({"all": {"children": {item[1]: hetzner_inventory.all.children[item[1]] | combine({"hosts": {item[0].name: {} }})} }}, recursive=True) }}'
-  loop: '{{ hetzner_vms | subelements("groups", skip_missing=True) }}'
+    hetzner_inventory: '{{ hetzner_inventory | combine({"all": {"children": {item[1]: hetzner_inventory.all.children[item[1]] | combine({"hosts": {item[0].name: {} }})} }}, recursive=true) }}'
+  loop: '{{ hetzner_vms | subelements("groups", skip_missing=true) }}'
   tags: [hetzner]
 
 - name: Print generated inventroy

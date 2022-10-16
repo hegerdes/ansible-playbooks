@@ -39,6 +39,6 @@
     grafana_user: admin
     grafana_password: '{{ grafana_remote_pw.content | b64decode }}'
     dashboard_id: '{{ item }}'
-  ignore_errors: True
+  ignore_errors: true
   loop: '{{ mgmt_grafana_dashbord_ids }}'
   tags: [mgmt, grafana]
