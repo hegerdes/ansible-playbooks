@@ -11,7 +11,7 @@ sshd_options:
 # Backup
 backup_dir: /backup_dumps
 mgmt_backup_target_hosts: []
-gmt_backup_target_ssh_args: ''
+mgmt_backup_target_ssh_args: ''
 mgmt_azure_token: '{{ lookup("env","AZURE_SAS_TOKEN") | default("none", True) }}'
 mgmt_s3_uri: '{{ lookup("env","S3_TOKEN_STRING") | default("none", True) }}'
 mgmt_node_name: mgmt
@@ -101,7 +101,7 @@ mgmt_domain: localhost
 mgmt_proxy_use_tls: no
 mgmt_certbot_mail: info@xyz.com
 mgmt_use_traefik: '{{ "mgmt-stack-traefik.yml" is in mgmt_services_to_install }}'
-mgmt_traefik_version: v2.8
+mgmt_traefik_version: v2.9
 
 # Add basic auth via proxy
 mgmt_proxy_users_auth: {}

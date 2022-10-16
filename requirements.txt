@@ -1,5 +1,6 @@
 cryptography==36.0.2
 ansible
+ansible-lint
 paramiko
 jsondiff
 hcloud
@@ -10,3 +11,4 @@ ara
 kubernetes
 jsonpatch
 PyYAML
+netaddr
