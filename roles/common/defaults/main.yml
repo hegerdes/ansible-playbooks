@@ -24,6 +24,8 @@ common_default_network_device: ens10
 #     state: present                # optional
 #     user: root                    # optional
 #     key_options: ''               # optional
+# List if lines present in sshd_config
+sshd_options: []
 
 # Mounts
 common_device_mounts: []
