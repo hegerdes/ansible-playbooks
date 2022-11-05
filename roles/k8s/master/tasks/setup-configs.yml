@@ -17,7 +17,7 @@
 - name: Creating local config file
   fetch:
     src: /etc/kubernetes/admin.conf
-    dest: "{{ lookup('env', 'HOME') }}/.kube"
+    dest: "{{ lookup('env', 'HOME') }}/.kube/"
     flat: yes
   ignore_errors: true
   tags: [k8s, k8-init, k8s-monitor]

@@ -8,6 +8,7 @@
 
 - name: Install Calico
   kubernetes.core.helm:
+    state: present
     kubeconfig: /etc/kubernetes/admin.conf
     name: calico
     chart_ref: projectcalico/tigera-operator
