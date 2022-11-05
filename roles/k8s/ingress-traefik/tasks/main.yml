@@ -1,0 +1,18 @@
+# Main k8s Rancher setup
+
+- name: Add Treafik Helm-Chart repo
+  kubernetes.core.helm_repository:
+    name: traefik
+    repo_url: https://helm.traefik.io/traefik
+  tags: [k8s, k8-init, k8-ingress, k8s-ingress-traefik]
+
+- name: Deploy Treafik
+  kubernetes.core.helm:
+    name: traefik
+    chart_ref: traefik/traefik
+    release_namespace: traefik-v2
+    create_namespace: true
+    wait: true
+    values: '{{ k8s_treafik_helm_values }}'
+  tags: [k8s, k8-init, k8-ingress, k8s-ingress-traefik]
+

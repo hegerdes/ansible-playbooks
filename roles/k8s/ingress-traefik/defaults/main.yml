@@ -1,0 +1,44 @@
+---
+# k8s_treafik_helm_values: {}
+k8s_treafik_helm_values:
+  deployment:
+    enabled: true
+    # Can be either Deployment or DaemonSet
+    kind: DaemonSet
+  logs:
+    general:
+      format: json
+      level: INFO
+    access:
+      enabled: true
+  metrics:
+    prometheus:
+      entryPoint: metrics
+      addRoutersLabels: true
+  # Configure ports
+  ports:
+    web:
+      protocol: TCP
+      nodePort: 32080
+      # Port Redirections
+      redirectTo: websecure
+    websecure:
+      protocol: TCP
+      nodePort: 32443
+      # Enable HTTP/3.
+      # Requires enabling experimental http3 feature and tls.
+      # Note that you cannot have a UDP entrypoint with the same port.
+      # http3: true
+      # Set TLS at the entrypoint
+      # https://doc.traefik.io/traefik/routing/entrypoints/#tls
+  service:
+    enabled: true
+    type: LoadBalancer
+    spec: {}
+      # externalTrafficPolicy: Cluster
+      # loadBalancerIP: "1.2.3.4"
+      # clusterIP: "2.3.4.5"
+    loadBalancerSourceRanges: []
+      # - 192.168.0.1/32
+      # - 172.16.0.0/16
+    externalIPs: []
