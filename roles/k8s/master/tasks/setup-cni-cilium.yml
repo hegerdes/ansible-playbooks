@@ -1,0 +1,33 @@
+# Main k8s CNI - Cilium
+
+- name: Add Cilium helm chart repo
+  kubernetes.core.helm_repository:
+    name: cilium
+    repo_url: https://helm.cilium.io/
+  tags: [k8s, k8-init, k8-master-init, k8-cri, k8s-cilium]
+
+- name: Install Cilium
+  kubernetes.core.helm:
+    kubeconfig: /etc/kubernetes/admin.conf
+    name: cilium
+    chart_version: 1.12.2
+    chart_ref: cilium/cilium
+    update_repo_cache: true
+    release_namespace: kube-system
+    create_namespace: true
+    values: '{{ k8s_cilium_helm_values }}'
+  tags: [k8s, k8-init, k8-master-init, k8-cri, k8s-cilium]
+
+- name: Get latest Cilium CLI Version
+  uri:
+    url: https://raw.githubusercontent.com/cilium/cilium-cli/master/stable.txt
+    return_content: yes
+  register: k8s_intanal_cilium_stable_version
+  tags: [k8s, k8-init, k8-master-init, k8-cri, k8s-cilium]
+
+- name: Download Cilium CLI
+  unarchive:
+    src: 'https://github.com/cilium/cilium-cli/releases/download/{{ k8s_cilium_cli_version | default(k8s_intanal_cilium_stable_version.content) }}/cilium-linux-amd64.tar.gz'
+    dest: /usr/local/bin
+    remote_src: yes
+  tags: [k8s, k8-init, k8-master-init, k8-cri, k8s-cilium]
