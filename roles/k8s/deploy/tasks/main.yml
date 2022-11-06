@@ -1,0 +1,25 @@
+# K8s install certmanager
+
+# TODO make sure helm is installed
+- name: Add GitLab Helm repo
+  kubernetes.core.helm_repository:
+    name: reddvid-test
+    username: gitlab-hcloude-helm
+    password: ***REMOVED***
+    repo_url: https://gitlab.com/api/v4/projects/40808451/packages/helm/stable
+  no_log: true
+  tags: [k8s, k8-deploy, helm-deploy]
+
+- name: Deploy App
+  kubernetes.core.helm:
+    name: myapp
+    state: present
+    update_repo_cache: true
+    kubeconfig: /etc/kubernetes/admin.conf
+    chart_version: 0.1.1
+    chart_ref: reddvid-test/reddvid
+    release_namespace: my-app
+    create_namespace: true
+    wait: true
+    # values: '{{ k8s_certmanager_helm_values }}'
+  tags: [k8s, k8-deploy, helm-deploy]
