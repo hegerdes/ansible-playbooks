@@ -1,0 +1,45 @@
+# Main Docker deploy
+---
+- name: Stop App
+  when: app_deploy_shutdown_command != "none"
+  shell: '{{ app_deploy_shutdown_command }}'
+  tags: [app-deploy]
+
+- name: Synchronization of application compose|stack files
+  become: false
+  synchronize:
+    src: '{{ app_deploy_src_config_files }}'
+    dest: '{{ app_deploy_dst_config_files }}'
+    recursive: yes
+    use_ssh_args: yes
+    mode: push
+    checksum: yes
+    rsync_opts: '{{ app_deploy_rsync_args }}'
+  tags: [app-deploy]
+
+- name: Fix file permissions
+  file:
+    path: '{{ app_deploy_dst_config_files + item.name }}'
+    owner: root
+    group: root
+    mode: '{{ item.mode | default("0644") }}'
+  loop: '{{ app_deploy_file_permissions }}'
+  tags: [app-deploy]
+
+- name: Test Config
+  when: app_deploy_test_command != "none"
+  shell: '{{ app_deploy_test_command }}'
+  register: app_deploy_test_res
+  tags: [app-deploy]
+
+- name: DEBUG
+  debug:
+    var: app_deploy_test_res
+
+- name: Start App
+  when: app_deploy_start_command != "none" and ((app_deploy_test_res.skipped is defined and app_deploy_test_res.skipped) or app_deploy_test_res.rc == 0)
+  shell: '{{ app_deploy_start_command }}'
+  register: app_deploy_test_res
+  tags: [app-deploy]
+
+
