@@ -2,16 +2,18 @@
 # Deploy app
 
 app_deploy_base_dir: '{{ inventory_dir }}/{{ inventory_hostname }}'
-app_deploy_src_config_files: '{{ app_deploy_base_dir }}/srv/'
-app_deploy_dst_config_files: /srv/
 app_deploy_wait_timeout: '{{ lookup("env","DEPLOY_WAIT_TIMEOUT") | default(30, true) | int }}'
 app_deploy_shutdown_command: none
 app_deploy_test_command: none
 app_deploy_start_command: none
 
-app_deploy_rsync_args: []
+app_deploy_copy:
+  - src_config_files: '{{ app_deploy_base_dir }}/srv/'
+    dst_config_files: /srv/
+
+rsync_args: []
 # Example
-# app_deploy_rsync_args:
+# rsync_args:
 #   - "--exclude=.git"
 
 app_deploy_file_permissions: []
