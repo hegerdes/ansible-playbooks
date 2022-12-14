@@ -1,7 +1,7 @@
 # Main k8s Monitoring
 
 - name: Create a monitoring namespace
-  kubernetes.core.k8s:
+  k8s:
     name: monitoring
     api_version: v1
     kind: Namespace
