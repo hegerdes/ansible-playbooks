@@ -15,7 +15,7 @@
     - k8s/ingress-nginx
     # - k8s/ingress-traefik
     - k8s/monitoring
-    - k8s/deploy
+    # - k8s/deploy
 
 - hosts: k8s_worker
   become: true

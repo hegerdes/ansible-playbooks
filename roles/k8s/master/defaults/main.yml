@@ -1,5 +1,5 @@
 ---
-k8s_version: 1.24.4
+k8s_version: 1.25.4
 k8s_shared_api_server_endpoint: '{{ ansible_facts.default_ipv4.address }}'
 k8s_pod_network_cidr: 10.244.0.0/16
 k8s_cert_extra_sans: '{{ ["127.0.0.1"] + ansible_facts.all_ipv4_addresses }}'
@@ -26,8 +26,8 @@ k8s_cni: flannel
 k8s_cilium_helm_values: {}
 k8s_calico_helm_values:
   installation:
-    cni:
-      type: Calico
+  #   cni:
+  #     type: Calico
     calicoNetwork:
       ipPools:
       - cidr: '{{ k8s_pod_network_cidr }}'
