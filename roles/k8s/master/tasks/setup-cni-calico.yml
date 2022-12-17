@@ -15,7 +15,7 @@
     update_repo_cache: true
     release_namespace: tigera-operator
     create_namespace: true
-    values: '{{ k8s_calico_helm_values }}'
+    values: '{{ k8s_calico_helm_values | default({}) }}'
   tags: [k8s, k8-init, k8-master-init, k8-cri, k8s-calico]
 
 - name: Download calicoctl

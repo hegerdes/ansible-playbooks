@@ -16,6 +16,7 @@
     # - k8s/ingress-traefik
     - k8s/monitoring
     - k8s/hetzner
+    - k8s/longhorn
     - k8s/deploy
 
 - hosts: k8s_worker

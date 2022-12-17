@@ -15,7 +15,7 @@
     release_namespace: ingress-nginx
     create_namespace: true
     wait: true
-    values: '{{ k8s_nginx_helm_values }}'
+    values: '{{ k8s_nginx_helm_values | default({}) }}'
   tags: [k8s, k8-init, k8-ingress, k8s-ingress-nginx]
 
 

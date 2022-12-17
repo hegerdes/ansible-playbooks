@@ -14,7 +14,7 @@
     release_namespace: metallb-system
     create_namespace: true
     wait: true
-    values: '{{ k8s_metallb_helm_values }}'
+    values: '{{ k8s_metallb_helm_values | default({}) }}'
   run_once: true
   tags: [k8s, k8-init, k8-loadbalancer, k8-metallb]
 

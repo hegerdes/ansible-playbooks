@@ -21,7 +21,7 @@
     release_namespace: my-app
     create_namespace: true
     wait: true
-    # values: '{{ k8s_certmanager_helm_values }}'
+    # values: '{{ k8s_app_helm_values | default({}) }}'
     values:
       service:
         annotations:

@@ -12,7 +12,8 @@
     chart_ref: traefik/traefik
     release_namespace: traefik-v2
     create_namespace: true
+    update_repo_cache: true
     wait: true
-    values: '{{ k8s_treafik_helm_values }}'
+    values: '{{ k8s_treafik_helm_values | default({}) }}'
   tags: [k8s, k8-init, k8-ingress, k8s-ingress-traefik]
 
