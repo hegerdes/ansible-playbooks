@@ -27,7 +27,7 @@
 
 - name: Download Cilium CLI
   unarchive:
-    src: 'https://github.com/cilium/cilium-cli/releases/download/{{ k8s_cilium_cli_version | default(k8s_intanal_cilium_stable_version.content) }}/cilium-linux-amd64.tar.gz'
+    src: 'https://github.com/cilium/cilium-cli/releases/download/{{ k8s_cilium_cli_version | default(k8s_intanal_cilium_stable_version.content | trim) }}/cilium-linux-amd64.tar.gz'
     dest: /usr/local/bin
     remote_src: yes
   tags: [k8s, k8-init, k8-master-init, k8-cri, k8s-cilium]
