@@ -26,8 +26,8 @@ k8s_cni: flannel
 k8s_cilium_helm_values: {}
 k8s_calico_helm_values:
   installation:
-  #   cni:
-  #     type: Calico
+    cni:
+      type: Calico
     calicoNetwork:
       ipPools:
       - cidr: '{{ k8s_pod_network_cidr }}'

@@ -1,0 +1,56 @@
+# Main k8s Setup
+---
+- name: Create Secret
+  when: k8s_hetzner_api_key != "none"
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: hcloud
+        namespace: kube-system
+      stringData:
+        token: '{{ k8s_hetzner_api_key }}'
+        network: '{{ k8s_hetzner_network_name_or_id }}'
+  tags: [k8s, k8-hetzner]
+
+# https://github.com/hetznercloud/hcloud-cloud-controller-manager
+- name: Get latest hetzner cloud controller
+  when: k8s_hetzner_api_key != "none" and k8s_hetzner_install_cc
+  uri:
+    url: https://github.com/hetznercloud/hcloud-cloud-controller-manager/releases/latest/download/ccm.yaml
+    return_content: yes
+    status_code: [200, 304]
+  register: k8s_intanal_hetzner_cloud_controler_def
+  tags: [k8s, k8-hetzner]
+
+# https://github.com/hetznercloud/csi-driver
+- name: Get latest hetzner csi driver
+  when: k8s_hetzner_api_key != "none" and k8s_hetzner_install_csi_driver
+  uri:
+    url: https://raw.githubusercontent.com/hetznercloud/csi-driver/v2.1.0/deploy/kubernetes/hcloud-csi.yml
+    return_content: yes
+    status_code: [200, 304]
+  register: k8s_intanal_hetzner_csi_driver_def
+  tags: [k8s, k8-hetzner]
+
+- name: Apply Hetzner Cloud Controller
+  when: k8s_hetzner_api_key != "none" and k8s_hetzner_install_cc
+  k8s:
+    namespace: kube-system
+    kubeconfig: /etc/kubernetes/admin.conf
+    state: present
+    # src: /tmp/hcloud-csi.yml
+    definition: '{{ k8s_intanal_hetzner_cloud_controler_def.content }}'
+  tags: [k8s, k8-hetzner]
+
+- name: Apply Hetzner Cloud CSI Driver
+  when: k8s_hetzner_api_key != "none" and k8s_hetzner_install_csi_driver
+  k8s:
+    namespace: kube-system
+    kubeconfig: /etc/kubernetes/admin.conf
+    state: present
+    # src: /tmp/ccm.yaml
+    definition: '{{ k8s_intanal_hetzner_csi_driver_def.content }}'
+  tags: [k8s, k8-hetzner]

@@ -11,11 +11,12 @@
   gather_facts: true
   roles:
     - k8s/master
-    - k8s/metallb
+    # - k8s/metallb
     - k8s/ingress-nginx
     # - k8s/ingress-traefik
     - k8s/monitoring
-    # - k8s/deploy
+    - k8s/hetzner
+    - k8s/deploy
 
 - hosts: k8s_worker
   become: true

@@ -16,10 +16,33 @@
     state: present
     update_repo_cache: true
     kubeconfig: /etc/kubernetes/admin.conf
-    chart_version: 0.1.1
+    chart_version: 0.1.2
     chart_ref: reddvid-test/reddvid
     release_namespace: my-app
     create_namespace: true
     wait: true
     # values: '{{ k8s_certmanager_helm_values }}'
+    values:
+      service:
+        annotations:
+          # load-balancer.hetzner.cloud/name: "k8s-worker-lb"
+      ingress:
+        enabled: yes
+        className: nginx
+        annotations:
+          # kubernetes.io/ingress.class: nginx
+          cert-manager.io/cluster-issuer: letsencrypt-staging
+        hosts:
+          - host: reddvid-k8s.henrikgerdes.me
+            paths:
+              - path: /
+                pathType: ImplementationSpecific
+        tls:
+          - secretName: reddvid-k8s
+            hosts:
+              - reddvid-k8s.henrikgerdes.me
+      image:
+        repository: nginx
+        tag: latest
+
   tags: [k8s, k8-deploy, helm-deploy]

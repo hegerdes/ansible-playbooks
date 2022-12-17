@@ -9,6 +9,7 @@
 - name: Deploy MetalLB
   kubernetes.core.helm:
     name: metallb
+    state: present
     chart_ref: metallb/metallb
     release_namespace: metallb-system
     create_namespace: true

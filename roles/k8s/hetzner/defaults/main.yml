@@ -1,0 +1,4 @@
+k8s_hetzner_api_key: none
+k8s_hetzner_network_name_or_id: default-k8s-net
+k8s_hetzner_install_cc: true
+k8s_hetzner_install_csi_driver: true
