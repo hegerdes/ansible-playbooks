@@ -19,3 +19,29 @@
     wait: true
     values: '{{ k8s_certmanager_helm_values | default({}) }}'
   tags: [k8s, k8-init, k8-master-init, k8-helm, k8s-certmanager]
+
+- name: Ensure Cert Manager Manifest directory exists
+  ansible.builtin.file:
+    path: /srv/certmanager
+    state: directory
+    mode: 0755
+  tags: [k8s, k8-init, k8-master-init, k8-helm, k8s-certmanager]
+
+- name: Copy Certmanager Manifests
+  when: k8s_certmanager_letsencrypt_mail != "none"
+  template:
+    src: '{{ item }}.j2'
+    dest: '/srv/certmanager/{{ item }}'
+    mode: '0644'
+  loop: [lets-encrypt-issuer-staging.yml, lets-encrypt-issuer-prod.yml]
+  tags: [k8s, k8-init, k8-master-init, k8-helm, k8s-certmanager]
+
+- name: Apply Certmanager Manifests
+  when: k8s_certmanager_letsencrypt_mail != "none"
+  k8s:
+    kubeconfig: /etc/kubernetes/admin.conf
+    state: present
+    src: '/srv/certmanager/{{ item }}'
+  run_once: true
+  loop: [lets-encrypt-issuer-staging.yml, lets-encrypt-issuer-prod.yml]
+  tags: [k8s, k8-init, k8-master-init, k8-cri, k8-weave]

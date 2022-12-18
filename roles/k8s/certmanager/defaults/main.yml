@@ -1,0 +1,3 @@
+---
+k8s_certmanager_letsencrypt_mail: none
+k8s_certmanager_ingress_class: nginx

@@ -24,8 +24,7 @@
     # values: '{{ k8s_app_helm_values | default({}) }}'
     values:
       service:
-        annotations:
-          # load-balancer.hetzner.cloud/name: "k8s-worker-lb"
+        annotations: {}
       ingress:
         enabled: yes
         className: nginx

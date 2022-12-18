@@ -17,9 +17,9 @@
 
 # https://github.com/hetznercloud/hcloud-cloud-controller-manager
 - name: Get latest hetzner cloud controller
-  when: k8s_hetzner_api_key != "none" and k8s_hetzner_install_cc
+  when: k8s_hetzner_api_key != "none" and k8s_hetzner_install_ccm
   uri:
-    url: https://github.com/hetznercloud/hcloud-cloud-controller-manager/releases/latest/download/ccm.yaml
+    url: 'https://github.com/hetznercloud/hcloud-cloud-controller-manager/releases/latest/download/ccm{{ "-networks" if (k8s_hetzner_use_ccm_pvt_networks) }}.yaml'
     return_content: yes
     status_code: [200, 304]
   register: k8s_intanal_hetzner_cloud_controler_def
@@ -36,7 +36,7 @@
   tags: [k8s, k8-hetzner]
 
 - name: Apply Hetzner Cloud Controller
-  when: k8s_hetzner_api_key != "none" and k8s_hetzner_install_cc
+  when: k8s_hetzner_api_key != "none" and k8s_hetzner_install_ccm
   k8s:
     namespace: kube-system
     kubeconfig: /etc/kubernetes/admin.conf
