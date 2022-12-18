@@ -14,6 +14,17 @@
     dest: /srv/monitoring
   tags: [k8s, k8-init, k8s-monitor]
 
+- name: Copy monitoring config files
+  template:
+    src: '{{ item }}.j2'
+    dest: '/srv/monitoring/{{ item }}'
+    mode: '0644'
+  loop:
+    - grafana-metrics-config.yml
+    - grafana-log-config.yml
+    - grafana-traces-config.yml
+  tags: [k8s, k8-init, k8s-monitor]
+
 - name: Apply Grafana Agent Manifest & K8s Dashboad
   k8s:
     namespace: monitoring
