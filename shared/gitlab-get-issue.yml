@@ -5,5 +5,5 @@
     headers:
       PRIVATE-TOKEN: '{{ gitlab_conf.token }}'
     status_code: 200
-  ignore_errors: True
+  ignore_errors: true
   register: main_reop_get_issue_res

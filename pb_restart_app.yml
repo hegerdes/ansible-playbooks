@@ -7,7 +7,7 @@
 
   - name: Restarting Docker services
     environment:
-      RESTART_SERVICES: '{{ lookup("env","RESTART_SERVICES") | default("", True) }}'
+      RESTART_SERVICES: '{{ lookup("env","RESTART_SERVICES") | default("", true) }}'
     args:
       executable: /bin/bash
     shell: |

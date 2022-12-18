@@ -12,7 +12,7 @@ common_delete_packages: []
 common_floating_ips: []
 
 # Symbic repo: ssh://git@***REMOVED***:2222/symbic-intern/symbic-authorized-keys.git
-common_ssh_key_repo: '{{lookup("env", "SSH_KEY_REPO") | default("none", True)}}'
+common_ssh_key_repo: '{{lookup("env", "SSH_KEY_REPO") | default("none", true)}}'
 common_ssh_key_repo_branch: master
 # List of key_paths
 common_ssh_keys: []
@@ -24,6 +24,8 @@ common_default_network_device: ens10
 #     state: present                # optional
 #     user: root                    # optional
 #     key_options: ''               # optional
+# List if lines present in sshd_config
+sshd_options: []
 
 # Mounts
 common_device_mounts: []

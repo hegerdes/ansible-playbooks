@@ -188,11 +188,20 @@ async function waitForImageCreation() {
 // No label given gets all (automatic generated) images
 async function getImages(label = null, status = "available") {
     label = (label) ? "&label_selector=" + label : ""
-    var images_request_options = {
-        ...options,
-        path: "/v1/images?type=snapshot&label_selector=automatic&status=" + status + "&sort=created:desc" + label,
-    };
-    return (await makeRequest(images_request_options)).images;
+    let current_page = 1
+    let images = []
+    let res
+    while (true){
+        images_request_options = {
+            ...options,
+            path: `/v1/images?type=snapshot&label_selector=automatic&page=${current_page}&per_page=50&status=${status}&sort=created:desc` + label,
+        };
+        res = await makeRequest(images_request_options)
+        images = images.concat(res.images)
+        if (res.meta.pagination.page == res.meta.pagination.last_page) break
+        current_page += 1
+    }
+    return images;
 }
 
 async function run() {

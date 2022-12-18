@@ -4,7 +4,7 @@
   when: item.1.type is defined and item.1.type == "volume"
   set_fact:
     docker_deploy_volumes: '{{ docker_deploy_volumes | default([]) + [item.1.source] }}'
-  loop: '{{ docker_deploy_services | subelements("mounts", "skip_missing=True") }}'
+  loop: '{{ docker_deploy_services | subelements("mounts", "skip_missing=true") }}'
   loop_control:
     label: '{{ item.1.source }}'
   tags: [docker-deploy, docker-deploy-service]
@@ -64,4 +64,3 @@
     force_update: true
   loop: '{{ docker_deploy_services }}'
   tags: [docker-deploy, docker-deploy-service]
-

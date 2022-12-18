@@ -4,6 +4,7 @@
   apt:
     name: cron
     state: latest
+  tags: [shared, cron]
 
 - name: Create cron jobs
   cron:
@@ -19,3 +20,4 @@
   loop: '{{ cron_jobs }}'
   loop_control:
     label: '{{ item.name }}'
+  tags: [shared, cron]

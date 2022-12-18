@@ -8,7 +8,7 @@
 
 - name: Getting all hostkeys
   when: hostvars[item].ansible_facts[common_default_network_device] is defined
-  run_once: True
+  run_once: true
   set_fact:
     all_hostkeys: "{{ all_hostkeys | default([]) + [hostvars[item].ansible_facts[common_default_network_device].ipv4.address + ' ssh-rsa ' + hostvars[item].ansible_facts.ssh_host_key_rsa_public] + [hostvars[item].ansible_facts[common_default_network_device].ipv4.address + ' ssh-ed25519 ' + hostvars[item].ansible_facts.ssh_host_key_ed25519_public] + [hostvars[item].ansible_facts[common_default_network_device].ipv4.address + ' ecdsa-sha2-nistp256 ' + hostvars[item].ansible_facts.ssh_host_key_ecdsa_public] }}"
   with_items: '{{ groups.all }}'

@@ -49,25 +49,34 @@
   tags: [docker-deploy]
 
 - name: Check Docker images
+# - name: Starting async Docker Images Download
   docker_image:
     name: '{{ item.split(":")[0] if(item | regex_findall(":") | length <= 1) else item.split(":")[0] + ":" + item.split(":")[1] }}'
     tag: '{{ item.split(":")[1] | default("latest") if(item | regex_findall(":") | length <= 1) else item.split(":")[2] }}'
     source: pull
     force_source: yes
   loop: '{{ deploy_compose_conetent_img | default([]) | unique }}'
+  register: docker_image_pull_res
+  # async: 60
+  # poll: 2
   tags: [docker-deploy]
 
-- name: Inspect Docker images
-  docker_image_info:
-    name: '{{ item }}'
-  register: docker_image_info_res
-  loop: '{{ deploy_compose_conetent_img | default([]) | unique }}'
-  tags: [docker-deploy]
+# - name: wait
+#   async_status:
+#     jid: '{{ item.ansible_job_id }}'
+#     mode: status
+#   changed_when: item.changed
+#   retries: 64
+#   delay: 1
+#   loop: '{{ docker_image_pull_res.results }}'
+#   register: docker_image_pulled_res
+#   until: docker_image_pulled_res.finished
 
-- name: Format Docker image facts
+- name: Format Docker Image-Facts
   set_fact:
-    image_info_data: '{{ image_info_data | default([]) + [ {(item.item | string | replace(":","-")  ): item.images[0].Config.Labels }] }}'
-  loop: '{{ docker_image_info_res.results }}'
+    image_info_data: '{{ image_info_data | default([]) + [ {(item.item | string | replace(":","-") ): item.image.Config.Labels }] }}'
+  loop: '{{ docker_image_pull_res.results }}'
+  # loop: '{{ docker_image_pulled_res.results }}'
   loop_control:
     label: '{{ item.item }}'
   tags: [docker-deploy]
@@ -90,7 +99,7 @@
   tags: [docker-deploy]
 
 - name: Deploy app-stack via compose
-  when: docker_deploy_use_swarm_mode | bool != true
+  when: not docker_deploy_use_swarm_mode
   docker_compose:
     project_name: '{{ docker_project.name }}'
     remove_orphans: '{{ docker_deploy_prune_old_services }}'

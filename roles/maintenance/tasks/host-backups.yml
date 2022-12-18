@@ -29,13 +29,12 @@
   loop: '{{ main_backup_dump_files.files }}'
   loop_control:
     label: '{{ item.path }}'
-  ignore_errors: True
+  ignore_errors: true
   tags: [maintenance, backup]
 
 - name: Run backup script
   when: main_backup_stat_res.stat.exists
   shell: 'bash {{ main_backup_dir + "run_backup.sh" }}'
-  # shell: 'echo HI'
   environment:
     CUSTOM_BACKUP_DIR: '{{ backup_dir }}'
   register: main_backup_res
@@ -52,17 +51,17 @@
 
 - name: Format log string I
   when: hostvars[item].main_backup_res is defined and hostvars[item].main_backup_res.changed
-  run_once: True
+  run_once: true
   set_fact:
-    all_main_backup_res: '{{ all_main_backup_res | default({}) | combine({item: {"time": "Started: " + hostvars[item].main_backup_res.start + " - End: " + hostvars[item].main_backup_res.end + " - Time: " + hostvars[item].main_backup_res.delta, "stdout": hostvars[item].main_backup_res.stdout_lines, "stderr": hostvars[item].main_backup_res.stderr_lines }}, recursive=True) }}'
+    all_main_backup_res: '{{ all_main_backup_res | default({}) | combine({item: {"time": "Started: " + hostvars[item].main_backup_res.start + " - End: " + hostvars[item].main_backup_res.end + " - Time: " + hostvars[item].main_backup_res.delta, "stdout": hostvars[item].main_backup_res.stdout_lines, "stderr": hostvars[item].main_backup_res.stderr_lines }}, recursive=true) }}'
   with_items: '{{ groups.all }}'
   tags: [maintenance, backup]
 
 - name: Format log string II
   when: hostvars[item].main_archive_res is defined and hostvars[item].main_archive_res.changed
-  run_once: True
+  run_once: true
   set_fact:
-    all_main_backup_res: '{{ all_main_backup_res | default({}) | combine({item: {"time": "Started: " + hostvars[item].main_archive_res.start + " - End: " + hostvars[item].main_archive_res.end + " - Time: " + hostvars[item].main_archive_res.delta, "stdout": hostvars[item].main_archive_res.stdout_lines, "stderr": hostvars[item].main_archive_res.stderr_lines }}, recursive=True) }}'
+    all_main_backup_res: '{{ all_main_backup_res | default({}) | combine({item: {"time": "Started: " + hostvars[item].main_archive_res.start + " - End: " + hostvars[item].main_archive_res.end + " - Time: " + hostvars[item].main_archive_res.delta, "stdout": hostvars[item].main_archive_res.stdout_lines, "stderr": hostvars[item].main_archive_res.stderr_lines }}, recursive=true) }}'
   with_items: '{{ groups.all }}'
   tags: [maintenance, backup]
 
@@ -82,7 +81,7 @@
 
 
 - name: Print backup & archive script result
-  run_once: True
+  run_once: true
   debug:
     var: all_main_backup_res
   tags: [maintenance, backup]

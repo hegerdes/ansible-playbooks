@@ -26,7 +26,7 @@
 
 - name: Format update string II
   when: hostvars[item].updates is defined
-  run_once: True
+  run_once: true
   set_fact:
     all_updates: '{{ all_updates | default({}) | combine({item: hostvars[item].updates}) }}'
   with_items: '{{ groups.all }}'
@@ -34,15 +34,15 @@
 
 - name: Format update string III
   when: hostvars[item].updates is defined
-  run_once: True
+  run_once: true
   set_fact:
-    all_updates: '{{ all_updates | default({}) | combine({"failed_hosts": ansible_play_hosts_all | difference(ansible_play_batch) | default([]), "project_info": {"project_url": lookup("env", "CI_PROJECT_URL") | default("none", True), "project_id": lookup("env", "CI_PROJECT_ID") | default("none", True)} }, recursive=True ) }}'
+    all_updates: '{{ all_updates | default({}) | combine({"failed_hosts": ansible_play_hosts_all | difference(ansible_play_batch) | default([]), "project_info": {"project_url": lookup("env", "CI_PROJECT_URL") | default("none", true), "project_id": lookup("env", "CI_PROJECT_ID") | default("none", true)} }, recursive=true ) }}'
   with_items: '{{ groups.all }}'
   tags: [maintenance, os-updates]
 
 - name: Print updates
   when: hostvars[item].updates is defined
-  run_once: True
+  run_once: true
   debug:
     var: hostvars[item].updates
   with_items: '{{ groups.all }}'
@@ -51,7 +51,7 @@
 - name: Save update file to ...
   when: all_updates is defined
   become: false
-  run_once: True
+  run_once: true
   copy:
     content: "{{ all_updates }}"
     dest: "/tmp/{{ inventory_dir | basename + '-updates' + lookup('pipe', 'date +\"-%Y-%m-%d\"') }}.json"
@@ -93,7 +93,7 @@
     gitlab_conf:
       url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/issues?labels=aptPendingUpdates,{{ inventory_dir | basename }}&state=opened'
       token: '{{ maintenance_git_token }}'
-  run_once: True
+  run_once: true
   tags: [maintenance, os-updates]
 
 - name: Update issue on GitLab
@@ -125,13 +125,13 @@
     headers:
       Content-Type: application/json
     body:
-      text: ':mailbox: Found new System-Updates for {{ lookup("env", "CI_PROJECT_NAME") | default(inventory_dir | basename, True) }}. [Take a look here!]({{ main_reop_issue_res.json.web_url }})'
+      text: ':mailbox: Found new System-Updates for {{ lookup("env", "CI_PROJECT_NAME") | default(inventory_dir | basename, true) }}. [Take a look here!]({{ main_reop_issue_res.json.web_url }})'
       username: GitLab-CI-Maintenance
       icon_url: "https://about.gitlab.com/images/press/logo/png/gitlab-logo-500.png"
       props:
         origin: gitlab
         job: os-updates-info
-        project: '{{ lookup("env", "CI_PROJECT_NAME") | default(inventory_dir | basename, True) }}'
+        project: '{{ lookup("env", "CI_PROJECT_NAME") | default(inventory_dir | basename, true) }}'
         card: |
           # Pending Updates:
           {% for key, update_list in all_updates.items() if key not in ("failed_hosts", "project_info")  %}
@@ -142,7 +142,7 @@
 
           {% endfor %}
     status_code: 200
-  ignore_errors: True
+  ignore_errors: true
   tags: [maintenance, os-updates]
 
 - name: Upgrade packages
@@ -176,9 +176,9 @@
 
 - name: Format update result string II
   when: hostvars[item].performed_updates is defined
-  run_once: True
+  run_once: true
   set_fact:
-    all_performed_updates: '{{ all_performed_updates | default({}) | combine({item: hostvars[item].performed_updates, "reboots": {item: hostvars[item].main_reboot_needed.stat.exists}}, recursive=True) }}'
+    all_performed_updates: '{{ all_performed_updates | default({}) | combine({item: hostvars[item].performed_updates, "reboots": {item: hostvars[item].main_reboot_needed.stat.exists}}, recursive=true) }}'
   with_items: '{{ groups.all }}'
   tags: [maintenance, os-updates]
 
@@ -207,7 +207,7 @@
       response_status: 201
       body:
         body: |
-          Updates performed on {{ ansible_date_time.date + "-" + ansible_date_time.hour + "-" + ansible_date_time.minute }} via CI {{"[Job " + lookup("env", "CI_JOB_ID") + "](" + lookup("env", "CI_JOB_URL") + ")" if(lookup("env", "CI_JOB_URL") | default("none", True) != "none") }} by {{ lookup("env", "GITLAB_USER_NAME") | default("a Bot", True) }}.
+          Updates performed on {{ ansible_date_time.date + "-" + ansible_date_time.hour + "-" + ansible_date_time.minute }} via CI {{"[Job " + lookup("env", "CI_JOB_ID") + "](" + lookup("env", "CI_JOB_URL") + ")" if(lookup("env", "CI_JOB_URL") | default("none", true) != "none") }} by {{ lookup("env", "GITLAB_USER_NAME") | default("a Bot", true) }}.
 
           See the log here: {{ main_reop_get_issue_res.json | json_query("[0].web_url") | split("/-/") | first }}/-/blob/main/{{ inventory_dir | basename }}-host-updates/{{ ansible_date_time.date }}-{{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-performed-updates.json
   tags: [maintenance, os-updates]
@@ -227,7 +227,7 @@
 
 - name: Resetting vars
   when: ansible_play_hosts_all | last == inventory_hostname and all_updates is defined and maintenance_post_to_git and maintenance_run_upgrades
-  run_once: True
+  run_once: true
   set_fact:
     all_updates: {}
     main_updates: {}

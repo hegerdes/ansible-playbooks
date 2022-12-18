@@ -10,12 +10,12 @@
   when: influx_use_docker | bool
   command: docker --version
   register: docker_valid
-  ignore_errors: True
-  changed_when: False
+  ignore_errors: true
+  changed_when: false
   tags: [influxdb]
 
 - name: Run Docker install
-  when: influx_use_docker | bool and docker_valid.failed | default(True)
+  when: influx_use_docker | bool and docker_valid.failed | default(true)
   include_role:
     name: docker
   vars:

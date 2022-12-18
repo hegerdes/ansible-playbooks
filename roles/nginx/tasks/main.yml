@@ -5,7 +5,7 @@
     path: '{{ inventory_dir }}/{{ inventory_hostname }}/srv/'
   register: nginx_host_extra_files
   delegate_to: localhost
-  become: False
+  become: false
   tags: [ingress, nginx, ingress-hosts]
 
 - name: Copy from inventory_dir/host/srv to remote host/srv

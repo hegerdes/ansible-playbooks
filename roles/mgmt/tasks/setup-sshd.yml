@@ -34,6 +34,7 @@
   tags: [mgmt, ssh]
 
 - name: Enable ssh banner
+  when: mgmt_ssh_banner | default(true)
   lineinfile:
     path: /etc/ssh/sshd_config
     regexp: '^#Banner none*'
