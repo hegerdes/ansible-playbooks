@@ -18,3 +18,4 @@ kryptex.py
 tools/terraform/hetzner/terraform.tfstate
 tools/terraform/hetzner/vars.tfvars
 pb_test.yml
+roles/k8s/common/files/ssh/ssh_host_*
