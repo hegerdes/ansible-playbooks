@@ -33,7 +33,7 @@
                       --ignore-preflight-errors=NumCPU \
                       --control-plane-endpoint={{ k8s_shared_api_server_endpoint }} \
                       --apiserver-cert-extra-sans={{ (k8s_cert_extra_sans + [k8s_shared_api_server_endpoint]) | unique | join(",") }} \
-                      --apiserver-advertise-address={{ k8s_kubelet_advertise_address_bind | default(ansible_facts.default_ipv4.address) }} \
+                      --apiserver-advertise-address={{ ansible_facts.all_ipv4_addresses | ansible.utils.reduce_on_network(k8s_cloud_subnet) | first if(k8s_cloud_subnet | default("none") != "none") else k8s_kubelet_advertise_address_bind | default(ansible_facts.default_ipv4.address) }} \
                       --certificate-key={{ k8_cert_key if(k8_cert_key != "none") else k8s_kubeadm_cert_key }} \
                       {{ k8s_kubeadm_opts }} \
                       {{ k8s_init_opts }}
@@ -46,6 +46,7 @@
         daemon_reload: yes
         state: started
         enabled: yes
+      ignore_errors: '{{ ansible_check_mode }}'
       tags: [k8s, k8-init, k8-master-init]
 
     - name: Debug - Kubeadm init res

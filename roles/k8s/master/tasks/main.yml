@@ -74,6 +74,7 @@
     daemon_reload: yes
     state: started
     enabled: yes
+  ignore_errors: '{{ ansible_check_mode }}'
   tags: [k8s, k8-init, k8-master-init]
 
 - name: Show join results

@@ -15,7 +15,7 @@ data:
       - name: integrations
         remote_write:
           - url: {{ k8s_monitoring_prometheus_url }}
-          basic_auth:
+            basic_auth:
               username: {{ k8s_monitoring_prometheus_user }}
               password: {{ k8s_monitoring_prometheus_pw }}
         scrape_configs:

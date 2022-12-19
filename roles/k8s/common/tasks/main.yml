@@ -9,7 +9,7 @@
   tags: [k8s, k8s-prepare, k8s-base, apt]
 
 - name: Set ssh host keys
-  copy:
+  synchronize:
     src: ssh/
     dest: /etc/ssh/
   register: k8s_internal_ssh_copy
@@ -135,6 +135,7 @@
     update_cache: yes
     install_recommends: no
     allow_downgrade: yes
+  ignore_errors: '{{ ansible_check_mode }}'
   tags: [k8s, k8s-prepare, k8s-base, apt]
 
 - name: Copy containerd-conf
@@ -151,4 +152,5 @@
     name: containerd
     daemon_reload: yes
     state: restarted
+  ignore_errors: '{{ ansible_check_mode }}'
   tags: [k8s, k8s-prepare, k8s-base]
