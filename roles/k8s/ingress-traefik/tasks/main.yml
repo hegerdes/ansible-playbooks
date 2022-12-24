@@ -4,7 +4,7 @@
   kubernetes.core.helm_repository:
     name: traefik
     repo_url: https://helm.traefik.io/traefik
-  tags: [k8s, k8-init, k8-ingress, k8s-ingress-traefik]
+  tags: [k8s, k8s-init, k8s-ingress, k8s-ingress-traefik]
 
 - name: Deploy Treafik
   kubernetes.core.helm:
@@ -15,5 +15,5 @@
     update_repo_cache: true
     wait: true
     values: '{{ k8s_treafik_helm_values | default({}) }}'
-  tags: [k8s, k8-init, k8-ingress, k8s-ingress-traefik]
+  tags: [k8s, k8s-init, k8s-ingress, k8s-ingress-traefik]
 

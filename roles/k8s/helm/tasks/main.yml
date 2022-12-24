@@ -20,6 +20,7 @@
     state: present
     update_cache: yes
     install_recommends: no
+  ignore_errors: '{{ ansible_check_mode }}'
   tags: [k8s, k8s-init, k8s-helm]
 
 - name: Install Helm Diff

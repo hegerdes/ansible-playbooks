@@ -126,7 +126,7 @@
 - name: Install container runtime, kubelet and admin tools
   apt:
     name:
-      - docker-ce
+      # - docker-ce
       - kubeadm={{ k8s_version }}-00
       - kubectl={{ k8s_version }}-00
       - kubelet={{ k8s_version }}-00

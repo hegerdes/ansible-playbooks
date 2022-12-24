@@ -4,7 +4,7 @@
   kubernetes.core.helm_repository:
     name: ingress-nginx
     repo_url: https://kubernetes.github.io/ingress-nginx
-  tags: [k8s, k8-init, k8-ingress, k8s-ingress-nginx]
+  tags: [k8s, k8s-init, k8s-ingress, k8s-ingress-nginx]
 
 - name: Deploy Nginx-Ingress
   kubernetes.core.helm:
@@ -16,6 +16,6 @@
     create_namespace: true
     wait: true
     values: '{{ k8s_nginx_helm_values | default({}) }}'
-  tags: [k8s, k8-init, k8-ingress, k8s-ingress-nginx]
+  tags: [k8s, k8s-init, k8s-ingress, k8s-ingress-nginx]
 
 
