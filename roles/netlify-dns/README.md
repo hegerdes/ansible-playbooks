@@ -1,0 +1,23 @@
+# Role netlify-dns
+
+## Purpose
+To set DNS records on netlify
+
+
+## Defaults
+```yml
+---
+# Netlify-DNS
+
+# See: https://open-api.netlify.com/
+netlify_api_token: xxx
+netlify_dns_zone_id: xxx
+
+# List of dns records:
+netlify_dns_records: []
+# Example
+# netlify_dns_records:
+#  - { host: "my-domain.example", value: "127.0.0.1" }
+#  - { host: "test.k8s.henrikgerdes.me", value: "127.0.0.1", type: A, ttl: 3600 }
+
+```
