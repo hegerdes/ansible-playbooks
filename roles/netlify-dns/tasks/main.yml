@@ -1,11 +1,5 @@
 # Main netlify-dns
 ---
-- name: Debug file_contents
-  run_once: true
-  debug:
-    var: k8s_hetzner_api_key
-  tags: [netflify, netflify-dns]
-
 - name: Get netlify DNS records
   run_once: true
   uri:

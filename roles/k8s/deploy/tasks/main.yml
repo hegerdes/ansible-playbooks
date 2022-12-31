@@ -3,12 +3,12 @@
 # TODO make sure helm is installed
 - name: Add GitLab Helm repo
   kubernetes.core.helm_repository:
-    name: reddvid-test
-    username: gitlab-hcloude-helm
-    password: ***REMOVED***
-    repo_url: https://gitlab.com/api/v4/projects/40808451/packages/helm/stable
+    name: '{{ k8s_app_helm_repo.name}}'
+    username: '{{ k8s_app_helm_repo.username}}'
+    password: '{{ k8s_app_helm_repo.password}}'
+    repo_url: '{{ k8s_app_helm_repo.repo_url}}'
   no_log: true
-  tags: [k8s, k8-deploy, helm-deploy]
+  tags: [k8s, k8s-deploy, helm-deploy]
 
 - name: Deploy App
   kubernetes.core.helm:
@@ -22,27 +22,5 @@
     release_namespace: my-app
     create_namespace: true
     wait: true
-    # values: '{{ k8s_app_helm_values | default({}) }}'
-    values:
-      service:
-        annotations: {}
-      ingress:
-        enabled: yes
-        className: nginx
-        annotations:
-          # kubernetes.io/ingress.class: nginx
-          cert-manager.io/cluster-issuer: letsencrypt-staging
-        hosts:
-          - host: reddvid-k8s.henrikgerdes.me
-            paths:
-              - path: /
-                pathType: ImplementationSpecific
-        tls:
-          - secretName: reddvid-k8s
-            hosts:
-              - reddvid-k8s.henrikgerdes.me
-      image:
-        repository: nginx
-        tag: latest
-
-  tags: [k8s, k8-deploy, helm-deploy]
+    values: '{{ k8s_app_helm_values | default({}) }}'
+  tags: [k8s, k8s-deploy, helm-deploy]
