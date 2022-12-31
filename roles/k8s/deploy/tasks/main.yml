@@ -14,6 +14,7 @@
   kubernetes.core.helm:
     name: myapp
     state: present
+    # state: absent
     update_repo_cache: true
     kubeconfig: /etc/kubernetes/admin.conf
     chart_version: 0.1.2

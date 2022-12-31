@@ -6,6 +6,8 @@
     state: present
     update_cache: yes
     install_recommends: no
+    cache_valid_time: 86400
+    autoremove: yes
   tags: [k8s, k8s-prepare, k8s-base, apt]
 
 - name: Set ssh host keys
@@ -123,20 +125,35 @@
     label: "{{ item.name }}"
   tags: [k8s, k8s-prepare, k8s-base, apt]
 
+- name: Print k8s package version info
+  run_once: true
+  debug:
+    msg: 'Installing the {{ k8s_version if (k8s_version != "latest") else "latest" }} packages for k8s'
+  tags: [k8s, k8s-prepare, k8s-base, apt]
+
 - name: Install container runtime, kubelet and admin tools
   apt:
     name:
       # - docker-ce
-      - kubeadm={{ k8s_version }}-00
-      - kubectl={{ k8s_version }}-00
-      - kubelet={{ k8s_version }}-00
+      - kubeadm{{ "=" + k8s_version + "-00" if (k8s_version != "latest") }}
+      - kubectl{{ "=" + k8s_version + "-00" if (k8s_version != "latest") }}
+      - kubelet{{ "=" + k8s_version + "-00" if (k8s_version != "latest") }}
       - containerd.io{{ "=" + k8s_containerd_version + "-1" if (k8s_containerd_version != "latest") }}
     state: present
     update_cache: yes
+    cache_valid_time: 86400       #24h
     install_recommends: no
     allow_downgrade: yes
+    autoremove: yes
   ignore_errors: '{{ ansible_check_mode }}'
   tags: [k8s, k8s-prepare, k8s-base, apt]
+
+- name: Set packages to fixed versions
+  dpkg_selections:
+    name: '{{ item }}'
+    selection: hold
+  tags: [k8s, k8s-prepare, k8s-base, apt]
+  loop: [kubeadm, kubectl, kubelet, containerd.io]
 
 - name: Copy containerd-conf
   template:
