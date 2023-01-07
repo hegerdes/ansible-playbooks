@@ -54,7 +54,11 @@
   file:
     path: '{{ item }}'
     state: directory
-  loop: [/etc/systemd/system/docker.service.d, /etc/systemd/system/kubelet.service.d, /srv]
+  loop:
+    - /srv
+    - /etc/apt/keyrings
+    - /etc/systemd/system/docker.service.d
+    - /etc/systemd/system/kubelet.service.d
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: Copy docker service conf
