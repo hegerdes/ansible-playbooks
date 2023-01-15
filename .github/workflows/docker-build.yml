@@ -22,6 +22,6 @@ jobs:
         with:
           push: true
           tags: |
-            hegerdes/palybooks:${GITHUB_SHA}
+            hegerdes/palybooks:${{ github.sha }}
             hegerdes/palybooks:latest
             
