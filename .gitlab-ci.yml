@@ -23,11 +23,4 @@ image-build-playbooks:
     BUILD_IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
   rules:
     - if: $CI_COMMIT_REF_NAME
-      changes:
-        - roles/**/*
-        - shared/**/*
-        - pb_*
-        - Dockerfile
-        - requirements.txt
-        - ansible-entrypoint.sh
     - if: $CI_COMMIT_TAG

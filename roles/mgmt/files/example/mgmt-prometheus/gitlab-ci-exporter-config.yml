@@ -1,8 +1,8 @@
 gitlab:
-  url: https://***REMOVED***
+  url: https://gitlab.com
   # You can also configure the token using --gitlab-token
   # or the  environment variable
-  token: ***REMOVED***
+  token: xxx
 wildcards:
   - {}
 

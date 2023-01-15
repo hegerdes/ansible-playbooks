@@ -9,7 +9,7 @@ INVENTORY_DIR=/inventory
 PVT_KEY=$INVENTORY_DIR/secrets/maintenance.key
 
 
-echo "Running Symbic Ansible-Playbook image at commit=${COMMIT_HASH}; tag=${COMMIT_TAG}"
+echo "Running Ansible-Playbook image at commit=${COMMIT_HASH}; tag=${COMMIT_TAG}"
 if [ ! -f "$PVT_KEY" ]; then
     echo -e "${RED}Private-key file does not exist!${NC}\nMount via Docker with '-v /my/pvt/key:${PVT_KEY}'"
     exit 1

@@ -1,4 +1,4 @@
-# Symbic Ansible Playbooks
+# Ansible Playbooks
 
 This project can do batch processes on any number of servers and perform defined tasks written in a playbook.
 
@@ -6,7 +6,7 @@ This project can do batch processes on any number of servers and perform defined
 **Required Tools - You need the following:**
 #### Docker usage - (recommended)
  * Your public key on the server you want to deploy to
- * Docker installed & access to our container registry: [gitlab-registry.***REMOVED***](gitlab-registry.***REMOVED***)
+ * Docker installed & access to the container registry
 #### Local usage
  * Your public key on the server you want to deploy to
  * openssh - use the one from git-bash or the WSL (not putty) [Download](https://gitforwindows.org/)
@@ -16,13 +16,13 @@ This project can do batch processes on any number of servers and perform defined
 #### Docker usage - (recommended)
 Run
 ```bash
-docker run --rm -it -v <MY/PVT_KEY>:/pvt_key -v <MY/INVENTROY_DIR>:/inventory gitlab-registry.***REMOVED***/servermgmt-tools/symbic-playbooks:main /app/playbooks/<PLAYBOOK_TO_USE> [--tags <ONLY_THIS_TAGS>] [--limit <ONLY_THESE_HOST[S]>] 
+docker run --rm -it -v <MY/PVT_KEY>:/pvt_key -v <MY/INVENTROY_DIR>:/inventory hegerdes/playbooks /app/playbooks/<PLAYBOOK_TO_USE> [--tags <ONLY_THIS_TAGS>] [--limit <ONLY_THESE_HOST[S]>] 
 
 # If the play contains secrets or a sudo pw use:
-docker run --rm -it -v <MY/PVT_KEY>:/pvt_key -v <MY/INVENTROY_DIR>:/inventory gitlab-registry.***REMOVED***/servermgmt-tools/symbic-playbooks:main /app/playbooks/<PLAYBOOK_TO_USE> [--tags <ONLY_THIS_TAGS>] [--limit <ONLY_THESE_HOST[S]>] [--ask-vault-password] [--ask-become-pass]
+docker run --rm -it -v <MY/PVT_KEY>:/pvt_key -v <MY/INVENTROY_DIR>:/inventory hegerdes/playbooks /app/playbooks/<PLAYBOOK_TO_USE> [--tags <ONLY_THIS_TAGS>] [--limit <ONLY_THESE_HOST[S]>] [--ask-vault-password] [--ask-become-pass]
 
 # Example
-docker run --rm -it -v ~/.ssh/id_rsa:/pvt_key -v /d/servermgmt/cci:/inventory gitlab-registry.***REMOVED***/servermgmt-tools/symbic-playbooks:main /app/playbooks/pb_deploy_app.yml --limit mgmt --tags backup 
+docker run --rm -it -v ~/.ssh/id_rsa:/pvt_key -v /d/servermgmt/cci:/inventory hegerdes/playbooks /app/playbooks/pb_deploy_app.yml --limit mgmt --tags backup 
 ```
 #### Local usage
 **Tipp:** Run it on a Linux system or use the [WSL](https://docs.microsoft.com/de-de/windows/wsl/about)
@@ -54,7 +54,7 @@ ansible-vault encrypt <PATH_TO_VAULT>
  * **nginx:** Installs the official nginx version, deploys default config, forwards logs, can automatically install hosts and https
  * **docker:** Install Docker[ce|ee] to the system, log into a registry, install a log plugin, init and join swarm nodes and install portainer-agent
  * **docker-deploy:** Deploys a docker compose|stack file to the host
- * **mgmt:** Installs Symbic management stack. Includes Prometheus, Grafana, Loki, Portainer and more on will. See [here]()
+ * **mgmt:** Installs my management stack. Includes Prometheus, Grafana, Loki, Portainer and more on will. See [here]()
  * **mariadb:** Installs MariaDB - either via docker or directly on the host
  * **mongodb:** Installs MongoDB - either via docker or directly on the host
  * **influxdb:** Installs InfluxDB - either via docker or directly on the host

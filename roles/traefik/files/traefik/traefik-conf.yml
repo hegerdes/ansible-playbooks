@@ -34,7 +34,7 @@ metrics:
 certificatesResolvers:
   traefik_ssl_resolver:
     acme:
-      email: info@***REMOVED***
+      email: info@exmple.com
       storage: /srv/traefik/tls
       httpChallenge:
         entryPoint: web_b742f2d905e8c3c1e1f726de1bcfbe0f
