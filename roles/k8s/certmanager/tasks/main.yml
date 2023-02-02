@@ -21,8 +21,8 @@
   tags: [k8s, k8-init, k8-master-init, k8-helm, k8s-certmanager]
 
 - name: Ensure Cert Manager Manifest directory exists
-  ansible.builtin.file:
-    path: /srv/certmanager
+  file:
+    path: '{{ target_data_dir | default("") }}/srv/certmanager'
     state: directory
     mode: 0755
   tags: [k8s, k8-init, k8-master-init, k8-helm, k8s-certmanager]
@@ -31,7 +31,7 @@
   when: k8s_certmanager_letsencrypt_mail != "none"
   template:
     src: '{{ item }}.j2'
-    dest: '/srv/certmanager/{{ item }}'
+    dest: '{{ target_data_dir | default("") }}/srv/certmanager/{{ item }}'
     mode: '0644'
   loop: [lets-encrypt-issuer-staging.yml, lets-encrypt-issuer-prod.yml]
   tags: [k8s, k8-init, k8-master-init, k8-helm, k8s-certmanager]
@@ -41,7 +41,7 @@
   k8s:
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
     state: present
-    src: '/srv/certmanager/{{ item }}'
+    src: '{{ target_data_dir | default("") }}/srv/certmanager/{{ item }}'
   run_once: true
   loop: [lets-encrypt-issuer-staging.yml, lets-encrypt-issuer-prod.yml]
   tags: [k8s, k8-init, k8-master-init, k8-cri, k8-weave]
