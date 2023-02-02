@@ -1,0 +1,7 @@
+# Testing
+
+- hosts: localhost
+  become: False
+  gather_facts: True
+  roles:
+    - k8s/certmanager
