@@ -9,7 +9,7 @@
 - name: Install Calico
   kubernetes.core.helm:
     state: present
-    kubeconfig: /etc/kubernetes/admin.conf
+    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
     name: calico
     chart_ref: projectcalico/tigera-operator
     update_repo_cache: true

@@ -8,7 +8,7 @@
 
 - name: Apply flannel-cri manifest to the cluster
   k8s:
-    kubeconfig: /etc/kubernetes/admin.conf
+    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
     state: present
     src: ~/cri-flannel.yml
   run_once: true

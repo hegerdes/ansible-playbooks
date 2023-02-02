@@ -22,7 +22,7 @@
 - name: Drain the node
   when: '("node/" + inventory_hostname) in k8_aktive_nodes.stdout_lines'
   kubernetes.core.k8s_drain:
-    kubeconfig: /etc/kubernetes/admin.conf
+    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
     state: drain
     name: '{{ inventory_hostname }}'
     delete_options:

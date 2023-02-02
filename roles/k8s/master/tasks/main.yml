@@ -84,7 +84,7 @@
 
 - name: Remove no NoSchedule taint form master nodes
   kubernetes.core.k8s_taint:
-    kubeconfig: /etc/kubernetes/admin.conf
+    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
     state: absent
     name: '{{ ansible_facts.hostname }}'
     taints:
@@ -97,7 +97,7 @@
 
 - name: Setting taints
   kubernetes.core.k8s_taint:
-    kubeconfig: /etc/kubernetes/admin.conf
+    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
     state: '{{ item.state | default("present") }}'
     name: '{{ item.node }}'
     taints:

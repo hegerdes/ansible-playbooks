@@ -10,7 +10,7 @@
   kubernetes.core.helm:
     name: ingress-nginx
     state: present
-    kubeconfig: /etc/kubernetes/admin.conf
+    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
     chart_ref: ingress-nginx/ingress-nginx
     release_namespace: ingress-nginx
     create_namespace: true

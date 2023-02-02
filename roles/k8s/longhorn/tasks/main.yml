@@ -10,7 +10,7 @@
 - name: Deploy Longhorn
   kubernetes.core.helm:
     name: longhorn
-    kubeconfig: /etc/kubernetes/admin.conf
+    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
     chart_version: '{{ k8s_longhorn_chart_version }}'
     chart_ref: longhorn/longhorn
     release_namespace: longhorn-system

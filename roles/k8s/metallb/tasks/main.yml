@@ -39,7 +39,7 @@
 
 - name: Apply MetalLB IP Pool
   k8s:
-    kubeconfig: /etc/kubernetes/admin.conf
+    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
     state: present
     src: /srv/metallb/metallb-address-pool.yml
   run_once: true

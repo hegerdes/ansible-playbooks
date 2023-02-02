@@ -28,7 +28,7 @@
 - name: Apply Grafana Agent Manifest & K8s Dashboad
   k8s:
     namespace: monitoring
-    kubeconfig: /etc/kubernetes/admin.conf
+    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
     state: present
     src: '{{ item }}'
   loop:

@@ -16,7 +16,7 @@
     state: present
     # state: absent
     update_repo_cache: true
-    kubeconfig: /etc/kubernetes/admin.conf
+    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
     chart_version: 0.1.2
     chart_ref: reddvid-test/reddvid
     release_namespace: my-app

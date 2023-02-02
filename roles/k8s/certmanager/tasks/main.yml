@@ -10,7 +10,7 @@
 - name: Deploy Cert manager
   kubernetes.core.helm:
     name: cert-manager
-    kubeconfig: /etc/kubernetes/admin.conf
+    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
     chart_version: v1.7.1
     chart_ref: jetstack/cert-manager
     release_namespace: cert-manager
@@ -39,7 +39,7 @@
 - name: Apply Certmanager Manifests
   when: k8s_certmanager_letsencrypt_mail != "none"
   k8s:
-    kubeconfig: /etc/kubernetes/admin.conf
+    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
     state: present
     src: '/srv/certmanager/{{ item }}'
   run_once: true
