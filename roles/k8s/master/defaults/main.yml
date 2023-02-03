@@ -15,11 +15,6 @@ k8s_taints:
     effect: NoSchedule
     state: absent
 
-######### Certmanager #########
-k8s_install_certmanager: yes
-k8s_certmanager_helm_values:
-  installCRDs: true
-
 ######### CNI #########
 # Which CNI flannel, calico or cilium
 k8s_cni: flannel

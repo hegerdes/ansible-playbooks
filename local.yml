@@ -3,5 +3,9 @@
 - hosts: localhost
   become: False
   gather_facts: True
+  vars_files:
+    - '{{ inventory_dir }}/secrets/vault.yml'
   roles:
     - k8s/certmanager
+    - k8s/ingress-nginx
+    - k8s/monitoring

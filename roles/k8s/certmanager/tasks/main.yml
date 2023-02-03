@@ -44,4 +44,4 @@
     src: '{{ target_data_dir | default("") }}/srv/certmanager/{{ item }}'
   run_once: true
   loop: [lets-encrypt-issuer-staging.yml, lets-encrypt-issuer-prod.yml]
-  tags: [k8s, k8-init, k8-master-init, k8-cri, k8-weave]
+  tags: [k8s, k8-init, k8-master-init, k8-helm, k8s-certmanager]
