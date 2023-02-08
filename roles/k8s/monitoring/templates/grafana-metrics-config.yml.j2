@@ -10,7 +10,7 @@ data:
       global:
         scrape_interval: 30s
         external_labels:
-          cluster: cloud
+          cluster: {{ inventory_dir | basename }}
       configs:
       - name: integrations
         remote_write:
@@ -115,7 +115,7 @@ data:
             username: {{ k8s_monitoring_loki_user }}
             password: {{ k8s_monitoring_loki_pw }}
           external_labels:
-            cluster: cloud
+            cluster: {{ inventory_dir | basename}}
             job: integrations/kubernetes/eventhandler
         positions:
           filename: /tmp/positions.yaml
