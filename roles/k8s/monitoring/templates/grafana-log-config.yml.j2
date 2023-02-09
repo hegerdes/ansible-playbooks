@@ -7,7 +7,7 @@ data:
     metrics:
       wal_directory: /tmp/grafana-agent-wal
       global:
-        scrape_interval: 30s
+        scrape_interval: 15s
         external_labels:
           cluster: {{ inventory_dir | basename }}
       configs:

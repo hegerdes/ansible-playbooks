@@ -77,17 +77,16 @@ spec:
     spec:
       containers:
       - args:
+        - -config.expand-env=true
         - -config.file=/etc/agent/agent.yaml
         - -enable-features=integrations-next
         - -server.http.address=0.0.0.0:80
-        command:
-        - /bin/agent
         env:
         - name: HOSTNAME
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        image: grafana/agent:v0.27.1
+        image: grafana/agent:v0.31.2
         imagePullPolicy: IfNotPresent
         name: grafana-agent
         ports:
@@ -117,20 +116,3 @@ spec:
       resources:
         requests:
           storage: 5Gi
-      storageClassName: standard
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: prom-exporter
-  namespace: monitoring
-  labels:
-    type: local
-spec:
-  storageClassName: standard
-  capacity:
-    storage: 10Gi
-  accessModes:
-    - ReadWriteOnce
-  hostPath:
-    path: "/mnt/data/prom-exporter/"
