@@ -116,3 +116,20 @@ spec:
       resources:
         requests:
           storage: 5Gi
+      storageClassName: standard
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: prom-exporter
+  namespace: monitoring
+  labels:
+    type: local
+spec:
+  storageClassName: standard
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/data/prom-exporter/"
