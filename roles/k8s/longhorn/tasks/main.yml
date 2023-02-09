@@ -1,6 +1,5 @@
 # K8s install longhorn
 
-# TODO make sure helm is installed
 - name: Add Longhorn Helm-Chart repo
   kubernetes.core.helm_repository:
     name: longhorn
@@ -10,11 +9,13 @@
 - name: Deploy Longhorn
   kubernetes.core.helm:
     name: longhorn
-    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
-    chart_version: '{{ k8s_longhorn_chart_version }}'
+    state: present
     chart_ref: longhorn/longhorn
     release_namespace: longhorn-system
+    chart_version: '{{ k8s_longhorn_chart_version }}'
     create_namespace: true
+    update_repo_cache: true
     wait: true
     values: '{{ k8s_longhorn_helm_values | default({}) }}'
+    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
   tags: [k8s, k8-init, k8-master-init, k8-helm, k8s-longhorn]

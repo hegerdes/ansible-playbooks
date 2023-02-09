@@ -1,1 +1,1 @@
-k8s_longhorn_chart_version: 1.3.2
+k8s_longhorn_chart_version: '{{ undef | default(omit) }}' # Old var: 1.3.2

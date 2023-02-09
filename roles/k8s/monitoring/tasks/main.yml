@@ -51,11 +51,13 @@
 - name: Deploy Prometheus kube-state-metrics
   kubernetes.core.helm:
     name: ksm
-    chart_ref: prometheus-community/kube-state-metrics
-    update_repo_cache: true
-    release_namespace: monitoring
     state: present
+    chart_ref: prometheus-community/kube-state-metrics
+    release_namespace: monitoring
     create_namespace: true
+    update_repo_cache: true
+    wait: true
+    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
     values:
       image:
         tag: v2.7.0
@@ -64,10 +66,12 @@
 - name: Deploy Prometheus node-exporter
   kubernetes.core.helm:
     name: prometheus-node-exporter
-    chart_ref: prometheus-community/prometheus-node-exporter
-    update_repo_cache: true
-    release_namespace: monitoring
     state: present
+    chart_ref: prometheus-community/prometheus-node-exporter
+    release_namespace: monitoring
+    update_repo_cache: true
     create_namespace: true
+    wait: true
     values: {}
+    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
   tags: [k8s, k8-init, k8s-monitor]

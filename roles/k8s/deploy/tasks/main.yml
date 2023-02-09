@@ -14,14 +14,14 @@
   kubernetes.core.helm:
     name: myapp
     state: present
-    update_repo_cache: true
-    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
     chart_version: 0.1.2
     chart_ref: reddvid-test/reddvid
     release_namespace: my-app
     create_namespace: true
+    update_repo_cache: true
     wait: true
     values: '{{ k8s_app_helm_values | default({}) }}'
+    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
   tags: [k8s, k8s-deploy, helm-deploy]
 
 
