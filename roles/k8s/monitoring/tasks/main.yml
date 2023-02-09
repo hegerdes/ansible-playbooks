@@ -33,13 +33,13 @@
     src: '{{ target_data_dir | default("") }}{{ item }}'
   loop:
     - /srv/monitoring/grafana-metrics-config.yml
-    - /srv/monitoring/grafana-metrics-agent.yml
-    - /srv/monitoring/grafana-log-config.yml
-    - /srv/monitoring/grafana-log-agent.yml
     - /srv/monitoring/grafana-traces-config.yml
+    - /srv/monitoring/grafana-log-config.yml
+    - /srv/monitoring/grafana-metrics-agent.yml
+    - /srv/monitoring/grafana-log-agent.yml
     - /srv/monitoring/grafana-traces-agent.yml
-    - /srv/monitoring/k8s-dashboard.yml
     - /srv/monitoring/k8s-dashboard-user.yml
+    - /srv/monitoring/k8s-dashboard.yml
   tags: [k8s, k8-init, k8s-monitor]
 
 - name: Add prometheus chart repo
@@ -67,11 +67,12 @@
   kubernetes.core.helm:
     name: prometheus-node-exporter
     state: present
+    chart_version: '{{ k8s_node_exporter_chart_version }}'
     chart_ref: prometheus-community/prometheus-node-exporter
     release_namespace: monitoring
     update_repo_cache: true
     create_namespace: true
     wait: true
-    values: {}
+    values: '{{ k8s_node_exporter_helm_values | default({}) }}'
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
   tags: [k8s, k8-init, k8s-monitor]
