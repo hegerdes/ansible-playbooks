@@ -1,4 +1,7 @@
 ---
+# Version of the chart to deploy
+k8s_nginx_helm_chart_version: '{{ null | default(omit) }}'
+
 # See: https://github.com/kubernetes/ingress-nginx/blob/main/charts/ingress-nginx/values.yaml
 k8s_nginx_helm_values:
   controller:
@@ -6,6 +9,7 @@ k8s_nginx_helm_values:
     # -- Use a `DaemonSet` or `Deployment`
     kind: DaemonSet
 
+# Service
     service:
       enabled: true
       # type: LoadBalancer
@@ -15,3 +19,11 @@ k8s_nginx_helm_values:
         https: 32443
         tcp:
           8080: 32808
+
+# Metrics
+    metrics:
+      enabled: true
+      service:
+        annotations:
+          prometheus.io/port: "10254"
+          prometheus.io/scrape: "true"

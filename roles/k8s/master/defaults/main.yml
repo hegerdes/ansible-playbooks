@@ -18,6 +18,10 @@ k8s_taints:
 ######### CNI #########
 # Which CNI flannel, calico or cilium
 k8s_cni: flannel
+# Helm chart version
+k8s_calico_chart_version: '{{ null | default(omit) }}'
+k8s_cilium_chart_version: '{{ null | default(omit) }}'
+# Helm chart values
 k8s_cilium_helm_values: {}
 k8s_calico_helm_values:
   installation:

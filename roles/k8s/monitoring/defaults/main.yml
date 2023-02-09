@@ -1,4 +1,5 @@
 ---
+### Grafana-Agent ###
 k8s_monitoring_prometheus_url: https://prometheus-prod-01-eu-west-0.grafana.net/api/prom/push
 k8s_monitoring_prometheus_user: 1234
 # k8s_monitoring_prometheus_pw: none
@@ -10,3 +11,9 @@ k8s_monitoring_loki_user: 1234
 k8s_monitoring_tempo_url: tempo-eu-west-0.grafana.net:443
 k8s_monitoring_tempo_user: 1234
 # k8s_monitoring_tempo_pw: none
+
+
+### Node-Exporter ###
+# Version of the chart to deploy
+k8s_node_exporter_chart_version: '{{ null | default(omit) }}'
+k8s_node_exporter_helm_values: {}

@@ -11,6 +11,7 @@
     name: calico
     state: present
     chart_ref: projectcalico/tigera-operator
+    chart_version: '{{ k8s_calico_chart_version }}'
     release_namespace: tigera-operator
     update_repo_cache: true
     create_namespace: true
@@ -25,4 +26,3 @@
     dest: /usr/bin/kubectl-calico
     mode: '0754'
   tags: [k8s, k8-init, k8-master-init, k8-cri, k8s-calico]
-

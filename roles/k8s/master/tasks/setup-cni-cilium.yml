@@ -9,8 +9,8 @@
 - name: Install Cilium
   kubernetes.core.helm:
     name: cilium
-    chart_version: 1.12.2
     chart_ref: cilium/cilium
+    chart_version: '{{ k8s_cilium_chart_version }}'
     release_namespace: kube-system
     update_repo_cache: true
     create_namespace: true

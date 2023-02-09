@@ -9,3 +9,4 @@
     - k8s/certmanager
     - k8s/ingress-nginx
     - k8s/monitoring
+    - k8s/deploy

@@ -3,27 +3,36 @@
 # TODO make sure helm is installed
 - name: Add GitLab Helm repo
   kubernetes.core.helm_repository:
-    name: '{{ k8s_app_helm_repo.name}}'
-    username: '{{ k8s_app_helm_repo.username}}'
-    password: '{{ k8s_app_helm_repo.password}}'
-    repo_url: '{{ k8s_app_helm_repo.repo_url}}'
+    name: gh-demo-app
+    repo_url: https://hegerdes.github.io/demo-app-flask-nuxt/
   no_log: true
   tags: [k8s, k8s-deploy, helm-deploy]
 
 - name: Deploy App
   kubernetes.core.helm:
-    name: myapp
+    name: '{{ item }}'
     state: present
-    chart_version: 0.1.2
-    chart_ref: reddvid-test/reddvid
-    release_namespace: my-app
+    chart_version: 0.2.7
+    chart_ref: 'gh-demo-app/{{ item }}'
+    release_namespace: default
     create_namespace: true
     update_repo_cache: true
     wait: true
-    values: '{{ k8s_app_helm_values | default({}) }}'
+    values: {}
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
+  loop: [demo-app]
+  # loop: [demo-backend, demo-frontend]
   tags: [k8s, k8s-deploy, helm-deploy]
 
+
+# - name: Add GitLab Helm repo
+#   kubernetes.core.helm_repository:
+#     name: '{{ k8s_app_helm_repo.name}}'
+#     username: '{{ k8s_app_helm_repo.username}}'
+#     password: '{{ k8s_app_helm_repo.password}}'
+#     repo_url: '{{ k8s_app_helm_repo.repo_url}}'
+#   no_log: true
+#   tags: [k8s, k8s-deploy, helm-deploy]
 
 # - name: Apply Ingress 1
 #   k8s:

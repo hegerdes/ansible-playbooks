@@ -1,4 +1,7 @@
 ---
+# Version of the chart to deploy
+k8s_traefik_helm_chart_version: '{{ null | default(omit) }}'
+
 # k8s_treafik_helm_values: {}
 k8s_treafik_helm_values:
   deployment:

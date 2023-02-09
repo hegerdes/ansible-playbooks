@@ -11,6 +11,7 @@
     name: metallb
     state: present
     chart_ref: metallb/metallb
+    chart_version: '{{ k8s_metallb_chart_version }}'
     release_namespace: metallb-system
     create_namespace: true
     update_repo_cache: true
