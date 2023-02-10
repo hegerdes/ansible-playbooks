@@ -12,10 +12,12 @@ variables:
   KANIKO_USE_CACHE: 'yes'
 
 include:
-  - project: 'symbic-intern/symbic-templates'
-    file: '/GitlabCI/kaniko-build.yml'
-  - project: 'symbic-intern/symbic-templates'
-    file: '/GitlabCI/kaniko-build-ingress.yml'
+  - project: 'hegerdes/templates'
+    file: '/gitlab/ci/defaults.yml'
+  - project: 'hegerdes/templates'
+    file: '/gitlab/ci/kaniko-build.yml'
+  - project: 'hegerdes/templates'
+    file: '/gitlab/ci/kaniko-build-ingress.yml'
 
 image-build-playbooks:
   extends: .build_template
