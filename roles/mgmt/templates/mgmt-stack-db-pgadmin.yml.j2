@@ -6,7 +6,7 @@ services:
     hostname: {{ inventory_dir | basename }}-pgadmin
     environment:
       - TZ=Europe/Berlin
-      - PGADMIN_DEFAULT_EMAIL=support@***REMOVED***
+      - PGADMIN_DEFAULT_EMAIL=info@example.com
       - PGADMIN_DEFAULT_PASSWORD={{ mgmt_pgadmin_pw }}
     networks:
       - {{ mgmt_docker_stack_name }}_mgmt_net

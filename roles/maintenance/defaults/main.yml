@@ -11,9 +11,9 @@ maintenance_git_host: https://gitlab.com
 maintenance_git_repo: '{{ lookup("env", "CI_LOG_PROJECT_ID") | default("177", true) }}'
 maintenance_git_branch: main
 maintenance_git_name: Gitlab CI
-maintenance_git_mail: git-ci@***REMOVED***
+maintenance_git_mail: git-ci@exmple.com
 maintenance_git_assignee_id: '{{ lookup("env", "GITLAB_USER_ID") | default("13", true) }}' # Henrik Gerdes
-maintenance_mattermost_hook: '{{ lookup("env", "MM_WEB_HOOK") | default("https://mattermost.***REMOVED***/hooks/dyqdgdsncfbbpqif1eyba96d5r", true) }}'
+maintenance_mattermost_hook: '{{ lookup("env", "MM_WEB_HOOK") | default("https://mattermost.com/hooks/dyqdgdsncfbbpqif1eyba96d5r", true) }}'
 
 maintenance_hold_back_updates: '{{ lookup("env", "ANSIBE_HOLD_BACK_UPDATES") | default("[]", true) | from_yaml | list }}'
 

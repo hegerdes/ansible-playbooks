@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   webhook-handler:
-    image: docker-registry.***REMOVED***/symbic-general/webhook-script-runner:stable
+    image: docker-registry.de/webhook-script-runner:stable
     entrypoint: bash -c "find /app/hooks -type f -name "*.sh" -exec chmod +x {} \; webhook -hooks /app/hooks/hooks.yml -verbose -hotreload"
     hostname: {{ inventory_dir | basename }}-webhook-handler
     volumes:

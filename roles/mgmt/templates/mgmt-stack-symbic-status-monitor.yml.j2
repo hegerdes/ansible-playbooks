@@ -1,15 +1,15 @@
 version: '3.7'
 
 services:
-  symbic-status-monitor:
-    image: docker-registry.***REMOVED***/symbic-general/symbic-status-monitor:stable
-    hostname: {{ inventory_dir | basename }}-symbic-health-pulse
-    env_file: {{ mgmt_dst_config_files }}mgmt-symbic-status-monitor/.env
+  status-monitor:
+    image: docker-registry.de/-status-monitor:stable
+    hostname: {{ inventory_dir | basename }}-status-monitor-health-pulse
+    env_file: {{ mgmt_dst_config_files }}mgmt-status-monitor/.env
     environment: [ TZ=Europe/Berlin ]
     networks:
       - {{ mgmt_docker_stack_name }}_mgmt_net
     volumes:
-      - {{ mgmt_dst_config_files }}mgmt-symbic-status-monitor:/app/config
+      - {{ mgmt_dst_config_files }}mgmt-status-monitor:/app/config
     deploy:
       placement:
         constraints:
