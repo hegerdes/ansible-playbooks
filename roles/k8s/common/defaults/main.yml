@@ -11,5 +11,5 @@ k8s_kublet_extra_args: ''
 # k8s_cri: runc
 k8s_cri: crun
 
-k8s_crun_version: 1.7.2
+k8s_crun_version: 1.8
 k8s_containerd_version: latest
