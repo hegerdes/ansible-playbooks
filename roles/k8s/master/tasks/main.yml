@@ -92,6 +92,8 @@
       effect: NoSchedule
     - key: node-role.kubernetes.io/master
       effect: NoSchedule
+    - key: node.cloudprovider.kubernetes.io/uninitialized
+      effect: NoSchedule
     - key: dedicated
   tags: [k8s, k8-init, k8-master-init, k8-taint]
 
@@ -120,6 +122,11 @@
   when: groups.k8s_master | flatten | first == inventory_hostname
   include_tasks: 'setup-cni-{{ k8s_cni | lower }}.yml'
   tags: [k8s, k8-init, k8-master-init, k8-cri, k8s-flannel, k8s-calico, k8s-cilium, k8s-weave]
+
+- name: Setup k9s
+  when: k8s_install_k9s
+  include_tasks: 'setup-k9s.yml'
+  tags: [k8s, k8-init, k8-master-init, k8s-k9s]
 
 # - name: Kubeadm check
 #   shell: kubectl cluster-info

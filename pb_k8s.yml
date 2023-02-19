@@ -15,11 +15,12 @@
   roles:
     - k8s/master
     # - k8s/metallb
-    - k8s/hetzner
+    # - k8s/hetzner
+    # - k8s/longhorn
+    - k8s/certmanager
     - k8s/ingress-nginx
     # - k8s/ingress-traefik
     - k8s/monitoring
-    # - k8s/longhorn
     - k8s/deploy
   vars_files:
     - '{{ inventory_dir }}/secrets/vault.yml'
