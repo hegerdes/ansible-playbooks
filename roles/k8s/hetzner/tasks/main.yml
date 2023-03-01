@@ -29,7 +29,7 @@
 - name: Get latest hetzner csi driver
   when: k8s_hetzner_api_key != "none" and k8s_hetzner_install_csi_driver
   uri:
-    url: https://raw.githubusercontent.com/hetznercloud/csi-driver/v2.1.0/deploy/kubernetes/hcloud-csi.yml
+    url: https://raw.githubusercontent.com/hetznercloud/csi-driver/v2.2.0/deploy/kubernetes/hcloud-csi.yml
     return_content: yes
     status_code: [200, 304]
   register: k8s_intanal_hetzner_csi_driver_def
