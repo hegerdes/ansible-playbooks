@@ -15,9 +15,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && echo "deb [$NODE_ARCH] https://deb.nodesource.com/node_16.x bullseye main" \
     > /etc/apt/sources.list.d/nodesource.list \
     && apt-get update && apt-get install -y --no-install-recommends \
-    nodejs && rm -rf /var/lib/apt/lists/* \
-    && pip3 install --no-cache-dir -r requirements.txt \
-    && apt-get remove -y cargo rustc make gcc libc6-dev libffi-dev && apt-get autoremove -y
+    nodejs && pip3 install --no-cache-dir -r requirements.txt \
+    && apt-get remove -y make gcc libc6-dev libffi-dev && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
 
 # Data and Labels
 COPY . /app/playbooks
