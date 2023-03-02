@@ -2,11 +2,13 @@
 
 - hosts: localhost
   become: False
-  gather_facts: True
-  vars_files:
-    - '{{ inventory_dir }}/secrets/vault.yml'
+  gather_facts: False
+  vars:
+    k8s_pod_network_cidr: 10.10.10.10/24
+  # vars_files:
+  #   - '{{ inventory_dir }}/secrets/vault.yml'
   roles:
-    - k8s/certmanager
-    - k8s/ingress-nginx
-    - k8s/monitoring
-    - k8s/deploy
+    - k8s/hetzner
+    # - k8s/ingress-nginx
+    # - k8s/monitoring
+    # - k8s/deploy
