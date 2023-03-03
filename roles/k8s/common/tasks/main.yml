@@ -123,8 +123,10 @@
     state: present
     filename: '{{ item.name }}.list'
   with_items:
-    - {name: docker, repo: 'deb https://download.docker.com/linux/{{ ansible_facts.distribution | lower }} {{ ansible_facts.lsb.codename }} stable' }
-    - {name: k8s, repo: deb https://apt.kubernetes.io/ kubernetes-xenial main}
+    - name: docker
+      repo: 'deb https://download.docker.com/linux/{{ ansible_facts.distribution | lower }} {{ ansible_facts.lsb.codename }} stable'
+    - name: k8s
+      repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
   loop_control:
     label: "{{ item.name }}"
   tags: [k8s, k8s-prepare, k8s-base, apt]
@@ -134,6 +136,13 @@
   debug:
     msg: 'Installing the {{ k8s_version if (k8s_version != "latest") else "latest" }} packages for k8s'
   tags: [k8s, k8s-prepare, k8s-base, apt]
+
+- name: Hold kubeadm
+  dpkg_selections:
+    name: '{{ item }}'
+    selection: install
+  tags: [k8s, k8s-prepare, k8s-base, apt]
+  loop: [kubeadm, kubectl, kubelet, containerd.io]
 
 - name: Install container runtime, kubelet and admin tools
   apt:

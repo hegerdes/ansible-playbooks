@@ -30,4 +30,3 @@
     files:
       - mongodb-docker-compose.yml
   tags: [mongodb]
-

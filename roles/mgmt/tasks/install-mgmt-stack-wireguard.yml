@@ -14,4 +14,3 @@
     project_src: '{{ mgmt_dst_config_files }}'
     files: ['mgmt-stack-wiregurd.yml']
   tags: [mgmt, mgmt-stack, wireguard]
-

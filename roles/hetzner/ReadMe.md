@@ -1,6 +1,6 @@
 # Hetzner Role
 
-Create or delete Hetzner VM 
+Create or delete Hetzner VM
 
 Defaults:
 ```yml

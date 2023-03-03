@@ -16,13 +16,13 @@ This project can do batch processes on any number of servers and perform defined
 #### Docker usage - (recommended)
 Run
 ```bash
-docker run --rm -it -v <MY/PVT_KEY>:/pvt_key -v <MY/INVENTROY_DIR>:/inventory hegerdes/playbooks /app/playbooks/<PLAYBOOK_TO_USE> [--tags <ONLY_THIS_TAGS>] [--limit <ONLY_THESE_HOST[S]>] 
+docker run --rm -it -v <MY/PVT_KEY>:/pvt_key -v <MY/INVENTROY_DIR>:/inventory hegerdes/playbooks /app/playbooks/<PLAYBOOK_TO_USE> [--tags <ONLY_THIS_TAGS>] [--limit <ONLY_THESE_HOST[S]>]
 
 # If the play contains secrets or a sudo pw use:
 docker run --rm -it -v <MY/PVT_KEY>:/pvt_key -v <MY/INVENTROY_DIR>:/inventory hegerdes/playbooks /app/playbooks/<PLAYBOOK_TO_USE> [--tags <ONLY_THIS_TAGS>] [--limit <ONLY_THESE_HOST[S]>] [--ask-vault-password] [--ask-become-pass]
 
 # Example
-docker run --rm -it -v ~/.ssh/id_rsa:/pvt_key -v /d/servermgmt/cci:/inventory hegerdes/playbooks /app/playbooks/pb_deploy_app.yml --limit mgmt --tags backup 
+docker run --rm -it -v ~/.ssh/id_rsa:/pvt_key -v /d/servermgmt/cci:/inventory hegerdes/playbooks /app/playbooks/pb_deploy_app.yml --limit mgmt --tags backup
 ```
 #### Local usage
 **Tipp:** Run it on a Linux system or use the [WSL](https://docs.microsoft.com/de-de/windows/wsl/about)
@@ -48,7 +48,7 @@ ansible-vault encrypt <PATH_TO_VAULT>
  * pb_deploy_app.yml - Deploys one or more apps via Docker - use with the limit option
 
 ## Supported Tasks
- * **common:** Install basic packages (like ``curl``, ``wget``, ``tar``... ) to any Debian based host 
+ * **common:** Install basic packages (like ``curl``, ``wget``, ``tar``... ) to any Debian based host
  * **promtail:** Install a log shipper to send *authlog*, *syslog*, *daemonlog*... to a management host (hostname mgmt)
  * **node-exporter:** Install system metrics exporter that can be scraped by Prometheus (listens on port 9100)
  * **nginx:** Installs the official nginx version, deploys default config, forwards logs, can automatically install hosts and https
@@ -74,7 +74,7 @@ The script performs all plays (here it is two) defined in the playbook. Every pl
   roles:
     - promtail
 ```
-Each play can have multiple roles or tasks that are performed.  
+Each play can have multiple roles or tasks that are performed.
 To configure a role with custom settings to fit your server you can create `group_vars/<group_name>.yml` and `host_vars/<host_name>.yml` files in your inventory folder. These files can contain variables to override the defaults.
 
 The default values for each role are defined in `<role_name>/defaults/main.yml` and can look like this:
@@ -87,4 +87,3 @@ promtail_config_dst_path: /srv/promtail/promtail-config.yml
 promtail_args: '--client.external-labels=hostname={{ ansible_facts.hostname }} -config.file {{ promtail_config_dst_path }}'
 ```
 Thes values can be overwritten by setting `group_vars` and `host_vars` or `--extra-vars KEY=VALUE` on the terminal
-

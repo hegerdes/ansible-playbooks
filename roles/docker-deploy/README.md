@@ -1,7 +1,7 @@
 # Role docker-deploy
 
 ## Purpose
-To deploy one or multiple docker applications to a server via Docker. Can be done via compose (default) or swarm 
+To deploy one or multiple docker applications to a server via Docker. Can be done via compose (default) or swarm
 
 
 ## Defaults

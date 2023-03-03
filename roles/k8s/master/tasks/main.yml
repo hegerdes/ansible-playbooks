@@ -110,7 +110,7 @@
 
 - name: Setup configs
   include_tasks: setup-configs.yml
-  tags: [k8s, k8-init, k8-master-init]
+  tags: [k8s, k8-init, k8-master-init, k8s-init-config]
 
 - name: Install Helm
   include_role:
@@ -141,4 +141,3 @@
 
 # - name: Ensure handlers are notified now
 #   meta: flush_handlers
-

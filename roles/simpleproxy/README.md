@@ -1,8 +1,8 @@
 # Role simpleproxy
 
 ## Purpose
-Installs simpleproxy to the host and enables automatic statup via service.  
-Allows to forward udp/tcp sockets 
+Installs simpleproxy to the host and enables automatic statup via service.
+Allows to forward udp/tcp sockets
 
 
 ## Defaults

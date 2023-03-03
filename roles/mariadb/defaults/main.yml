@@ -33,4 +33,3 @@ mariadb_cron_jobs:
     day: '*'
     state: present
     user: null
-

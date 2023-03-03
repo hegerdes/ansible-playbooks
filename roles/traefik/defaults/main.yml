@@ -38,13 +38,15 @@ traefik_default_hosts:
   sites:
     - host: default.example.123preview.com
       ip: '{{ ansible_default_ipv4.address }}'
-      upstreams: [127.0.0.1:3000]
+      upstreams:
+        - 127.0.0.1:3000
       traefik:
         protocol: http
         middlewares: [auth, testHeader]
     - host: custom.example.123preview.com
       ip: '{{ ansible_default_ipv4.address }}'
-      upstreams: [127.0.0.1:3000]
+      upstreams:
+        - 127.0.0.1:3000
 
 # Log config
 traefik_log_conf:

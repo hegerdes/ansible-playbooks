@@ -17,4 +17,3 @@
     daemon_reload: yes
     enabled: yes
   tags: [ingress, ingress-logs]
-

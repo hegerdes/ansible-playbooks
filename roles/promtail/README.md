@@ -1,7 +1,7 @@
 # Role promtail
 
 ## Purpose
-Installs promtail for log-shipping to the host and enables automatic statup via service.  
+Installs promtail for log-shipping to the host and enables automatic statup via service.
 By default ships:
  * authlog
  * syslog

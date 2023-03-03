@@ -128,4 +128,3 @@
   debug:
     var: mgmt_docker_stack_info.results
   tags: [mgmt, mgmt-stack]
-

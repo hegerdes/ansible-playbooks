@@ -1,8 +1,8 @@
 # Role node-exporter
 
 ## Purpose
-Installs node-exporter to the host and enables automatic statup via service.  
-Allows to scrape host metrics via Prometheus. Make sue port 9100 is open **only** for the subnet 
+Installs node-exporter to the host and enables automatic statup via service.
+Allows to scrape host metrics via Prometheus. Make sue port 9100 is open **only** for the subnet
 
 
 ## Defaults

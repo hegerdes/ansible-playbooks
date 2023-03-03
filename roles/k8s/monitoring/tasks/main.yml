@@ -38,7 +38,6 @@
     - /srv/monitoring/grafana-metrics-agent.yml
     - /srv/monitoring/grafana-log-agent.yml
     - /srv/monitoring/grafana-traces-agent.yml
-    - /srv/monitoring/k8s-dashboard-user.yml
     - /srv/monitoring/k8s-dashboard.yml
   tags: [k8s, k8-init, k8s-monitor]
 

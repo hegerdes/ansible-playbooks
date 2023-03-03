@@ -1,7 +1,7 @@
 # Role docker
 
 ## Purpose
-This role installs the latest Docker ce|ee - version. Can configure the daemon, setup swarm mode and install portainer. 
+This role installs the latest Docker ce|ee - version. Can configure the daemon, setup swarm mode and install portainer.
 
 
 ## Defaults

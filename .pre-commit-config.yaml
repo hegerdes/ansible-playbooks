@@ -1,0 +1,16 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: check-yaml
+        exclude: roles/k8s/monitoring/files|roles/k8s/rancher/tasks/main.yml|roles/k8s/ingress-nginx/files|roles/k8s/deploy/files/demo/heimdall.yml
+      - id: check-json
+        exclude: frontend/.devcontainer
+      - id: check-added-large-files
+      - id: check-shebang-scripts-are-executable
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+  # - repo: https://github.com/ansible-community/ansible-lint
+  #   rev: v6.14.0
+  #   hooks:
+  #     - id: ansible-lint

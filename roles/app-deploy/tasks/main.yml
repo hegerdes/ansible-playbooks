@@ -48,5 +48,3 @@
   shell: '{{ app_deploy_start_command }}'
   register: app_deploy_test_res
   tags: [app-deploy]
-
-

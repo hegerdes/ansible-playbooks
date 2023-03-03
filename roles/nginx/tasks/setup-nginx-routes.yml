@@ -104,5 +104,3 @@
     mode: '0644'
   loop: ['options-ssl-nginx.conf', 'ssl-dhparams.pem']
   tags: [ingress, nginx, ingress-hosts]
-
-

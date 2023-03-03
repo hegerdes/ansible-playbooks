@@ -4,7 +4,7 @@
   file:
     path: '{{ ansible_facts.env.HOME }}/.kube'
     state: directory
-  tags: [k8s, k8-init, k8s-monitor]
+  tags: [k8s, k8-init, k8s-init-config]
 
 - name: Copy config file
   copy:
@@ -12,7 +12,26 @@
     dest: '{{ ansible_facts.env.HOME }}/.kube/config'
     remote_src: yes
     mode: '0600'
-  tags: [k8s, k8-init, k8s-monitor]
+  tags: [k8s, k8-init, k8s-init-config]
+
+- name: Create kube conf dir
+  become: false
+  file:
+    path: '~/.kube'
+    state: directory
+  tags: [k8s, k8-init, k8s-init-config]
+  delegate_to: localhost
+
+- name: Get kubeconf
+  slurp:
+    src: /etc/kubernetes/admin.conf
+  register: _remote_k8s_kubeconf
+  tags: [k8s, k8-init, k8s-init-config]
+
+# - name: Print returned information
+#   debug:
+#     msg: "{{ _remote_k8s_kubeconf.content | b64decode | regex_replace('server: (.*)$', 'hello')}}"
+#   tags: [k8s, k8-init, k8s-init-config]
 
 - name: Creating local config file
   fetch:
@@ -20,10 +39,10 @@
     dest: "{{ lookup('env', 'HOME') }}/.kube/"
     flat: yes
   ignore_errors: true
-  tags: [k8s, k8-init, k8s-monitor]
+  tags: [k8s, k8-init, k8s-init-config]
 
 - name: Enable kubectl bash completion
   lineinfile:
     path: '{{ ansible_facts.env.HOME }}/.bashrc'
     line: source <(kubectl completion bash)
-  tags: [k8s, k8-init, k8s-monitor]
+  tags: [k8s, k8-init, k8s-init-config]
