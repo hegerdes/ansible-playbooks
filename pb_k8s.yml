@@ -18,10 +18,10 @@
     - k8s/certmanager
     - k8s/monitoring
     - k8s/ingress-nginx
+    - k8s/longhorn
     # - k8s/ingress-traefik
     # - k8s/deploy
     # - k8s/metallb
-    # - k8s/longhorn
   vars_files:
     - '{{ inventory_dir }}/secrets/vault.yml'
 

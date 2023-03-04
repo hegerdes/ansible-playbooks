@@ -2,7 +2,7 @@
 ---
 - name: Ensue required packages are installed
   apt:
-    name: [gnupg, git, lsb-release, ca-certificates, curl, apparmor, python3-kubernetes, apt-transport-https, jq, unzip, wget, socat, mtr, logrotate]
+    name: [gnupg, git, lsb-release, ca-certificates, curl, apparmor, python3-kubernetes, apt-transport-https, jq, unzip, wget, socat, mtr, logrotate, open-iscsi]
     state: present
     update_cache: yes
     install_recommends: no
