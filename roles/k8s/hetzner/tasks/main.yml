@@ -2,6 +2,7 @@
 ---
 - name: Ensue namespace for hetzner ressoruces exist
   k8s:
+    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
     name: '{{ k8s_hetzner_namespace }}'
     api_version: v1
     kind: Namespace
@@ -11,6 +12,7 @@
 - name: Create Secret
   when: k8s_hetzner_api_key != "none"
   k8s:
+    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
     state: present
     definition:
       apiVersion: v1
