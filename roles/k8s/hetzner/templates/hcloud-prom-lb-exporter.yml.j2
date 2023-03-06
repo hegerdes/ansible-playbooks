@@ -49,15 +49,12 @@ metadata:
     app: hetzner-load-balancer-prometheus-exporter
   annotations:
     prometheus.io/scrape: 'true'
-    prometheus.io/scheme: 'http'
     prometheus.io/port: '8000'
     prometheus.io/path: '/'
 spec:
   type: ClusterIP
   ports:
-    - port: 8000
-      targetPort: metrics
-      protocol: TCP
-      name: http
+    - name: metrics
+      port: 8000
   selector:
     app.kubernetes.io/name: hetzner-load-balancer-prometheus-exporter

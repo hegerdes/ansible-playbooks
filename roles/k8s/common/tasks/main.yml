@@ -1,5 +1,14 @@
 # Main k8s Setup
 ---
+- name: Wait for cloud init to finish
+  cloud_init_data_facts:
+    filter: status
+  register: _cloud_init_res
+  until: "_cloud_init_res.cloud_init_data_facts.status.v1.stage is defined and not _cloud_init_res.cloud_init_data_facts.status.v1.stage"
+  retries: 25
+  delay: 10
+  tags: [k8s, k8s-prepare, k8s-base, apt]
+
 - name: Ensue required packages are installed
   apt:
     name: [gnupg, git, lsb-release, ca-certificates, curl, apparmor, python3-kubernetes, apt-transport-https, jq, unzip, wget, socat, mtr, logrotate, open-iscsi]

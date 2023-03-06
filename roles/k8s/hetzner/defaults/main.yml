@@ -4,4 +4,3 @@ k8s_hetzner_install_ccm: true
 k8s_hetzner_use_ccm_pvt_networks: true
 k8s_hetzner_install_csi_driver: true
 k8s_hetzner_install_lb_exporter: true
-k8s_hetzner_namespace: kube-system

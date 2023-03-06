@@ -10,13 +10,6 @@
   register: netlify_fetched_dns_records
   tags: [netflify, netflify-dns]
 
-- name: Record needs change
-  run_once: true
-  debug:
-    msg: '{{ (netlify_fetched_dns_records.json | json_query("[?hostname==`" + item.host + "`]") | length == 1) and (netlify_fetched_dns_records.json | json_query("[?hostname==`" + item.host + "`]") | first).value != item.value }}'
-  tags: [netflify, netflify-dns]
-  loop: '{{ netlify_dns_records }}'
-
 - name: Deleting outdated records
   run_once: true
   when: (netlify_fetched_dns_records.json | json_query("[?hostname==`" + item.host + "`]") | length == 1) and (netlify_fetched_dns_records.json | json_query("[?hostname==`" + item.host + "`]") | first).value != item.value
