@@ -1,13 +1,13 @@
 # Deploy playbook
 
-# - hosts: k8s
-#   become: true
-#   gather_facts: true
-#   roles:
-#     - netlify-dns
-#     - k8s/common
-#   vars_files:
-#     - '{{ inventory_dir }}/secrets/vault.yml'
+- hosts: k8s
+  become: true
+  gather_facts: true
+  roles:
+    - netlify-dns
+    - k8s/common
+  vars_files:
+    - '{{ inventory_dir }}/secrets/vault.yml'
 
 - hosts: k8s_master
   become: true

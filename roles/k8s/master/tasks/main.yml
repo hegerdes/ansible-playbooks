@@ -53,7 +53,6 @@
     msg: |
       {{ k8_cp_join_command }} \
         --apiserver-advertise-address={{ ansible_facts.all_ipv4_addresses | ansible.utils.reduce_on_network(k8s_cloud_subnet) | first if(k8s_cloud_subnet | default("none") != "none") else k8s_kubelet_advertise_address_bind | default(ansible_facts.default_ipv4.address) }}
-  run_once: true
   tags: [k8s, k8-init, k8-master-init]
 
 - name: Check if kubeadm has already run
@@ -119,7 +118,6 @@
   tags: [k8s, k8s-init, k8-master-init, k8s-helm]
 
 - name: Setup CNI
-  when: groups.k8s_master | flatten | first == inventory_hostname
   include_tasks: 'setup-cni-{{ k8s_cni | lower }}.yml'
   tags: [k8s, k8-init, k8-master-init, k8-cri, k8s-flannel, k8s-calico, k8s-cilium, k8s-weave]
 

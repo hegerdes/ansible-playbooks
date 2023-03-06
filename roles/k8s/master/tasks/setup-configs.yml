@@ -16,6 +16,7 @@
 
 - name: Create kube conf dir
   become: false
+  run_once: true
   file:
     path: '~/.kube'
     state: directory
@@ -23,21 +24,25 @@
   delegate_to: localhost
 
 - name: Get kubeconf
+  run_once: true
   slurp:
     src: /etc/kubernetes/admin.conf
   register: _remote_k8s_kubeconf
   tags: [k8s, k8-init, k8s-init-config]
 
-# - name: Print returned information
-#   debug:
-#     msg: "{{ _remote_k8s_kubeconf.content | b64decode | regex_replace('server: (.*)$', 'hello')}}"
-#   tags: [k8s, k8-init, k8s-init-config]
+- name: Set Kubeconfig
+  run_once: true
+  set_fact:
+    internal_k8s_kubeconfig: "{{ _remote_k8s_kubeconf.content | b64decode | from_yaml | combine({'clusters': [(_remote_k8s_kubeconf.content | b64decode | from_yaml).clusters[0] | combine({'cluster': {'server': 'https://' + k8s_external_cp_host + ':' + k8s_external_cp_port | default('6443')}}, recursive=true)]}) if(k8s_external_cp_host | default('') != '') else _remote_k8s_kubeconf.content | b64decode | from_yaml}}"
+  tags: [k8s, k8-init, k8s-init-config]
 
-- name: Creating local config file
-  fetch:
-    src: /etc/kubernetes/admin.conf
-    dest: "{{ lookup('env', 'HOME') }}/.kube/"
-    flat: yes
+- name: Creating a file with content
+  become: false
+  run_once: true
+  delegate_to: localhost
+  copy:
+    dest: "{{ lookup('env', 'HOME') }}/.kube/{{ inventory_dir | basename }}-kubeconfig.yml"
+    content: '{{ internal_k8s_kubeconfig | to_nice_yaml }}'
   ignore_errors: true
   tags: [k8s, k8-init, k8s-init-config]
 

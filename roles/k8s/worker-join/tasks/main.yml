@@ -31,6 +31,13 @@
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
   register: k8s_join_res
 
+- name: Set worker role
+  command: 'kubectl label node {{ inventory_hostname }} node-role.kubernetes.io/worker=worker'
+  register: _k8s_worker_role_set
+  changed_when: ("node/" + inventory_hostname + " labeled") in _k8s_worker_role_set.stdout
+  delegate_to: '{{ groups.k8s_master | flatten | first }}'
+  tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
+
 - name: Enable and check kubelet service
   systemd:
     name: kubelet
