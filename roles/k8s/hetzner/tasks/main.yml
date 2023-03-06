@@ -1,5 +1,13 @@
-# Main k8s Setup
+# Main k8s/hetzner Setup
 ---
+- name: Ensue namespace for hetzner ressoruces exist
+  k8s:
+    name: '{{ k8s_hetzner_namespace }}'
+    api_version: v1
+    kind: Namespace
+    state: present
+  tags: [k8s, k8s-hetzner]
+
 - name: Create Secret
   when: k8s_hetzner_api_key != "none"
   k8s:
@@ -38,7 +46,7 @@
 - name: Apply Hetzner Cloud Controller
   when: k8s_hetzner_api_key != "none"
   k8s:
-    namespace: kube-system
+    namespace: '{{ k8s_hetzner_namespace }}'
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
     state: '{{"present" if (k8s_hetzner_install_ccm) else "absent" }}'
     definition: "{{ k8s_intanal_hetzner_cloud_controler_def.content | regex_replace('\"--cluster-cidr=.*\"', '\"--cluster-cidr=' + k8s_pod_network_cidr + '\"') }}"
@@ -47,9 +55,26 @@
 - name: Apply Hetzner Cloud CSI Driver
   when: k8s_hetzner_api_key != "none" and k8s_hetzner_install_csi_driver
   k8s:
-    namespace: kube-system
+    namespace: '{{ k8s_hetzner_namespace }}'
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
     state: present
     # src: /tmp/ccm.yaml
     definition: '{{ k8s_intanal_hetzner_csi_driver_def.content }}'
+  tags: [k8s, k8s-hetzner]
+
+- name: Template Loadbalancer Exporter Manifest
+  when: k8s_hetzner_api_key != "none" and k8s_hetzner_install_lb_exporter
+  template:
+    src: hcloud-prom-lb-exporter.yml.j2
+    dest: /tmp/hcloud-prom-lb-exporter.yml
+    mode: '0644'
+  tags: [k8s, k8s-hetzner]
+
+- name: Apply Loadbalancer Exporter Manifest
+  when: k8s_hetzner_api_key != "none" and k8s_hetzner_install_lb_exporter
+  k8s:
+    namespace: '{{ k8s_hetzner_namespace }}'
+    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
+    state: present
+    src: /tmp/hcloud-prom-lb-exporter.yml
   tags: [k8s, k8s-hetzner]
