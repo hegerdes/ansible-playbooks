@@ -1,15 +1,15 @@
 # Role maintenance
 ---
 - name: System Updates Task
-  include_tasks: system-updates.yml
+  ansible.builtin.include_tasks: system-updates.yml
   tags: [maintenance, os-updates]
 
 - name: Run Snapshot-Backups
   when: maintenance_run_hcloud_snapshot | bool
-  include_tasks: hcloud-snapshot.yml
+  ansible.builtin.include_tasks: hcloud-snapshot.yml
   tags: [maintenance, backup, db-backup, host-backup, hetzner-snapshot]
 
 - name: Run Backup-Scripts
   when: maintenance_run_backup | bool
-  include_tasks: host-backups.yml
+  ansible.builtin.include_tasks: host-backups.yml
   tags: [maintenance, backup, db-backup]

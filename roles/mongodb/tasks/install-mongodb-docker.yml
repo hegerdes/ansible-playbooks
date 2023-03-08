@@ -1,13 +1,13 @@
 
 
 - name: Ensue config folder exists
-  file:
+  ansible.builtin.file:
     path: /srv/mongodb
     state: directory
   tags: [mongodb]
 
 - name: Copy conf files
-  copy:
+  ansible.builtin.copy:
     src: '{{ mongo_src_config_files }}/'
     dest: /srv/
     owner: root
@@ -15,17 +15,17 @@
   tags: [mongodb]
 
 - name: Copy mongodb compose file
-  template:
+  ansible.builtin.template:
     src: mongodb-docker-compose.yml.j2
     dest: /srv/mongodb/mongodb-docker-compose.yml
     mode: '0644'
   tags: [mongodb]
 
 - name: Deploy mongodb via compose
-  docker_compose:
+  community.docker.docker_compose:
     project_src: /srv/mongodb
     state: present
-    remove_orphans: yes
+    remove_orphans: true
     project_name: service-mongodb
     files:
       - mongodb-docker-compose.yml

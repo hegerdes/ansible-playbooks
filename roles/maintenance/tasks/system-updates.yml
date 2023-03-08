@@ -1,25 +1,25 @@
 # List pending updates
 ---
 - name: Update apt cache
-  apt:
-   update_cache: yes
+  ansible.builtin.apt:
+   update_cache: true
   tags: [maintenance, os-updates]
 
 - name: Get upgradable list
-  command: apt list --upgradable
+  ansible.builtin.command: apt list --upgradable
   register: main_updates
   changed_when: false
   tags: [maintenance, os-updates]
 
 - name: No updates
   when: main_updates.stdout_lines | length == 1
-  debug:
+  ansible.builtin.debug:
     msg: 'No updates found'
   tags: [maintenance, os-updates]
 
 - name: Format update string I
   when: main_updates.stdout_lines | length > 1
-  set_fact:
+  ansible.builtin.set_fact:
     updates: '{{ [item | replace("[","") | replace("]","") | replace(","," ") ] + updates | default([]) }}'
   loop: '{{ main_updates.stdout_lines[1:] }}'
   tags: [maintenance, os-updates]
@@ -27,7 +27,7 @@
 - name: Format update string II
   when: hostvars[item].updates is defined
   run_once: true
-  set_fact:
+  ansible.builtin.set_fact:
     all_updates: '{{ all_updates | default({}) | combine({item: hostvars[item].updates}) }}'
   with_items: '{{ groups.all }}'
   tags: [maintenance, os-updates]
@@ -35,7 +35,7 @@
 - name: Format update string III
   when: hostvars[item].updates is defined
   run_once: true
-  set_fact:
+  ansible.builtin.set_fact:
     all_updates: '{{ all_updates | default({}) | combine({"failed_hosts": ansible_play_hosts_all | difference(ansible_play_batch) | default([]), "project_info": {"project_url": lookup("env", "CI_PROJECT_URL") | default("none", true), "project_id": lookup("env", "CI_PROJECT_ID") | default("none", true)} }, recursive=true ) }}'
   with_items: '{{ groups.all }}'
   tags: [maintenance, os-updates]
@@ -43,7 +43,7 @@
 - name: Print updates
   when: hostvars[item].updates is defined
   run_once: true
-  debug:
+  ansible.builtin.debug:
     var: hostvars[item].updates
   with_items: '{{ groups.all }}'
   tags: [maintenance, os-updates]
@@ -52,7 +52,7 @@
   when: all_updates is defined
   become: false
   run_once: true
-  copy:
+  ansible.builtin.copy:
     content: "{{ all_updates }}"
     dest: "/tmp/{{ inventory_dir | basename + '-updates' + lookup('pipe', 'date +\"-%Y-%m-%d\"') }}.json"
   delegate_to: localhost
@@ -60,7 +60,7 @@
 
 - name: Post log for performed update-scan
   when: ansible_play_hosts_all | last == inventory_hostname and maintenance_post_to_git | bool
-  import_tasks: shared/gitlab-update-json-file.yml
+  ansible.builtin.import_tasks: shared/gitlab-update-json-file.yml
   vars:
     gitlab_conf:
       branch: '{{ maintenance_git_branch }}'
@@ -74,7 +74,7 @@
 
 - name: Post update log to GitLab
   when: ansible_play_hosts_all | last == inventory_hostname and all_updates is defined and maintenance_post_to_git | bool
-  import_tasks: shared/gitlab-post-log.yml
+  ansible.builtin.import_tasks: shared/gitlab-post-log.yml
   vars:
     gitlab_conf:
       branch: '{{ maintenance_git_branch }}'
@@ -88,7 +88,7 @@
 
 - name: Get issue on GitLab
   when: maintenance_post_to_git and all_updates is defined
-  import_tasks: shared/gitlab-get-issue.yml
+  ansible.builtin.import_tasks: shared/gitlab-get-issue.yml
   vars:
     gitlab_conf:
       url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/issues?labels=aptPendingUpdates,{{ inventory_dir | basename }}&state=opened'
@@ -98,7 +98,7 @@
 
 - name: Update issue on GitLab
   when: ansible_play_hosts_all | last == inventory_hostname and maintenance_post_to_git and not maintenance_run_upgrades and all_updates is defined
-  import_tasks: shared/gitlab-post-issue.yml
+  ansible.builtin.import_tasks: shared/gitlab-post-issue.yml
   vars:
     gitlab_conf:
       url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/issues/{{ main_reop_get_issue_res.json | json_query("[0].iid") if (main_reop_get_issue_res.json is defined and main_reop_get_issue_res.json | length > 0) else ""}}'
@@ -118,7 +118,7 @@
 
 - name: Notify via Mattermost
   when: ansible_play_hosts_all | last == inventory_hostname and maintenance_post_to_git and not maintenance_run_upgrades and all_updates is defined and main_reop_issue_res.json is defined and maintenance_mattermost_hook is defined
-  uri:
+  ansible.builtin.uri:
     url: '{{ maintenance_mattermost_hook }}'
     method: POST
     body_format: json
@@ -147,7 +147,7 @@
 
 - name: Upgrade packages
   when: maintenance_run_upgrades | bool and item.split("/")[0] not in maintenance_hold_back_updates
-  apt:
+  ansible.builtin.apt:
     name: '{{ item.split("/")[0] }}'
     state: latest
   loop: '{{ updates | default([]) }}'
@@ -155,19 +155,19 @@
   tags: [maintenance, os-updates]
 
 - name: Check for reboot
-  stat:
+  ansible.builtin.stat:
     path: /var/run/reboot-required
   register: main_reboot_needed
   tags: [maintenance, os-updates]
 
 - name: Reoot needed?
-  debug:
+  ansible.builtin.debug:
     msg: 'Reboot needed: {{ main_reboot_needed.stat.exists }}'
   tags: [maintenance, os-updates]
 
 - name: Format update result string I
   when: maintenance_run_upgrades | bool
-  set_fact:
+  ansible.builtin.set_fact:
     performed_updates: '{{ performed_updates | default({}) | combine({item.item.split("/")[0]: item.stdout_lines[3:] | default("") })}}'
   loop: '{{ main_updated_packages.results }}'
   loop_control:
@@ -177,14 +177,14 @@
 - name: Format update result string II
   when: hostvars[item].performed_updates is defined
   run_once: true
-  set_fact:
+  ansible.builtin.set_fact:
     all_performed_updates: '{{ all_performed_updates | default({}) | combine({item: hostvars[item].performed_updates, "reboots": {item: hostvars[item].main_reboot_needed.stat.exists}}, recursive=true) }}'
   with_items: '{{ groups.all }}'
   tags: [maintenance, os-updates]
 
 - name: Post update log to GitLab
   when: ansible_play_hosts_all | last == inventory_hostname and all_performed_updates is defined and maintenance_post_to_git | bool
-  import_tasks: shared/gitlab-post-log.yml
+  ansible.builtin.import_tasks: shared/gitlab-post-log.yml
   vars:
     gitlab_conf:
       branch: '{{ maintenance_git_branch }}'
@@ -198,7 +198,7 @@
 
 - name: Comment on issue on GitLab
   when: ansible_play_hosts_all | last == inventory_hostname and all_updates is defined and maintenance_post_to_git and maintenance_run_upgrades
-  import_tasks: shared/gitlab-post-issue.yml
+  ansible.builtin.import_tasks: shared/gitlab-post-issue.yml
   vars:
     gitlab_conf:
       token: '{{ maintenance_git_token }}'
@@ -215,7 +215,7 @@
 
 - name: Close issue on GitLab
   when: ansible_play_hosts_all | last == inventory_hostname and all_updates is defined and maintenance_post_to_git and maintenance_run_upgrades
-  import_tasks: shared/gitlab-post-issue.yml
+  ansible.builtin.import_tasks: shared/gitlab-post-issue.yml
   vars:
     gitlab_conf:
       url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/issues/{{ main_reop_get_issue_res.json | json_query("[0].iid") if (main_reop_get_issue_res.json is defined and main_reop_get_issue_res.json | length > 0) else ""}}?state_event=close'
@@ -228,7 +228,7 @@
 - name: Resetting vars
   when: ansible_play_hosts_all | last == inventory_hostname and all_updates is defined and maintenance_post_to_git and maintenance_run_upgrades
   run_once: true
-  set_fact:
+  ansible.builtin.set_fact:
     all_updates: {}
     main_updates: {}
   tags: [maintenance, os-updates]

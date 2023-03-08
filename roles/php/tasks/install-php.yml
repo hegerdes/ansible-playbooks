@@ -1,14 +1,14 @@
 # Install nginx
 ---
 - name: Install php packages
-  apt:
+  ansible.builtin.apt:
     name: ['php-fpm', php-mysql]
     state: latest
-    update_cache: yes
+    update_cache: true
   tags: [php]
 
 - name: Create log directory if it does not exist
-  file:
+  ansible.builtin.file:
     path: /var/log/php
     state: directory
     mode: '0755'
@@ -17,7 +17,7 @@
   tags: [php]
 
 - name: Set log settings in php-fpm
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: '/etc/php/{{ php_version }}/fpm/pool.d/www.conf'
     line: '{{ item }}'
   loop:
@@ -27,7 +27,7 @@
   tags: [php]
 
 - name: Copy logrotate conf file
-  template:
+  ansible.builtin.template:
     src: '{{ php_src_logrotate }}'
     dest: /etc/logrotate.d/php
     mode: '0644'

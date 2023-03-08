@@ -8,12 +8,12 @@ nginx_src_config_dir: nginx/
 nginx_metrics_server_addr: '{{ ansible_default_ipv4.address }}:80'
 
 # Nginx host & Certbot setting
-nginx_install_hosts: yes
-nginx_force_reinstall_hosts: no
+nginx_install_hosts: true
+nginx_force_reinstall_hosts: false
 nginx_hosts_default_listen_addr: '{{ ansible_default_ipv4.address }}'
-nginx_run_certbot: yes
+nginx_run_certbot: true
 nginx_certbot_mail: info@xyz.com
-nginx_testing_certbot: no # if yes use letsencrypt staging (no rate limit)
+nginx_testing_certbot: false # if true use letsencrypt staging (false rate limit)
 
 # Nginx default hosts cofig
 nginx_default_hosts:
@@ -47,7 +47,7 @@ ingress_floating_ips: []
 nginx_firewall_rules: []
 
 # Update promtail
-nginx_update_promtail: yes
+nginx_update_promtail: true
 promtail_config_src_path: promtail-config.yml
 promtail_config_dst_path: /srv/promtail/promtail-config.yml
 

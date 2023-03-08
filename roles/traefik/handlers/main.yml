@@ -1,5 +1,5 @@
 ---
 - name: Restart traefik
-  service:
+  ansible.builtin.service:
     name: traefik
     state: restarted

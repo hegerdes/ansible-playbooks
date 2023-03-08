@@ -2,12 +2,12 @@
 ---
 - name: Install compose package
   when: mgmt_use_swarm_mode | bool != true
-  pip:
+  ansible.builtin.pip:
     name: docker-compose
   tags: [mgmt, mgmt-stack]
 
 - name: Set docker node labels
-  docker_node:
+  community.docker.docker_node:
     hostname: '{{ mgmt_node_name | default("mgmt") }}'
     labels:
       mgmt: "true"
@@ -15,18 +15,18 @@
   tags: [mgmt, mgmt-stack]
 
 - name: Log into Docker registries
-  docker_login:
+  community.docker.docker_login:
     registry_url: '{{ item.regestry | default("https://index.docker.io/v1/") }}'
     username: '{{ item.username }}'
     password: '{{ item.password }}'
-    reauthorize: yes
+    reauthorize: true
   loop: '{{ docker_regesties | default([]) }}'
   loop_control:
     label: '{{ item.regestry | default("https://index.docker.io/v1/") }}'
   tags: [mgmt, mgmt-stack]
 
 - name: Copy MGMT compose|stack base files
-  copy:
+  ansible.builtin.copy:
     src: 'srv/'
     dest: '{{ mgmt_dst_config_files }}'
     owner: root
@@ -35,20 +35,20 @@
 
 - name: Copy MGMT compose|stack custom files (rsync)
   when: mgmt_use_srync_copy
-  synchronize:
+  ansible.posix.synchronize:
     src: '{{ mgmt_src_config_files }}'
     dest: '{{ mgmt_dst_config_files }}'
   tags: [mgmt, mgmt-stack]
 
 - name: Copy MGMT compose|stack custom files
   when: not mgmt_use_srync_copy
-  copy:
+  ansible.builtin.copy:
     src: '{{ mgmt_src_config_files }}'
     dest: '{{ mgmt_dst_config_files }}'
   tags: [mgmt, mgmt-stack]
 
 - name: Configuring compose|stack files
-  template:
+  ansible.builtin.template:
     src: '{{ item }}.j2'
     dest: '{{ mgmt_dst_config_files }}/{{ item }}'
     mode: '0644'
@@ -56,7 +56,7 @@
   tags: [mgmt, mgmt-stack]
 
 - name: Setting Grafana password
-  copy:
+  ansible.builtin.copy:
     content: '{{ mgmt_grafana_pw }}'
     dest: '{{ mgmt_dst_config_files }}/mgmt-grafana/grafana_admin_pw.txt'
     mode: 0644
@@ -64,53 +64,53 @@
 
 - name: Init a new swarm
   when: mgmt_use_swarm_mode | bool
-  docker_swarm:
+  community.docker.docker_swarm:
     advertise_addr: '{{ ansible_host }}'
     state: present
   tags: [mgmt, mgmt-stack]
 
 - name: Create network
-  docker_network:
+  community.docker.docker_network:
     name: '{{ mgmt_docker_stack_name }}_mgmt_net'
     driver: overlay
-    attachable: yes
+    attachable: true
     driver_options:
       com.docker.network.driver.mtu: 1450
 
 - name: Create absolut paths for stack files
   when: mgmt_use_swarm_mode | bool and item != "mgmt-stack-nginx.yml"
-  set_fact:
+  ansible.builtin.set_fact:
     mgmt_compose_files_stack: '{{ mgmt_compose_files_stack | default([]) + ["".join((mgmt_dst_config_files,item))] }}'
   loop: '{{ mgmt_services_to_install | list}}'
   tags: [mgmt, mgmt-stack]
 
 - name: Deploy mgmt-stack [via docker stack]
   when: mgmt_use_swarm_mode | bool
-  docker_stack:
+  community.docker.docker_stack:
     state: present
     name: '{{ mgmt_docker_stack_name }}'
     resolve_image: always
-    with_registry_auth: yes
-    prune: yes
+    with_registry_auth: true
+    prune: true
     compose: '{{ mgmt_compose_files_stack | list }}'
   tags: [mgmt, mgmt-stack]
 
 - name: Deploy mgmt-stack [via docker-compose]
   when: mgmt_use_swarm_mode | bool != true
-  docker_compose:
+  community.docker.docker_compose:
     project_name: '{{ mgmt_docker_stack_name }}'
-    remove_orphans: yes
+    remove_orphans: true
     project_src: '{{ mgmt_dst_config_files }}'
     files: '{{ mgmt_services_to_install | list }}'
   tags: [mgmt, mgmt-stack]
 
 - name: Setup Wireguard
   when: mgmt_use_wireguard | bool
-  include_tasks: install-mgmt-stack-wireguard.yml
+  ansible.builtin.include_tasks: install-mgmt-stack-wireguard.yml
   tags: [mgmt, mgmt-stack, wireguard]
 
 - name: Wait for containers to start
-  wait_for:
+  ansible.builtin.wait_for:
     port: '{{ item }}'
     delay: 2
     timeout: 60
@@ -125,6 +125,6 @@
 
 - name: Show stack info
   when: mgmt_use_swarm_mode | bool != true
-  debug:
+  ansible.builtin.debug:
     var: mgmt_docker_stack_info.results
   tags: [mgmt, mgmt-stack]

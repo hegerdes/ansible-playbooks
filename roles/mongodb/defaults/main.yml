@@ -2,9 +2,9 @@
 # SQL settings
 
 # Install via docker
-mongodb_use_docker: yes
+mongodb_use_docker: true
 mongodb_docker_version: 4.4-focal
-mongodb_docker_use_swarm: no
+mongodb_docker_use_swarm: false
 
 # Init
 mongodb_command_agrs: '""'

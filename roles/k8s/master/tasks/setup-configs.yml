@@ -1,53 +1,54 @@
 # Main k8s Setup
 
 - name: Create kube conf dir
-  file:
-    path: '{{ ansible_facts.env.HOME }}/.kube'
+  ansible.builtin.file:
+    path: "{{ ansible_facts.env.HOME }}/.kube"
     state: directory
   tags: [k8s, k8-init, k8s-init-config]
 
 - name: Copy config file
-  copy:
+  ansible.builtin.copy:
     src: /etc/kubernetes/admin.conf
-    dest: '{{ ansible_facts.env.HOME }}/.kube/config'
-    remote_src: yes
-    mode: '0600'
+    dest: "{{ ansible_facts.env.HOME }}/.kube/config"
+    remote_src: true
+    mode: "0600"
   tags: [k8s, k8-init, k8s-init-config]
 
 - name: Create kube conf dir
   become: false
   run_once: true
-  file:
-    path: '~/.kube'
+  ansible.builtin.file:
+    path: "~/.kube"
     state: directory
   tags: [k8s, k8-init, k8s-init-config]
   delegate_to: localhost
 
 - name: Get kubeconf
   run_once: true
-  slurp:
+  ansible.builtin.slurp:
     src: /etc/kubernetes/admin.conf
   register: _remote_k8s_kubeconf
   tags: [k8s, k8-init, k8s-init-config]
 
 - name: Set Kubeconfig
   run_once: true
-  set_fact:
-    internal_k8s_kubeconfig: "{{ _remote_k8s_kubeconf.content | b64decode | from_yaml | combine({'clusters': [(_remote_k8s_kubeconf.content | b64decode | from_yaml).clusters[0] | combine({'cluster': {'server': 'https://' + k8s_external_cp_host + ':' + k8s_external_cp_port | default('6443')}}, recursive=true)]}) if(k8s_external_cp_host | default('') != '') else _remote_k8s_kubeconf.content | b64decode | from_yaml}}"
+  ansible.builtin.set_fact:
+    internal_k8s_kubeconfig: "{{ _remote_k8s_kubeconf.content | b64decode | from_yaml | combine({'clusters': [(_remote_k8s_kubeconf.content | b64decode | from_yaml).clusters[0] | combine({'cluster': {'server': 'https://' + k8s_external_cp_host + ':' + k8s_external_cp_port | default('6443')}}, recursive=true)]}) if (k8s_external_cp_host | default('') != '') else _remote_k8s_kubeconf.content | b64decode | from_yaml }}"
   tags: [k8s, k8-init, k8s-init-config]
 
 - name: Creating a file with content
   become: false
   run_once: true
   delegate_to: localhost
-  copy:
+  ansible.builtin.copy:
     dest: "{{ lookup('env', 'HOME') }}/.kube/{{ inventory_dir | basename }}-kubeconfig.yml"
-    content: '{{ internal_k8s_kubeconfig | to_nice_yaml }}'
+    content: "{{ internal_k8s_kubeconfig | to_nice_yaml }}"
+    mode: "0600"
   ignore_errors: true
   tags: [k8s, k8-init, k8s-init-config]
 
 - name: Enable kubectl bash completion
-  lineinfile:
-    path: '{{ ansible_facts.env.HOME }}/.bashrc'
+  ansible.builtin.lineinfile:
+    path: "{{ ansible_facts.env.HOME }}/.bashrc"
     line: source <(kubectl completion bash)
   tags: [k8s, k8-init, k8s-init-config]

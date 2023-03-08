@@ -1,19 +1,19 @@
 ---
 - name: Update grub
-  command: update-grub2
+  ansible.builtin.command: update-grub2
   tags: [common, sys]
 
 - name: Restart network service
-  service:
+  ansible.builtin.service:
     name: networking
     state: restarted
 
 - name: Restart network ubuntu service
-  command: netplan apply
+  ansible.builtin.command: netplan apply
 
 - name: Restart SSHD
-  service:
+  ansible.builtin.service:
     name: sshd
-    enabled: yes
+    enabled: true
     state: reloaded
   tags: [mgmt, ssh]

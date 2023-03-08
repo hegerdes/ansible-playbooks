@@ -1,7 +1,7 @@
 # Main Minio Setup
 ---
 - name: Check if Docker is installed
-  command: docker --version
+  ansible.builtin.command: docker --version
   register: docker_valid
   ignore_errors: true
   changed_when: false
@@ -9,7 +9,7 @@
 
 - name: Run docker install
   when: docker_valid.failed
-  include_role:
+  ansible.builtin.include_role:
     name: docker
   vars:
     docker_init_swarm: false
@@ -17,10 +17,10 @@
   tags: [minio]
 
 - name: Run docker deploy
-  include_role:
+  ansible.builtin.include_role:
     name: docker-deploy
   vars:
-    docker_deploy_use_swarm_mode: yes
+    docker_deploy_use_swarm_mode: true
     docker_deploy_projects:
       - name: minio
         compose_files: [docker-compose-minio.yml]

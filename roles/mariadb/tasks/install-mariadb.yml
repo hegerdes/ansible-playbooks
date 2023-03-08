@@ -1,26 +1,26 @@
 
 - name: Install MariaDB
-  apt:
+  ansible.builtin.apt:
     name: '{{ item }}'
     state: latest
-    update_cache: yes
+    update_cache: true
   loop: ['mariadb-server', 'python3-pymysql']
   tags: [mariadb]
 
 - name: Ensure service is started
-  service:
+  ansible.builtin.service:
     name: mariadb
     state: started
-    enabled: yes
+    enabled: true
   tags: [mariadb]
 
 - name: Sleep for 15 seconds and continue with play
-  wait_for:
+  ansible.builtin.wait_for:
     timeout: 15
   tags: [mariadb]
 
 - name: Check if root password is set
-  shell: |
+  ansible.builtin.shell: |
     mysqladmin -u root status
   changed_when: false
   failed_when: false

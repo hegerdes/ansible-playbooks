@@ -1,14 +1,14 @@
 # Install aws-cli & azcopy
 ---
 - name: Install aws-cli
-  apt:
+  ansible.builtin.apt:
     name: awscli
     state: latest
-    install_recommends: no
+    install_recommends: false
   tags: [mgmt, backup]
 
 - name: Check if azcopy is installed
-  command: 'azcopy --version'
+  ansible.builtin.command: 'azcopy --version'
   register: azcopy_check_result
   changed_when: false
   failed_when: false
@@ -18,22 +18,22 @@
   unarchive:
     src: https://aka.ms/downloadazcopy-v10-linux
     dest: /tmp
-    remote_src: yes
+    remote_src: true
   tags: [mgmt, backup]
 
 - name: Install azcopy
   when: azcopy_check_result.stdout == ""
-  shell: |
+  ansible.builtin.shell: |
     mv /tmp/azcopy_linux*/azcopy /usr/local/bin/azcopy
   tags: [mgmt, backup]
 
 - name: Test azcopy
-  command: "azcopy --version"
+  ansible.builtin.command: "azcopy --version"
   changed_when: "false"
   tags: [mgmt, backup]
 
 - name: Check if minio mc is installed
-  command: 'mc --version'
+  ansible.builtin.command: 'mc --version'
   register: mc_check_result
   changed_when: false
   failed_when: false
@@ -41,13 +41,13 @@
 
 - name: Install minio mc
   when: mc_check_result.stdout == ""
-  get_url:
+  ansible.builtin.get_url:
     url: https://dl.min.io/client/mc/release/linux-amd64/mc
     dest: /usr/local/bin/mc
     mode: '0755'
   tags: [mgmt, backup]
 
 - name: Test minio mc
-  command: "mc --version"
+  ansible.builtin.command: "mc --version"
   changed_when: "false"
   tags: [mgmt, backup]

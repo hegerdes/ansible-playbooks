@@ -1,23 +1,23 @@
 
 
 - name: Ensue config folder exists
-  file:
+  ansible.builtin.file:
     path: /srv/mariadb
     state: directory
   tags: [mariadb]
 
 - name: Copy mariadb compose file
-  template:
+  ansible.builtin.template:
     src: mariadb-docker-compose.yml.j2
     dest: /srv/mariadb/mariadb-docker-compose.yml
     mode: '0644'
   tags: [mariadb]
 
 - name: Deploy mariadb via compose
-  docker_compose:
+  community.docker.docker_compose:
     project_src: /srv/mariadb
     state: present
-    remove_orphans: yes
+    remove_orphans: true
     project_name: service-mariadb
     files:
       - mariadb-docker-compose.yml
@@ -26,7 +26,7 @@
 
 - name: Sleep for 15 seconds and continue with play
   when: mariadb_install_res.changed
-  wait_for:
+  ansible.builtin.wait_for:
     timeout: 15
   tags: [mariadb]
 
@@ -39,6 +39,6 @@
   tags: [mariadb]
 
 - name: Print DB infomation
-  debug:
+  ansible.builtin.debug:
     msg: 'Version: {{ mariadb_info_res.version.full }}; Faild: {{ mariadb_info_res.failed }}; DBs: {{ mariadb_info_res.databases }}'
   tags: [mariadb]

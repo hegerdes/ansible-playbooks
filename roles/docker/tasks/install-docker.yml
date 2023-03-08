@@ -1,31 +1,31 @@
 # Install Docker
 ---
 - name: Install needed packages
-  apt:
+  ansible.builtin.apt:
     name: ['ca-certificates', 'curl', 'gnupg', 'lsb-release', 'cifs-utils']
     state: present
-    update_cache: yes
-    install_recommends: no
+    update_cache: true
+    install_recommends: true
   tags: [docker, docker-install]
 
 - name: Add Docker GPG apt Key
-  apt_key:
+  ansible.builtin.apt_key:
     url: https://download.docker.com/linux/{{ ansible_facts.distribution | lower }}/gpg
     state: present
   tags: [docker, docker-install]
 
 - name: Add Docker repository
-  apt_repository:
+  ansible.builtin.apt_repository:
     repo: 'deb https://download.docker.com/linux/{{ ansible_facts.distribution | lower }} {{ ansible_facts.lsb.codename }} stable'
-    update_cache: yes
+    update_cache: true
     state: present
     filename: docker
   tags: [docker, docker-install]
 
 - name: Install docker
-  apt:
+  ansible.builtin.apt:
     state: present
-    install_recommends: no
+    install_recommends: false
     name:
       - 'containerd.io'
       - 'docker-{{ docker_edition }}'
@@ -39,8 +39,8 @@
   tags: [docker, docker-install]
 
 - name: Test Docker
-  docker_host_info:
-    verbose_output: yes
+  community.docker.docker_host_info:
+    verbose_output: true
   register: docker_facts
   tags: [docker, docker-install]
 
@@ -60,15 +60,15 @@
   tags: [docker, docker-install]
 
 - name: Ensure /etc/docker/ directory exists
-  file:
+  ansible.builtin.file:
     path: /etc/docker
     state: directory
-    mode: 0755
+    mode: "0755"
   when: docker_daemon_options.keys() | length > 0
   tags: [docker, docker-install, docker-deamon]
 
 - name: Configure Docker daemon options
-  copy:
+  ansible.builtin.copy:
     content: '{{ docker_daemon_options | to_nice_json }}'
     dest: /etc/docker/daemon.json
     mode: 0644
@@ -77,12 +77,12 @@
   tags: [docker, docker-install, docker-deamon]
 
 - name: Ensure Docker is started and enabled at boot
-  service:
+  ansible.builtin.service:
     name: docker
     state: started
-    enabled: yes
+    enabled: true
   tags: [docker, docker-install, docker-deamon]
 
 - name: Ensure handlers are notified now
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers
   tags: [docker, docker-install, docker-deamon]

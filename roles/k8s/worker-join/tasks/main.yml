@@ -1,52 +1,51 @@
 # k8s join
 ---
 - name: Test reachability to shared KubeControlPlaneHost
-  shell: 'ping -c 5 {{ k8s_shared_api_server_endpoint }}'
+  ansible.builtin.command: "ping -c 5 {{ k8s_shared_api_server_endpoint }}"
   changed_when: false
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
 - name: Get Worker join command
-  command: kubeadm token create --print-join-command
+  ansible.builtin.command: kubeadm token create --print-join-command
   register: k8_worker_join_command_res
   run_once: true
   changed_when: false
-  delegate_to: '{{ groups.k8s_master | flatten | first }}'
+  delegate_to: "{{ groups.k8s_master | flatten | first }}"
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
 - name: Debug - Print join command
-  debug:
-    msg: |
-      {{ k8_worker_join_command_res.stdout }}
+  ansible.builtin.debug:
+    msg: "{{ k8_worker_join_command_res.stdout }}"
   tags: [k8s, k8-init, k8-master-init, k8s-worker-join]
 
 - name: Check if kubeadm has already run
-  stat:
+  ansible.builtin.stat:
     path: /etc/kubernetes/kubelet.conf
   register: k8s_kubeadm_worker_ca
   tags: [k8s, k8-init, k8s-join, k8s-worker-join]
 
 - name: Join Nodes
   when: not k8s_kubeadm_worker_ca.stat.exists
-  command: '{{ k8_worker_join_command_res.stdout }}'
+  ansible.builtin.command: "{{ k8_worker_join_command_res.stdout }}"
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
   register: k8s_join_res
 
 - name: Set worker role
-  command: 'kubectl label node {{ inventory_hostname }} node-role.kubernetes.io/worker=worker'
+  ansible.builtin.command: "kubectl label node {{ inventory_hostname }} node-role.kubernetes.io/worker=worker"
   register: _k8s_worker_role_set
   changed_when: ("node/" + inventory_hostname + " labeled") in _k8s_worker_role_set.stdout
-  delegate_to: '{{ groups.k8s_master | flatten | first }}'
+  delegate_to: "{{ groups.k8s_master | flatten | first }}"
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
 - name: Enable and check kubelet service
-  systemd:
+  ansible.builtin.systemd:
     name: kubelet
-    daemon_reload: yes
+    daemon_reload: true
     state: started
-    enabled: yes
+    enabled: true
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
 - name: Debug - Print join res
-  debug:
+  ansible.builtin.debug:
     var: k8s_join_res
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]

@@ -1,7 +1,7 @@
 # Install & Setup SimpleProxy
 ---
 - name: Copy simpleproxy service config
-  template:
+  ansible.builtin.template:
     src: simpleproxy.service.j2
     dest: '/etc/systemd/system/simpleproxy-{{ simpleproxy_conf.name | replace(" ","-") }}.service'
     owner: root
@@ -11,22 +11,22 @@
   tags: [simpleproxy]
 
 - name: Enable simpleproxy service
-  systemd:
+  ansible.builtin.systemd:
     name: 'simpleproxy-{{ simpleproxy_conf.name | replace(" ","-") }}.service'
     state: started
-    daemon_reload: yes
-    enabled: yes
+    daemon_reload: true
+    enabled: true
   tags: [simpleproxy]
 
 - name: Restart simpleproxy
   when: simpleproxy_copy.changed
-  service:
+  ansible.builtin.service:
     name: 'simpleproxy-{{ simpleproxy_conf.name | replace(" ","-") }}'
     state: restarted
   tags: [simpleproxy]
 
 - name: Verify simpleproxy status
-  service:
+  ansible.builtin.service:
     name: 'simpleproxy-{{ simpleproxy_conf.name | replace(" ","-") }}.service'
     state: started
   tags: [simpleproxy]

@@ -1,5 +1,5 @@
 ---
 - name: Wait for services to come up
-  wait_for:
+  ansible.builtin.wait_for:
     timeout: '{{ app_deploy_wait_timeout }}'
   tags: [app-deploy]

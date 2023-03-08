@@ -30,4 +30,4 @@ k8s_calico_helm_values:
       type: Calico
     calicoNetwork:
       ipPools:
-      - cidr: '{{ k8s_pod_network_cidr }}'
+        - cidr: '{{ k8s_pod_network_cidr }}'

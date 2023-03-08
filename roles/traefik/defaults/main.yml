@@ -4,11 +4,11 @@ ingress_hosts_file: null
 ingress_hosts: '{{lookup("file", ingress_hosts_file) | from_yaml if(ingress_hosts_file) }}'
 
 # Traefik host & Certbot setting
-traefik_enable_dashboard: yes
-traefik_force_reinstall: no
-traefik_install_hosts: yes
+traefik_enable_dashboard: true
+traefik_force_reinstall: false
+traefik_install_hosts: true
 traefik_hosts_default_listen_addr: '{{ ansible_default_ipv4.address }}'
-traefik_run_certbot: yes
+traefik_run_certbot: true
 traefik_certbot_mail: info@xyz.com
 traefik_default_tld: work.henrikgerdes.me
 

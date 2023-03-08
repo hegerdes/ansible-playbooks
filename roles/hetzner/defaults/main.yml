@@ -8,7 +8,7 @@ hetzner_default_vnet_name: my-network
 hetzner_inventroy_dst: '{{ inventory | default(inventory_dir + "/ansible-inventory.yml") }}'
 ansible_default_port: 22
 ansible_default_user: root
-hetzner_use_internal_ip: no
+hetzner_use_internal_ip: false
 # Floting IP mapping
 hetzner_floating_ip_mapping: []
 # Example

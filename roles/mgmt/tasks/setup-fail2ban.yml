@@ -2,14 +2,14 @@
 ---
 
 - name: Install fail2ban
-  apt:
+  ansible.builtin.apt:
     name: fail2ban
     state: latest
   tags: [mgmt, ssh]
 
 - name: Start fail2ban
-  service:
+  ansible.builtin.service:
     name: fail2ban
     state: started
-    enabled: yes
+    enabled: true
   tags: [mgmt, ssh]

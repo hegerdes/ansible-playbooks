@@ -5,7 +5,7 @@ backup_dir: /backup_dumps
 maintenance_run_backup: true
 maintenance_post_to_git: true
 maintenance_run_hcloud_snapshot: false
-maintenance_run_upgrades: '{{ lookup("env", "ANSIBE_RUN_UPDATES") | default("no", true) | bool }}'
+maintenance_run_upgrades: '{{ lookup("env", "ANSIBE_RUN_UPDATES") | default("false", true) | bool }}'
 maintenance_git_token: '{{ lookup("env", "GITLAB_API_TOKEN") | default("xxx", true) }}'
 maintenance_git_host: https://gitlab.com
 maintenance_git_repo: '{{ lookup("env", "CI_LOG_PROJECT_ID") | default("177", true) }}'

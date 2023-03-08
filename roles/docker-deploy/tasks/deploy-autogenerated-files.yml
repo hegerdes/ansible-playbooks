@@ -1,7 +1,7 @@
 # Deploy auto generated files
 ---
 - name: Check for auto generated files
-  stat:
+  ansible.builtin.stat:
     path: '{{ item.file }}'
   loop: '{{ docker_deploy_generated_files }}'
   loop_control:
@@ -11,7 +11,7 @@
 
 - name: Initial directory creation for generated files
   when: not item.stat.exists
-  file:
+  ansible.builtin.file:
     state: directory
     path: '{{ item.item.file | dirname }}'
   loop: '{{ docker_deploy_gen_files.results | default([]) }}'
@@ -21,7 +21,7 @@
 
 - name: Initial copy for auto generated files
   when: not item.stat.exists
-  copy:
+  ansible.builtin.copy:
     content: '{{ item.item.content }}'
     dest: '{{ item.item.file }}'
   loop: '{{ docker_deploy_gen_files.results | default([]) }}'
@@ -30,7 +30,7 @@
   tags: [docker-deploy]
 
 - name: Fix file permissions
-  file:
+  ansible.builtin.file:
     path: '{{ docker_deploy_dst_config_files + item.name }}'
     owner: root
     group: root
@@ -40,12 +40,12 @@
 
 - name: Deploy Apps via Docker-Service-CLI
   when: swarm_info.docker_swarm_manager and (docker_deploy_services | default([]) | length > 0 or docker_deploy_volumes | default([]) | length > 0 or docker_deploy_networks | default([]) | length > 0 )
-  include_tasks: doploy-service.yml
+  ansible.builtin.include_tasks: doploy-service.yml
   tags: [docker-deploy, docker-deploy-service]
 
 - name: Deploy Apps via Docker-Compose-File
   when: swarm_info.docker_swarm_manager or not docker_deploy_use_swarm_mode
-  include_tasks: deploy-stack.yml
+  ansible.builtin.include_tasks: deploy-stack.yml
   loop: '{{ docker_deploy_projects }}'
   loop_control:
     loop_var: docker_project
@@ -60,32 +60,32 @@
 - name: Get Info on Docker Swarm
   changed_when: false
   when: docker_deploy_use_swarm_mode | bool and swarm_info.docker_swarm_manager
-  command: docker service ls
+  ansible.builtin.command: docker service ls
   ignore_errors: true
   register: app_docker_swarm_info
   tags: [docker-deploy]
 
 - name: Get Info on Docker Containers
   changed_when: false
-  command: 'docker ps --format "table {{ "{{" }}.Status{{ "}}" }}\t{{ "{{" }}.RunningFor{{ "}}" }}\t{{ "{{" }} .Image{{ "}}" }}\t{{ "{{" }}.Names{{ "}}" }}"'
+  ansible.builtin.command: 'docker ps --format "table {{ "{{" }}.Status{{ "}}" }}\t{{ "{{" }}.RunningFor{{ "}}" }}\t{{ "{{" }} .Image{{ "}}" }}\t{{ "{{" }}.Names{{ "}}" }}"'
   ignore_errors: true
   register: app_docker_container_info
   tags: [docker-deploy]
 
 - name: Show Stack info
   when: docker_deploy_use_swarm_mode | bool and swarm_info.docker_swarm_manager
-  debug:
+  ansible.builtin.debug:
     var: app_docker_stack_info.results
   tags: [docker-deploy]
 
 - name: Print Swarm Info
   when: docker_deploy_use_swarm_mode | bool and swarm_info.docker_swarm_manager
-  debug:
+  ansible.builtin.debug:
     var: app_docker_swarm_info.stdout_lines
   ignore_errors: true
   tags: [docker-deploy]
 
 - name: Show Container Info
-  debug:
+  ansible.builtin.debug:
     var: app_docker_container_info.stdout_lines
   tags: [docker-deploy]

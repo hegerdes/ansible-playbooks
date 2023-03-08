@@ -1,9 +1,9 @@
 # Main Nginx Setup
 ---
 - name: Install PHP
-  import_tasks: install-php.yml
+  ansible.builtin.import_tasks: install-php.yml
   tags: [php]
 
 - name: Install php-nginx hosts
-  import_tasks: install-php-nginx-hosts.yml
+  ansible.builtin.import_tasks: install-php-nginx-hosts.yml
   tags: [php, php-nginx]

@@ -2,14 +2,14 @@
 ---
 
 - name: Install nfs packages
-  apt:
+  ansible.builtin.apt:
     name: nfs-kernel-server
     state: latest
-    install_recommends: no
+    install_recommends: false
   tags: [nfs]
 
 - name: Ensure export directory exists
-  file:
+  ansible.builtin.file:
     path: '{{ nfs_export_dir }}'
     state: directory
     mode: 0777
@@ -18,7 +18,7 @@
   tags: [nfs]
 
 - name: Ensure export directory exists
-  file:
+  ansible.builtin.file:
     path: '{{ item.directory }}'
     state: directory
     mode: 0777
@@ -28,9 +28,9 @@
   tags: [nfs]
 
 - name: Setting exports
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: '{{ nfs_exports_file_path }}'
-    create: yes
+    create: true
     line: '{{ item.directory }} {{ item.host }}'
   loop: '{{ nfs_exports }}'
   loop_control:
@@ -38,7 +38,7 @@
   tags: [nfs]
 
 # - name: Check if node-exporter is installed
-#   command: 'node_exporter --version'
+#   ansible.builtin.command: 'node_exporter --version'
 #   register: node_exporter_check_result
 #   changed_when: false
 #   failed_when: false
@@ -46,7 +46,7 @@
 
 # - name: Get node-exporter URL
 #   when: node_exporter_check_result.stdout == ""
-#   shell: |
+#   ansible.builtin.shell: |
 #     curl --silent https://api.github.com/repos/prometheus/node_exporter/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep linux-amd64
 #   register: node_exporter_url
 #   tags: [node-exporter, monitoring]
@@ -56,34 +56,34 @@
 #   unarchive:
 #     src: '{{ node_exporter_url.stdout }}'
 #     dest: /tmp
-#     remote_src: yes
+#     remote_src: true
 #   tags: [node-exporter, monitoring]
 
 # - name: Install node-exporter
 #   when: node_exporter_check_result.stdout == ""
-#   shell: |
+#   ansible.builtin.shell: |
 #     mv /tmp/node_exporter-*/node_exporter /usr/local/bin/node_exporter
 #   notify: Restart node-exporter
 #   tags: [node-exporter, monitoring]
 
 # - name: Test node-exporter
-#   command: "node_exporter --version"
+#   ansible.builtin.command: "node_exporter --version"
 #   changed_when: "false"
 #   tags: [node-exporter, monitoring]
 
 # - name: Add node-exporter user
 #   user:
 #     name: node-exporter
-#     shell: /usr/sbin/nologin
-#     create_home: no
+#     ansible.builtin.shell: /usr/sbin/nologin
+#     create_home: false
 #     group: adm
-#     system: yes
+#     system: true
 #     state: present
 #   notify: Restart node-exporter
 #   tags: [node-exporter, monitoring]
 
 # - name: Copy node-exporter service config
-#   template:
+#   ansible.builtin.template:
 #     src: node-exporter.service.j2
 #     dest: /etc/systemd/system/node-exporter.service
 #     owner: root
@@ -93,26 +93,26 @@
 #   tags: [node-exporter, monitoring]
 
 # - name: Enable node-exporter service
-#   systemd:
+#   ansible.builtin.systemd:
 #     name: node-exporter.service
 #     state: started
-#     daemon_reload: yes
-#     enabled: yes
+#     daemon_reload: true
+#     enabled: true
 #   tags: [node-exporter, monitoring]
 
 # - name: Verify node-exporter status
-#   service:
+#   ansible.builtin.service:
 #     name: node-exporter.service
 #     state: started
 #   tags: [node-exporter, monitoring]
 
 # - name: Ensure handlers are notified now
-#   meta: flush_handlers
+#   ansible.builtin.meta: flush_handlers
 #   tags: [node-exporter, monitoring]
 
 # - name: Check is ufw installed
 #   when: node_exporter_allow_ports
-#   shell: command -v ufw >/dev/null 2>&1
+#   ansible.builtin.shell: command -v ufw >/dev/null 2>&1
 #   register: ufw_installed
 #   ignore_errors: True
 #   changed_when: false
@@ -120,21 +120,21 @@
 
 # - name: Check is firewalld installed
 #   when: node_exporter_allow_ports
-#   shell: command -v firewall-cmd >/dev/null 2>&1
+#   ansible.builtin.shell: command -v firewall-cmd >/dev/null 2>&1
 #   register: firewalld_installed
 #   ignore_errors: True
 #   changed_when: false
 #   tags: [node-exporter, monitoring, firewall]
 
 # - name: Allow port via ufw
-#   include_tasks: shared/open-port-ufw.yml
+#   ansible.builtin.include_tasks: shared/open-port-ufw.yml
 #   when: ufw_installed.rc | default(1) == 0
 #   vars:
 #     ufw_open_port: 9100
 #   tags: [node-exporter, monitoring, firewall]
 
 # - name: Allow port via firewalld
-#   include_tasks: shared/open-port-firewalld.yml
+#   ansible.builtin.include_tasks: shared/open-port-firewalld.yml
 #   when: firewalld_installed.rc | default(1) == 0
 #   tags: [node-exporter, monitoring, firewall]
 #   vars:

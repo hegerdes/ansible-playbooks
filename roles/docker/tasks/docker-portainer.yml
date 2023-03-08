@@ -1,7 +1,7 @@
 # Install portainer agent
 ---
 - name: Get the swarm info
-  docker_swarm_info:
+  community.docker.docker_swarm_info:
   ignore_errors: true
   register: swarm_info
   failed_when: 'not swarm_info.can_talk_to_docker'
@@ -9,14 +9,14 @@
 
 - name: Ensue config folder exists
   when: docker_install_portainer | bool
-  file:
+  ansible.builtin.file:
     path: '{{ docker_portainer_dst_stack | dirname }}'
     state: directory
   tags: [docker, docker-portainer]
 
 - name: Copy portainer stack files
   when: docker_install_portainer and docker_init_swarm | bool
-  copy:
+  ansible.builtin.copy:
     src: '{{ docker_portainer_src }}'
     dest: '{{ docker_portainer_dst_stack }}'
     owner: root
@@ -25,14 +25,14 @@
 
 - name: Get info on Docker Swarm
   when: docker_install_portainer and docker_init_swarm | bool
-  docker_swarm_info:
+  community.docker.docker_swarm_info:
   ignore_errors: true
   register: docker_swarm_result
   tags: [docker, docker-portainer]
 
 - name: Copy portainer compose files
   when: docker_install_portainer and (not docker_init_swarm or not docker_swarm_result.docker_swarm_manager) | bool
-  copy:
+  ansible.builtin.copy:
     src: '{{ docker_portainer_src }}'
     dest: '{{ docker_portainer_dst_stack }}'
     owner: root
@@ -41,33 +41,33 @@
 
 - name: Deploy portainer via docker stack
   when: docker_install_portainer and docker_init_swarm and docker_swarm_result.docker_swarm_manager | bool
-  docker_stack:
+  community.docker.docker_stack:
     state: present
     name: portainer
     resolve_image: always
-    with_registry_auth: yes
+    with_registry_auth: true
     compose:
       - '{{ docker_portainer_dst_stack }}'
   tags: [docker, docker-portainer]
 
 - name: Install pip3
   when: docker_install_portainer and (not docker_init_swarm or not docker_swarm_result.docker_swarm_manager) | bool
-  apt:
+  ansible.builtin.apt:
     name: python3-pip
     state: latest
   tags: [docker, docker-portainer]
 
 - name: Install docker-compose pip package
   when: docker_install_portainer and (not docker_init_swarm or not docker_swarm_result.docker_swarm_manager) | bool
-  pip:
+  ansible.builtin.pip:
     name: docker-compose
   tags: [docker, docker-portainer]
 
 - name: Deploy portainer via docker-compose
   when: docker_install_portainer and (not docker_init_swarm or not docker_swarm_result.docker_swarm_manager) | bool
-  docker_compose:
+  community.docker.docker_compose:
     project_name: portainer
-    remove_orphans: yes
+    remove_orphans: true
     project_src: '{{ docker_portainer_dst_stack | dirname }}'
-    files: '{{[ docker_portainer_dst_stack.split("/") | last ]}}'
+    files: '{{ [docker_portainer_dst_stack.split("/") | last] }}'
   tags: [docker, docker-portainer]

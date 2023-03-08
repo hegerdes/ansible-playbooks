@@ -1,7 +1,7 @@
 # Update promtail
 ---
 - name: Copy Promtail config
-  copy:
+  ansible.builtin.copy:
     src: '{{ promtail_config_src_path }}'
     dest: '{{ promtail_config_dst_path }}'
     owner: root
@@ -11,9 +11,9 @@
   tags: [ingress, ingress-logs]
 
 - name: Enable Promtail service
-  systemd:
+  ansible.builtin.systemd:
     name: promtail.service
     state: started
-    daemon_reload: yes
-    enabled: yes
+    daemon_reload: true
+    enabled: true
   tags: [ingress, ingress-logs]

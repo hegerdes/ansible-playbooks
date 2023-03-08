@@ -1,7 +1,7 @@
 # Add users to docker group
 ---
 - name: Ensue users are created and added to the Docker group
-  user:
+  ansible.builtin.user:
     name: '{{ item }}'
     groups: [docker]
     append: true

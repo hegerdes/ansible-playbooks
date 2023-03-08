@@ -1,18 +1,18 @@
 # Role firwalld
 ---
 - name: Install firewalld
-  apt:
+  ansible.builtin.apt:
     name: firewalld
     state: latest
-    update_cache: yes
+    update_cache: true
   tags: [firewall, firewalld]
 
 - name: Enable firewalld service
-  systemd:
+  ansible.builtin.systemd:
     name: firewalld.service
     state: started
-    daemon_reload: yes
-    enabled: yes
+    daemon_reload: true
+    enabled: true
   tags: [firewall, firewalld]
 
 - name: Set firewall zones
@@ -20,7 +20,7 @@
     interface: '{{ item.interface | default(omit) }}'
     zone: '{{ item.zone | default(omit) }}'
     state: '{{ item.state | default("enabled") }}'
-    permanent: yes
+    permanent: true
   loop: '{{ firwalld_rules | default([]) }}'
   loop_control:
     label: '{{ item.name }}'
@@ -32,7 +32,7 @@
     zone: '{{ item.zone | default(omit) }}'
     source: '{{ item.sourceips | default(omit) }}'
     state: '{{ item.state | default("enabled") }}'
-    permanent: yes
+    permanent: true
   loop: '{{ firwalld_rules | default([]) }}'
   loop_control:
     label: '{{ item.name }}'
@@ -41,20 +41,20 @@
 
 - name: Set firewall rules
   firewalld:
-    service: '{{ item.service | default(omit) }}'
+    ansible.builtin.service: '{{ item.service | default(omit) }}'
     state: '{{ item.state | default("enabled") }}'
     zone: '{{ item.zone | default(omit) }}'
     port: '{{ item.port | default(omit) }}'
-    permanent: yes
+    permanent: true
   loop: '{{ firwalld_rules | default([]) }}'
   tags: [firewall, firewalld]
   notify: Restart firewalld
 
 - name: Ensure handlers are notified now
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers
   tags: [firewall, firewalld]
 
 - name: Reload firewalls
-  command: firewall-cmd --reload
+  ansible.builtin.command: firewall-cmd --reload
   changed_when: false
   tags: [firewall, firewalld]

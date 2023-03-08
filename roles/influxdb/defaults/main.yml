@@ -2,7 +2,7 @@
 # Influx settings
 
 # Install via Docker
-influx_use_docker: yes
+influx_use_docker: true
 influx_docker_version: 2.1-alpine
 
 # Init

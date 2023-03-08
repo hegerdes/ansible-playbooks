@@ -2,18 +2,18 @@
 # Deploy app via Docker
 
 # Use stack deploy mode or compose mode
-docker_deploy_use_swarm_mode: no
-docker_deploy_base_dir: '{{ inventory_dir }}/{{ inventory_hostname }}'
-docker_deploy_src_config_files: '{{ docker_deploy_base_dir }}/srv/'
+docker_deploy_use_swarm_mode: false
+docker_deploy_base_dir: "{{ inventory_dir }}/{{ inventory_hostname }}"
+docker_deploy_src_config_files: "{{ docker_deploy_base_dir }}/srv/"
 docker_deploy_dst_config_files: /srv/
 docker_deploy_override_file: docker-deploy-override.yml
 docker_deploy_override: '{{ lookup("file", docker_deploy_override_file) | from_yaml }}'
-docker_deploy_prune_old_services: no
-docker_deploy_wait_timeout: '{{ lookup("env","DEPLOY_WAIT_TIMEOUT") | default(30, true) | int }}'
+docker_deploy_prune_old_services: false
+docker_deploy_wait_timeout: '{{ lookup("env", "DEPLOY_WAIT_TIMEOUT") | default(30, true) | int }}'
 docker_deploy_backup_script: none
-docker_deploy_conf_version: '{{ lookup("env","CI_COMMIT_SHORT_SHA") | default(ansible_date_time.iso8601_basic_short, true) }}'
+docker_deploy_conf_version: '{{ lookup("env", "CI_COMMIT_SHORT_SHA") | default(ansible_date_time.iso8601_basic_short, true) }}'
 docker_deploy_tag: latest
-docker_deploy_artifact_dir: '{{ playbook_dir + "/ansible-files/" if(lookup("env", "CI_COMMIT_SHA") | default("no", true) != "no") else "/tmp/ansible-files/" }}'
+docker_deploy_artifact_dir: '{{ playbook_dir + "/ansible-files/" if (lookup("env", "CI_COMMIT_SHA") | default("none", true) != "none") else "/tmp/ansible-files/" }}'
 docker_deploy_services: []
 
 # Porjects to deploy
@@ -33,7 +33,7 @@ backup_dir: /backup_dumps
 docker_deploy_generated_files: []
 # Example
 # docker_deploy_generated_files:
-#   - file: my-file-path
+#   - ansible.builtin.file: my-file-path
 #     content: '{{ lookup("file", docker_deploy_src_config_files + "my-file-path") }}'
 
 docker_deploy_rsync_args: []

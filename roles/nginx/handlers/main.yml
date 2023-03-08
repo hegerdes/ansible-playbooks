@@ -1,26 +1,26 @@
 ---
 - name: Restart network service
-  service:
+  ansible.builtin.service:
     name: networking
     state: restarted
 
 - name: Restart network ubuntu service
-  command: netplan apply
+  ansible.builtin.command: netplan apply
 
 - name: Verify Promtail status
-  service:
+  ansible.builtin.service:
     name: promtail
     state: restarted
 
 - name: Reload nginx
-  command: nginx -s reload
+  ansible.builtin.command: nginx -s reload
 
 - name: Restart nginx
-  service:
+  ansible.builtin.service:
     name: nginx
     state: restarted
 
 - name: Restart firewalld
-  service:
+  ansible.builtin.service:
     name: firewalld
     state: restarted

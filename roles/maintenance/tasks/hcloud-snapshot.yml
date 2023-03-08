@@ -2,7 +2,7 @@
 ---
 - name: Create and rotate HetznerSnapshots
   when: maintenance_run_hcloud_snapshot | bool
-  command: 'node {{ role_path }}/files/hcloude-snapshot.js'
+  ansible.builtin.command: 'node {{ role_path }}/files/hcloude-snapshot.js'
   run_once: true
   become: false
   delegate_to: localhost
@@ -11,7 +11,7 @@
 
 - name: Post update log to GitLab
   when: ansible_play_hosts_all | last == inventory_hostname and maintenance_post_to_git | bool
-  import_tasks: shared/gitlab-post-log.yml
+  ansible.builtin.import_tasks: shared/gitlab-post-log.yml
   vars:
     gitlab_conf:
       branch: '{{ maintenance_git_branch }}'
@@ -26,6 +26,6 @@
 - name: Print Hetzner-Snapshot results
   ignore_errors: true
   run_once: true
-  debug:
+  ansible.builtin.debug:
     msg: '{{ ["Started: " + main_snapshot_res.start | default("null") + "- End: " + main_snapshot_res.end | default("null") + " - Time: " + main_snapshot_res.delta | default("null") ] + ["stdout:"] + main_snapshot_res.stdout_lines | default([]) + ["stderr:"] + main_snapshot_res.stderr_lines | default([]) }}'
   tags: [maintenance, backup, db-backup, hetzner-snapshot]

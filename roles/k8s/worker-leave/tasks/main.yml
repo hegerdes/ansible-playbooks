@@ -1,16 +1,16 @@
 # k8s leave
 ---
 - name: Get aktive nodes
-  command: kubectl get nodes -o name
+  ansible.builtin.command: kubectl get nodes -o name
   register: k8_aktive_nodes
   run_once: true
   delegate_to: '{{ groups.k8s_master | first }}'
   tags: [k8s, k8s-leave]
-  check_mode: no
+  check_mode: false
   changed_when: false
 
 - name: Show operations to be performed
-  debug:
+  ansible.builtin.debug:
     msg: |
       {% if ("node/" + inventory_hostname) in k8_aktive_nodes.stdout_lines %}
       Will remove the node {{ inventory_hostname }}
@@ -26,20 +26,22 @@
     state: drain
     name: '{{ inventory_hostname }}'
     delete_options:
-      ignore_daemonsets: yes
-      delete_emptydir_data : yes
-      # force: yes
+      ignore_daemonsets: true
+      delete_emptydir_data: true
+      force: '{{ k8s_froce_drain | default(true) }}'
   delegate_to: '{{ groups.k8s_master | first }}'
   tags: [k8s, k8s-leave]
 
 - name: Delete the node
   when: '("node/" + inventory_hostname) in k8_aktive_nodes.stdout_lines'
-  command: 'kubectl delete node {{ inventory_hostname }}'
+  ansible.builtin.command: 'kubectl delete node {{ inventory_hostname }}'
   register: k8_delete_res
+  changed_when: true
   delegate_to: '{{ groups.k8s_master | first }}'
   tags: [k8s, k8s-leave]
 
 - name: Reset the node
   when: '("node/" + inventory_hostname) in k8_aktive_nodes.stdout_lines'
-  command: kubeadm reset --force
+  ansible.builtin.command: kubeadm reset --force
+  changed_when: true
   tags: [k8s, k8s-leave]

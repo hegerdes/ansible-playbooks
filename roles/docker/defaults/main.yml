@@ -1,7 +1,7 @@
 ---
 # Docker edition
 # Choice: ce|ee
-docker_edition: 'ce'
+docker_edition: ce
 
 # Docker Compose options.
 docker_install_compose: true
@@ -53,34 +53,33 @@ docker_swarm_node_labels: {}
 # docker_swarm_node_labels:
 #   worker-2:
 #     mylabel: test
-#     worker: "yes"
+#     worker: "true"
 #   worker-1:
-#     manager: "yes"
-
+#     manager: "true"
 
 # Portainer
 docker_install_portainer: true
 
-docker_portainer_src: "{{'portainer-agent-stack.yml' if (docker_init_swarm) else 'portainer-agent.yml'}}"
+docker_portainer_src: "{{ 'portainer-agent-stack.yml' if (docker_init_swarm) else 'portainer-agent.yml' }}"
 docker_portainer_dst_stack: /srv/portainer/portainer-agent-stack.yml
 
 # Clean docker host every 03:30 on Saturday
 docker_cron_jobs:
   - name: Remove stoped containers
     job: echo "Running docker container prune -f" >> /var/log/cron.log && docker container prune -f >> /var/log/cron.log
-    weekday: '6'
-    month: '*'
-    minute: '30'
-    hour: '03'
-    day: '*'
+    weekday: "6"
+    month: "*"
+    minute: "30"
+    hour: "03"
+    day: "*"
     state: present
     user: root
   - name: Remove dangling images
     job: echo "Running docker image prune --all -f" >> /var/log/cron.log && docker image prune --all -f >> /var/log/cron.log
-    weekday: '6'
-    month: '*'
-    minute: '45'
-    hour: '03'
-    day: '*'
+    weekday: "6"
+    month: "*"
+    minute: "45"
+    hour: "03"
+    day: "*"
     state: present
     user: root

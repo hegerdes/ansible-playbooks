@@ -9,13 +9,13 @@
 - name: Getting all hostkeys
   when: hostvars[item].ansible_facts[common_default_network_device] is defined
   run_once: true
-  set_fact:
+  ansible.builtin.set_fact:
     all_hostkeys: "{{ all_hostkeys | default([]) + [hostvars[item].ansible_facts[common_default_network_device].ipv4.address + ' ssh-rsa ' + hostvars[item].ansible_facts.ssh_host_key_rsa_public] + [hostvars[item].ansible_facts[common_default_network_device].ipv4.address + ' ssh-ed25519 ' + hostvars[item].ansible_facts.ssh_host_key_ed25519_public] + [hostvars[item].ansible_facts[common_default_network_device].ipv4.address + ' ecdsa-sha2-nistp256 ' + hostvars[item].ansible_facts.ssh_host_key_ecdsa_public] }}"
   with_items: '{{ groups.all }}'
   tags: [common, hostnames]
 
 - name: Setup ssh options
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/ssh/sshd_config
     regexp: '^{{ item }}$'
     line: '{{ item }}'
@@ -24,17 +24,17 @@
   tags: [common, ssh]
 
 - name: Install aptitude using apt
-  apt:
+  ansible.builtin.apt:
     name: aptitude
     state: latest
-    update_cache: yes
+    update_cache: true
   tags: [common, apt]
 
 - name: Install required system packages
-  apt:
+  ansible.builtin.apt:
     name: '{{ item }}'
     state: latest
-    install_recommends: no
+    install_recommends: false
   loop:
     - 'software-properties-common'
     - 'apt-transport-https'
@@ -62,36 +62,36 @@
   tags: [common, apt]
 
 - name: Install additional packages
-  apt:
+  ansible.builtin.apt:
     name: '{{ item }}'
     state: latest
-    install_recommends: no
+    install_recommends: false
   loop: '{{ common_extra_packages }}'
   tags: [common, apt]
 
 - name: Remove specified packages
-  apt:
+  ansible.builtin.apt:
     name: '{{ item }}'
     state: absent
   loop: '{{ common_delete_packages }}'
   tags: [common, apt]
 
 - name: Set hostnames
-  import_tasks: install-hostnames.yml
+  ansible.builtin.import_tasks: install-hostnames.yml
   tags: [common, hostnames]
 
 - name: Add ssh keys
-  import_tasks: set-ssh-keys.yml
+  ansible.builtin.import_tasks: set-ssh-keys.yml
   tags: [common, ssh-keys]
 
 - name: Disable swap
-  command: swapoff -a
+  ansible.builtin.command: swapoff -a
   register: c_out
   changed_when: c_out.stdout != ""
   tags: [common, swap]
 
 - name: Remove swap in /etc/fstab
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/fstab
     regexp: '\sswap\s'
     state: absent
@@ -104,13 +104,13 @@
     fstype: '{{ item.filesystem }}'
     opts: '{{ item.options }}'
     state: '{{ item.state | default("mounted") }}'
-    backup: yes
-    boot: yes
+    backup: true
+    boot: true
   loop: '{{ common_device_mounts }}'
   tags: [common, mounts]
 
 - name: Ensue cgroup memory support
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/default/grub
     regexp: '^GRUB_CMDLINE_LINUX='
     line: GRUB_CMDLINE_LINUX=""
@@ -128,20 +128,20 @@
   tags: [common, sys]
 
 - name: Creates backup directory
-  file:
+  ansible.builtin.file:
     path: /backup_dumps
     state: directory
   tags: [common, sys]
 
 - name: Set floating IPs
   when: common_floating_ips | length > 0
-  import_tasks: shared/set-floting-ip.yml
+  ansible.builtin.import_tasks: shared/set-floting-ip.yml
   vars:
     floating_ips: '{{ common_floating_ips }}'
   tags: [common, ingress-ip]
 
 - name: Set network interfaces
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/network/interfaces
     block: |
       auto {{ item.interface }}{{ "." + item.virtual_id | string if(item.virtual_id is defined) }}
@@ -157,25 +157,25 @@
   tags: [common, network]
 
 - name: Ensure logfile for cron exists
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /var/log/cron.log
     line: \#Cron Log file
-    create: yes
+    create: true
     mode: '0644'
   tags: [common, cron]
 
 - name: Install cron jobs
-  import_tasks: shared/install-cron-jobs.yml
+  ansible.builtin.import_tasks: shared/install-cron-jobs.yml
   vars:
     cron_jobs: '{{ common_cron_jobs }}'
   tags: [common, cron]
 
 - name: Ensure handlers are notified now
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers
   tags: [common]
 
 - name: Setup simpleproxy
   when: simpleproxy_confs | default([]) | length > 0
-  include_role:
+  ansible.builtin.include_role:
     name: simpleproxy
   tags: [common, simpleproxy]

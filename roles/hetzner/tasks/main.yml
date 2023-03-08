@@ -24,7 +24,7 @@
   register: hetzner_server_info
 
 - name: Print info
-  debug:
+  ansible.builtin.debug:
     msg: 'Performing on: {{ item.name }} with ip {{ item.ipv4_address }}'
   loop: '{{ hetzner_server_info.hcloud_server_info }}'
   loop_control:
@@ -33,7 +33,7 @@
 - name: Inspecting server differences...
   no_log: true
   when: item[0].server_type != item[1].size | default(hetzner_default_server_size)
-  set_fact:
+  ansible.builtin.set_fact:
     rescale: '{{ rescale | default({}) | combine({item[0].name: item[1].size | default(hetzner_default_server_size)}) }}'
   loop: '{{ hetzner_server_info.hcloud_server_info | sort(attribute="name") | zip(hetzner_vms | sort(attribute="name")) }}'
   tags: [hetzner]
@@ -100,7 +100,7 @@
   loop: '{{ hetzner_vms }}'
   loop_control:
     label: "{{ item.name }}"
-    extended: yes
+    extended: true
   register: hetzner_vnet_res
   tags: [hetzner]
 
@@ -123,7 +123,7 @@
 - name: Creating inventory[I]...
   when: hetzner_server_info.hcloud_server_info | length > 0
   no_log: true
-  set_fact:
+  ansible.builtin.set_fact:
     hetzner_inventory: '{{ hetzner_inventory | combine({"all": {"hosts":{item.hcloud_server_network.server if (hetzner_use_internal_ip) else item.hcloud_server.name : {"ansible_host": item.hcloud_server_network.ip if (hetzner_use_internal_ip) else item.hcloud_server.ipv4_address, "ansible_port": ansible_default_port, "ansible_user": ansible_default_user }}}},recursive=true) }}'
   loop: '{{ hetzner_vnet_res.results if (hetzner_use_internal_ip) else hetzner_servers.results }}'
   tags: [hetzner]
@@ -131,7 +131,7 @@
 - name: Creating inventory[II]...
   when: hetzner_server_info.hcloud_server_info | length > 0
   no_log: true
-  set_fact:
+  ansible.builtin.set_fact:
     servers: '{{ servers | default({}) | combine({item.hcloud_server.name: item.hcloud_server}) }}'
   loop: '{{ hetzner_servers.results }}'
   tags: [hetzner]
@@ -139,7 +139,7 @@
 - name: Creating inventory[III] ...
   when: hetzner_server_info.hcloud_server_info | length > 0 and servers.mgmt is defined
   no_log: true
-  set_fact:
+  ansible.builtin.set_fact:
     hetzner_inventory_tmp:
       all:
         vars:
@@ -149,28 +149,28 @@
 - name: Creating inventory[IV]...
   when: hetzner_server_info.hcloud_server_info | length > 0 and hetzner_inventory_tmp is defined
   no_log: true
-  set_fact:
+  ansible.builtin.set_fact:
     hetzner_inventory: '{{ hetzner_inventory | combine(hetzner_inventory_tmp, recursive=true) }}'
   tags: [hetzner]
 
 - name: Creating inventory[V]...
   when: hetzner_server_info.hcloud_server_info | length > 0
   no_log: true
-  set_fact:
+  ansible.builtin.set_fact:
     hetzner_inventory: '{{ hetzner_inventory | combine({"all": {"children": {item[1]: hetzner_inventory.all.children[item[1]] | combine({"hosts": {item[0].name: {} }})} }}, recursive=true) }}'
   loop: '{{ hetzner_vms | subelements("groups", skip_missing=true) }}'
   tags: [hetzner]
 
 - name: Print generated inventroy
-  debug:
+  ansible.builtin.debug:
     var: hetzner_inventory
   tags: [hetzner]
 
 - name: Save inventory
-  copy:
+  ansible.builtin.copy:
     content: '{{ hetzner_inventory | to_nice_yaml(indent=2) }}'
     dest: '{{ hetzner_inventroy_dst }}'
   tags: [hetzner]
 
-- meta: refresh_inventory
+- ansible.builtin.meta: refresh_inventory
   tags: [hetzner]

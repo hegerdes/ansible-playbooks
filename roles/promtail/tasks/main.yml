@@ -1,7 +1,7 @@
 # Install Promtail
 ---
 - name: Check if promtail is setup
-  command: "promtail --version"
+  ansible.builtin.command: "promtail --version"
   register: promtail_check_result
   changed_when: false
   failed_when: false
@@ -9,7 +9,7 @@
 
 - name: Get promtail URL
   when: promtail_check_result.stdout == ""
-  shell: |
+  ansible.builtin.shell: |
     curl --silent https://api.github.com/repos/grafana/loki/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep promtail-linux-amd
   register: promtail_url
   tags: [promtail, monitoring]
@@ -19,18 +19,18 @@
   unarchive:
     src: '{{ promtail_url.stdout }}'
     dest: /tmp
-    remote_src: yes
+    remote_src: true
   tags: [promtail, monitoring]
 
 - name: Install promtail
   when: promtail_check_result.stdout == ""
-  shell: |
+  ansible.builtin.shell: |
     mv /tmp/promtail-linux-* /usr/local/bin/promtail
   notify: Restart promtail
   tags: [promtail, monitoring]
 
 - name: Test promtail
-  command: "promtail --version"
+  ansible.builtin.command: "promtail --version"
   changed_when: false
   tags: [promtail, monitoring]
 
@@ -39,14 +39,14 @@
     name: promtail
     comment: User for Promtail log-shipper
     group: adm
-    shell: /usr/sbin/nologin
-    create_home: no
-    system: yes
+    ansible.builtin.shell: /usr/sbin/nologin
+    create_home: false
+    system: true
     state: present
   tags: [promtail, monitoring]
 
 - name: Copy promtail service config
-  template:
+  ansible.builtin.template:
     src: promtail.service.j2
     dest: /etc/systemd/system/promtail.service
     owner: root
@@ -56,13 +56,13 @@
   tags: [promtail, monitoring]
 
 - name: Ensue config folder exists
-  file:
+  ansible.builtin.file:
     path: '{{ promtail_config_dst_path | dirname }}'
     state: directory
   tags: [promtail, monitoring]
 
 - name: Copy Promtail config
-  copy:
+  ansible.builtin.copy:
     src: '{{ promtail_config_src_path }}'
     dest: '{{ promtail_config_dst_path }}'
     owner: root
@@ -72,20 +72,20 @@
   tags: [promtail, monitoring]
 
 - name: Enable Promtail service
-  systemd:
+  ansible.builtin.systemd:
     name: promtail.service
     state: started
-    daemon_reload: yes
-    enabled: yes
+    daemon_reload: true
+    enabled: true
   notify: Restart promtail
   tags: [promtail, monitoring]
 
 - name: Verify Promtail status
-  service:
+  ansible.builtin.service:
     name: promtail
     state: restarted
   tags: [promtail, monitoring]
 
 - name: Ensure handlers are notified now
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers
   tags: [promtail, monitoring]

@@ -1,14 +1,14 @@
 # Install Backup script
 ---
 - name: Create directory for backups
-  file:
+  ansible.builtin.file:
     path: '{{ backup_dir }}'
     state: directory
   tags: [mgmt, backup]
 
 - name: Check for backup ssl key
   become: false
-  stat:
+  ansible.builtin.stat:
     path: '{{ inventory_dir }}/secrets/db-backup.key'
   register: mgmt_backup_key
   delegate_to: localhost
@@ -16,7 +16,7 @@
 
 - name: Check for backup ssl key passphrase
   become: false
-  stat:
+  ansible.builtin.stat:
     path: '{{ inventory_dir }}/secrets/db-backup.key.pass'
   register: mgmt_backup_key_pass
   delegate_to: localhost
@@ -38,13 +38,13 @@
   environment:
     KEY_FILE: '{{ inventory_dir }}/secrets/db-backup.key'
     KEY_PASS: '{{ lookup("file", inventory_dir + "/secrets/db-backup.key.pass") }}'
-  shell: |
+  ansible.builtin.shell: |
     openssl genrsa -aes256 -out $KEY_FILE -passout pass:$KEY_PASS 2048
     openssl rsa -in $KEY_FILE -passin pass:$KEY_PASS -pubout > $KEY_FILE.pub
   tags: [mgmt, backup]
 
 - name: Copy public key
-  copy:
+  ansible.builtin.copy:
     src: '{{ inventory_dir }}/secrets/db-backup.key.pub'
     dest: '{{ backup_dir }}'
     owner: root
@@ -52,7 +52,7 @@
   tags: [mgmt, backup]
 
 - name: Copy script for backup archival
-  template:
+  ansible.builtin.template:
     src: archive-backups.sh.j2
     dest: '{{ backup_dir }}/archive-backups.sh'
     owner: root

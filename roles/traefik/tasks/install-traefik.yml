@@ -5,21 +5,21 @@
     name: traefik
     comment: User for traefik server
     group: adm
-    shell: /usr/sbin/nologin
-    create_home: no
-    system: yes
+    ansible.builtin.shell: /usr/sbin/nologin
+    create_home: false
+    system: true
     state: present
   tags: [ingress, traefik]
 
 - name: Check if traefik is setup
-  command: "which traefik"
+  ansible.builtin.command: "which traefik"
   register: traefik_check_result
   changed_when: false
   failed_when: false
   tags: [ingress, traefik]
 
 - name: Get traefik URL
-  shell: |
+  ansible.builtin.shell: |
     curl --silent https://api.github.com/repos/traefik/traefik/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep linux_amd64.tar.gz
   changed_when: false
   register: traefik_url
@@ -27,15 +27,15 @@
 
 - name: Download and unzip traefik
   when: traefik_check_result.stdout == "" or traefik_force_reinstall
-  unarchive:
+  ansible.builtin.unarchive:
     src: '{{ traefik_url.stdout }}'
     dest: /tmp
-    remote_src: yes
+    remote_src: true
   tags: [ingress, traefik]
 
 - name: Give insecure permissions to an existing file
   when: traefik_check_result.stdout == "" or traefik_force_reinstall
-  file:
+  ansible.builtin.file:
     path: /tmp/traefik
     owner: traefik
     group: adm
@@ -43,18 +43,18 @@
 
 - name: Install traefik
   when: traefik_check_result.stdout == "" or traefik_force_reinstall
-  shell: |
+  ansible.builtin.shell: |
     mv /tmp/traefik /usr/local/bin/traefik
   notify: Restart traefik
   tags: [ingress, traefik]
 
 - name: Test traefik
-  command: "traefik version"
+  ansible.builtin.command: "traefik version"
   changed_when: false
   tags: [ingress, traefik]
 
 - name: Copy traefik service config
-  template:
+  ansible.builtin.template:
     src: traefik.service.j2
     dest: /etc/systemd/system/traefik.service
     owner: root
@@ -64,15 +64,15 @@
   tags: [ingress, traefik]
 
 - name: Ensue config folder exists
-  file:
+  ansible.builtin.file:
     path: /srv/traefik
     state: directory
   tags: [ingress, traefik]
 
 - name: Ensue log folder exists
-  file:
+  ansible.builtin.file:
     path: /var/log/traefik
-    recurse: yes
+    recurse: true
     state: directory
     owner: traefik
     group: adm
@@ -80,7 +80,7 @@
   tags: [ingress, traefik]
 
 - name: Copy Traefik default config
-  copy:
+  ansible.builtin.copy:
     src:  traefik
     dest: /srv/traefik
     owner: traefik

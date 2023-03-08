@@ -1,7 +1,7 @@
 # Main mgmt setup
 ---
 - name: Generate-Basic-Auth labels
-  set_fact:
+  ansible.builtin.set_fact:
     mgmt_traefik_auth_labels: "{{ mgmt_traefik_auth_labels | default({}) | combine({item.key: mgmt_traefik_default_auth_labels | replace('__SERVICE__', item.key) | regex_replace(',\"','\"') }) }}"
   with_dict: '{{ mgmt_proxy_users_auth | default({}) }}'
   tags: [mgmt, ssh, mgmt-stack]
@@ -9,25 +9,25 @@
     label: '{{ item.key }}'
 
 - name: Setup sshd
-  import_tasks: setup-sshd.yml
+  ansible.builtin.import_tasks: setup-sshd.yml
   tags: [mgmt, ssh]
 
 - name: Setup fail2ban
-  import_tasks: setup-fail2ban.yml
+  ansible.builtin.import_tasks: setup-fail2ban.yml
   tags: [mgmt, ssh]
 
 - name: Install backup tools
   when: mgmt_init_backup | bool
-  include_tasks: install-backup-tools.yml
+  ansible.builtin.include_tasks: install-backup-tools.yml
   tags: [mgmt, backup]
 
 - name: Install backup script
   when: mgmt_init_backup | bool
-  include_tasks: install-backup-script.yml
+  ansible.builtin.include_tasks: install-backup-script.yml
   tags: [mgmt, backup]
 
 - name: Check if Docker is installed
-  command: docker --version
+  ansible.builtin.command: docker --version
   register: docker_valid
   ignore_errors: true
   changed_when: false
@@ -35,24 +35,24 @@
 
 - name: Docker install
   when: docker_valid.failed
-  include_role:
+  ansible.builtin.include_role:
     name: docker
   tags: [mgmt, docker]
 
 - name: Ensure handlers are notified now
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers
   tags: [mgmt]
 
 - name: Install mgmt stack
-  import_tasks: install-mgmt-stack.yml
+  ansible.builtin.import_tasks: install-mgmt-stack.yml
   tags: [mgmt, mgmt-stack]
 
 - name: Setup portainer
   when: mgmt_setup_portainer | bool
-  include_tasks: setup-protainer.yml
+  ansible.builtin.include_tasks: setup-protainer.yml
   tags: [mgmt, portainer]
 
 - name: Setup grafana
   when: mgmt_setup_grafana | bool
-  include_tasks: setup-grafana.yml
+  ansible.builtin.include_tasks: setup-grafana.yml
   tags: [mgmt, grafana]

@@ -1,14 +1,14 @@
 # Setup portainer
 ---
 - name: Wait for portainer to start
-  wait_for:
+  ansible.builtin.wait_for:
     port: 9000
     delay: 5
     timeout: 30
   tags: [mgmt, portainer]
 
 - name: Set Portainer Admin-PW
-  uri:
+  ansible.builtin.uri:
     url: 'http://{{ mgmt_portainer_host }}/api/users/admin/init'
     method: POST
     body: "{\"Username\":\"admin\",\"Password\":\"{{ mgmt_portainer_pw }}\"}"
@@ -22,7 +22,7 @@
 
 - name: Get Portainer Token
   ignore_errors: true
-  uri:
+  ansible.builtin.uri:
     url: 'http://{{ mgmt_portainer_host }}/api/auth'
     method: POST
     body: "{\"Username\":\"admin\",\"Password\":\"{{ mgmt_portainer_pw }}\"}"
@@ -33,7 +33,7 @@
   tags: [mgmt, portainer]
 
 - name: Add portainer nodes
-  uri:
+  ansible.builtin.uri:
     url: 'http://{{ mgmt_portainer_host }}/api/endpoints'
     method: POST
     body_format: form-multipart

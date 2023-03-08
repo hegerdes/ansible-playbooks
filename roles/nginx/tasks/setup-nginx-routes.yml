@@ -1,7 +1,7 @@
 # Install nginx-hosts and run certbot
 ---
 - name: List sites/host that will be installed
-  debug:
+  ansible.builtin.debug:
     msg:
       - 'Using host: {{ item.host }} with ip: {{ item.ip }}'
       - 'Using locations {{ item.locations | default("#Auto generateded proxypass locations. Passing to: " + item.upstreams | join("\n") ) }}'
@@ -12,7 +12,7 @@
   tags: [ingress, nginx, ingress-hosts]
 
 - name: Copy NGINX conf files
-  copy:
+  ansible.builtin.copy:
     src: nginx/
     dest: /etc/nginx/
     owner: root
@@ -22,7 +22,7 @@
 
 - name: Copy NGINX extra conf files
   when: nginx_host_extra_files.stat.exists
-  copy:
+  ansible.builtin.copy:
     src: '{{ inventory_dir }}/{{ inventory_hostname }}/srv/nginx/'
     dest: /etc/nginx/
     owner: root
@@ -31,31 +31,31 @@
   tags: [ingress, nginx, ingress-hosts]
 
 - name: Check for dhparam.pem
-  stat:
+  ansible.builtin.stat:
     path: /etc/nginx/dhparam.pem
   register: nginx_dhparam_result
   tags: [ingress, nginx, ingress-hosts]
 
 - name: Creating dhparam.pem
   when: not nginx_dhparam_result.stat.exists
-  command: openssl dhparam -out /etc/nginx/dhparam.pem 2048
+  ansible.builtin.command: openssl dhparam -out /etc/nginx/dhparam.pem 2048
   tags: [ingress, nginx, ingress-hosts]
 
 - name: Create nginx metrics status page
-  template:
+  ansible.builtin.template:
     src: internal-status.conf.j2
     dest: /etc/nginx/conf.d/internal-status.conf
     mode: '0644'
   tags: [ingress, nginx, ingress-hosts]
 
 - name: Create directory for dummy certs
-  file:
+  ansible.builtin.file:
     path: /etc/nginx/ssl/dummy
     state: directory
   tags: [ingress, nginx, ingress-hosts]
 
 - name: Copy dummy certs
-  copy:
+  ansible.builtin.copy:
     src: '{{ item }}.dummy'
     dest: '/etc/nginx/ssl/dummy/{{ item }}'
     owner: root
@@ -65,7 +65,7 @@
   tags: [ingress, nginx, ingress-hosts]
 
 - name: Find all nginx hosts
-  shell: |
+  ansible.builtin.shell: |
     cd /etc/nginx/conf.d
     ls *.conf
   register: nginx_deployed_hosts
@@ -74,8 +74,8 @@
 
 - name: Creating hosts for nginx
   when: nginx_vhost.host + ".conf" not in nginx_deployed_hosts.stdout_lines or nginx_force_reinstall_hosts
-  template:
-    src: '{{ "nginx-site.conf.j2" if(nginx_vhost.tls | default({}) | string != "no") else "nginx-site-http-only.conf.j2" }}'
+  ansible.builtin.template:
+    src: '{{ "nginx-site.conf.j2" if(nginx_vhost.tls | default({}) | string != "false") else "nginx-site-http-only.conf.j2" }}'
     dest: '/etc/nginx/conf.d/{{ nginx_vhost.host }}.conf'
     mode: '0644'
   loop: '{{ ingress_hosts.sites  }}'
@@ -89,14 +89,14 @@
 
 - name: Creating default host for nginx
   when: ingress_hosts.conf.nginx.create_default_server | default(true) | bool
-  template:
+  ansible.builtin.template:
     src: nginx-default-site.conf.j2
     dest: /etc/nginx/conf.d/default.conf
     mode: '0644'
   tags: [ingress, nginx, ingress-hosts]
 
 - name: Copy ssl-nginx.conf|ssl-dhparams.pem
-  copy:
+  ansible.builtin.copy:
     src: '{{ item }}'
     dest: '/etc/letsencrypt/{{ item }}'
     owner: root

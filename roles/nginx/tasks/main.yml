@@ -1,7 +1,7 @@
 # Main Nginx Setup
 ---
 - name: Check for host specific files
-  stat:
+  ansible.builtin.stat:
     path: '{{ inventory_dir }}/{{ inventory_hostname }}/srv/'
   register: nginx_host_extra_files
   delegate_to: localhost
@@ -10,7 +10,7 @@
 
 - name: Copy from inventory_dir/host/srv to remote host/srv
   when: nginx_host_extra_files.stat.exists
-  copy:
+  ansible.builtin.copy:
     src: '{{ inventory_dir }}/{{ inventory_hostname }}/srv/'
     dest: /srv
     owner: root
@@ -19,40 +19,40 @@
   tags: [ingress, nginx]
 
 - name: Install nginx
-  import_tasks: install-nginx.yml
+  ansible.builtin.import_tasks: install-nginx.yml
   tags: [ingress, nginx]
 
 - name: Ensure handlers are notified now
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers
   tags: [ingress, nginx]
 
 - name: Setup nginx routes
   when: nginx_install_hosts | bool
-  import_tasks: setup-nginx-routes.yml
+  ansible.builtin.import_tasks: setup-nginx-routes.yml
   tags: [ingress, nginx, ingress-hosts]
 
 - name: Start nginx
-  import_tasks: start-nginx.yml
+  ansible.builtin.import_tasks: start-nginx.yml
   tags: [ingress, nginx, ingress-hosts]
 
 - name: Setup firewall
-  include_role:
+  ansible.builtin.include_role:
     name: firewalld
   vars:
     firwalld_rules: '{{ nginx_default_firewall_rules + nginx_firewall_rules }}'
   tags: [ingress, nginx, firewall]
 
 - name: Ensure handlers are notified now
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers
   tags: [ingress, nginx, firewall]
 
 - name: Setup cron jobs
   when: nginx_run_certbot | bool
-  import_tasks: shared/install-cron-jobs.yml
+  ansible.builtin.import_tasks: shared/install-cron-jobs.yml
   tags: [ingress, nginx, cron]
   vars:
     cron_jobs: '{{ nginx_cron_jobs }}'
 
 - name: Ensure handlers are notified now
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers
   tags: [ingress, nginx]

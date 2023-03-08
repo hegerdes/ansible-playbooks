@@ -4,7 +4,7 @@
 mgmt_jumphost_user: gitlab
 # List of ssh key_paths for mgmt_jumphost_user
 mgmt_ssh_keys: []
-mgmt_init_backup: yes
+mgmt_init_backup: true
 # Options for sshd
 sshd_options:
   - Port 22
@@ -17,8 +17,8 @@ mgmt_s3_uri: '{{ lookup("env","S3_TOKEN_STRING") | default("none", true) }}'
 mgmt_node_name: mgmt
 
 # Use stack deploy mode or compose mode
-mgmt_use_srync_copy: no
-mgmt_use_swarm_mode: yes
+mgmt_use_srync_copy: false
+mgmt_use_swarm_mode: true
 mgmt_src_config_files: srv/
 mgmt_dst_config_files: /srv/
 mgmt_docker_stack_name: monitor-stack
@@ -46,7 +46,7 @@ mgmt_sql_taget_host_template: '{{ "PMA_HOST=" + mgmt_sql_taget_host if (mgmt_sql
 mgmt_sql_exporter_connection_string: '{{ mgmt_sql_exporter_user + ":" + mgmt_sql_exporter_pw + "@" + "(" + mgmt_sql_taget_host + ":" + mgmt_sql_taget_port | string +")" }}'
 mgmt_mongodb_exporter_uri: user:pass@127.0.0.1:27017/admin
 
-mgmt_use_wireguard: no
+mgmt_use_wireguard: false
 mgmt_wireguard_public_ip: '{{ ansible_default_ipv4.address }}'
 mgmt_wireguard_clients: 1
 mgmt_wireguard_port: 51820
@@ -69,18 +69,18 @@ mgmt_prometheus_host_aliases:
 mgmt_pgadmin_pw: mySuperSecureAdminPW
 
 # Grafana and Portainer setup
-mgmt_setup_portainer: yes
+mgmt_setup_portainer: true
 mgmt_portainer_edition: ce
 mgmt_portainer_pw: mySuperSecureAdminPW
 mgmt_portainer_host: localhost:9000
-mgmt_portainer_included_agent: no
+mgmt_portainer_included_agent: false
 mgmt_portainer_nodes: {}
 mgmt_portainer_agentless_opts: |
   - /var/run/docker.sock:/var/run/docker.sock
   - /var/lib/docker/volumes:/var/lib/docker/volumes
 
-mgmt_setup_grafana: yes
-mgmt_proxy_loki: no
+mgmt_setup_grafana: true
+mgmt_proxy_loki: false
 mgmt_grafana_pw: mySuperSecureAdminPW
 mgmt_grafana_host: localhost:3000
 mgmt_grafana_dashbord_ids:
@@ -98,7 +98,7 @@ mgmt_grafana_dashbord_ids:
 
 # Proxy settings
 mgmt_domain: localhost
-mgmt_proxy_use_tls: no
+mgmt_proxy_use_tls: false
 mgmt_certbot_mail: info@xyz.com
 mgmt_use_traefik: '{{ "mgmt-stack-traefik.yml" is in mgmt_services_to_install }}'
 mgmt_traefik_version: v2.9

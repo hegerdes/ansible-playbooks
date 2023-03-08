@@ -6,9 +6,9 @@
     repo: '{{ common_ssh_key_repo }}'
     dest: '{{ common_ssh_key_dir }}'
     version: '{{ common_ssh_key_repo_branch }}'
-    accept_hostkey: yes
-    update: yes
-    force: yes
+    accept_hostkey: true
+    update: true
+    force: true
   delegate_to: localhost
   run_once: true
   become: false
@@ -19,7 +19,7 @@
   find:
     paths: '{{ common_ssh_key_dir }}'
     patterns: '*.pub'
-    recurse: yes
+    recurse: true
   run_once: true
   become: false
   delegate_to: localhost
@@ -31,7 +31,7 @@
   find:
     paths: '{{ common_ssh_key_dir }}/revoked'
     patterns: '*.pub'
-    recurse: yes
+    recurse: true
   run_once: true
   become: false
   delegate_to: localhost
@@ -40,7 +40,7 @@
 
 - name: Prepare active ssh-keys
   when: '"revoked" is not in item.path and common_ssh_key_repo != "none"'
-  set_fact:
+  ansible.builtin.set_fact:
     common_present_ssh_keys: '{{ common_present_ssh_keys | default([]) + [{"filename": item.path, "state": "present", "user": "root" if(item.path | split("/") | length == 3) else item.path[20:] | split("/") | first }] }}'
     patterns: '*.pub'
   loop: '{{ common_present_ssh_keys_info.files | default([]) }}'
@@ -51,7 +51,7 @@
 
 - name: Prepare revoked ssh-keys
   when: common_ssh_key_repo != "none"
-  set_fact:
+  ansible.builtin.set_fact:
     common_revoked_ssh_keys: '{{ common_revoked_ssh_keys | default([]) + [{"filename": item.path, "state": "absent", "user": "root" if(item.path | split("/") | length == 4) else item.path[28:] | split("/") | first }] }}'
     patterns: '*.pub'
   loop: '{{ common_revoked_ssh_keys_info.files }}'
@@ -61,7 +61,7 @@
   tags: [common, ssh-keys]
 
 - name: Add ssh keys
-  import_tasks: shared/set-ssh-keys.yml
+  ansible.builtin.import_tasks: shared/set-ssh-keys.yml
   vars:
     ssh_key_list: '{{ common_ssh_keys + common_present_ssh_keys | default([]) + common_revoked_ssh_keys | default([]) }}'
   tags: [common, ssh-keys, ssh-keys-manuel]

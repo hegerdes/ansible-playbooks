@@ -1,7 +1,7 @@
 # Install & Setup SimpleProxy
 ---
 - name: Check if simpleproxy is installed
-  command: 'which simpleproxy'
+  ansible.builtin.command: 'which simpleproxy'
   register: simpleproxy_check_result
   changed_when: false
   failed_when: false
@@ -9,29 +9,29 @@
 
 - name: Install simpleproxy
   when: '"non-zero return code" in simpleproxy_check_result.msg'
-  apt:
+  ansible.builtin.apt:
     name: simpleproxy
     state: latest
-    update_cache: yes
-    install_recommends: no
+    update_cache: true
+    install_recommends: false
   tags: [simpleproxy]
 
 - name: Test simpleproxy
-  command: "simpleproxy -V"
+  ansible.builtin.command: "simpleproxy -V"
   changed_when: "false"
   tags: [simpleproxy]
 
 - name: Add simpleproxy user
   user:
     name: simpleproxy
-    shell: /usr/sbin/nologin
-    create_home: no
-    system: yes
+    ansible.builtin.shell: /usr/sbin/nologin
+    create_home: false
+    system: true
     state: present
   tags: [simpleproxy]
 
 - name: Adding simpleproxy service
-  include_tasks: service.yml
+  ansible.builtin.include_tasks: service.yml
   loop: '{{ simpleproxy_confs }}'
   loop_control:
     loop_var: simpleproxy_conf

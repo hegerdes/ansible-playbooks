@@ -1,13 +1,13 @@
 # Role maintenance
 ---
 - name: Check for backup folder & scripts
-  stat:
+  ansible.builtin.stat:
     path: '{{ main_backup_dir + "run_backup.sh" }}'
   register: main_backup_stat_res
   tags: [maintenance, backup]
 
 - name: Check for archive folder & script
-  stat:
+  ansible.builtin.stat:
     path: '{{ main_backup_dir + "archive-backups.sh" }}'
   register: main_backup_mgmt_res
   tags: [maintenance, backup]
@@ -18,13 +18,13 @@
     paths: '{{ main_backup_dir }}'
     patterns: '*.gz,'
     age: 1d
-    recurse: yes
+    recurse: true
   register: main_backup_dump_files
   tags: [maintenance, backup]
 
 - name: List backup dump files
   when: main_backup_stat_res.stat.exists and main_backup_dump_files
-  debug:
+  ansible.builtin.debug:
     msg: '{{ item.mode }}  {{ item.pw_name }}:{{ item.gr_name}}  {{ item.size | human_readable }}  {{ "%Y%m%d-%H%M%S" | strftime(item.mtime) }}  {{ item.path }}'
   loop: '{{ main_backup_dump_files.files }}'
   loop_control:
@@ -34,7 +34,7 @@
 
 - name: Run backup script
   when: main_backup_stat_res.stat.exists
-  shell: 'bash {{ main_backup_dir + "run_backup.sh" }}'
+  ansible.builtin.shell: 'bash {{ main_backup_dir + "run_backup.sh" }}'
   environment:
     CUSTOM_BACKUP_DIR: '{{ backup_dir }}'
   register: main_backup_res
@@ -43,7 +43,7 @@
 - name: Run archive script
   become: false
   when: main_backup_mgmt_res.stat.exists
-  shell: 'bash {{ main_backup_dir + "archive-backups.sh" }}'
+  ansible.builtin.shell: 'bash {{ main_backup_dir + "archive-backups.sh" }}'
   environment:
     CUSTOM_BACKUP_DIR: '{{ backup_dir }}'
   register: main_archive_res
@@ -52,7 +52,7 @@
 - name: Format log string I
   when: hostvars[item].main_backup_res is defined and hostvars[item].main_backup_res.changed
   run_once: true
-  set_fact:
+  ansible.builtin.set_fact:
     all_main_backup_res: '{{ all_main_backup_res | default({}) | combine({item: {"time": "Started: " + hostvars[item].main_backup_res.start + " - End: " + hostvars[item].main_backup_res.end + " - Time: " + hostvars[item].main_backup_res.delta, "stdout": hostvars[item].main_backup_res.stdout_lines, "stderr": hostvars[item].main_backup_res.stderr_lines }}, recursive=true) }}'
   with_items: '{{ groups.all }}'
   tags: [maintenance, backup]
@@ -60,14 +60,14 @@
 - name: Format log string II
   when: hostvars[item].main_archive_res is defined and hostvars[item].main_archive_res.changed
   run_once: true
-  set_fact:
+  ansible.builtin.set_fact:
     all_main_backup_res: '{{ all_main_backup_res | default({}) | combine({item: {"time": "Started: " + hostvars[item].main_archive_res.start + " - End: " + hostvars[item].main_archive_res.end + " - Time: " + hostvars[item].main_archive_res.delta, "stdout": hostvars[item].main_archive_res.stdout_lines, "stderr": hostvars[item].main_archive_res.stderr_lines }}, recursive=true) }}'
   with_items: '{{ groups.all }}'
   tags: [maintenance, backup]
 
 - name: Post backup log to GitLab
   when: ansible_play_hosts_all | last == inventory_hostname and all_main_backup_res is defined and maintenance_post_to_git | bool
-  import_tasks: shared/gitlab-post-log.yml
+  ansible.builtin.import_tasks: shared/gitlab-post-log.yml
   vars:
     gitlab_conf:
       branch: '{{ maintenance_git_branch }}'
@@ -82,6 +82,6 @@
 
 - name: Print backup & archive script result
   run_once: true
-  debug:
+  ansible.builtin.debug:
     var: all_main_backup_res
   tags: [maintenance, backup]

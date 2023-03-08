@@ -21,15 +21,15 @@
   tags: [k8s, k8-init, k8-master-init, k8-cri, k8s-cilium]
 
 - name: Get latest Cilium CLI Version
-  uri:
+  ansible.builtin.uri:
     url: https://raw.githubusercontent.com/cilium/cilium-cli/master/stable.txt
-    return_content: yes
+    return_content: true
   register: k8s_intanal_cilium_stable_version
   tags: [k8s, k8-init, k8-master-init, k8-cri, k8s-cilium]
 
 - name: Download Cilium CLI
-  unarchive:
+  ansible.builtin.unarchive:
     src: 'https://github.com/cilium/cilium-cli/releases/download/{{ k8s_cilium_cli_version | default(k8s_intanal_cilium_stable_version.content | trim) }}/cilium-linux-amd64.tar.gz'
     dest: /usr/local/bin
-    remote_src: yes
+    remote_src: true
   tags: [k8s, k8-init, k8-master-init, k8-cri, k8s-cilium]

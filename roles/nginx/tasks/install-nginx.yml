@@ -1,21 +1,21 @@
 # Install nginx
 ---
 - name: Add nginx GPG apt Key
-  apt_key:
+  ansible.builtin.apt_key:
     url: https://nginx.org/keys/nginx_signing.key
     state: present
   tags: [ingress, nginx]
 
 - name: Add nginx repository
-  apt_repository:
+  ansible.builtin.apt_repository:
     repo: deb http://nginx.org/packages/debian/ {{ ansible_facts.lsb.codename }} nginx
-    update_cache: yes
+    update_cache: true
     state: present
     filename: nginx
   tags: [ingress, nginx]
 
 - name: Install nginx
-  apt:
+  ansible.builtin.apt:
     name: nginx
     state: latest
   tags: [ingress, nginx]
@@ -25,27 +25,27 @@
     name: nginx
     group: nginx
     groups: [nginx, www-data]
-    shell: /bin/false
-    create_home: no
-    append: yes
-    system: yes
+    ansible.builtin.shell: /bin/false
+    create_home: false
+    append: true
+    system: true
     state: present
   tags: [ingress, nginx]
 
 - name: Start nginx
-  service:
+  ansible.builtin.service:
     name: nginx
     state: started
-    enabled: yes
+    enabled: true
   tags: [ingress, nginx]
 
 - name: Remove default nginx config
-  file:
+  ansible.builtin.file:
     name: /etc/nginx/sites-enabled/default
     state: absent
   tags: [ingress, nginx]
 
 - name: Update Promtail config
   when: nginx_update_promtail | bool
-  import_tasks: update-promtail.yml
+  ansible.builtin.import_tasks: update-promtail.yml
   tags: [ingress, ingress-logs]

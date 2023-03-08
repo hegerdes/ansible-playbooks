@@ -1,36 +1,36 @@
 # Install Mongodb
 - name: Add MongoDB apt Key
-  apt_key:
+  ansible.builtin.apt_key:
     url: https://www.mongodb.org/static/pgp/server-5.0.asc
     state: present
   tags: [mongodb]
 
 - name: Add MongoDB repository
-  apt_repository:
+  ansible.builtin.apt_repository:
     repo: deb http://repo.mongodb.org/apt/debian buster/mongodb-org/5.0 main
     state: present
     filename: mongodb
   tags: [mongodb]
 
 - name: Install MongoDB
-  apt:
+  ansible.builtin.apt:
     name: mongodb-org
     state: latest
-    update_cache: yes
-    force_apt_get: yes
+    update_cache: true
+    force_apt_get: true
   tags: [mongodb]
 
 - name: Reload mongod systemd
-  systemd:
+  ansible.builtin.systemd:
     name: mongod.service
     state: started
-    daemon_reload: yes
-    enabled: yes
+    daemon_reload: true
+    enabled: true
   tags: [mongodb]
 
 - name: Ensure service is started
-  service:
+  ansible.builtin.service:
     name: mongod
     state: started
-    enabled: yes
+    enabled: true
   tags: [mongodb]

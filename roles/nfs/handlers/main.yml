@@ -1,4 +1,4 @@
 ---
 - name: NFS apply
-  shell: systemctl reload nfs && exportfs -ar
+  ansible.builtin.shell: systemctl reload nfs && exportfs -ar
   tags: [nfs]

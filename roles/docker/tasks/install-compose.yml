@@ -5,19 +5,19 @@
   block:
 
   - name: Delete compose v1
-    file:
+    ansible.builtin.file:
       path: /usr/local/bin/docker-compose
       state: absent
     tags: [docker, docker-compose]
 
   - name: Ensureing installation directory exists
-    file:
+    ansible.builtin.file:
       path: /usr/local/lib/docker/cli-plugins
       state: directory
     tags: [docker, docker-compose]
 
   - name: Check current docker-compose version
-    command: docker-compose --version
+    ansible.builtin.command: docker-compose --version
     register: docker_compose_current_version
     check_mode: false
     changed_when: false
@@ -25,7 +25,7 @@
     tags: [docker, docker-compose]
 
   - name: Delete existing docker-compose version if it differs to version {{ docker_compose_version }}
-    file:
+    ansible.builtin.file:
       path: /usr/local/lib/docker/cli-plugins/docker-compose
       state: absent
     when: >
@@ -33,10 +33,10 @@
       and docker_compose_version not in docker_compose_current_version.stdout
     tags: [docker, docker-compose]
 
-  - name: Get docker-compose {{ docker_compose_version }} version
+  - name: Get docker-compose version {{ docker_compose_version }}
     environment:
       COMPOSE_VERSION: '{{ docker_compose_version }}'
-    shell: |
+    ansible.builtin.shell: |
       if [ "$COMPOSE_VERSION" = "latest" ]; then
         curl -s https://api.github.com/repos/docker/compose/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep linux-$(uname -m | rev | cut -c 2- | rev ) | head -n 1
       else
@@ -47,42 +47,42 @@
     tags: [docker, docker-compose]
 
   - name: Install docker-compose {{ docker_compose_version }}
-    get_url:
+    ansible.builtin.get_url:
       url: '{{ docker_compose_url.stdout }}'
       dest: /usr/local/lib/docker/cli-plugins/docker-compose
-      mode: 0755
+      mode: "0755"
     when: >
       docker_compose_current_version.stdout is not defined
       or docker_compose_version not in docker_compose_current_version.stdout
     tags: [docker, docker-compose]
 
   - name: Create docker-compose alternative
-    alternatives:
+    community.general.alternatives:
       name: docker-compose
       link: /usr/bin/docker-compose
       path: /usr/local/lib/docker/cli-plugins/docker-compose
     tags: [docker, docker-compose]
 
   - name: Check current docker-compose version
-    command: docker-compose --version
+    ansible.builtin.command: docker-compose --version
     changed_when: false
     tags: [docker, docker-compose]
 
   rescue:
     - name: Error Handler
-      debug:
+      ansible.builtin.debug:
         msg: 'Error while installing compose, using fallback with pip. Info: {{ docker_compose_url }}'
       tags: [docker, docker-compose]
 
     - name: Ensure needed packages are installed
-      apt:
+      ansible.builtin.apt:
         name: 'python3-pip'
         state: present
-        install_recommends: no
+        install_recommends: false
       tags: [docker, docker-compose]
 
     - name: Install compose
-      pip:
+      ansible.builtin.pip:
         name: docker-compose
         state: present
       tags: [docker, docker-compose]

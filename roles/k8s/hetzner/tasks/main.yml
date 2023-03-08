@@ -2,7 +2,7 @@
 ---
 - name: Create Secret
   when: k8s_hetzner_api_key != "none"
-  k8s:
+  kubernetes.core.k8s:
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
     state: present
     definition:
@@ -19,9 +19,9 @@
 # https://github.com/hetznercloud/hcloud-cloud-controller-manager
 - name: Get latest hetzner cloud controller
   when: k8s_hetzner_api_key != "none"
-  uri:
+  ansible.builtin.uri:
     url: 'https://github.com/hetznercloud/hcloud-cloud-controller-manager/releases/latest/download/ccm{{ "-networks" if (k8s_hetzner_use_ccm_pvt_networks) }}.yaml'
-    return_content: yes
+    return_content: true
     status_code: [200, 304]
   register: k8s_intanal_hetzner_cloud_controler_def
   tags: [k8s, k8s-hetzner]
@@ -29,25 +29,25 @@
 # https://github.com/hetznercloud/csi-driver
 - name: Get latest hetzner csi driver
   when: k8s_hetzner_api_key != "none" and k8s_hetzner_install_csi_driver
-  uri:
+  ansible.builtin.uri:
     url: https://raw.githubusercontent.com/hetznercloud/csi-driver/v2.2.0/deploy/kubernetes/hcloud-csi.yml
-    return_content: yes
+    return_content: true
     status_code: [200, 304]
   register: k8s_intanal_hetzner_csi_driver_def
   tags: [k8s, k8s-hetzner]
 
 - name: Apply Hetzner Cloud Controller
   when: k8s_hetzner_api_key != "none"
-  k8s:
+  kubernetes.core.k8s:
     namespace: kube-system
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
-    state: '{{"present" if (k8s_hetzner_install_ccm) else "absent" }}'
+    state: '{{ "present" if (k8s_hetzner_install_ccm) else "absent" }}'
     definition: "{{ k8s_intanal_hetzner_cloud_controler_def.content | regex_replace('\"--cluster-cidr=.*\"', '\"--cluster-cidr=' + k8s_pod_network_cidr + '\"') }}"
   tags: [k8s, k8s-hetzner]
 
 - name: Apply Hetzner Cloud CSI Driver
   when: k8s_hetzner_api_key != "none" and k8s_hetzner_install_csi_driver
-  k8s:
+  kubernetes.core.k8s:
     namespace: kube-system
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
     state: present
@@ -56,7 +56,7 @@
 
 - name: Template Loadbalancer Exporter Manifest
   when: k8s_hetzner_api_key != "none" and k8s_hetzner_install_lb_exporter
-  template:
+  ansible.builtin.template:
     src: hcloud-prom-lb-exporter.yml.j2
     dest: /tmp/hcloud-prom-lb-exporter.yml
     mode: '0644'
@@ -64,7 +64,7 @@
 
 - name: Apply Loadbalancer Exporter Manifest
   when: k8s_hetzner_api_key != "none" and k8s_hetzner_install_lb_exporter
-  k8s:
+  kubernetes.core.k8s:
     namespace: monitoring
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
     state: present

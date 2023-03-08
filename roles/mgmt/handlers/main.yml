@@ -1,24 +1,24 @@
 ---
 - name: Restart SSHD
-  service:
+  ansible.builtin.service:
     name: sshd
-    enabled: yes
+    enabled: true
     state: reloaded
   tags: [mgmt, ssh]
 
 - name: Reload nginx
   community.docker.docker_container_exec:
     container: '{{ nginx_containerid.stdout }}'
-    command: /bin/sh -c "nginx -t && nginx -s reload"
+    ansible.builtin.command: /bin/sh -c "nginx -t && nginx -s reload"
   register: result
   tags: [mgmt, mgmt-stack, mgmt-nginx]
 
 - name: Restart network service
-  service:
+  ansible.builtin.service:
     name: networking
     state: restarted
   tags: [mgmt]
 
 - name: Restart network ubuntu service
-  command: netplan apply
+  ansible.builtin.command: netplan apply
   tags: [mgmt]

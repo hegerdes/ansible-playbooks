@@ -1,0 +1,60 @@
+# .ansible-lint
+
+profile: null # min, basic, moderate,safety, shared, production
+offline: true
+use_default_rules: true
+
+enable_list:
+  - args
+  - avoid-implicit
+  - command-instead-of-module
+  - command-instead-of-shell
+  - deprecated-bare-vars
+  - deprecated-local-action
+  - deprecated-module
+  - empty-string-compare
+  - fqcn
+  - galaxy
+  - ignore-errors
+  - inline-env-var
+  - internal-error
+  - jinja
+  - key-order
+  - latest
+  - literal-compare
+  - load-failure
+  - loop-var-prefix
+  - meta-incorrect
+  - meta-no-info
+  - meta-no-tags
+  - meta-runtime
+  - meta-video-links
+  - name
+  - no-changed-when
+  - no-free-form
+  - no-handler
+  - no-jinja-when
+  - no-log-password
+  - no-prompting
+  - no-relative-paths
+  - no-tabs
+  - package-latest
+  - parser-error
+  - partial-become
+  - playbook-extension
+  - risky-file-permissions
+  - risky-octal
+  - risky-shell-pipe
+  - role-name
+  - run-once
+  - sanity
+  - schema
+  - syntax-check
+  - warning
+  - yaml
+
+exclude_paths:
+  # This file contains ignores rule violations for ansible-lint
+  - roles/k8s/ingress-nginx/files
+  - roles/k8s/deploy/files
+  - roles/k8s/monitoring/files

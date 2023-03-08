@@ -1,7 +1,7 @@
 # Reconfig sshd
 ---
 - name: Setup ssh options
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/ssh/sshd_config
     regexp: '^#?{{ item }}$'
     line: '{{ item }}'
@@ -10,7 +10,7 @@
   tags: [mgmt, ssh]
 
 - name: Disable ssh password login
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/ssh/sshd_config
     regexp: '^#?PasswordAuthentication'
     line: 'PasswordAuthentication no'
@@ -18,7 +18,7 @@
   tags: [mgmt, ssh]
 
 - name: Disable ssh X11
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/ssh/sshd_config
     regexp: '^#?X11Forwarding*'
     line: 'X11Forwarding no'
@@ -26,7 +26,7 @@
   tags: [mgmt, ssh]
 
 - name: Set ssh banner
-  template:
+  ansible.builtin.template:
     src: ssh_banner.txt.j2
     dest: /etc/ssh/mgmt_banner.txt
     mode: '0644'
@@ -35,7 +35,7 @@
 
 - name: Enable ssh banner
   when: mgmt_ssh_banner | default(true)
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/ssh/sshd_config
     regexp: '^#Banner none*'
     line: 'Banner /etc/ssh/mgmt_banner.txt'
@@ -46,20 +46,20 @@
   user:
     name: '{{ mgmt_jumphost_user }}'
     comment: '{{ mgmt_user_comment | default("JumpHost user")}}'
-    shell: /usr/bin/bash
-    create_home: no
+    ansible.builtin.shell: /usr/bin/bash
+    create_home: false
     state: present
   tags: [mgmt, ssh]
 
 - name: Ensure ssh directory exists
-  file:
+  ansible.builtin.file:
     path: '/home/{{ mgmt_jumphost_user }}/.ssh'
     state: directory
     mode: 0600
   tags: [mgmt, ssh, ssh-keys]
 
 - name: Add ssh keys
-  import_tasks: shared/set-ssh-keys.yml
+  ansible.builtin.import_tasks: shared/set-ssh-keys.yml
   vars:
     ssh_key_list: '{{ mgmt_ssh_keys }}'
   tags: [mgmt, ssh, ssh-keys]

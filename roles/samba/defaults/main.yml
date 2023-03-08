@@ -9,7 +9,7 @@ samba_shares:
   [syslogs]
     comment = SYS Logs
     path = /tmp
-    browseable = yes
+    browseable = true
     read only = no
     guest ok = no
     valid users = smb-test

@@ -1,14 +1,14 @@
 # Setup grafana
 ---
 - name: Wait for Grafana to start
-  wait_for:
+  ansible.builtin.wait_for:
     port: 3000
     delay: 5
     timeout: 30
   tags: [mgmt, grafana]
 
 - name: Get Grafana remote pw
-  slurp:
+  ansible.builtin.slurp:
     src: '{{ mgmt_dst_config_files }}mgmt-grafana/grafana_admin_pw.txt'
   register: grafana_remote_pw
   tags: [mgmt, grafana]

@@ -3,7 +3,7 @@
   reboot:
 
 - name: Reload
-  service:
+  ansible.builtin.service:
     name: influxdb
     state: restarted
-    enabled: yes
+    enabled: true
