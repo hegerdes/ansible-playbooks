@@ -16,8 +16,8 @@
     - k8s/master
     - k8s/hetzner
     - k8s/certmanager
-    - k8s/monitoring
     - k8s/ingress-nginx
+    # - k8s/monitoring
     # - k8s/longhorn
     # - k8s/ingress-traefik
     # - k8s/deploy

@@ -19,20 +19,6 @@
     autoremove: true
   tags: [k8s, k8s-prepare, k8s-base, apt]
 
-- name: Set ssh host keys
-  ansible.posix.synchronize:
-    src: ssh/
-    dest: /etc/ssh/
-  register: k8s_internal_ssh_copy
-  tags: [k8s, k8s-prepare, k8s-base, k8s-ssh]
-
-- name: Restart SSHD
-  when: k8s_internal_ssh_copy.changed
-  ansible.builtin.service:
-    name: ssh
-    state: restarted
-  tags: [k8s, k8s-prepare, k8s-base, k8s-ssh]
-
 - name: Remove swapfile from /etc/fstab
   ansible.posix.mount:
     name: "{{ item }}"
@@ -159,6 +145,7 @@
     install_recommends: false
     allow_downgrade: true
     autoremove: true
+    allow_change_held_packages : true
   ignore_errors: '{{ ansible_check_mode }}'
   tags: [k8s, k8s-prepare, k8s-base, apt]
 
