@@ -1,5 +1,14 @@
 # Main k8s/hetzner Setup
 ---
+- name: Create a monitoring namespace
+  kubernetes.core.k8s:
+    name: hcloud
+    api_version: v1
+    kind: Namespace
+    state: present
+    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
+  tags: [k8s, k8s-hetzner]
+
 - name: Create Secret
   when: k8s_hetzner_api_key != "none"
   kubernetes.core.k8s:
@@ -65,7 +74,7 @@
 - name: Apply Loadbalancer Exporter Manifest
   when: k8s_hetzner_api_key != "none" and k8s_hetzner_install_lb_exporter
   kubernetes.core.k8s:
-    namespace: monitoring
+    namespace: kube-system
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
     state: present
     src: /tmp/hcloud-prom-lb-exporter.yml

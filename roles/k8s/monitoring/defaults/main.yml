@@ -2,6 +2,7 @@
 ### Grafana-Agent ###
 k8s_monitoring_prometheus_url: https://prometheus-prod-01-eu-west-0.grafana.net/api/prom/push
 k8s_monitoring_prometheus_user: 1234
+k8s_monitoring_prometheus_header: none
 # k8s_monitoring_prometheus_pw: none
 
 k8s_monitoring_loki_url: https://logs-prod-eu-west-0.grafana.net/loki/api/v1/push

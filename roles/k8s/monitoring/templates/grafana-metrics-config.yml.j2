@@ -18,6 +18,8 @@ data:
             basic_auth:
               username: {{ k8s_monitoring_prometheus_user }}
               password: {{ k8s_monitoring_prometheus_pw }}
+            headers: {{ "{}" if (k8s_monitoring_prometheus_header == "none") }}
+              {{ k8s_monitoring_prometheus_header | to_nice_yaml | indent(width=14) if(k8s_monitoring_prometheus_header != "none") }}
         scrape_configs:
         - job_name: integrations/kubernetes/cadvisor
           bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
