@@ -1,0 +1,7 @@
+---
+# Version of the chart to deploy
+k8s_argocd_helm_chart_version: '{{ null | default(omit) }}'
+
+# Values for ARGOCD Helm Chart
+# See: https://github.com/argoproj/argo-helm/blob/main/charts/argo-cd/values.yaml
+k8s_argocd_helm_values: {}
