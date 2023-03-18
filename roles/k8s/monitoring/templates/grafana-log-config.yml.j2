@@ -23,6 +23,7 @@ data:
         basic_auth:
           username: {{ k8s_monitoring_prometheus_user }}
           password: {{ k8s_monitoring_prometheus_pw }}
+        send_exemplars: true
     logs:
       configs:
       - name: integrations

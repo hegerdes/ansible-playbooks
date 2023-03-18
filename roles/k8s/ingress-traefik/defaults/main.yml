@@ -3,7 +3,10 @@
 k8s_traefik_helm_chart_version: '{{ null | default(omit) }}'
 
 # k8s_treafik_helm_values: {}
+# https://github.com/traefik/traefik-helm-chart/blob/master/traefik/values.yaml
 k8s_treafik_helm_values:
+  # Dashboard
+  dashboard.ingressRoute: true
   deployment:
     enabled: true
     # Can be either Deployment or DaemonSet
@@ -11,15 +14,21 @@ k8s_treafik_helm_values:
   logs:
     general:
       format: json
+      # Alternative logging levels are DEBUG, PANIC, FATAL, ERROR, WARN, and INFO.
       level: INFO
     access:
       enabled: true
+      format: json
   metrics:
     prometheus:
       entryPoint: metrics
       addRoutersLabels: true
   # Configure ports
   ports:
+    # The name of this one can't be changed as it is used for the readiness and
+    # liveness probes, but you can adjust its config to your liking
+    # traefik:
+    #   port: 9000
     web:
       protocol: TCP
       nodePort: 32080
@@ -37,6 +46,9 @@ k8s_treafik_helm_values:
   service:
     enabled: true
     type: LoadBalancer
+    ## When set to false, it will create two Service, one for TCP and one for UDP.
+    single: true
+    annotations: {}
     spec: {}
       # externalTrafficPolicy: Cluster
       # loadBalancerIP: "1.2.3.4"
@@ -45,3 +57,21 @@ k8s_treafik_helm_values:
       # - 192.168.0.1/32
       # - 172.16.0.0/16
     externalIPs: []
+
+  # Configure providers
+  providers:
+    kubernetesCRD:
+      enabled: true
+      allowCrossNamespace: true
+      allowExternalNameServices: false
+      allowEmptyServices: false
+      # ingressClass: traefik-internal
+      namespaces: []
+        # - "default"
+    kubernetesIngress:
+      enabled: true
+      allowExternalNameServices: true
+      allowEmptyServices: false
+      # ingressClass: traefik
+      namespaces: []
+        # - "default"

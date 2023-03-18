@@ -8,7 +8,7 @@
 
 - name: Deploy Treafik
   kubernetes.core.helm:
-    name: ingress-traefik
+    name: traefik
     state: present
     chart_ref: traefik/traefik
     chart_version: '{{ k8s_traefik_helm_chart_version }}'
