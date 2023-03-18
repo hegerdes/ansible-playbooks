@@ -56,6 +56,7 @@
     release_namespace: monitoring
     create_namespace: true
     update_repo_cache: true
+    atomic: true
     wait: true
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
     values:
@@ -72,6 +73,7 @@
     release_namespace: monitoring
     update_repo_cache: true
     create_namespace: true
+    atomic: true
     wait: true
     values: '{{ k8s_node_exporter_helm_values | default({}) }}'
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'

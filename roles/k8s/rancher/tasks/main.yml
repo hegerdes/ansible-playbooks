@@ -1,23 +1,27 @@
 # Main k8s Rancher setup
 
-- name: Add Certmanager und Rancher Helm-Chart repo
+- name: Add Rancher Helm-Chart repo
   kubernetes.core.helm_repository:
-    name: '{{ item.name }}'
-    repo_url: '{{ item.url }}'
-  with_items:
-    - { name: jetstack, url: https://charts.jetstack.io }
-    - { name: rancher-stable, url: https://releases.rancher.com/server-charts/stable }
-  tags: [k8s, k8-init, k8-master-init, k8-helm, k8s-helm-rancher]
+    name: rancher-stable
+    repo_url: https://releases.rancher.com/server-charts/stable
+  tags: [k8s, k8s-rancher]
 
 - name: Deploy Cert manager
   ansible.builtin.include_role:
     name: k8s/certmanager
-  tags: [k8s, k8-init, k8-master-init, k8-helm, k8s-helm-rancher]
+  tags: [k8s, k8s-rancher]
 
-- name: Create a Rancher namespace
-  kubernetes.core.k8s:
-    name: cattle-system
-    api_version: v1
-    kind: Namespace
+- name: Deploy Rancher
+  kubernetes.core.helm:
+    name: rancher-stable
     state: present
-  tags: [k8s, k8-init, k8-master-init, k8-helm, k8s-helm-rancher]
+    chart_version: '{{ k8s_rancher_helm_chart_version }}'
+    chart_ref: rancher-stable/rancher
+    release_namespace: cattle-system
+    create_namespace: true
+    update_repo_cache: true
+    wait: true
+    atomic: true
+    values: '{{ k8s_rancher_helm_values | default({}) }}'
+    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
+  tags: [k8s, k8s-rancher]

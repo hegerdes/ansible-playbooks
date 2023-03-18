@@ -15,6 +15,7 @@
     release_namespace: tigera-operator
     update_repo_cache: true
     create_namespace: true
+    atomic: true
     wait: true
     values: '{{ k8s_calico_helm_values | default({}) }}'
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'

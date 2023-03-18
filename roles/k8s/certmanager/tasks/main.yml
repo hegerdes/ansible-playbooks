@@ -17,6 +17,7 @@
     create_namespace: true
     update_repo_cache: true
     wait: true
+    atomic: true
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
     values: '{{ k8s_certmanager_helm_values | default({}) }}'
   tags: [k8s, k8-init, k8-master-init, k8-helm, k8s-certmanager]

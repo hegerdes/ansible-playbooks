@@ -1,1 +1,6 @@
 ---
+k8s_rancher_helm_chart_version: '{{ null | default(omit) }}'
+# Rancher helm values
+# See: https://ranchermanager.docs.rancher.com/v2.6/getting-started/installation-and-upgrade/installation-references/helm-chart-options
+k8s_rancher_helm_values: {}
+

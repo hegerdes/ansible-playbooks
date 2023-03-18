@@ -6,7 +6,7 @@
   roles:
     - netlify-dns
     - k8s/common
-    # - k8s/upgrade
+    - k8s/upgrade
   vars_files:
     - '{{ inventory_dir }}/secrets/vault.yml'
 
@@ -15,14 +15,24 @@
   gather_facts: true
   roles:
     - k8s/master
+  vars_files:
+    - '{{ inventory_dir }}/secrets/vault.yml'
+
+- hosts: k8s_master
+  serial: 1
+  become: true
+  gather_facts: true
+  roles:
     - k8s/hetzner
     - k8s/certmanager
-    - k8s/ingress-traefik
-    # - k8s/ingress-nginx
+    - k8s/ingress-nginx
+    # - k8s/ingress-traefik
     # - k8s/monitoring
     # - k8s/longhorn
-    - k8s/deploy
     # - k8s/metallb
+    - k8s/deploy
+    - k8s/argocd
+    - k8s/rancher
   vars_files:
     - '{{ inventory_dir }}/secrets/vault.yml'
 

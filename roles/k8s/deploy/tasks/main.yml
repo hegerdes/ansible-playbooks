@@ -1,7 +1,7 @@
 # K8s install certmanager
 
 # TODO make sure helm is installed
-- name: Add GitLab Helm repo
+- name: Add Helm repo
   kubernetes.core.helm_repository:
     name: '{{ k8s_helm_app.repo_name }}'
     repo_url: '{{ k8s_helm_app.repo_url }}'
@@ -20,6 +20,7 @@
     release_namespace: '{{ k8s_helm_app.deploy_namespace | default("default") }}'
     create_namespace: true
     update_repo_cache: true
+    atomic: true
     wait: true
     values: '{{ k8s_helm_app.chart_values | default({}) }}'
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
@@ -29,7 +30,7 @@
   tags: [k8s, k8s-deploy, helm-deploy]
 
 
-# - name: Add GitLab Helm repo
+# - name: Add Helm repo
 #   kubernetes.core.helm_repository:
 #     name: '{{ k8s_app_helm_repo.name}}'
 #     username: '{{ k8s_app_helm_repo.username}}'
