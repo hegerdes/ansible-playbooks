@@ -3,25 +3,29 @@
 # TODO make sure helm is installed
 - name: Add GitLab Helm repo
   kubernetes.core.helm_repository:
-    name: gh-demo-app
-    repo_url: https://hegerdes.github.io/demo-app-flask-nuxt/
+    name: '{{ k8s_helm_app.repo_name }}'
+    repo_url: '{{ k8s_helm_app.repo_url }}'
+  loop: '{{ k8s_app_helm_apps | default([]) }}'
+  loop_control:
+    loop_var: k8s_helm_app
   no_log: true
   tags: [k8s, k8s-deploy, helm-deploy]
 
 - name: Deploy App
   kubernetes.core.helm:
-    name: '{{ item }}'
+    name: '{{ k8s_helm_app.deploy_name | default(k8s_helm_app.chart_name) }}'
     state: present
-    chart_version: 0.2.7
-    chart_ref: 'gh-demo-app/{{ item }}'
-    release_namespace: default
+    chart_version: '{{ k8s_helm_app.chart_version }} '
+    chart_ref: '{{ k8s_helm_app.repo_name }}/{{ k8s_helm_app.chart_name }}'
+    release_namespace: '{{ k8s_helm_app.deploy_namespace | default("default") }}'
     create_namespace: true
     update_repo_cache: true
     wait: true
-    values: '{{ k8s_app_helm_values[item] | default({}) }}'
+    values: '{{ k8s_helm_app.chart_values | default({}) }}'
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
-  loop: [demo-app]
-  # loop: [demo-backend, demo-frontend]
+  loop: '{{ k8s_app_helm_apps | default([]) }}'
+  loop_control:
+    loop_var: k8s_helm_app
   tags: [k8s, k8s-deploy, helm-deploy]
 
 
