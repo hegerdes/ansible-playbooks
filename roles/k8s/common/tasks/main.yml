@@ -11,7 +11,7 @@
 
 - name: Ensue required packages are installed
   ansible.builtin.apt:
-    name: [gnupg, git, lsb-release, ca-certificates, curl, apparmor, python3-kubernetes, apt-transport-https, jq, unzip, wget, socat, mtr, logrotate, open-iscsi, ipvsadm]
+    name: [gnupg, git, lsb-release, ca-certificates, curl, apparmor, python3-kubernetes, apt-transport-https, jq, unzip, wget, socat, mtr, logrotate, open-iscsi, ipvsadm, dbus]
     state: present
     update_cache: true
     install_recommends: false
@@ -56,18 +56,14 @@
     - /etc/systemd/system/kubelet.service.d
   tags: [k8s, k8s-prepare, k8s-base]
 
-- name: Copy docker service conf
+- name: Copy docker and kubelet service conf
   ansible.builtin.template:
-    src: 00-docker-cgroup.conf.j2
-    dest: /etc/systemd/system/docker.service.d/00-cgroup-systemd.conf
+    src: '{{ item.src }}.j2'
+    dest: '{{ item.dst }}/{{ item.src }}'
     mode: '0644'
-  tags: [k8s, k8s-prepare, k8s-base]
-
-- name: Copy kubelet service conf
-  ansible.builtin.template:
-    src: 00-kublet-service.conf.j2
-    dest: /etc/systemd/system/kubelet.service.d/20-vpc-cloud.conf
-    mode: '0644'
+  with_items:
+    - { src: 00-docker-cgroup.conf, dst: /etc/systemd/system/docker.service.d }
+    - { src: 20-kublet-service.conf, dst: /etc/systemd/system/kubelet.service.d }
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: Ensure br_netfilter and overlay is enabled
