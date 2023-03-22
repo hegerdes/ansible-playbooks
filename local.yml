@@ -1,5 +1,18 @@
 # Testing
 
+# - hosts: localhost
+#   become: False
+#   gather_facts: False
+#   vars:
+#     k8s_pod_network_cidr: 10.10.10.10/24
+#   # vars_files:
+#   #   - '{{ inventory_dir }}/secrets/vault.yml'
+#   roles:
+#     - k8s/hetzner
+#     # - k8s/ingress-nginx
+#     # - k8s/monitoring
+#     # - k8s/deploy
+
 - hosts: localhost
   become: False
   gather_facts: False
@@ -7,8 +20,10 @@
     k8s_pod_network_cidr: 10.10.10.10/24
   # vars_files:
   #   - '{{ inventory_dir }}/secrets/vault.yml'
-  roles:
-    - k8s/hetzner
-    # - k8s/ingress-nginx
-    # - k8s/monitoring
-    # - k8s/deploy
+  # tasks:
+  # - name: Give users access to multiple databases
+  #   debug:
+  #     msg: "{{ ingress_class[0] }} {{ ingress_class[1] }}"
+  #   loop: "{{ ['nginx', 'traefik'] | product(['lets-encrypt-issuer-staging.yml', 'lets-encrypt-issuer-prod.yml']) | list }}"
+  #   loop_control:
+  #     loop_var: ingress_class

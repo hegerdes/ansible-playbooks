@@ -6,7 +6,7 @@
   roles:
     - netlify-dns
     - k8s/common
-    - k8s/upgrade
+    # - k8s/upgrade
   vars_files:
     - '{{ inventory_dir }}/secrets/vault.yml'
 

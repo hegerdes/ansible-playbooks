@@ -1,7 +1,7 @@
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
-  name: letsencrypt-staging-{{ k8s_certmanager_ingress_class }}
+  name: letsencrypt-staging-{{ ingress_class[0] }}
   namespace: cert-manager
 spec:
   acme:
@@ -16,4 +16,4 @@ spec:
     solvers:
     - http01:
         ingress:
-          class: {{ k8s_certmanager_ingress_class }}
+          class: {{ ingress_class[0] }}
