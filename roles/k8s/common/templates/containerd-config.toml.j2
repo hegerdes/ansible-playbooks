@@ -12,25 +12,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Run wasm
+# sudo ctr i pull docker.io/wasmedge/example-wasi:latest
+# ctr run --rm --runc-binary crun --runtime io.containerd.runc.v2 --label module.wasm.image/variant=compat-smart docker.io/wasmedge/example-wasi:latest wasm-example
+
 # K8s config settings for systemd (runc and crun)
 version = 2
 # runc
 [plugins]
-[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
-  runtime_type = "io.containerd.runc.v2"
-  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+  # runc
+  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+    runtime_type = "io.containerd.runc.v2"
+    [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+      SystemdCgroup = true
+
+  # crun
+  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.crun]
+    runtime_type = "io.containerd.runc.v2"
+    # See: https://github.com/containers/crun/blob/main/docs/wasm-wasi-on-kubernetes.md
+    pod_annotations = ["*.wasm.*", "wasm.*", "module.wasm.image/*", "*.module.wasm.image", "module.wasm.image/variant.*"]
+  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.crun.options]
+    BinaryName = "crun"
+    Root = "/usr/local/sbin"
     SystemdCgroup = true
 
-# crun
-[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.crun]
-  runtime_type = "io.containerd.runc.v2"
-[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.crun.options]
-  BinaryName = "crun"
-  Root = "/usr/local/sbin"
-  SystemdCgroup = true
+  [plugins."io.containerd.grpc.v1.cri".containerd]
+    default_runtime_name = "{{ k8s_cri }}"
 
-[plugins."io.containerd.grpc.v1.cri".containerd]
-  default_runtime_name = "{{ k8s_cri }}"
+  [plugins."io.containerd.runtime.v1.linux"]
+    runtime = "{{ k8s_cri }}"
 
 #root = "/var/lib/containerd"
 #state = "/run/containerd"

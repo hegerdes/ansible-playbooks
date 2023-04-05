@@ -11,7 +11,7 @@
 
 - name: Ensue required packages are installed
   ansible.builtin.apt:
-    name: [gnupg, git, lsb-release, ca-certificates, curl, apparmor, python3-kubernetes, apt-transport-https, jq, unzip, wget, socat, mtr, logrotate, open-iscsi, ipvsadm, dbus]
+    name: [gnupg, git, lsb-release, ca-certificates, curl, apparmor, python3-kubernetes, apt-transport-https, jq, unzip, wget, socat, mtr, logrotate, open-iscsi, ipvsadm, dbus, libyajl2]
     state: present
     update_cache: true
     install_recommends: false
@@ -54,6 +54,7 @@
     - /etc/apt/keyrings
     - /etc/systemd/system/docker.service.d
     - /etc/systemd/system/kubelet.service.d
+    - /usr/wasmedge/lib
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: Copy docker and kubelet service conf
@@ -91,11 +92,17 @@
   loop_control:
     label: "{{ item.key }}={{ item.val }}"
 
-- name: Install crun
+- name: Install official crun
+  when: not k8s_crun_with_wasm
   ansible.builtin.get_url:
     url: https://github.com/containers/crun/releases/download/{{ k8s_crun_version }}/crun-{{ k8s_crun_version }}-linux-amd64
     dest: /usr/local/sbin/crun
     mode: '0754'
+  tags: [k8s, k8s-prepare, k8s-base]
+
+- name: Install wasm crun
+  when: k8s_crun_with_wasm
+  ansible.builtin.include_tasks: crun_wasm.yml
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: Adding apt GPG Keys

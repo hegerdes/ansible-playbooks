@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wasm-deployment
+  labels:
+    app: wasm-example
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: wasm-example
+  template:
+    metadata:
+      name: hello-wasm
+      annotations:
+        module.wasm.image/variant: compat-smart
+      labels:
+        app: wasm-example
+    spec:
+      containers:
+      - name: hello-wasm
+        image: docker.io/wasmedge/example-wasi-http:latest
+        #image: wasmedge/example-wasi:latest
+        #image: michaelirwin244/wasm-example
+        resources:
+          limits:
+            memory: "265Mi"
+            cpu: "500m"
+
+# apiVersion: v1
+# kind: Pod
+# metadata:
+#   name: hello-wasm
+#   annotations:
+#     module.wasm.image/variant: compat-smart
+# spec:
+#   hostNetwork: true
+#   containers:
+#   - name: hello-wasm
+#     image: docker.io/wasmedge/example-wasi-http:latest
+#     #image: wasmedge/example-wasi:latest
+#     #image: michaelirwin244/wasm-example

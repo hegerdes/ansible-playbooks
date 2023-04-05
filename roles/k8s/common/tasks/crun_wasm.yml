@@ -1,0 +1,62 @@
+# Setup wasm crun
+---
+- name: Determine latest wasm crun GitHub release
+  uri:
+    url: "https://api.github.com/repos/hegerdes/publish/releases/latest"
+    body_format: json
+  register: _k8s_wasm_crun_github_release
+  until: _k8s_wasm_crun_github_release.status == 200
+  run_once: true
+  retries: 3
+  tags: [k8s, k8s-prepare, k8s-base]
+
+- name: Download crun
+  ansible.builtin.unarchive:
+    src: '{{ _k8s_wasm_crun_github_release.json | json_query(query) | first }}'
+    dest: /tmp
+    remote_src: true
+    creates: /tmp/crun
+  retries: 3
+  vars:
+    query: assets[?starts_with(name, 'crun')].browser_download_url
+  tags: [k8s, k8s-prepare, k8s-base]
+
+- name: Copy crun wasm files
+  ansible.builtin.copy:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+    mode: '0754'
+    remote_src: true
+  with_items:
+    - src: /tmp/crun
+      dest: /usr/local/sbin/crun
+    - src: /tmp/wasmlibs/libwasmedge.so.0.0.1
+      dest: /usr/wasmedge/lib/libwasmedge.so.0.0.1
+  tags: [k8s, k8s-prepare, k8s-base]
+
+- name: Create sym link to wasm lib
+  ansible.builtin.file:
+    src: /usr/wasmedge/lib/libwasmedge.so.0.0.1
+    dest: '/usr/wasmedge/lib/{{ item }}'
+    state: link
+  loop: [libwasmedge.so.0, libwasmedge.so]
+  tags: [k8s, k8s-prepare, k8s-base]
+
+- name: Add wasm libs to server lib store
+  ansible.builtin.lineinfile:
+    path: /etc/ld.so.conf
+    line: /usr/wasmedge/lib
+  register: _was_lib_link_ad
+  tags: [k8s, k8s-prepare, k8s-base]
+
+- name: Reload lib link config
+  when: _was_lib_link_ad.changed
+  ansible.builtin.command:
+    cmd: ldconfig
+  tags: [k8s, k8s-prepare, k8s-base]
+
+- name: Test crun
+  ansible.builtin.command:
+    cmd: crun --version
+  changed_when: false
+  tags: [k8s, k8s-prepare, k8s-base]
