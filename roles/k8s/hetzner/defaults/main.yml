@@ -4,3 +4,22 @@ k8s_hetzner_install_ccm: true
 k8s_hetzner_use_ccm_pvt_networks: true
 k8s_hetzner_install_csi_driver: true
 k8s_hetzner_install_lb_exporter: true
+k8s_hetzner_lb_exporter_helm_repo: https://wacken89.github.io/hetzner-load-balancer-prometheus-exporter
+k8s_hetzner_lb_exporter_helm_chart_version: '{{ null | default(omit) }}'
+k8s_hetzner_lb_exporter_helm_values: {}
+# # Example
+# k8s_hetzner_lb_exporter_helm_values:
+#   env:
+#     # Set envs like in the kubernetes pod spec
+#     - name: LOAD_BALANCER_IDS
+#       value: "all"
+#     - name: SCRAPE_INTERVAL
+#       value: "60"
+#     - name: ACCESS_TOKEN
+#       value: ""
+#     # Or set token via secret ref
+#     # - name: ACCESS_TOKEN
+#     #   valueFrom:
+#     #     secretKeyRef:
+#     #       key: token
+#     #       name: hcloud

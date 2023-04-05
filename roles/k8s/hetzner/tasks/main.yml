@@ -63,19 +63,24 @@
     definition: '{{ k8s_intanal_hetzner_csi_driver_def.content }}'
   tags: [k8s, k8s-hetzner]
 
-- name: Template Loadbalancer Exporter Manifest
-  when: k8s_hetzner_api_key != "none" and k8s_hetzner_install_lb_exporter
-  ansible.builtin.template:
-    src: hcloud-prom-lb-exporter.yml.j2
-    dest: /tmp/hcloud-prom-lb-exporter.yml
-    mode: '0644'
+# https://github.com/wacken89/hetzner-load-balancer-prometheus-exporter
+- name: Add hcloud-lb-exporter Helm-Chart repo
+  kubernetes.core.helm_repository:
+    name: hcloud-lb-exporter
+    repo_url: '{{ k8s_hetzner_lb_exporter_helm_repo }}'
   tags: [k8s, k8s-hetzner]
 
-- name: Apply Loadbalancer Exporter Manifest
-  when: k8s_hetzner_api_key != "none" and k8s_hetzner_install_lb_exporter
-  kubernetes.core.k8s:
-    namespace: kube-system
-    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
+- name: Deploy hcloud-lb-exporter
+  kubernetes.core.helm:
+    name: ingress-nginx
     state: present
-    src: /tmp/hcloud-prom-lb-exporter.yml
+    chart_version: '{{ k8s_hetzner_lb_exporter_helm_chart_version }}'
+    chart_ref: hcloud-lb-exporter/hetzner-load-balancer-exporter
+    release_namespace: kube-system
+    create_namespace: true
+    update_repo_cache: true
+    atomic: true
+    wait: true
+    values: '{{ k8s_hetzner_lb_exporter_helm_values | default({}) }}'
+    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
   tags: [k8s, k8s-hetzner]
