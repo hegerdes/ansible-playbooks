@@ -7,6 +7,7 @@ k8s_hetzner_install_lb_exporter: true
 k8s_hetzner_lb_exporter_helm_repo: https://wacken89.github.io/hetzner-load-balancer-prometheus-exporter
 k8s_hetzner_lb_exporter_helm_chart_version: '{{ null | default(omit) }}'
 k8s_hetzner_lb_exporter_helm_values: {}
+k8s_hcloud_csi_version: v2.2.0
 # # Example
 # k8s_hetzner_lb_exporter_helm_values:
 #   env:
