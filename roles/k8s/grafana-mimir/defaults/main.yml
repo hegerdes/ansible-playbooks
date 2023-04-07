@@ -1,0 +1,96 @@
+---
+# Version of the chart to deploy
+k8s_mimir_helm_chart_version: '{{ null | default(omit) }}'
+
+# Values for Grafana Mimir Chart
+# See: https://github.com/grafana/mimir/blob/main/operations/helm/charts/mimir-distributed/values.yaml
+# k8s_mimir_helm_values: {}
+k8s_mimir_helm_values:
+  minio:
+    enabled: false
+
+  # Configuration for nginx gateway. -- DEPRECATED: use the 'gateway'
+  nginx:
+    enabled: false
+
+  # -- A reverse proxy deployment that is meant to receive traffic for Mimir or GEM.
+  # When enterprise.enabled is true the GEM gateway is deployed. Otherwise, it is an nginx.
+  # Options except those under gateway.nginx apply to both versions - nginx and GEM gateway.
+  gateway:
+    enabledNonEnterprise: true
+    replicas: 1
+
+    # Annotations for the Deployment
+    annotations: {}
+
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      # -- Annotations for the Ingress
+      annotations:
+        # cert-manager.io/cluster-issuer: letsencrypt-staging-nginx
+        cert-manager.io/cluster-issuer: letsencrypt-prod-nginx
+        nginx.ingress.kubernetes.io/add-base-url : "true"
+      hosts:
+        - host: mimir.k8s.henrikgerdes.me
+          paths:
+            - path: /
+              # -- pathType (e.g. ImplementationSpecific, Prefix, .. etc.) might also be required by some Ingress Controllers
+              pathType: Prefix
+      # -- TLS configuration for the nginx ingress
+      tls:
+        - secretName: mimir-tls
+          hosts:
+            - mimir.k8s.henrikgerdes.me
+
+    nginx:
+      verboseLogging: true
+
+  mimir:
+    # -- Additional structured values on top of the text based 'mimir.config'. Applied after the text based config is evaluated for templates. Enables adding and modifying YAML elements in the evaulated 'mimir.config'.
+    structuredConfig:
+      blocks_storage:
+        backend: azure
+        azure:
+          container_name: mimir-blocks
+          account_key: ckSxCJS+r0mc0N/kVq6g12ZVUJvB5LZYfh2r4bTMjsfOEDaHHyw5p93sJjtQgGkvbu2R3fHBQxW6+AStfwMO0Q==
+          account_name: hegerdesdevblobs
+          endpoint_suffix: blob.core.windows.net
+
+      alertmanager_storage:
+        backend: azure
+        azure:
+          container_name: mimir-alertmanager
+          account_key: ckSxCJS+r0mc0N/kVq6g12ZVUJvB5LZYfh2r4bTMjsfOEDaHHyw5p93sJjtQgGkvbu2R3fHBQxW6+AStfwMO0Q==
+          account_name: hegerdesdevblobs
+          endpoint_suffix: blob.core.windows.net
+
+      ruler_storage:
+        backend: azure
+        azure:
+          container_name: mimir-ruler
+          account_key: ckSxCJS+r0mc0N/kVq6g12ZVUJvB5LZYfh2r4bTMjsfOEDaHHyw5p93sJjtQgGkvbu2R3fHBQxW6+AStfwMO0Q==
+          account_name: hegerdesdevblobs
+          endpoint_suffix: blob.core.windows.net
+
+  compactor:
+    replicas: 1
+
+    service:
+      annotations: {}
+      labels: {}
+
+    resources:
+      requests:
+        cpu: 100m
+        memory: 265Mi
+
+  # metaMonitoring:
+  #   serviceMonitor:
+  #     enabled: true
+  #   grafanaAgent:
+  #     enabled: true
+  #     installOperator: true
+  #     metrics:
+  #       additionalRemoteWriteConfigs:
+  #         - url: "http://mimir-nginx.mimir.svc:80/api/v1/push"
