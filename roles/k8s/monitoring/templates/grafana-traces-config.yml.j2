@@ -28,12 +28,7 @@ data:
                         http: null
                 zipkin: null
             remote_write:
-              - basic_auth:
-                    password: {{ k8s_monitoring_tempo_pw }}
-                    username: {{ k8s_monitoring_tempo_user }}
-                endpoint: {{ k8s_monitoring_tempo_url }}
-                retry_on_failure:
-                    enabled: false
+              {{ k8s_monitoring_tempo_remote_write | to_nice_yaml(indent=2, sort_keys=False) | indent(width=14) }}
             scrape_configs:
               - bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
                 job_name: kubernetes-pods

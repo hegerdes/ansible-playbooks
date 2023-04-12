@@ -14,12 +14,7 @@ data:
       configs:
       - name: integrations
         remote_write:
-          - url: {{ k8s_monitoring_prometheus_url }}
-            basic_auth:
-              username: {{ k8s_monitoring_prometheus_user }}
-              password: {{ k8s_monitoring_prometheus_pw }}
-            headers: {{ "{}" if (k8s_monitoring_prometheus_header == "none") }}
-              {{ k8s_monitoring_prometheus_header | to_nice_yaml | indent(width=14) if(k8s_monitoring_prometheus_header != "none") }}
+          {{ k8s_monitoring_prometheus_remote_write | to_nice_yaml(indent=2, sort_keys=False) | indent(width=10) }}
         scrape_configs:
         - job_name: integrations/kubernetes/cadvisor
           bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
@@ -161,13 +156,7 @@ data:
       configs:
       - name: integrations
         clients:
-        - url: {{ k8s_monitoring_loki_url }}
-          basic_auth:
-            username: {{ k8s_monitoring_loki_user }}
-            password: {{ k8s_monitoring_loki_pw }}
-          external_labels:
-            cluster: {{ inventory_dir | basename}}
-            job: integrations/kubernetes/eventhandler
+        {{ k8s_monitoring_loki_remote_write | to_nice_yaml(indent=2, sort_keys=False) | indent(width=8) }}
         positions:
           filename: /tmp/positions.yaml
         target_config:
