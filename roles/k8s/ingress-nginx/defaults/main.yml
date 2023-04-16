@@ -1,6 +1,7 @@
 ---
 # Version of the chart to deploy
 k8s_nginx_helm_chart_version: '{{ null | default(omit) }}'
+k8s_nginx_install: true
 
 # See: https://github.com/kubernetes/ingress-nginx/blob/main/charts/ingress-nginx/values.yaml
 k8s_nginx_helm_values:

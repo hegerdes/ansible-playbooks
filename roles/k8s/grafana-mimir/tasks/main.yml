@@ -9,13 +9,12 @@
 - name: Deploy Grafana Mimir
   kubernetes.core.helm:
     name: mimir
-    state: present
+    state: '{{ "present" if(k8s_mimir_install) else "absent" }}'
     chart_version: '{{ k8s_mimir_helm_chart_version }}'
     chart_ref: grafana/mimir-distributed
     release_namespace: mimir
     create_namespace: true
     update_repo_cache: true
-    atomic: true
     wait: true
     values: '{{ k8s_mimir_helm_values | default({}) }}'
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'

@@ -9,7 +9,7 @@
 - name: Deploy ArgoCD
   kubernetes.core.helm:
     name: argo
-    state: present
+    state: '{{ "present" if(k8s_argocd_install) else "absent" }}'
     chart_version: '{{ k8s_argocd_helm_chart_version }}'
     chart_ref: argo/argo-cd
     release_namespace: argo

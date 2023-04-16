@@ -9,7 +9,7 @@
 - name: Deploy Treafik
   kubernetes.core.helm:
     name: traefik
-    state: present
+    state: '{{ "present" if(k8s_traefik_install) else "absent" }}'
     chart_ref: traefik/traefik
     chart_version: '{{ k8s_traefik_helm_chart_version }}'
     release_namespace: traefik-ingress

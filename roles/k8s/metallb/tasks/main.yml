@@ -9,7 +9,7 @@
 - name: Deploy MetalLB
   kubernetes.core.helm:
     name: metallb
-    state: present
+    state: '{{ "present" if(k8s_metallb_install) else "absent" }}'
     chart_ref: metallb/metallb
     chart_version: '{{ k8s_metallb_chart_version }}'
     release_namespace: metallb-system

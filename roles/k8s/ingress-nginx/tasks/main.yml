@@ -9,7 +9,7 @@
 - name: Deploy Nginx-Ingress
   kubernetes.core.helm:
     name: ingress-nginx
-    state: present
+    state: '{{ "present" if(k8s_nginx_install) else "absent" }}'
     chart_version: '{{ k8s_nginx_helm_chart_version }}'
     chart_ref: ingress-nginx/ingress-nginx
     release_namespace: ingress-nginx

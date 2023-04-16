@@ -1,6 +1,7 @@
 ---
 # Version of the chart to deploy
 k8s_metallb_chart_version: '{{ null | default(omit) }}'
+k8s_metallb_install: true
 # Helm chart values
 k8s_metallb_helm_values: {}
 # Address space

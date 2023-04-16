@@ -1,6 +1,5 @@
 # K8s install certmanager
 
-# TODO make sure helm is installed
 - name: Add Certmanager Helm-Chart repo
   kubernetes.core.helm_repository:
     name: jetstack
@@ -10,7 +9,7 @@
 - name: Deploy Cert manager
   kubernetes.core.helm:
     name: cert-manager
-    state: present
+    state: '{{ "present" if(k8s_certmanager_install) else "absent" }}'
     chart_version: '{{ k8s_certmanager_helm_chart_version }}'
     chart_ref: jetstack/cert-manager
     release_namespace: cert-manager

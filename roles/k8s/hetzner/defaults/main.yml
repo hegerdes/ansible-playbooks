@@ -1,9 +1,9 @@
 k8s_hetzner_api_key: none
 k8s_hetzner_network_name_or_id: my-k8s-network
-k8s_hetzner_install_ccm: true
 k8s_hetzner_use_ccm_pvt_networks: true
-k8s_hetzner_install_csi_driver: true
-k8s_hetzner_install_lb_exporter: true
+k8s_hetzner_csi_driver_install: true
+k8s_hetzner_ccm_install: true
+k8s_hetzner_lb_install: true
 k8s_hetzner_lb_exporter_helm_repo: https://wacken89.github.io/hetzner-load-balancer-prometheus-exporter
 k8s_hetzner_lb_exporter_helm_chart_version: '{{ null | default(omit) }}'
 k8s_hetzner_lb_exporter_helm_values: {}
