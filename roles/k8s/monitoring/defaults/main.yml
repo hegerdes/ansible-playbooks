@@ -1,6 +1,24 @@
 ---
 # k8s-monitoring-role-defaults
 
+k8s_grafana_agent_logs_config_path: conf/grafana-log-config.yml.j2
+k8s_grafana_agent_metrics_config_path: conf/grafana-metrics-config.yml.j2
+k8s_grafana_agent_traces_config_path: conf/grafana-traces-config.yml.j2
+
+k8s_grafana_agent_logs_install: True
+k8s_grafana_agent_logs_agent_config: '{{ lookup("template", k8s_grafana_agent_logs_config_path) | from_yaml }}'
+k8s_grafana_agent_logs_agent_app_path: apps/grafana-log-agent.yml.j2
+k8s_grafana_agent_metrics_install: True
+k8s_grafana_agent_metrics_agent_config: '{{ lookup("template", k8s_grafana_agent_metrics_config_path) | from_yaml }}'
+k8s_grafana_agent_metrics_agent_app_path: apps/grafana-metrics-agent.yml.j2
+k8s_grafana_agent_traces_install: True
+k8s_grafana_agent_traces_agent_config: '{{ lookup("template", k8s_grafana_agent_traces_config_path) | from_yaml }}'
+k8s_grafana_agent_traces_agent_app_path: apps/grafana-traces-agent.yml.j2
+k8s_grafana_agent_traces_strategies_config:
+  default_strategy:
+    param: 0.001
+    type: probabilistic
+
 ### Node-Exporter ###
 k8s_monitoring_install_node_exporter: True
 # Version of the chart to deploy

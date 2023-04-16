@@ -97,6 +97,8 @@ spec:
       name: grafana-agent-traces
   template:
     metadata:
+      annotations:
+        checksum/config: {{ item.config | to_json | hash('md5') }}
       labels:
         name: grafana-agent-traces
     spec:

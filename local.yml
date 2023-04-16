@@ -16,6 +16,8 @@
 - hosts: localhost
   become: False
   gather_facts: False
+  roles:
+    - k8s/monitoring
   vars:
     k8s_pod_network_cidr: 10.10.10.10/24
   # vars_files:
