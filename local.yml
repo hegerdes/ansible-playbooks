@@ -15,17 +15,62 @@
 
 - hosts: localhost
   become: False
-  gather_facts: False
-  roles:
-    - k8s/monitoring
+  gather_facts: false
+  # roles:
+  #   - k8s/monitoring
   vars:
     k8s_pod_network_cidr: 10.10.10.10/24
   # vars_files:
   #   - '{{ inventory_dir }}/secrets/vault.yml'
-  # tasks:
+  tasks:
   # - name: Give users access to multiple databases
   #   debug:
   #     msg: "{{ ingress_class[0] }} {{ ingress_class[1] }}"
   #   loop: "{{ ['nginx', 'traefik'] | product(['lets-encrypt-issuer-staging.yml', 'lets-encrypt-issuer-prod.yml']) | list }}"
   #   loop_control:
   #     loop_var: ingress_class
+  # tasks:
+  # - name: Determine latest wasm crun GitHub release
+  #   uri:
+  #     url: "https://api.github.com/repos/hegerdes/publish/releases/latest"
+  #     body_format: json
+  #   register: _k8s_wasm_crun_github_release
+  #   until: _k8s_wasm_crun_github_release.status == 200
+  #   run_once: true
+  #   retries: 3
+  #   tags: [k8s, k8s-prepare, k8s-base]
+
+  # - name: debug
+  #   debug:
+  #     msg: '{{ ansible_facts.architecture }}'
+  #   tags: [k8s, k8s-prepare, k8s-base]
+
+  # - name: debug
+  #   debug:
+  #     msg: '{{ _k8s_wasm_crun_github_release.json | json_query(query) | select("search", ansible_facts.architecture) | list }}'
+  #   vars:
+  #     query: assets[?starts_with(name, 'crun')].browser_download_url
+  #   tags: [k8s, k8s-prepare, k8s-base]
+
+  - name: Install official crun
+    ansible.builtin.get_url:
+      url: https://github.com/containers/crun/releases/download/{{ k8s_crun_version }}/crun-{{ k8s_crun_version }}-linux-{{ crun_arch_map[ansible_facts.architecture] }}
+      dest: /tmp/crun_tmp
+      mode: '0754'
+    vars:
+      k8s_crun_version: 1.8.4
+      crun_arch_map:
+        x86_64: amd64
+        aarch64: arm64
+    tags: [k8s, k8s-prepare, k8s-base]
+
+  # - name: Download crun
+  #   ansible.builtin.unarchive:
+  #     src: '{{ _k8s_wasm_crun_github_release.json | json_query(query) | first }}'
+  #     dest: /tmp
+  #     remote_src: true
+  #     creates: /tmp/crun
+  #   retries: 3
+  #   vars:
+  #     query: assets[?starts_with(name, 'crun')].browser_download_url
+  #   tags: [k8s, k8s-prepare, k8s-base]
