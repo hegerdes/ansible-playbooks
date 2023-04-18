@@ -12,7 +12,7 @@
 
 - name: Download crun
   ansible.builtin.unarchive:
-    src: '{{ _k8s_wasm_crun_github_release.json | json_query(query) | first }}'
+    src: '{{ _k8s_wasm_crun_github_release.json | json_query(query) | select("search", ansible_facts.architecture) | list | first }}'
     dest: /tmp
     remote_src: true
     creates: /tmp/crun

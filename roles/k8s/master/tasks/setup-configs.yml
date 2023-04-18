@@ -30,7 +30,7 @@
   register: _remote_k8s_kubeconf
   tags: [k8s, k8-init, k8s-init-config]
 
-- name: Set Kubeconfig
+- name: Set kubeconfig
   run_once: true
   ansible.builtin.set_fact:
     internal_k8s_kubeconfig: "{{ _remote_k8s_kubeconf.content | b64decode | from_yaml | combine({'clusters': [(_remote_k8s_kubeconf.content | b64decode | from_yaml).clusters[0] | combine({'cluster': {'server': 'https://' + k8s_external_cp_host + ':' + k8s_external_cp_port | default('6443')}}, recursive=true)]}) if (k8s_external_cp_host | default('') != '') else _remote_k8s_kubeconf.content | b64decode | from_yaml }}"

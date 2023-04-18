@@ -61,7 +61,9 @@
   ansible.builtin.template:
     src: '{{ item.src }}.j2'
     dest: '{{ item.dst }}/{{ item.src }}'
-    mode: '0644'
+    mode: '0600'
+    owner: root
+    group: root
   with_items:
     - { src: 00-docker-cgroup.conf, dst: /etc/systemd/system/docker.service.d }
     - { src: 20-kublet-service.conf, dst: /etc/systemd/system/kubelet.service.d }
@@ -86,6 +88,8 @@
     - { key: net.bridge.bridge-nf-call-iptables, val: 1}
     - { key: net.bridge.bridge-nf-call-ip6tables, val: 1}
     - { key: net.ipv6.conf.default.forwarding, val: 1}
+    - { key: vm.overcommit_memory , val: 1}
+    - { key: kernel.panic_on_oops , val: 1}
     - { key: kernel.panic, val: 10}
     - { key: net.ipv4.conf.all.rp_filter, val: 0}
   tags: [k8s, k8s-prepare, k8s-base]
@@ -95,9 +99,15 @@
 - name: Install official crun
   when: not k8s_crun_with_wasm
   ansible.builtin.get_url:
-    url: https://github.com/containers/crun/releases/download/{{ k8s_crun_version }}/crun-{{ k8s_crun_version }}-linux-amd64
+    url: https://github.com/containers/crun/releases/download/{{ k8s_crun_version }}/crun-{{ k8s_crun_version }}-linux-{{ crun_arch_map[ansible_facts.architecture] }}
     dest: /usr/local/sbin/crun
+    owner: root
+    group: root
     mode: '0754'
+  vars:
+    crun_arch_map:
+      x86_64: amd64
+      aarch64: arm64
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: Install wasm crun

@@ -141,6 +141,3 @@
 #     var: k8s_cluster_info.stderr_lines + k8s_cluster_info.stdout_lines
 #   run_once: true
 #   tags: [k8s, k8-init, k8-master-init]
-
-# - name: Ensure handlers are notified now
-#   ansible.builtin.meta: flush_handlers
