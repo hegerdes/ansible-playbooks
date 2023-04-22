@@ -1,17 +1,37 @@
 ---
 k8s_version: 1.25.4
+
+k8s_max_pods: 220
+k8s_kublet_extra_args: ''
+
+# Which cri to use. runc or crun
+k8s_cri: crun
+k8s_crun_version: 1.8.4
+k8s_crun_with_wasm: false
+k8s_containerd_version: latest
+
 k8s_etc_hosts: []
 # Exmaple
 # k8s_etc_hosts:
 #   - name: k8s-hetzner-test-cp
 #     ip: 127.0.0.1
+#     state: present|absent       # optional
 
-k8s_max_pods: 220
-k8s_kublet_extra_args: ''
-# Which cri to use. runc or crun
-# k8s_cri: runc
-k8s_cri: crun
+k8s_system_limits:
+  - user: "root"
+    limit: "nofile"
+    value: 4096
+    comment: ""
 
-k8s_crun_version: 1.8.4
-k8s_crun_with_wasm: false
-k8s_containerd_version: latest
+# Example
+# k8s_system_limits:
+#   - user: "*"
+#     type: "hard"    # optional
+#     limit: "nofile"
+#     value: 1048576
+#     comment: ""
+#   - user: "docker"
+#     type: "-"       # hard & soft
+#     limit: "core"
+#     value: 1048576
+#     comment: ""     # optional

@@ -18,6 +18,14 @@
   vars_files:
     - '{{ inventory_dir }}/secrets/vault.yml'
 
+- hosts: k8s_worker
+  become: true
+  gather_facts: true
+  roles:
+    - k8s/worker-join
+  vars_files:
+    - '{{ inventory_dir }}/secrets/vault.yml'
+
 - hosts: k8s_master
   become: true
   gather_facts: true
@@ -36,13 +44,6 @@
   vars_files:
     - '{{ inventory_dir }}/secrets/vault.yml'
 
-- hosts: k8s_worker
-  become: true
-  gather_facts: true
-  roles:
-    - k8s/worker-join
-  vars_files:
-    - '{{ inventory_dir }}/secrets/vault.yml'
 
 # - hosts: k8s_master
 #   become: true

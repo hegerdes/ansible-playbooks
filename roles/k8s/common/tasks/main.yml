@@ -40,6 +40,7 @@
     path: /etc/hosts
     line: '{{ item.ip }} {{ item.name }}'
     create: true
+    state: '{{ item.state | default("present")}}'
   loop: '{{ k8s_etc_hosts }}'
   loop_control:
     label: '{{ item.name }}'
@@ -92,9 +93,19 @@
     - { key: kernel.panic_on_oops , val: 1}
     - { key: kernel.panic, val: 10}
     - { key: net.ipv4.conf.all.rp_filter, val: 0}
-  tags: [k8s, k8s-prepare, k8s-base]
   loop_control:
     label: "{{ item.key }}={{ item.val }}"
+  tags: [k8s, k8s-prepare, k8s-base]
+
+- name: Setting system limits
+  pam_limits:
+    domain: '{{ item.user }}'
+    limit_type: '{{ item.type | default("-") }}'
+    limit_item: '{{ item.limit }}'
+    value: '{{ item.value }}'
+    comment: '{{ item.comment | default(omit) }}'
+  loop: '{{ k8s_system_limits }}'
+  tags: [k8s, k8s-prepare, k8s-base]
 
 - name: Install official crun
   when: not k8s_crun_with_wasm
@@ -185,3 +196,16 @@
     state: restarted
   ignore_errors: '{{ ansible_check_mode }}'
   tags: [k8s, k8s-prepare, k8s-base]
+
+- name: Copy systemd sys-fs-bpf for cilium cni
+  when: k8s_cni | default('flannel') | lower == 'cilium'
+  # See https://docs.cilium.io/en/v1.13/operations/system_requirements/#systemd-based-distributions
+  ansible.builtin.copy:
+    src: '{{ item.src }}'
+    dest: '{{ item.dst }}'
+    mode: '0600'
+    owner: root
+    group: root
+  with_items:
+    - {src: cilium-networkd.conf, dst: /etc/systemd/networkd.conf}
+  tags: [k8s, k8s-prepare, k8s-base, k8-init, k8-cri, k8s-cilium]
