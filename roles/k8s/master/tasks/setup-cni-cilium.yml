@@ -1,4 +1,33 @@
 # Main k8s CNI - Cilium
+- name: Copy systemd sys-fs-bpf
+  ansible.builtin.copy:
+    src: '{{ item.src }}'
+    dest: '{{ item.dst }}'
+    mode: '0600'
+    owner: root
+    group: root
+  with_items:
+    # - {src: cilium-systemd-sys-fs-bpf.conf, dst: /etc/systemd/system/sys-fs-bpf.mount}
+    - {src: cilium-networkd.conf, dst: /etc/systemd/networkd.conf}
+  # notify: Restart network service
+  tags: [k8s, k8-init, k8-master-init, k8-cri, k8s-cilium]
+
+# - name: Enable sys-fs-bpf
+#   ansible.builtin.systemd:
+#     name: sys-fs-bpf.mount
+#     enabled: false
+#     state: stopped
+#   tags: [k8s, k8-init, k8-master-init, k8-cri, k8s-cilium]
+
+# - name: Set systemctl parameters
+#   ansible.posix.sysctl:
+#     name: net.ipv4.conf.lxc*.rp_filter
+#     value: 0
+#     state: present
+#     sysctl_set: true
+#     reload: true
+#     sysctl_file: /etc/sysctl.d/99-cilium.conf
+#   tags: [k8s, k8-init, k8-master-init, k8-cri, k8s-cilium]
 
 - name: Add Cilium helm chart repo
   kubernetes.core.helm_repository:
@@ -30,7 +59,11 @@
 
 - name: Download Cilium CLI
   ansible.builtin.unarchive:
-    src: 'https://github.com/cilium/cilium-cli/releases/download/{{ k8s_cilium_cli_version | default(k8s_intanal_cilium_stable_version.content | trim) }}/cilium-linux-amd64.tar.gz'
+    src: 'https://github.com/cilium/cilium-cli/releases/download/{{ k8s_cilium_cli_version | default(k8s_intanal_cilium_stable_version.content | trim) }}/cilium-linux-{{ cilium_arch_map[ansible_facts.architecture] }}.tar.gz'
     dest: /usr/local/bin
     remote_src: true
+  vars:
+    cilium_arch_map:
+      x86_64: amd64
+      aarch64: arm64
   tags: [k8s, k8-init, k8-master-init, k8-cri, k8s-cilium]

@@ -25,32 +25,9 @@ k8s_taints: []
 ######### CNI #########
 # Which CNI flannel, calico or cilium
 k8s_cni: flannel
-# Helm chart version
+
+# Calico helm chart setup
 k8s_calico_chart_version: '{{ null | default(omit) }}'
-k8s_cilium_chart_version: '{{ null | default(omit) }}'
-# Helm chart values
-k8s_cilium_helm_values:
-  # -- Configure the underlying network MTU to overwrite auto-detected MTU.
-  MTU: 1450 # for Hetzner
-  # Recreate agent on config map change
-  rollOutCiliumPods: true
-  # bgp:
-  #   # -- Enable BGP support inside Cilium; embeds a new ConfigMap for BGP inside
-  #   # cilium-agent and cilium-operator
-  #   enabled: false
-  #   announce:
-  #     # -- Enable allocation and announcement of service LoadBalancer IPs
-  #     loadbalancerIP: false
-  #     # -- Enable announcement of node pod CIDR
-  #     podCIDR: false
-
-  # -- Configure the encapsulation configuration for communication between nodes.
-  # Possible values:
-  #   - disabled
-  #   - vxlan (default)
-  #   - geneve
-  tunnel: "vxlan"
-
 k8s_calico_helm_values:
 # See https://docs.tigera.io/calico/3.25/getting-started/kubernetes/helm
   installation:
@@ -59,3 +36,42 @@ k8s_calico_helm_values:
     calicoNetwork:
       ipPools:
         - cidr: '{{ k8s_pod_network_cidr }}'
+
+# Cilium helm chart setup
+k8s_cilium_chart_version: '{{ null | default(omit) }}'
+# See example setup: https://github.com/syself/cluster-api-provider-hetzner/blob/main/templates/cluster-templates/bases/hcloud-kcp-ubuntu.yaml#L136
+k8s_cilium_helm_values:
+  rollOutCiliumPods: true
+  priorityClassName: "system-node-critical"
+
+  hubble:
+    metrics:
+      enabled:
+        - dns:query;ignoreAAAA
+        - drop
+        - tcp
+        - flow
+        - icmp
+        - http
+    relay:
+      enabled: true
+      rollOutPods: true
+    ui:
+      enabled: true
+      rollOutPods: true
+  ipam:
+    mode: "kubernetes"
+
+  kubeProxyReplacement: "partial"
+
+  operator:
+    rollOutPods: true
+    priorityClassName: "system-node-critical"
+
+  # encryption:
+  #   enabled: true
+  #   type: wireguard
+  # # -- Configure the underlying network MTU to overwrite auto-detected MTU.
+  # MTU: 1450 # for Hetzner
+  # # Recreate agent on config map change
+  # tunnel: "vxlan"
