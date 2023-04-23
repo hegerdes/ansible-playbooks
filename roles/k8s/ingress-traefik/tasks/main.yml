@@ -1,4 +1,4 @@
-# Main k8s Rancher setup
+# Main k8s/traefik setup
 
 - name: Add Treafik Helm-Chart repo
   kubernetes.core.helm_repository:

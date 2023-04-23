@@ -1,12 +1,12 @@
 # K8s install helm
 
-- name: Adding apt GPG Keys
+- name: Adding apt gpg keys
   ansible.builtin.apt_key:
     url: https://baltocdn.com/helm/signing.asc
     state: present
   tags: [k8s, k8s-init, k8s-helm]
 
-- name: Add Helm repository
+- name: Add helm package repository
   ansible.builtin.apt_repository:
     repo: deb https://baltocdn.com/helm/stable/debian/ all main
     update_cache: true
@@ -14,7 +14,7 @@
     filename: helm.list
   tags: [k8s, k8s-init, k8s-helm]
 
-- name: Install Helm package
+- name: Install helm
   ansible.builtin.apt:
     name: helm
     state: present

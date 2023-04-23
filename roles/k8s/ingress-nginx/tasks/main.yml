@@ -1,4 +1,4 @@
-# Main k8s Setup
+# Main k8s/nginx-ingress setup
 ---
 - name: Add Nginx-Ingress Helm-Chart repo
   kubernetes.core.helm_repository:
