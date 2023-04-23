@@ -1,0 +1,26 @@
+# vars for your helm and k8s apps
+
+k8s_app_helm_apps: []
+# # Example
+# k8s_app_helm_apps:
+#   - chart_name: demo-app
+#     repo_name: gh-demo-app
+#     repo_url: https://user.github.io/demo-app/
+#     deploy_name: demo-app
+#     # deploy_name: null
+#     # deploy_namespace: null
+#     chart_version: null
+#     # repo_user: null
+#     # repo_pw: null
+#     chart_values:
+#       my_key: my_val
+
+
+k8s_app_manifests: []
+# # Example
+# k8s_app_manifests:
+#   - name: oauth2-proxy
+#     file: '{{ inventory_dir}}/data/oauth2-proxy.yml'
+#     namespace: default      # optional
+#     state: present          # optional
+#     wait: true              # optional

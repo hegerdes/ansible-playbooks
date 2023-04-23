@@ -1,6 +1,5 @@
-# K8s install certmanager
+# K8s install generic helm apps
 
-# TODO make sure helm is installed
 - name: Add Helm repo
   kubernetes.core.helm_repository:
     name: '{{ k8s_helm_app.repo_name }}'
@@ -27,149 +26,18 @@
   loop: '{{ k8s_app_helm_apps | default([]) }}'
   loop_control:
     loop_var: k8s_helm_app
+    label: '{{ k8s_helm_app.chart_name }}'
   tags: [k8s, k8s-deploy, helm-deploy]
 
-
-# - name: Add Helm repo
-#   kubernetes.core.helm_repository:
-#     name: '{{ k8s_app_helm_repo.name}}'
-#     username: '{{ k8s_app_helm_repo.username}}'
-#     password: '{{ k8s_app_helm_repo.password}}'
-#     repo_url: '{{ k8s_app_helm_repo.repo_url}}'
-#   no_log: true
-#   tags: [k8s, k8s-deploy, helm-deploy]
-
-# - name: Apply Ingress 1
-#   kubernetes.core.k8s:
-#     namespace: kube-system
-#     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
-#     state: present
-#     definition:
-#       apiVersion: networking.k8s.io/v1
-#       kind: Ingress
-#       metadata:
-#         annotations:
-#           cert-manager.io/cluster-issuer: letsencrypt-prod
-#           nginx.ingress.kubernetes.io/auth-url: "https://$host/oauth2/auth"
-#           nginx.ingress.kubernetes.io/auth-signin: "https://$host/oauth2/start?rd=$escaped_request_uri"
-#         name: external-auth-oauth2
-#         namespace: kube-system
-#       spec:
-#         ingressClassName: nginx
-#         rules:
-#         - host: dashboard.k8s.henrikgerdes.me
-#           http:
-#             paths:
-#             - path: /
-#               pathType: Prefix
-#               backend:
-#                 service:
-#                   name: kubernetes-dashboard
-#                   port:
-#                     number: 443
-#         tls:
-#         - hosts:
-#           - dashboard.k8s.henrikgerdes.me
-#           secretName: dashboard-k8s
-#   tags: [k8s, k8s-deploy, helm-deploy]
-
-# - name: Apply Ingress 2
-#   kubernetes.core.k8s:
-#     namespace: kube-system
-#     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
-#     state: present
-#     definition:
-#       apiVersion: networking.k8s.io/v1
-#       kind: Ingress
-#       metadata:
-#         annotations:
-#           cert-manager.io/cluster-issuer: letsencrypt-prod
-#         name: oauth2-proxy
-#         namespace: kube-system
-#       spec:
-#         ingressClassName: nginx
-#         rules:
-#         - host: dashboard.k8s.henrikgerdes.me
-#           http:
-#             paths:
-#             - path: /oauth2
-#               pathType: Prefix
-#               backend:
-#                 service:
-#                   name: oauth2-proxy
-#                   port:
-#                     number: 4180
-#         tls:
-#         - hosts:
-#           - dashboard.k8s.henrikgerdes.me
-#           secretName: dashboard-k8s
-#   tags: [k8s, k8s-deploy, helm-deploy]
-
-# - name: Apply Deployment
-#   kubernetes.core.k8s:
-#     namespace: kube-system
-#     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
-#     state: present
-#     definition:
-#       apiVersion: apps/v1
-#       kind: Deployment
-#       metadata:
-#         labels:
-#           k8s-app: oauth2-proxy
-#         name: oauth2-proxy
-#         namespace: kube-system
-#       spec:
-#         replicas: 1
-#         selector:
-#           matchLabels:
-#             k8s-app: oauth2-proxy
-#         template:
-#           metadata:
-#             labels:
-#               k8s-app: oauth2-proxy
-#           spec:
-#             containers:
-#             - args:
-#               - --provider=github
-#               - --email-domain=*
-#               - --upstream=file:///dev/null
-#               - --http-address=0.0.0.0:4180
-#               # Register a new application
-#               # https://github.com/settings/applications/new
-#               env:
-#               - name: OAUTH2_PROXY_CLIENT_ID
-#                 value: 276844ccb8947d06cc0f
-#               - name: OAUTH2_PROXY_CLIENT_SECRET
-#                 value: 1dbe4f78821226f1cb6dcba9f304576775d02b1b
-#               - name: OAUTH2_PROXY_COOKIE_SECRET
-#                 value: blVWqRAS9771JbjSQAe6oA==
-#               image: quay.io/oauth2-proxy/oauth2-proxy:latest
-#               imagePullPolicy: Always
-#               name: oauth2-proxy
-#               ports:
-#               - containerPort: 4180
-#                 protocol: TCP
-#   tags: [k8s, k8s-deploy, helm-deploy]
-
-# - name: Apply Service
-#   kubernetes.core.k8s:
-#     namespace: kube-system
-#     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
-#     state: present
-#     definition:
-#       apiVersion: v1
-#       kind: Service
-#       metadata:
-#         labels:
-#           k8s-app: oauth2-proxy
-#         name: oauth2-proxy
-#         namespace: kube-system
-#       spec:
-#         ports:
-#         - name: http
-#           port: 4180
-#           protocol: TCP
-#           targetPort: 4180
-#         selector:
-#           k8s-app: oauth2-proxy
-#   tags: [k8s, k8s-deploy, helm-deploy]
+- name: Deploying custom apps
+  kubernetes.core.k8s:
+    namespace: '{{ k8s_app.namespace | default(omit) }}'
+    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
+    state: '{{ k8s_app.state | default("present") }}'
+    definition: '{{ lookup("template", k8s_app.file) | from_yaml_all }}'
+    wait: '{{ k8s_app.wait | default(true) }}'
+  loop: '{{ k8s_app_manifests | default([]) }}'
+  loop_control:
+    loop_var: k8s_app
+    label: '{{ k8s_app.name }}'
+  tags: [k8s, k8s-deploy]
