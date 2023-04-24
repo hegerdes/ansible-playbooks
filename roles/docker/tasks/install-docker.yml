@@ -30,6 +30,8 @@
       - 'containerd.io'
       - 'docker-{{ docker_edition }}'
       - 'docker-{{ docker_edition }}-cli'
+      - 'docker-compose-plugin'
+      - 'docker-buildx-plugin'
       - 'python3-setuptools'
       - 'python3-jsondiff'
       - 'python3-docker'
