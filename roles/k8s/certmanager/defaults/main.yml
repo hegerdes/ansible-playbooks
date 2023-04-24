@@ -5,7 +5,7 @@ k8s_certmanager_letsencrypt_mail: none
 k8s_certmanager_helm_chart_version: '{{ null | default(omit) }}'
 k8s_certmanager_ingress_classes:
  - nginx
- - treafik
+ - traefik
 
 k8s_certmanager_helm_values:
   installCRDs: true

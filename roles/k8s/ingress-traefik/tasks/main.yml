@@ -1,22 +1,22 @@
 # Main k8s/traefik setup
 
-- name: Add Treafik Helm-Chart repo
+- name: Add Traefik Helm-Chart repo
   kubernetes.core.helm_repository:
     name: traefik
-    repo_url: https://helm.traefik.io/traefik
+    repo_url: https://traefik.github.io/charts
   tags: [k8s, k8s-init, k8s-ingress, k8s-ingress-traefik]
 
-- name: Deploy Treafik
+- name: Deploy Traefik
   kubernetes.core.helm:
     name: traefik
     state: '{{ "present" if(k8s_traefik_install) else "absent" }}'
     chart_ref: traefik/traefik
     chart_version: '{{ k8s_traefik_helm_chart_version }}'
-    release_namespace: traefik-ingress
+    release_namespace: traefik
     create_namespace: true
     update_repo_cache: true
     atomic: true
     wait: true
-    values: '{{ k8s_treafik_helm_values | default({}) }}'
+    values: '{{ k8s_traefik_helm_values | default({}) }}'
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
   tags: [k8s, k8s-init, k8s-ingress, k8s-ingress-traefik]

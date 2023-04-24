@@ -3,9 +3,9 @@
 k8s_traefik_helm_chart_version: '{{ null | default(omit) }}'
 k8s_traefik_install: true
 
-# k8s_treafik_helm_values: {}
+# k8s_traefik_helm_values: {}
 # https://github.com/traefik/traefik-helm-chart/blob/master/traefik/values.yaml
-k8s_treafik_helm_values:
+k8s_traefik_helm_values:
   # Dashboard
   dashboard.ingressRoute: true
   deployment:
@@ -66,13 +66,13 @@ k8s_treafik_helm_values:
       allowCrossNamespace: true
       allowExternalNameServices: false
       allowEmptyServices: false
-      # ingressClass: traefik-internal
-      namespaces: []
-        # - "default"
+      ingressClass: traefik
+      namespaces:
+        - default
     kubernetesIngress:
       enabled: true
       allowExternalNameServices: true
       allowEmptyServices: false
-      # ingressClass: traefik
-      namespaces: []
-        # - "default"
+      ingressClass: traefik
+      namespaces:
+        - default
