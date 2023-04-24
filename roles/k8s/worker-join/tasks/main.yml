@@ -30,12 +30,16 @@
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
   register: k8s_join_res
 
-- name: Set worker role
-  ansible.builtin.command: "kubectl label node {{ inventory_hostname }} node-role.kubernetes.io/worker=worker"
+# https://www.reddit.com/r/kubernetes/comments/hixx7z/ansible_k8s_kubectl_label/
+- name: Set node role and arch label
+  ansible.builtin.command: "kubectl label node {{ inventory_hostname }} {{ item }}"
   register: _k8s_worker_role_set
   changed_when: ("node/" + inventory_hostname + " labeled") in _k8s_worker_role_set.stdout
   delegate_to: "{{ groups.k8s_master | flatten | first }}"
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
+  loop:
+    - 'node-role.kubernetes.io/worker=worker'
+    - 'kubernetes.io/uname/arch={{ ansible_facts.architecture }}'
 
 - name: Enable and check kubelet service
   ansible.builtin.systemd:
