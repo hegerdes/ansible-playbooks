@@ -7,25 +7,19 @@
   failed_when: false
   tags: [node-exporter, monitoring]
 
-- name: Get node-exporter URL
-  when: node_exporter_check_result.stdout == ""
-  ansible.builtin.shell: |
-    curl --silent https://api.github.com/repos/prometheus/node_exporter/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep linux-amd64
-  register: node_exporter_url
-  tags: [node-exporter, monitoring]
-
 - name: Download and un-tar node-exporter
   when: node_exporter_check_result.stdout == ""
   unarchive:
-    src: '{{ node_exporter_url.stdout }}'
+    src: '{{ lookup("url", "https://api.github.com/repos/prometheus/node_exporter/releases/latest") | from_json | json_query(query) | select("search", node_exporter_arch_map[ansible_facts.architecture]) | list | first }}'
     dest: /tmp
     remote_src: true
+  vars:
+    query: assets[?contains(name, 'linux')].browser_download_url
   tags: [node-exporter, monitoring]
 
 - name: Install node-exporter
   when: node_exporter_check_result.stdout == ""
-  ansible.builtin.shell: |
-    mv /tmp/node_exporter-*/node_exporter /usr/local/bin/node_exporter
+  ansible.builtin.shell: cp /tmp/node_exporter-*/node_exporter /usr/local/bin/node_exporter
   notify: Restart node-exporter
   tags: [node-exporter, monitoring]
 
@@ -37,7 +31,7 @@
 - name: Add node-exporter user
   user:
     name: node-exporter
-    ansible.builtin.shell: /usr/sbin/nologin
+    shell: /usr/sbin/nologin
     create_home: false
     group: adm
     system: true
@@ -72,34 +66,3 @@
 - name: Ensure handlers are notified now
   ansible.builtin.meta: flush_handlers
   tags: [node-exporter, monitoring]
-
-- name: Check is ufw installed
-  when: node_exporter_allow_ports
-  ansible.builtin.shell: command -v ufw >/dev/null 2>&1
-  register: ufw_installed
-  ignore_errors: true
-  changed_when: false
-  tags: [node-exporter, monitoring, firewall]
-
-- name: Check is firewalld installed
-  when: node_exporter_allow_ports
-  ansible.builtin.shell: command -v firewall-cmd >/dev/null 2>&1
-  register: firewalld_installed
-  ignore_errors: true
-  changed_when: false
-  tags: [node-exporter, monitoring, firewall]
-
-- name: Allow port via ufw
-  ansible.builtin.include_tasks: shared/open-port-ufw.yml
-  when: ufw_installed.rc | default(1) == 0
-  vars:
-    ufw_open_port: 9100
-  tags: [node-exporter, monitoring, firewall]
-
-- name: Allow port via firewalld
-  ansible.builtin.include_tasks: shared/open-port-firewalld.yml
-  when: firewalld_installed.rc | default(1) == 0
-  tags: [node-exporter, monitoring, firewall]
-  vars:
-    firewalld_open_port: 9100/tcp
-    firewalld_zone: internal

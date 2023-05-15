@@ -3,3 +3,6 @@
 node_exporter_allow_ports: true
 node_exporter_listen_interface: '0.0.0.0:9100'
 node_exporter_args: '--web.listen-address={{ node_exporter_listen_interface }} --path.rootfs="/"'
+node_exporter_arch_map:
+  x86_64: amd64
+  aarch64: arm64

@@ -81,7 +81,7 @@ The default values for each role are defined in `<role_name>/defaults/main.yml` 
 ```yml
 # promtail options
 promtail_config_client_target: 'mgmt'
-promtail_config_src_path: promtail-config.yml
+promtail_config_src_path: promtail-config.yml.j2
 promtail_config_dst_path: /srv/promtail/promtail-config.yml
 
 promtail_args: '--client.external-labels=hostname={{ ansible_facts.hostname }} -config.file {{ promtail_config_dst_path }}'

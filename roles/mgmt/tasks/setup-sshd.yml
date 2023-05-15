@@ -42,11 +42,11 @@
   notify: Restart SSHD
   tags: [mgmt, ssh]
 
-- name: Adding JumpHost user {{ mgmt_jumphost_user }}
+- name: Adding JumpHost user
   user:
     name: '{{ mgmt_jumphost_user }}'
     comment: '{{ mgmt_user_comment | default("JumpHost user")}}'
-    ansible.builtin.shell: /usr/bin/bash
+    shell: /usr/bin/bash
     create_home: false
     state: present
   tags: [mgmt, ssh]

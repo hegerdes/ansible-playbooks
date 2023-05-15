@@ -47,7 +47,7 @@
   tags: [docker, docker-install]
 
 - name: Install Loki log driver
-  when: docker_install_loki_log_plugin | bool
+  when: docker_install_loki_log_plugin
   community.docker.docker_plugin:
     plugin_name: grafana/loki-docker-driver:latest
     state: present
@@ -55,7 +55,7 @@
   tags: [docker, docker-install]
 
 - name: Enable Loki log driver
-  when: docker_install_loki_log_plugin | bool
+  when: docker_install_loki_log_plugin
   community.docker.docker_plugin:
     plugin_name: loki
     state: enable
@@ -66,7 +66,6 @@
     path: /etc/docker
     state: directory
     mode: "0755"
-  when: docker_daemon_options.keys() | length > 0
   tags: [docker, docker-install, docker-deamon]
 
 - name: Configure Docker daemon options
@@ -74,6 +73,7 @@
     content: '{{ docker_daemon_options | to_nice_json }}'
     dest: /etc/docker/daemon.json
     mode: 0644
+    validate: dockerd --validate --config-file=%s
   when: docker_daemon_options.keys() | length > 0
   notify: Restart Docker
   tags: [docker, docker-install, docker-deamon]

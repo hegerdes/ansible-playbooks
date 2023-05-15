@@ -7,25 +7,24 @@
   failed_when: false
   tags: [promtail, monitoring]
 
-- name: Get promtail URL
-  when: promtail_check_result.stdout == ""
-  ansible.builtin.shell: |
-    curl --silent https://api.github.com/repos/grafana/loki/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep promtail-linux-amd
-  register: promtail_url
-  tags: [promtail, monitoring]
-
 - name: Download and unzip promtail
   when: promtail_check_result.stdout == ""
   unarchive:
-    src: '{{ promtail_url.stdout }}'
+    src: '{{ lookup("url", "https://api.github.com/repos/grafana/loki/releases/latest") | from_json | json_query(query) | select("search", promtail_arch_map[ansible_facts.architecture]) | list | first }}'
     dest: /tmp
     remote_src: true
+    creates: '/tmp/promtail-linux-{{ arch_map[ansible_facts.architecture] }}'
+  vars:
+    query: assets[?starts_with(name, 'promtail-linux')].browser_download_url
   tags: [promtail, monitoring]
 
 - name: Install promtail
   when: promtail_check_result.stdout == ""
-  ansible.builtin.shell: |
-    mv /tmp/promtail-linux-* /usr/local/bin/promtail
+  ansible.builtin.copy:
+    src: 'promtail-linux-{{ arch_map[ansible_facts.architecture] }}'
+    dest: /usr/local/bin/promtail
+    remote_src: true
+    mode: 0755
   notify: Restart promtail
   tags: [promtail, monitoring]
 
@@ -39,7 +38,7 @@
     name: promtail
     comment: User for Promtail log-shipper
     group: adm
-    ansible.builtin.shell: /usr/sbin/nologin
+    shell: /usr/sbin/nologin
     create_home: false
     system: true
     state: present
@@ -62,7 +61,7 @@
   tags: [promtail, monitoring]
 
 - name: Copy Promtail config
-  ansible.builtin.copy:
+  ansible.builtin.template:
     src: '{{ promtail_config_src_path }}'
     dest: '{{ promtail_config_dst_path }}'
     owner: root

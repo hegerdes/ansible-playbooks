@@ -1,7 +1,12 @@
 ---
 # promtail options
 promtail_config_client_target: 'mgmt'
-promtail_config_src_path: promtail-config.yml
+promtail_config_src_path: promtail-config.yml.j2
 promtail_config_dst_path: /srv/promtail/promtail-config.yml
-
+promtail_target_server: http://mgmt:3100/loki/api/v1/push
 promtail_args: '--client.external-labels=host={{ ansible_facts.hostname }} -config.file {{ promtail_config_dst_path }}'
+
+# Used for download url
+promtail_arch_map:
+  x86_64: amd64
+  aarch64: arm64

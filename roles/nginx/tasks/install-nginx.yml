@@ -44,8 +44,3 @@
     name: /etc/nginx/sites-enabled/default
     state: absent
   tags: [ingress, nginx]
-
-- name: Update Promtail config
-  when: nginx_update_promtail | bool
-  ansible.builtin.import_tasks: update-promtail.yml
-  tags: [ingress, ingress-logs]

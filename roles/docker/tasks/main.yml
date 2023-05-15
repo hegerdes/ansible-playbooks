@@ -10,7 +10,7 @@
 
 - name: Docker-Compose install
   ansible.builtin.include_tasks: install-compose.yml
-  when: docker_install_compose | bool
+  when: docker_install_compose
   tags: [docker, docker-compose]
 
 - name: Docker user setup
@@ -19,12 +19,12 @@
 
 - name: Setup SWARM
   ansible.builtin.include_tasks: docker-swarm.yml
-  when: docker_init_swarm | bool
+  when: docker_init_swarm
   tags: [docker, docker-swarm, docker-tags]
 
 - name: Install Portainer
   ansible.builtin.include_tasks: docker-portainer.yml
-  when: docker_install_portainer | bool
+  when: docker_install_portainer
   tags: [docker, docker-portainer]
 
 - name: Setup cron jobs

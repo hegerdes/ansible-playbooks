@@ -17,24 +17,24 @@
   tags: [mgmt, ssh]
 
 - name: Install backup tools
-  when: mgmt_init_backup | bool
+  when: mgmt_init_backup
   ansible.builtin.include_tasks: install-backup-tools.yml
   tags: [mgmt, backup]
 
 - name: Install backup script
-  when: mgmt_init_backup | bool
+  when: mgmt_init_backup
   ansible.builtin.include_tasks: install-backup-script.yml
   tags: [mgmt, backup]
 
 - name: Check if Docker is installed
   ansible.builtin.command: docker --version
-  register: docker_valid
+  register: _docker_valid
   ignore_errors: true
   changed_when: false
   tags: [mgmt, docker]
 
 - name: Docker install
-  when: docker_valid.failed
+  when: _docker_valid.failed
   ansible.builtin.include_role:
     name: docker
   tags: [mgmt, docker]

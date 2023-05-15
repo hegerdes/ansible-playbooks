@@ -3,6 +3,8 @@
 - hosts: all
   become: true
   gather_facts: true
+  vars_files:
+    - '{{ inventory_dir }}/secrets/vault.yml'
   roles:
     - common
     - promtail
@@ -11,6 +13,8 @@
 - hosts: docker_hosts
   become: true
   gather_facts: true
+  vars_files:
+    - '{{ inventory_dir }}/secrets/vault.yml'
   roles:
     - docker
 
@@ -27,6 +31,15 @@
   gather_facts: true
   roles:
     - nginx
+
+- hosts: docker_hosts
+  become: true
+  gather_facts: true
+  vars_files:
+    - '{{ inventory_dir }}/secrets/vault.yml'
+  roles:
+    - docker-deploy
+
 
 - hosts: minios
   become: true
