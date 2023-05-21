@@ -27,21 +27,22 @@
   tasks:
     # - debug:
     #     msg: '{{ k8s_crun_wasmlib_version | split(".") | first }}'
+    # - debug:
+    #     msg: '{{  ansible_facts.architecture }}'
+
+    # - debug:
+    #     msg: '{{ lookup("url", "https://api.github.com/repos/prometheus/node_exporter/releases/latest") | from_json | json_query(query) | select("search", crun_arch_map[ansible_facts.architecture]) | list | first }}'
+    #   vars:
+    #     # query: assets[*].browser_download_url
+    #     query: assets[?contains(name, 'linux')].browser_download_url
+    #     crun_arch_map:
+    #       x86_64: amd64
+    #       aarch64: arm64
+
     - debug:
-        msg: '{{  ansible_facts.architecture }}'
-
-
-
-
-    - debug:
-        msg: '{{ lookup("url", "https://api.github.com/repos/prometheus/node_exporter/releases/latest") | from_json | json_query(query) | select("search", crun_arch_map[ansible_facts.architecture]) | list | first }}'
+        msg: '{{ lookup("az_keyvault", "test-secret", vault_url=keyvault ) }}'
       vars:
-        # query: assets[*].browser_download_url
-        query: assets[?contains(name, 'linux')].browser_download_url
-        crun_arch_map:
-          x86_64: amd64
-          aarch64: arm64
-
+        keyvault: https://hegerdes.vault.azure.net
 
 # - name: Get promtail URL
 #   when: promtail_check_result.stdout == ""
