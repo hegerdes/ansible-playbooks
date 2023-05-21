@@ -12,3 +12,5 @@ kubernetes
 jsonpatch
 PyYAML
 netaddr
+azure-keyvault
+azure-identity

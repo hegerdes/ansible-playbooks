@@ -1,8 +1,8 @@
 # Main k8s Setup
 ---
 - name: Test reachability to shared KubeControlPlaneHost
-  ansible.builtin.command: 'ping -c 5 {{ k8s_shared_api_server_endpoint }}'
-  changed_when: false
+  ansible.netcommon.net_ping:
+    dest: '{{ k8s_shared_api_server_endpoint }}'
   tags: [k8s, k8-init, k8-master-init]
 
 - name: Check if kubeadm has already run
