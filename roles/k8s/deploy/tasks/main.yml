@@ -7,6 +7,7 @@
   loop: '{{ k8s_app_helm_apps | default([]) }}'
   loop_control:
     loop_var: k8s_helm_app
+    label: '{{ k8s_helm_app.repo_name }}'
   no_log: true
   tags: [k8s, k8s-deploy, helm-deploy]
 
@@ -21,6 +22,7 @@
     update_repo_cache: true
     atomic: true
     wait: true
+    wait_timeout: 2m
     values: '{{ k8s_helm_app.chart_values | default({}) }}'
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
   loop: '{{ k8s_app_helm_apps | default([]) }}'

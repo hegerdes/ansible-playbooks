@@ -13,7 +13,7 @@
 
 - name: Deploy Rancher
   kubernetes.core.helm:
-    name: rancher-stable
+    name: rancher
     state: '{{ "present" if(k8s_rancher_install) else "absent" }}'
     chart_version: '{{ k8s_rancher_helm_chart_version }}'
     chart_ref: rancher-stable/rancher
