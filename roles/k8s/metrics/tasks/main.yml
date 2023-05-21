@@ -1,0 +1,89 @@
+# Main k8s Metrics
+
+- name: Create a monitoring namespace
+  kubernetes.core.k8s:
+    name: monitoring
+    api_version: v1
+    kind: Namespace
+    state: present
+    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
+  tags: [k8s, k8-init, k8s-metrics]
+
+- name: Add metrics-server helm-chart repo
+  kubernetes.core.helm_repository:
+    name: metrics-server
+    repo_url: https://kubernetes-sigs.github.io/metrics-server/
+  tags: [k8s, k8-init, k8s-metrics]
+
+- name: Deploy metrics-server
+  kubernetes.core.helm:
+    name: metrics-server
+    state: '{{ "present" if(k8s_metrics_install_metrics_server) else "absent" }}'
+    chart_version: '{{ k8s_metrics_server_helm_chart_version }}'
+    chart_ref: metrics-server/metrics-server
+    release_namespace: kube-system
+    create_namespace: true
+    update_repo_cache: true
+    wait: true
+    atomic: true
+    values: '{{ k8s_metrics_server_helm_values | default({}) }}'
+    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
+  tags: [k8s, k8-init, k8s-metrics]
+
+- name: Add k8s-dashboard helm-chart repo
+  kubernetes.core.helm_repository:
+    name: kubernetes-dashboard
+    repo_url: https://kubernetes.github.io/dashboard/
+  tags: [k8s, k8-init, k8s-metrics, k8s-metrics-dashboard]
+
+- name: Deploy k8s-dashboard
+  kubernetes.core.helm:
+    name: kubernetes-dashboard
+    state: '{{ "present" if(k8s_metrics_install_dashboard) else "absent" }}'
+    chart_version: '{{ k8s_dashboard_chart_version }}'
+    chart_ref: kubernetes-dashboard/kubernetes-dashboard
+    release_namespace: kubernetes-dashboard
+    create_namespace: true
+    update_repo_cache: true
+    wait: true
+    atomic: true
+    values: '{{ k8s_dashboard_helm_values | default({}) }}'
+    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
+  tags: [k8s, k8-init, k8s-metrics, k8s-metrics-dashboard]
+
+- name: Add prometheus helm-chart repo
+  kubernetes.core.helm_repository:
+    name: prometheus-community
+    repo_url: https://prometheus-community.github.io/helm-charts
+  tags: [k8s, k8-init, k8s-metrics, k8s-metrics-node-exporter, k8s-metrics-ksm]
+
+- name: Deploy prometheus node-exporter
+  kubernetes.core.helm:
+    name: prometheus-node-exporter
+    state: '{{ "present" if(k8s_metrics_install_node_exporter) else "absent" }}'
+    chart_version: '{{ k8s_node_exporter_chart_version }}'
+    chart_ref: prometheus-community/prometheus-node-exporter
+    release_namespace: monitoring
+    update_repo_cache: true
+    create_namespace: true
+    atomic: true
+    wait: true
+    values: '{{ k8s_node_exporter_helm_values | default({}) }}'
+    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
+  tags: [k8s, k8-init, k8s-metrics, k8s-metrics-node-exporter]
+
+- name: Deploy prometheus kube-state-metrics
+  kubernetes.core.helm:
+    name: ksm
+    state: '{{ "present" if(k8s_metrics_install_ksm) else "absent" }}'
+    chart_ref: prometheus-community/kube-state-metrics
+    chart_version: '{{ k8s_ksm_helm_chart_version }}'
+    release_namespace: monitoring
+    create_namespace: true
+    update_repo_cache: true
+    atomic: true
+    wait: true
+    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
+    values: '{{ k8s_ksm_helm_values | default({}) }}'
+  tags: [k8s, k8-init, k8s-metrics, k8s-metrics-ksm]
+
