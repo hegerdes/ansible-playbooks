@@ -6,16 +6,24 @@ COPY requirements.txt /app/requirements.txt
 # Install nodejs, ssh, rsync and other needed packages
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl nano gpg ssh-client jq net-tools ca-certificates iputils-ping iproute2 rsync \
+    curl nano gpg ssh-client jq net-tools ca-certificates iputils-ping \
+    iproute2 rsync apt-transport-https lsb-release gnupg \
+    && mkdir -p /etc/apt/keyrings \
     && if [ "$(uname -m)" != "x86_64" ]; then \
         apt-get install -y --no-install-recommends make gcc libc6-dev libffi-dev; \
-    fi && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key \
-    | gpg --dearmor -o /usr/share/keyrings/nodejs-archive-keyring.gpg \
-    && export NODE_ARCH="arch=amd64 signed-by=/usr/share/keyrings/nodejs-archive-keyring.gpg" \
-    && echo "deb [$NODE_ARCH] https://deb.nodesource.com/node_16.x bullseye main" \
+    fi && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | gpg --dearmor -o \
+    /usr/share/keyrings/nodejs-archive-keyring.gpg \
+    && export NODE_ARCH="arch=`dpkg --print-architecture` signed-by=/usr/share/keyrings/nodejs-archive-keyring.gpg" \
+    && export AZ_REPO=$(lsb_release -cs) \
+    && echo "deb [$NODE_ARCH] https://deb.nodesource.com/node_18.x bullseye main" \
     > /etc/apt/sources.list.d/nodesource.list \
-    && apt-get update && apt-get install -y --no-install-recommends \
-    nodejs && pip3 install --no-cache-dir -r requirements.txt \
+    && curl -sLS https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | tee \
+    /etc/apt/keyrings/microsoft.gpg > /dev/null \
+    && chmod go+r /etc/apt/keyrings/microsoft.gpg \
+    && echo "deb [arch=`dpkg --print-architecture` signed-by=/etc/apt/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" \
+    | tee /etc/apt/sources.list.d/azure-cli.list \
+    && apt-get update && apt-get install -y --no-install-recommends nodejs azure-cli \
+    && pip3 install --no-cache-dir -r requirements.txt \
     && apt-get remove -y make gcc libc6-dev libffi-dev && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
 

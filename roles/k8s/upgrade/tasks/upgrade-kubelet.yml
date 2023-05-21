@@ -1,0 +1,69 @@
+# Set up k8s with kubeadm
+---
+
+- name: Upgrade kubelet
+  block:
+    # - name: Drain node
+    #   kubernetes.core.k8s_drain:
+    #     state: drain
+    #     name: '{{ _k8s_upgrade_node_name }}'
+    #     delete_options:
+    #       ignore_daemonsets: true
+    #       delete-emptydir-data: true
+    #     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
+    #   delegate_to: groups.k8s_master | flatten | first
+    #   tags: [k8s, k8s-upgrade, k8s-upgrade-kubelet]
+
+    - name: Update kubelet and kubectl
+      ansible.builtin.apt:
+        name:
+          - kubeadm{{ "=" + k8s_version + "-00" if (k8s_version != "latest") }}
+          - kubectl{{ "=" + k8s_version + "-00" if (k8s_version != "latest") }}
+          - kubelet{{ "=" + k8s_version + "-00" if (k8s_version != "latest") }}
+        state: present
+        update_cache: true
+        cache_valid_time: 86400 # equal to 24h
+        install_recommends: false
+        allow_downgrade: true
+        autoremove: true
+        allow_change_held_packages: true
+      register: _k8s_cp_upgrade_packages
+      tags: [k8s, k8s-upgrade, k8s-upgrade-kubelet]
+
+    - name: Restart kubelet
+      when: _k8s_cp_upgrade_packages.changed
+      ansible.builtin.service:
+        name: kubelet
+        daemon_reload: true
+        state: restarted
+      tags: [k8s, k8s-upgrade, k8s-upgrade-kubelet]
+
+    # - name: Reschdule node
+    #   kubernetes.core.k8s_drain:
+    #     name: '{{ _k8s_upgrade_node_name }}'
+    #     state: uncordon
+    #     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
+    #   delegate_to: groups.k8s_master | flatten | first
+    #   tags: [k8s, k8s-upgrade, k8s-upgrade-kubelet]
+
+  rescue:
+    - name: Cleanup - Reset Kubernetes component
+      ansible.builtin.command: "echo error"
+      changed_when: true
+      register: reset_cluster
+      tags: [k8s, k8s-upgrade, k8s-upgrade-kubelet]
+
+    - name: Print Error Info
+      ansible.builtin.debug:
+        msg: 'A error occured while bootstraping the first master node. The cluster was reset. Please see the error meassage below:'
+      tags: [k8s, k8s-upgrade, k8s-upgrade-kubelet]
+
+    - name: Kubeadm Error
+      ansible.builtin.debug:
+        var: init_cluster
+      tags: [k8s, k8s-upgrade, k8s-upgrade-kubelet]
+
+    - name: Exit with error code!
+      ansible.builtin.command: /bin/false
+      changed_when: false
+      tags: [k8s, k8s-upgrade, k8s-upgrade-kubelet]

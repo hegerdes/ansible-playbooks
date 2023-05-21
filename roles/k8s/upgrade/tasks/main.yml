@@ -1,0 +1,68 @@
+# Main k8s Setup
+---
+
+# TODO: Use https://docs.ansible.com/ansible/latest/collections/kubernetes/core/k8s_info_module.html#ansible-collections-kubernetes-core-k8s-info-module
+- name: Gather the package facts
+  ansible.builtin.package_facts:
+    manager: auto
+  tags: [k8s, k8s-upgrade, k8s-upgrade-cp]
+
+- name: Update kubeadm
+  when: '"kubeadm" in ansible_facts.packages'
+  ansible.builtin.apt:
+    name:
+      - kubeadm{{ "=" + k8s_version + "-00" if (k8s_version != "latest") }}
+    state: present
+    update_cache: true
+    cache_valid_time: 86400 # equal to 24h
+    install_recommends: false
+    allow_downgrade: true
+    autoremove: true
+    allow_change_held_packages: true
+  ignore_errors: "{{ ansible_check_mode }}"
+  failed_when: '"kubeadm" not in ansible_facts.packages'
+  tags: [k8s, k8s-upgrade, k8s-upgrade-cp]
+
+- name: Set kubeadm to fixed versions
+  ansible.builtin.dpkg_selections:
+    name: kubeadm
+    selection: hold
+  tags: [k8s, k8s-upgrade, k8s-upgrade-cp]
+
+- name: Plan upgrade
+  when: groups.k8s_master | flatten | first == inventory_hostname
+  ansible.builtin.command: kubeadm upgrade plan
+  register: _k8s_cp_upgrade_plan
+  tags: [k8s, k8s-upgrade, k8s-upgrade-cp]
+
+- name: Debug - Kubeadm plan upgrade
+  ansible.builtin.debug:
+    var: _k8s_cp_upgrade_plan
+  tags: [k8s, k8s-upgrade, k8s-upgrade-cp]
+
+- name: Apply upgrade - first master
+  when: groups.k8s_master | flatten | first == inventory_hostname
+  ansible.builtin.command: "kubeadm upgrade apply v{{ k8s_version }} --yes"
+  register: _k8s_cp_upgrade_exe
+  throttle: 1
+  tags: [k8s, k8s-upgrade, k8s-upgrade-cp]
+
+- name: Debug - Kubeamd apply
+  ansible.builtin.debug:
+    var: _k8s_cp_upgrade_exe
+  tags: [k8s, k8s-upgrade, k8s-upgrade-cp]
+
+- name: Apply upgrade on other nodes
+  when: groups.k8s_master | flatten | first != inventory_hostname
+  ansible.builtin.command: "kubeadm upgrade node"
+  register: _k8s_cp_upgrade_exe_other
+  throttle: 1
+  tags: [k8s, k8s-upgrade, k8s-upgrade-cp]
+
+- name: Upgrade kublets
+  ansible.builtin.include_tasks: upgrade-kubelet.yml
+  run_once: true
+  loop: '{{ groups.k8s | flatten }}'
+  loop_control:
+    loop_var: _k8s_upgrade_node_name
+  tags: [k8s, k8s-upgrade, k8s-upgrade-cp]
