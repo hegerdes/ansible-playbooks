@@ -4,27 +4,21 @@ on:
   push:
     branches: [ "main" ]
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build and push
-        uses: docker/build-push-action@v3.3.0
-        with:
-          push: true
-          sbom: true
-          platforms: linux/amd64,linux/arm64
-          tags: |
-            hegerdes/palybooks:${{ github.sha }}
-            hegerdes/palybooks:latest
+  docker-build:
+    uses: hegerdes/publish/.github/workflows/reusable-docker-build.yml@main
+    with:
+      build-tags: ${{ github.actor }}/palybooks:latest,ghcr.io/${{ github.actor }}/palybooks:latest
+      build-cache: type=gha
+      build-args: COMMIT_HASH=${{ github.sha }},COMMIT_TAG=${{ github.ref_name }}
+      build-labels: MAINTAINER=${{ github.actor }}
+      build-platforms: linux/amd64,linux/arm64
+      extra-command: echo "Checkout my website henrikgerdes.me"
+    secrets:
+      REGISTRY_USER: ${{ secrets.DOCKERHUB_USERNAME }}
+      REGISTRY_PW: ${{ secrets.DOCKERHUB_TOKEN }}
+      # COSIGN_KEY_STORE: ${{ secrets.COSIGN_PVT_KEY }}
