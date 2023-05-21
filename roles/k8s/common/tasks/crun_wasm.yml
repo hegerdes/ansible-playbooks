@@ -30,16 +30,16 @@
   with_items:
     - src: /tmp/crun
       dest: /usr/local/sbin/crun
-    - src: /tmp/wasmlibs/libwasmedge.so.0.0.1
-      dest: /usr/wasmedge/lib/libwasmedge.so.0.0.1
+    - src: "/tmp/wasmlibs/libwasmedge.so.{{ k8s_crun_wasmlib_version }}"
+      dest: "/usr/wasmedge/lib/libwasmedge.so.{{ k8s_crun_wasmlib_version }}"
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: Create sym link to wasm lib
   ansible.builtin.file:
-    src: /usr/wasmedge/lib/libwasmedge.so.0.0.1
+    src: "/usr/wasmedge/lib/libwasmedge.so.{{ k8s_crun_wasmlib_version }}"
     dest: '/usr/wasmedge/lib/{{ item }}'
     state: link
-  loop: [libwasmedge.so.0, libwasmedge.so]
+  loop: ['libwasmedge.so.{{ k8s_crun_wasmlib_version | split(".") | first }}', 'libwasmedge.so']
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: Add wasm libs to server lib store
