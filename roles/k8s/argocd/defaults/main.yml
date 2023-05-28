@@ -6,3 +6,26 @@ k8s_argocd_install: true
 # Values for ARGOCD Helm Chart
 # See: https://github.com/argoproj/argo-helm/blob/main/charts/argo-cd/values.yaml
 k8s_argocd_helm_values: {}
+
+k8s_argocd_apps: []
+# Example
+# k8s_argocd_apps:
+# - name: demo1
+#   namespace: default
+#   state: present
+#   wait: true
+#   definition:
+#     apiVersion: argoproj.io/v1alpha1
+#     kind: Application
+#     metadata:
+#       name: guestbook
+#       namespace: argocd
+#     spec:
+#       project: default
+#       source:
+#         repoURL: https://github.com/argoproj/argocd-example-apps.git
+#         targetRevision: HEAD
+#         path: guestbook
+#       destination:
+#         server: https://kubernetes.default.svc
+#         namespace: guestbook

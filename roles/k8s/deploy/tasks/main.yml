@@ -1,30 +1,7 @@
 # K8s install generic helm apps
 
-- name: Add Helm repo
-  kubernetes.core.helm_repository:
-    name: '{{ k8s_helm_app.repo_name }}'
-    repo_url: '{{ k8s_helm_app.repo_url }}'
-  loop: '{{ k8s_app_helm_apps | default([]) }}'
-  loop_control:
-    loop_var: k8s_helm_app
-    label: '{{ k8s_helm_app.repo_name }}'
-  no_log: true
-  tags: [k8s, k8s-deploy, helm-deploy]
-
-- name: Deploy App
-  kubernetes.core.helm:
-    name: '{{ k8s_helm_app.deploy_name | default(k8s_helm_app.chart_name) }}'
-    state: '{{ "present" if(k8s_helm_app.install | default(true)) else "absent" }}'
-    chart_version: '{{ k8s_helm_app.chart_version }} '
-    chart_ref: '{{ k8s_helm_app.repo_name }}/{{ k8s_helm_app.chart_name }}'
-    release_namespace: '{{ k8s_helm_app.deploy_namespace | default("default") }}'
-    create_namespace: true
-    update_repo_cache: true
-    atomic: true
-    wait: true
-    wait_timeout: 2m
-    values: '{{ k8s_helm_app.chart_values | default({}) }}'
-    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
+- name: Install Helm App
+  ansible.builtin.include_tasks: helm-deploy.yml
   loop: '{{ k8s_app_helm_apps | default([]) }}'
   loop_control:
     loop_var: k8s_helm_app
@@ -42,4 +19,4 @@
   loop_control:
     loop_var: k8s_app
     label: '{{ k8s_app.name }}'
-  tags: [k8s, k8s-deploy]
+  tags: [k8s, k8s-deploy, k8s-deploy-manifest]
