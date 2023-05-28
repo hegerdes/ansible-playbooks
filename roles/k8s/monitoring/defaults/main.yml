@@ -5,13 +5,13 @@ k8s_grafana_agent_logs_config_path: conf/grafana-log-config.yml.j2
 k8s_grafana_agent_metrics_config_path: conf/grafana-metrics-config.yml.j2
 k8s_grafana_agent_traces_config_path: conf/grafana-traces-config.yml.j2
 
-k8s_grafana_agent_logs_install: True
+k8s_grafana_agent_logs_install: true
 k8s_grafana_agent_logs_agent_config: '{{ lookup("template", k8s_grafana_agent_logs_config_path) | from_yaml }}'
 k8s_grafana_agent_logs_agent_app_path: apps/grafana-log-agent.yml.j2
-k8s_grafana_agent_metrics_install: True
+k8s_grafana_agent_metrics_install: true
 k8s_grafana_agent_metrics_agent_config: '{{ lookup("template", k8s_grafana_agent_metrics_config_path) | from_yaml }}'
 k8s_grafana_agent_metrics_agent_app_path: apps/grafana-metrics-agent.yml.j2
-k8s_grafana_agent_traces_install: True
+k8s_grafana_agent_traces_install: true
 k8s_grafana_agent_traces_agent_config: '{{ lookup("template", k8s_grafana_agent_traces_config_path) | from_yaml }}'
 k8s_grafana_agent_traces_agent_app_path: apps/grafana-traces-agent.yml.j2
 k8s_grafana_agent_traces_strategies_config:
@@ -20,7 +20,7 @@ k8s_grafana_agent_traces_strategies_config:
     type: probabilistic
 
 ### Grafana-Agent ###
-k8s_monitoring_install_grafana_agent: True
+k8s_monitoring_install_grafana_agent: true
 k8s_monitoring_prometheus_remote_write:
   - url: https://prometheus-prod-01-eu-west-0.grafana.net/api/prom/push
     # basic_auth:

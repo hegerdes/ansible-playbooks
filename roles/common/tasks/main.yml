@@ -23,6 +23,13 @@
   notify: Restart SSHD
   tags: [common, ssh]
 
+- name: Add Debian Backports apt repo
+  ansible.builtin.apt_repository:
+    repo: "deb http://deb.debian.org/debian {{ ansible_distribution_release }}-backports main"
+    state: present
+    filename: debian-backports
+  tags: [common, apt]
+
 - name: Install aptitude using apt
   ansible.builtin.apt:
     name: aptitude
@@ -54,8 +61,10 @@
     - 'libffi-dev'
     - 'lsb-release'
     - 'python3-pip'
+    - 'policycoreutils'
     - 'python3-requests'
     - 'python3-jsondiff'
+    - 'unattended-upgrades'
     - 'python3-yaml'
     - 'unzip'
     - 'git'
@@ -75,6 +84,24 @@
     state: absent
   loop: '{{ common_delete_packages }}'
   tags: [common, apt]
+
+- name: Setup UnattendedUpgrades
+  ansible.builtin.lineinfile:
+    path: /etc/apt/apt.conf.d/20auto-upgrades
+    create: true
+    state: '{{ common_unattended_upgrades_state }}'
+    line: '{{ item }}'
+    mode: '0644'
+  loop:
+    - APT::Periodic::Update-Package-Lists "1";
+    - APT::Periodic::Unattended-Upgrade "1";
+  tags: [common, apt]
+
+- name: Enable SELinux in enforcing mode
+  ansible.posix.selinux:
+    policy: '{{ common_selinux_policy }}'
+    state: '{{ common_selinux_mode }}'
+  tags: [common, selinux]
 
 - name: Set hostnames
   ansible.builtin.import_tasks: install-hostnames.yml

@@ -7,16 +7,41 @@
   until: "_cloud_init_res.cloud_init_data_facts.status.v1.stage is defined and not _cloud_init_res.cloud_init_data_facts.status.v1.stage"
   retries: 25
   delay: 10
+  tags: [k8s, k8s-prepare, k8s-base]
+
+- name: Enable SELinux in enforcing mode
+  ansible.posix.selinux:
+    policy: '{{ k8s_selinux_policy }}'
+    state: '{{ k8s_selinux_mode }}'
+  tags: [k8s, k8s-prepare, k8s-base, selinux]
+
+- name: Add Debian Backports apt repo
+  ansible.builtin.apt_repository:
+    repo: "deb http://deb.debian.org/debian {{ ansible_distribution_release }}-backports main"
+    state: present
+    filename: debian-backports
   tags: [k8s, k8s-prepare, k8s-base, apt]
 
 - name: Ensue required packages are installed
   ansible.builtin.apt:
-    name: [gnupg, git, lsb-release, ca-certificates, curl, apparmor, python3-kubernetes, apt-transport-https, jq, unzip, wget, socat, mtr, logrotate, open-iscsi, ipvsadm, dbus, libyajl2]
+    name: [gnupg, git, lsb-release, ca-certificates, curl, apparmor, python3-kubernetes, apt-transport-https, jq, unzip, wget, socat, mtr, logrotate, open-iscsi, ipvsadm, dbus, libyajl2, policycoreutils]
     state: present
     update_cache: true
     install_recommends: false
     cache_valid_time: 86400
     autoremove: true
+  tags: [k8s, k8s-prepare, k8s-base, apt]
+
+- name: Setup UnattendedUpgrades
+  ansible.builtin.lineinfile:
+    path: /etc/apt/apt.conf.d/20auto-upgrades
+    create: true
+    state: '{{ k8s_unattended_upgrades_state }}'
+    line: '{{ item }}'
+    mode: '0644'
+  loop:
+    - APT::Periodic::Update-Package-Lists "1";
+    - APT::Periodic::Unattended-Upgrade "1";
   tags: [k8s, k8s-prepare, k8s-base, apt]
 
 - name: Remove swapfile from /etc/fstab
@@ -86,10 +111,12 @@
     reload: true
   with_items:
     - { key: net.ipv4.ip_forward, val: 1}
+    - { key: net.ipv6.conf.all.forwarding, val: 1}
     - { key: net.bridge.bridge-nf-call-iptables, val: 1}
     - { key: net.bridge.bridge-nf-call-ip6tables, val: 1}
     - { key: net.ipv6.conf.default.forwarding, val: 1}
     - { key: vm.overcommit_memory , val: 1}
+    - { key: vm.panic_on_oom, val: 0 }
     - { key: kernel.panic_on_oops , val: 1}
     - { key: kernel.panic, val: 10}
     - { key: net.ipv4.conf.all.rp_filter, val: 0}

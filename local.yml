@@ -14,6 +14,26 @@
 #     # - k8s/deploy
 
 - hosts: localhost
+  become: false
+  gather_facts: true
+  vars:
+    k8s_kubeconfig: ~/.kube/config
+  roles:
+    # - k8s/hetzner
+    # - k8s/certmanager
+    # - k8s/ingress-nginx
+    # # - k8s/ingress-traefik
+    # - k8s/metrics
+    # - k8s/longhorn
+    # - k8s/grafana-mimir
+    # - k8s/metallb
+    - k8s/deploy
+    # - k8s/argocd
+    # - k8s/rancher
+  # vars_files:
+  #   - '{{ inventory_dir }}/secrets/vault.yml'
+
+- hosts: localhost
   become: False
   gather_facts: true
   # roles:
@@ -29,6 +49,21 @@
     #     msg: '{{ k8s_crun_wasmlib_version | split(".") | first }}'
     # - debug:
     #     msg: '{{  ansible_facts.architecture }}'
+    - debug:
+        msg: '{{ item }}'
+      loop: '{{ cockpit_packages }}'
+      vars:
+        cockpit_packages:
+          - { name: "cockpit", install_weak_deps: false }
+          - { name: "cockpit-ws"}
+          - { name: "cockpit-system"}
+          - { name: "cockpit-storaged"}
+          - { name: "cockpit-selinux"}
+          # - { name: "cockpit-pcp", when: "{{ 'pcp' in ansible_facts.packages }}" }
+          # - { name: "cockpit-machines", when: "{{ 'libvirt-client' in ansible_facts.packages }}" }
+          # - { name: "cockpit-podman", when: "{{ 'podman' in ansible_facts.packages }}" }
+
+
 
     # - debug:
     #     msg: '{{ lookup("url", "https://api.github.com/repos/prometheus/node_exporter/releases/latest") | from_json | json_query(query) | select("search", crun_arch_map[ansible_facts.architecture]) | list | first }}'

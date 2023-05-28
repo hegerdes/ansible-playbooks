@@ -12,7 +12,16 @@
   register: kubeadm_ca
   tags: [k8s, k8-init, k8-master-init]
 
-- name: Generate certificat key
+- name: Change kubelet conf permissions
+  ansible.builtin.file:
+    path: '{{ item }}'
+    owner: root
+    group: root
+    mode: '0600'
+  loop: [/etc/systemd/system/kubelet.service.d/10-kubeadm.conf, /var/lib/kubelet/config.yaml]
+  tags: [k8s, k8-init, k8-master-init]
+
+- name: Generate certificate key
   when: groups.k8s_master | flatten | first == inventory_hostname
   ansible.builtin.command: kubeadm certs certificate-key
   register: k8s_kubeadm_cert_key_res
@@ -20,7 +29,7 @@
   run_once: true
   tags: [k8s, k8-init, k8-master-init]
 
-- name: Save certificat key
+- name: Save certificate key
   when: groups.k8s_master | flatten | first == inventory_hostname
   ansible.builtin.set_fact:
     k8s_kubeadm_cert_key: '{{ k8s_kubeadm_cert_key_res.stdout }}'
@@ -136,7 +145,7 @@
 #   register: k8s_cluster_info
 #   tags: [k8s, k8-init, k8-master-init]
 
-# - name: Debug - Print cluser info
+# - name: Debug - Print cluster info
 #   ansible.builtin.debug:
 #     var: k8s_cluster_info.stderr_lines + k8s_cluster_info.stdout_lines
 #   run_once: true

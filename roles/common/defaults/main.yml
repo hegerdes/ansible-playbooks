@@ -13,6 +13,9 @@ common_floating_ips: []
 
 common_ssh_key_repo: '{{lookup("env", "SSH_KEY_REPO") | default("none", true)}}'
 common_ssh_key_repo_branch: master
+common_unattended_upgrades_state: present
+common_selinux_mode: permissive             # can be: disabled,enforcing,permissive
+common_selinux_policy: targeted
 # List of key_paths
 common_ssh_keys: []
 common_ssh_key_dir: data/ssh_keys
