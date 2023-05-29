@@ -2,6 +2,8 @@
 ---
 - name: Get netlify DNS records
   run_once: true
+  become: false
+  delegate_to: localhost
   ansible.builtin.uri:
     url: 'https://api.netlify.com/api/v1/dns_zones/{{ netlify_dns_zone_id }}/dns_records'
     return_content: true
@@ -12,6 +14,8 @@
 
 - name: Deleting outdated records
   run_once: true
+  become: false
+  delegate_to: localhost
   when: (netlify_fetched_dns_records.json | json_query("[?hostname==`" + item.host + "`]") | length == 1) and (netlify_fetched_dns_records.json | json_query("[?hostname==`" + item.host + "`]") | first).value != item.value
   ansible.builtin.uri:
     method: DELETE
@@ -25,6 +29,8 @@
 
 - name: Update netlify DNS records
   run_once: true
+  become: false
+  delegate_to: localhost
   ansible.builtin.uri:
     url: 'https://api.netlify.com/api/v1/dns_zones/{{ netlify_dns_zone_id }}/dns_records'
     return_content: true
@@ -35,6 +41,8 @@
 
 - name: Creating new Records
   run_once: true
+  become: false
+  delegate_to: localhost
   when: netlify_fetched_dns_records.json | json_query("[?hostname==`" + item.host + "`]") | length == 0
   ansible.builtin.uri:
     method: POST

@@ -12,15 +12,6 @@
   register: kubeadm_ca
   tags: [k8s, k8-init, k8-master-init]
 
-- name: Change kubelet conf permissions
-  ansible.builtin.file:
-    path: '{{ item }}'
-    owner: root
-    group: root
-    mode: '0600'
-  loop: [/etc/systemd/system/kubelet.service.d/10-kubeadm.conf, /var/lib/kubelet/config.yaml]
-  tags: [k8s, k8-init, k8-master-init]
-
 - name: Generate certificate key
   when: groups.k8s_master | flatten | first == inventory_hostname
   ansible.builtin.command: kubeadm certs certificate-key
@@ -39,6 +30,15 @@
 - name: Init cluster if needed
   when: groups.k8s_master | flatten | first == inventory_hostname and not kubeadm_ca.stat.exists
   ansible.builtin.include_tasks: kubeadm-init.yml
+  tags: [k8s, k8-init, k8-master-init]
+
+- name: Change kubelet conf permissions
+  ansible.builtin.file:
+    path: '{{ item }}'
+    owner: root
+    group: root
+    mode: '0600'
+  loop: [/etc/systemd/system/kubelet.service.d/10-kubeadm.conf, /var/lib/kubelet/config.yaml]
   tags: [k8s, k8-init, k8-master-init]
 
 - name: Get ControlPlane join Command

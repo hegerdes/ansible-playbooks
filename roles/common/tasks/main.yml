@@ -62,9 +62,11 @@
     - 'lsb-release'
     - 'python3-pip'
     - 'policycoreutils'
+    - 'selinux-policy-default'
+    - 'unattended-upgrades'
     - 'python3-requests'
     - 'python3-jsondiff'
-    - 'unattended-upgrades'
+    - 'selinux-basics '
     - 'python3-yaml'
     - 'unzip'
     - 'git'
@@ -97,11 +99,11 @@
     - APT::Periodic::Unattended-Upgrade "1";
   tags: [common, apt]
 
-- name: Enable SELinux in enforcing mode
-  ansible.posix.selinux:
-    policy: '{{ common_selinux_policy }}'
-    state: '{{ common_selinux_mode }}'
-  tags: [common, selinux]
+# - name: Enable SELinux in enforcing mode
+#   ansible.posix.selinux:
+#     policy: '{{ common_selinux_policy }}'
+#     state: '{{ common_selinux_mode }}'
+#   tags: [common, selinux]
 
 - name: Set hostnames
   ansible.builtin.import_tasks: install-hostnames.yml
