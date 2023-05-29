@@ -24,3 +24,6 @@ jobs:
       REGISTRY_USER: ${{ secrets.DOCKERHUB_USERNAME }}
       REGISTRY_PW: ${{ secrets.DOCKERHUB_TOKEN }}
       COSIGN_KEY_OR_KMS: ${{ secrets.COSIGN_KEY_STORE }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
