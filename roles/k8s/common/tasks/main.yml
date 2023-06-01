@@ -24,7 +24,7 @@
 
 - name: Ensue required packages are installed
   ansible.builtin.apt:
-    name: [gnupg, git, lsb-release, ca-certificates, curl, apparmor, python3-kubernetes, apt-transport-https, jq, unzip, wget, socat, mtr, logrotate, open-iscsi, ipvsadm, dbus, libyajl2, policycoreutils, selinux-basics, selinux-policy-default]
+    name: [gnupg, git, lsb-release, ca-certificates, curl, apparmor, python3-kubernetes, apt-transport-https, jq, unzip, wget, socat, mtr, logrotate, open-iscsi, ipvsadm, dbus, libyajl2, policycoreutils, selinux-basics, selinux-policy-default, auditd]
     state: present
     update_cache: true
     install_recommends: false
@@ -167,7 +167,7 @@
     repo: '{{ item.repo }}'
     update_cache: true
     state: present
-    filename: '{{ item.name }}.list'
+    filename: '{{ item.name }}'
   with_items:
     - name: docker
       repo: 'deb https://download.docker.com/linux/{{ ansible_facts.distribution | lower }} {{ ansible_facts.lsb.codename }} stable'

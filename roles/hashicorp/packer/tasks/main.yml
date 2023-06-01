@@ -1,0 +1,27 @@
+# Main netlify-dns
+---
+- name: Adding apt GPG Keys
+  ansible.builtin.apt_key:
+    url: https://apt.releases.hashicorp.com/gpg
+    state: present
+  tags: [hashicorp, packer]
+
+- name: Add Hashicorp repository
+  ansible.builtin.apt_repository:
+    repo: 'deb https://apt.releases.hashicorp.com {{ ansible_facts.lsb.codename | lower }} main'
+    update_cache: true
+    state: present
+    filename: hashicorp
+  tags: [hashicorp, packer]
+
+- name: Install packer
+  ansible.builtin.apt:
+    name: packer
+    state: present
+    update_cache: true
+    cache_valid_time: 86400     # equal to 24h
+    install_recommends: false
+    allow_downgrade: true
+    autoremove: true
+  ignore_errors: '{{ ansible_check_mode }}'
+  tags: [hashicorp, packer]
