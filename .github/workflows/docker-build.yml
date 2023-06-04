@@ -14,12 +14,12 @@ jobs:
   docker-build:
     uses: hegerdes/publish/.github/workflows/reusable-docker-build.yml@main
     with:
-      build-tags: ${{ github.repository_owner }}/palybooks:latest,ghcr.io/${{ github.repository_owner }}/palybooks:latest
+      build-tags: ${{ github.repository_owner }}/playbooks:latest,ghcr.io/${{ github.repository_owner }}/playbooks:latest
       build-cache: type=gha
       build-args: COMMIT_HASH=${{ github.sha }},COMMIT_TAG=${{ github.ref_name }}
       build-labels: MAINTAINER=${{ github.repository_owner }}
       build-platforms: linux/amd64,linux/arm64
-      extra-command: echo "Checkout my website henrikgerdes.me"
+      extra-commands: echo "Checkout my website henrikgerdes.me"
     secrets:
       REGISTRY_USER: ${{ secrets.DOCKERHUB_USERNAME }}
       REGISTRY_PW: ${{ secrets.DOCKERHUB_TOKEN }}

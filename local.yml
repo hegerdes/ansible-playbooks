@@ -14,6 +14,12 @@
 #     # - k8s/deploy
 
 - hosts: localhost
+  become: true
+  gather_facts: true
+  roles:
+    - hashicorp/packer
+
+- hosts: localhost
   become: false
   gather_facts: true
   vars:
