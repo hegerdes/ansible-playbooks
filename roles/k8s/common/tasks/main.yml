@@ -24,7 +24,7 @@
 
 - name: Ensue required packages are installed
   ansible.builtin.apt:
-    name: [gnupg, git, lsb-release, ca-certificates, curl, apparmor, python3-kubernetes, apt-transport-https, jq, unzip, wget, socat, mtr, logrotate, open-iscsi, ipvsadm, dbus, libyajl2, policycoreutils, selinux-basics, selinux-policy-default, auditd]
+    name: [gnupg, git, lsb-release, ca-certificates, curl, apparmor, python3-kubernetes, apt-transport-https, jq, unzip, wget, socat, mtr-tiny, logrotate, open-iscsi, ipvsadm, dbus, libyajl2, policycoreutils, selinux-basics, selinux-policy-default, auditd, semodule-utils, setools, apparmor-profiles-extra]
     state: present
     update_cache: true
     install_recommends: false
@@ -106,20 +106,10 @@
   ansible.posix.sysctl:
     name: '{{ item.key }}'
     value: '{{ item.val }}'
-    state: present
+    state: '{{ item.state | default("present") }}'
     sysctl_set: true
     reload: true
-  with_items:
-    - { key: net.ipv4.ip_forward, val: 1}
-    - { key: net.ipv6.conf.all.forwarding, val: 1}
-    - { key: net.bridge.bridge-nf-call-iptables, val: 1}
-    - { key: net.bridge.bridge-nf-call-ip6tables, val: 1}
-    - { key: net.ipv6.conf.default.forwarding, val: 1}
-    - { key: vm.overcommit_memory , val: 1}
-    - { key: vm.panic_on_oom, val: 0 }
-    - { key: kernel.panic_on_oops , val: 1}
-    - { key: kernel.panic, val: 10}
-    - { key: net.ipv4.conf.all.rp_filter, val: 0}
+  with_items: '{{ k8s_common_sysctl_conf }}'
   loop_control:
     label: "{{ item.key }}={{ item.val }}"
   tags: [k8s, k8s-prepare, k8s-base]
