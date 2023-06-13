@@ -13,35 +13,35 @@
 #     # - k8s/monitoring
 #     # - k8s/deploy
 
-- hosts: localhost
-  become: true
-  gather_facts: true
-  roles:
-    - hashicorp/packer
+# - hosts: localhost
+#   become: true
+#   gather_facts: true
+#   roles:
+#     - hashicorp/packer
 
-- hosts: localhost
-  become: false
-  gather_facts: true
-  vars:
-    k8s_kubeconfig: ~/.kube/config
-  roles:
-    # - k8s/hetzner
-    # - k8s/certmanager
-    # - k8s/ingress-nginx
-    # # - k8s/ingress-traefik
-    # - k8s/metrics
-    # - k8s/longhorn
-    # - k8s/grafana-mimir
-    # - k8s/metallb
-    - k8s/deploy
-    # - k8s/argocd
-    # - k8s/rancher
-  # vars_files:
-  #   - '{{ inventory_dir }}/secrets/vault.yml'
+# - hosts: localhost
+#   become: false
+#   gather_facts: true
+#   vars:
+#     k8s_kubeconfig: ~/.kube/config
+#   roles:
+#     # - k8s/hetzner
+#     # - k8s/certmanager
+#     # - k8s/ingress-nginx
+#     # # - k8s/ingress-traefik
+#     # - k8s/metrics
+#     # - k8s/longhorn
+#     # - k8s/grafana-mimir
+#     # - k8s/metallb
+#     - k8s/deploy
+#     # - k8s/argocd
+#     # - k8s/rancher
+#   # vars_files:
+#   #   - '{{ inventory_dir }}/secrets/vault.yml'
 
 - hosts: localhost
   become: False
-  gather_facts: true
+  gather_facts: false
   # roles:
   #   - k8s/monitoring
   vars:
@@ -53,8 +53,12 @@
   tasks:
     # - debug:
     #     msg: '{{ k8s_crun_wasmlib_version | split(".") | first }}'
-    # - debug:
-    #     msg: '{{  ansible_facts.architecture }}'
+    - debug:
+        msg: '{{ lookup("url", "https://api.github.com/repos/containers/crun/releases/latest") | from_json | json_query("tag_name") }}'
+    - debug:
+        msg: '{{ lookup("az_keyvault", "cosign-hegerdes-gh", vault_url=keyvault, vault_object="key")  }}'
+      vars:
+        keyvault: https://hegerdes.vault.azure.net
     - debug:
         msg: '{{ item }}'
       loop: '{{ cockpit_packages }}'

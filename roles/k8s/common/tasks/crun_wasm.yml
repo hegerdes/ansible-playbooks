@@ -1,24 +1,12 @@
 # Setup wasm crun
 ---
-- name: Determine latest wasm crun GitHub release
-  uri:
-    url: "https://api.github.com/repos/hegerdes/publish/releases/latest"
-    body_format: json
-  register: _k8s_wasm_crun_github_release
-  until: _k8s_wasm_crun_github_release.status == 200
-  run_once: true
-  retries: 3
-  tags: [k8s, k8s-prepare, k8s-base]
-
 - name: Download crun
   ansible.builtin.unarchive:
-    src: '{{ _k8s_wasm_crun_github_release.json | json_query(query) | select("search", ansible_facts.architecture) | list | first }}'
+    src: '{{ k8s_crun_wasm_version }}'
     dest: /tmp
     remote_src: true
     creates: /tmp/crun
   retries: 3
-  vars:
-    query: assets[?starts_with(name, 'crun')].browser_download_url
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: Copy crun wasm files

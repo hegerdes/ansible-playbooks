@@ -22,12 +22,10 @@ options:
     vault_url:
         description: Url of Azure Key Vault.
         required: True
-    client_id:
-        description: Client id of service principal that has access to the Azure Key Vault
-    secret:
-        description: Secret of the service principal.
-    tenant_id:
-        description: Tenant id of service principal.
+    vault_object:
+        description: Secret, Key or Cert
+        required: False
+
 notes:
     - If version is not provided, this plugin will return the latest version of the secret.
     - If ansible is running on Azure Virtual Machine with MSI enabled, client_id, secret and tenant isn't required.
@@ -58,6 +56,7 @@ from ansible.plugins.lookup import LookupBase
 from ansible.utils.display import Display
 from azure.identity import ManagedIdentityCredential, VisualStudioCodeCredential, AzureCliCredential, ChainedTokenCredential
 from azure.keyvault.secrets import SecretClient
+from azure.keyvault.keys import KeyClient
 
 display = Display()
 
@@ -76,7 +75,9 @@ class LookupModule(LookupBase):
 
 
         vault_url = kwargs.pop('vault_url', None)
+        keyvaultType = kwargs.pop('vault_object', "secret")
         azSecClient = SecretClient(vault_url=vault_url, credential=azCreds)
+        azKeyClient = KeyClient(vault_url=vault_url, credential=azCreds)
 
         # lookups in general are expected to both take a list as input and output a list
         # this is done so they work with the looping construct 'with_'.
@@ -84,6 +85,18 @@ class LookupModule(LookupBase):
 
         for term in terms:
             display.debug("Getting secret: %s" % term)
-            ret.append(azSecClient.get_secret(term).value)
+            if keyvaultType == "secret":
+                    ret.append(azSecClient.get_secret(term).value)
+            elif keyvaultType == "key":
+                    ret.append(azKeyClient.get_key(term).key)
+            else:
+                    raise NotImplemented("Unsupported KeyVault Type")
+            # match keyvaultType:
+            #     case "secret":
+            #         ret.append(azSecClient.get_secret(term).value)
+            #     case "key":
+            #         ret.append(azKeyClient.get_key(term).key)
+            #     case _:
+            #         raise NotImplemented("Unsupported KeyVault Type")
 
         return ret
