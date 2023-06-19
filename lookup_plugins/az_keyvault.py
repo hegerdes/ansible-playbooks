@@ -57,7 +57,9 @@ from ansible.utils.display import Display
 from azure.identity import ManagedIdentityCredential, VisualStudioCodeCredential, AzureCliCredential, ChainedTokenCredential
 from azure.keyvault.secrets import SecretClient
 from azure.keyvault.keys import KeyClient
+from jwcrypto.jwk import JWK
 
+import json
 display = Display()
 
 class LookupModule(LookupBase):
@@ -88,7 +90,9 @@ class LookupModule(LookupBase):
             if keyvaultType == "secret":
                     ret.append(azSecClient.get_secret(term).value)
             elif keyvaultType == "key":
-                    ret.append(azKeyClient.get_key(term).key)
+                    az_key = azKeyClient.get_key(term).key
+                    az_jwk = JWK.from_json(json.dumps(az_key._to_generated_model().serialize()))
+                    ret.append(az_jwk.export_to_pem().decode("utf-8"))
             else:
                     raise NotImplemented("Unsupported KeyVault Type")
             # match keyvaultType:
