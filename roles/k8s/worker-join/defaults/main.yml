@@ -1,1 +1,2 @@
 ---
+k8s_init_verbose: '{{ lookup("env", "CI") | default("false", True) | bool == True }}'

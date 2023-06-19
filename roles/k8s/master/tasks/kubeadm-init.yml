@@ -15,7 +15,8 @@
         mode: '0644'
       tags: [k8s, k8-init, k8-master-init]
 
-    - name: Debug - Kubeamd init
+    - name: Debug - Kubeadm init
+      when: k8s_init_verbose
       ansible.builtin.debug:
         msg: |
           Running:
@@ -57,6 +58,7 @@
       tags: [k8s, k8-init, k8-master-init]
 
     - name: Debug - Kubeadm init res
+      when: k8s_init_verbose
       ansible.builtin.debug:
         var: init_cluster.stderr_lines + init_cluster.stdout_lines
       tags: [k8s, k8-init, k8-master-init]

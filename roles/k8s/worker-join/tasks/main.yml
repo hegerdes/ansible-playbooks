@@ -14,6 +14,7 @@
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
 - name: Debug - Print join command
+  when: k8s_init_verbose
   ansible.builtin.debug:
     msg: "{{ k8_worker_join_command_res.stdout }}"
   tags: [k8s, k8-init, k8-master-init, k8s-worker-join]
@@ -59,6 +60,7 @@
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
 - name: Debug - Print join res
+  when: k8s_init_verbose
   ansible.builtin.debug:
     var: k8s_join_res
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
