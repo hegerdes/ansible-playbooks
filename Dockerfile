@@ -1,4 +1,5 @@
 FROM python:3.11-slim-bullseye
+# FROM python:3.11-slim-bookworm
 
 WORKDIR /app
 COPY requirements.txt /app/requirements.txt
@@ -14,13 +15,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     fi && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | gpg --dearmor -o \
     /usr/share/keyrings/nodejs-archive-keyring.gpg \
     && export NODE_ARCH="arch=`dpkg --print-architecture` signed-by=/usr/share/keyrings/nodejs-archive-keyring.gpg" \
-    && export AZ_REPO=$(lsb_release -cs) \
-    && echo "deb [$NODE_ARCH] https://deb.nodesource.com/node_18.x bullseye main" \
+    && export OS_CODENAME=$(lsb_release -cs) \
+    && echo "deb [$NODE_ARCH] https://deb.nodesource.com/node_18.x $OS_CODENAME main" \
     > /etc/apt/sources.list.d/nodesource.list \
     && curl -sLS https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | tee \
     /etc/apt/keyrings/microsoft.gpg > /dev/null \
     && chmod go+r /etc/apt/keyrings/microsoft.gpg \
-    && echo "deb [arch=`dpkg --print-architecture` signed-by=/etc/apt/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" \
+    && echo "deb [arch=`dpkg --print-architecture` signed-by=/etc/apt/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli/ $OS_CODENAME main" \
     | tee /etc/apt/sources.list.d/azure-cli.list \
     && apt-get update && apt-get install -y --no-install-recommends nodejs azure-cli \
     && pip3 install --no-cache-dir -r requirements.txt \
