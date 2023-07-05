@@ -12,10 +12,10 @@ variables:
   VARIANT: default
 
 include:
-  - project: 'hegerdes/templates'
-    file: '/gitlab/ci/defaults.yml'
-  - project: 'hegerdes/templates'
-    file: '/gitlab/ci/kaniko-build.yml'
+  - project: hegerdes/templates
+    file: /gitlab/ci/defaults.yml
+  - project: hegerdes/templates
+    file: /gitlab/ci/kaniko-build.yml
 
 image-build-playbooks:
   extends: .build_template
