@@ -49,9 +49,7 @@
     name: "{{ item }}"
     fstype: swap
     state: absent
-  with_items:
-    - swap
-    - none
+  loop: [swap, none]
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: Disable swap
@@ -81,6 +79,8 @@
     - /etc/systemd/system/docker.service.d
     - /etc/systemd/system/kubelet.service.d
     - /usr/wasmedge/lib
+  async: 10
+  poll: 2
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: Copy docker and kubelet service conf
@@ -102,7 +102,7 @@
   loop: [br_netfilter, overlay]
   tags: [k8s, k8s-prepare, k8s-base]
 
-- name: Allow container ip forwording
+- name: Allow container ip forwarding
   ansible.posix.sysctl:
     name: '{{ item.key }}'
     value: '{{ item.val }}'
@@ -212,6 +212,12 @@
     daemon_reload: true
     state: restarted
   ignore_errors: '{{ ansible_check_mode }}'
+  tags: [k8s, k8s-prepare, k8s-base]
+
+- name: Enable kubectl bash completion
+  ansible.builtin.lineinfile:
+    path: '{{ ansible_facts.env.HOME }}/.bashrc'
+    line: source <(kubectl completion bash)
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: Copy systemd sys-fs-bpf for cilium cni

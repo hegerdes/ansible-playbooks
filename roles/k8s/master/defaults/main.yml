@@ -3,7 +3,7 @@ k8s_version: 1.25.5
 k8s_cluster_name: '{{ inventory_dir | basename }}'
 k8s_image_repo: registry.k8s.io
 k8s_shared_api_server_endpoint: '{{ ansible_facts.default_ipv4.address }}'
-k8s_init_verbose: '{{ lookup("env", "CI") | default("false", True) | bool == True }}'
+k8s_init_verbose: '{{ lookup("env", "CI") | default("false", true) | bool }}'
 k8s_pod_network_cidr: 10.244.0.0/16
 k8s_cert_extra_sans: '{{ ["127.0.0.1"] + ansible_facts.all_ipv4_addresses }}'
 k8s_install_k9s: true

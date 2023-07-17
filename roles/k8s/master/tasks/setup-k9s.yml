@@ -1,4 +1,4 @@
-# Main k8s Setup
+# k9s Setup
 
 # https://k9scli.io/
 - name: Get latest k9s release

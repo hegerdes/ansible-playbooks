@@ -72,7 +72,7 @@
 
 - name: Deploy hcloud-lb-exporter
   kubernetes.core.helm:
-    name: ingress-nginx
+    name: hcloud-lb-exporter
     state: '{{ "present" if(k8s_hetzner_lb_install) else "absent" }}'
     chart_version: '{{ k8s_hetzner_lb_exporter_helm_chart_version }}'
     chart_ref: hcloud-lb-exporter/hetzner-load-balancer-exporter
