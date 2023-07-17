@@ -11,7 +11,7 @@ k8s_crun_version: '{{ lookup("url", "https://api.github.com/repos/containers/cru
 k8s_crun_with_wasm: false
 k8s_crun_wasm_query: assets[?starts_with(name, 'crun')].browser_download_url
 k8s_crun_wasm_version: '{{ lookup("url", "https://api.github.com/repos/hegerdes/publish/releases/latest") | from_json | json_query(k8s_crun_wasm_query) | select("search", ansible_facts.architecture) | list | first }}'
-k8s_crun_wasmlib_version: 0.0.2
+k8s_crun_wasmlib_version: 0.0.3
 
 k8s_containerd_version: latest
 k8s_unattended_upgrades_state: present
