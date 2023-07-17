@@ -202,9 +202,3 @@
 - name: Ensure handlers are notified now
   ansible.builtin.meta: flush_handlers
   tags: [common]
-
-- name: Setup simpleproxy
-  when: simpleproxy_confs | default([]) | length > 0
-  ansible.builtin.include_role:
-    name: simpleproxy
-  tags: [common, simpleproxy]

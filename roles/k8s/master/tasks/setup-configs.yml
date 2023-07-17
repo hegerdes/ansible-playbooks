@@ -1,5 +1,4 @@
 # Main k8s Setup
-
 - name: Create kube conf dir
   ansible.builtin.file:
     path: "{{ ansible_facts.env.HOME }}/.kube"
@@ -46,10 +45,4 @@
     content: "{{ internal_k8s_kubeconfig | to_nice_yaml }}"
     mode: "0600"
   ignore_errors: true
-  tags: [k8s, k8-init, k8s-init-config]
-
-- name: Enable kubectl bash completion
-  ansible.builtin.lineinfile:
-    path: "{{ ansible_facts.env.HOME }}/.bashrc"
-    line: source <(kubectl completion bash)
   tags: [k8s, k8-init, k8s-init-config]
