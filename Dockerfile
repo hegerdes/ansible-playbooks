@@ -1,4 +1,4 @@
-FROM python:3.11-slim-bullseye
+FROM python:3.11-slim-bookworm
 # FROM python:3.11-slim-bookworm
 
 WORKDIR /app
@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     iproute2 rsync apt-transport-https lsb-release gnupg \
     && mkdir -p /etc/apt/keyrings \
     && if [ "$(uname -m)" != "x86_64" ]; then \
-        apt-get install -y --no-install-recommends make gcc libc6-dev libffi-dev; \
+    apt-get install -y --no-install-recommends make gcc libc6-dev libffi-dev; \
     fi && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | gpg --dearmor -o \
     /usr/share/keyrings/nodejs-archive-keyring.gpg \
     && export NODE_ARCH="arch=`dpkg --print-architecture` signed-by=/usr/share/keyrings/nodejs-archive-keyring.gpg" \
@@ -34,7 +34,6 @@ ARG COMMIT_HASH="none"
 ARG COMMIT_TAG="none"
 ENV COMMIT_HASH=$COMMIT_HASH
 ENV COMMIT_TAG=$COMMIT_TAG
-ENV TZ=Europe/Berlin
 ENV ANSIBLE_CONFIG=/app/playbooks/ansible.cfg
 LABEL commit-hash=$COMMIT_HASH
 LABEL commit-tag=$COMMIT_TAG
