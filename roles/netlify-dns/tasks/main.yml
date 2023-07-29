@@ -9,23 +9,26 @@
     return_content: true
     headers:
       Authorization: 'Bearer {{ netlify_api_token }}'
-  register: netlify_fetched_dns_records
+  register: __netlify_fetched_dns_records
   tags: [netflify, netflify-dns]
 
 - name: Deleting outdated records
   run_once: true
   become: false
   delegate_to: localhost
-  when: (netlify_fetched_dns_records.json | json_query("[?hostname==`" + item.host + "`]") | length == 1) and (netlify_fetched_dns_records.json | json_query("[?hostname==`" + item.host + "`]") | first).value != item.value
+  when: (__netlify_fetched_dns_records.json | json_query(netlify_dns_compare_query) | length == 1) and (__netlify_fetched_dns_records.json | json_query(netlify_dns_compare_query) | first).value != item.value
   ansible.builtin.uri:
     method: DELETE
-    url: 'https://api.netlify.com/api/v1/dns_zones/{{ netlify_dns_zone_id }}/dns_records/{{ (netlify_fetched_dns_records.json | json_query("[?hostname==`" + item.host + "`]") | first).id }}'
+    url: 'https://api.netlify.com/api/v1/dns_zones/{{ netlify_dns_zone_id }}/dns_records/{{ (__netlify_fetched_dns_records.json | json_query(netlify_dns_compare_query) | first).id }}'
     status_code: 204
     headers:
       Authorization: 'Bearer {{ netlify_api_token }}'
   changed_when: true
+  failed_when: __netlify_fetched_dns_records.json | json_query(netlify_dns_compare_query) | length > 1
   tags: [netflify, netflify-dns]
   loop: '{{ netlify_dns_records }}'
+  async: 10
+  poll: 1
 
 - name: Update netlify DNS records
   run_once: true
@@ -36,14 +39,14 @@
     return_content: true
     headers:
       Authorization: 'Bearer {{ netlify_api_token }}'
-  register: netlify_fetched_dns_records
+  register: __netlify_fetched_dns_records
   tags: [netflify, netflify-dns]
 
 - name: Creating new Records
   run_once: true
   become: false
   delegate_to: localhost
-  when: netlify_fetched_dns_records.json | json_query("[?hostname==`" + item.host + "`]") | length == 0
+  when: __netlify_fetched_dns_records.json | json_query(netlify_dns_compare_query) | length == 0
   ansible.builtin.uri:
     method: POST
     url: 'https://api.netlify.com/api/v1/dns_zones/{{ netlify_dns_zone_id }}/dns_records'
@@ -60,3 +63,5 @@
   changed_when: true
   tags: [netflify, netflify-dns]
   loop: '{{ netlify_dns_records }}'
+  async: 10
+  poll: 1
