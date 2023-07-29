@@ -1,5 +1,5 @@
 ---
-k8s_version: 1.26.5
+k8s_version: 1.26.7
 
 k8s_max_pods: 220
 k8s_kubelet_extra_args: ''
@@ -27,15 +27,16 @@ k8s_etc_hosts: []
 
 k8s_common_sysctl_conf:
   - { key: net.ipv4.ip_forward, val: 1}
+  - { key: net.ipv4.conf.all.rp_filter, val: 0}
+  - { key: net.ipv4.conf.all.forwarding, val: 1}
   - { key: net.ipv6.conf.all.forwarding, val: 1}
+  - { key: net.ipv6.conf.default.forwarding, val: 1}
   - { key: net.bridge.bridge-nf-call-iptables, val: 1}
   - { key: net.bridge.bridge-nf-call-ip6tables, val: 1}
-  - { key: net.ipv6.conf.default.forwarding, val: 1}
   - { key: vm.overcommit_memory , val: 1}
   - { key: vm.panic_on_oom, val: 0 }
   - { key: kernel.panic_on_oops , val: 1}
   - { key: kernel.panic, val: 10}
-  - { key: net.ipv4.conf.all.rp_filter, val: 0}
   - { key: fs.inotify.max_user_watches, val: 524288}
   - { key: fs.inotify.max_user_instances, val: 512}
 
