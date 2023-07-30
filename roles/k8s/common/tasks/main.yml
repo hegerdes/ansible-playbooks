@@ -79,8 +79,6 @@
     - /etc/systemd/system/docker.service.d
     - /etc/systemd/system/kubelet.service.d
     - /usr/wasmedge/lib
-  async: 10
-  poll: 2
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: Copy docker and kubelet service conf
@@ -99,6 +97,7 @@
   community.general.modprobe:
     name: '{{ item }}'
     state: present
+    persistent: present
   loop: [br_netfilter, overlay]
   tags: [k8s, k8s-prepare, k8s-base]
 
