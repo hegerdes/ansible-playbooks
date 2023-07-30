@@ -5,9 +5,17 @@
   changed_when: false
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
-- name: Get Worker join command
+- name: Get worker join command - legacy
   ansible.builtin.command: kubeadm token create --print-join-command
-  register: k8_worker_join_command_res
+  register: __k8_worker_join_command_res
+  run_once: true
+  changed_when: false
+  delegate_to: "{{ groups.k8s_master | flatten | first }}"
+  tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
+
+- name: Get join token
+  ansible.builtin.command: kubeadm token create
+  register: __k8_worker_join_token_res
   run_once: true
   changed_when: false
   delegate_to: "{{ groups.k8s_master | flatten | first }}"
@@ -16,7 +24,13 @@
 - name: Debug - Print join command
   when: k8s_init_verbose
   ansible.builtin.debug:
-    msg: "{{ k8_worker_join_command_res.stdout }}"
+    msg: "{{ __k8_worker_join_command_res.stdout }}"
+
+- name: Copy kubeadm join config
+  ansible.builtin.template:
+    src: 'kubeadm-join-config.yml.j2'
+    dest: '{{ target_data_dir | default("") }}/srv/kubeadm-join-config.yml'
+    mode: '0644'
   tags: [k8s, k8-init, k8-master-init, k8s-worker-join]
 
 - name: Check if kubeadm has already run
@@ -25,11 +39,17 @@
   register: k8s_kubeadm_worker_ca
   tags: [k8s, k8-init, k8s-join, k8s-worker-join]
 
-- name: Join Nodes
+- name: Join Nodes - legacy
   when: not k8s_kubeadm_worker_ca.stat.exists
-  ansible.builtin.command: "{{ k8_worker_join_command_res.stdout }}"
+  ansible.builtin.command: "{{ __k8_worker_join_command_res.stdout }}"
   register: k8s_join_res
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
+
+# - name: Join Nodes
+#   when: not k8s_kubeadm_worker_ca.stat.exists
+#   ansible.builtin.command: 'kubeadm join -v 5 --config {{ target_data_dir | default("") }}/srv/kubeadm-join-config.yml'
+#   register: k8s_join_res
+#   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
 - name: Change kubelet conf permissions
   ansible.builtin.file:

@@ -1,10 +1,17 @@
 ---
-k8s_version: 1.25.5
+k8s_version: 1.26.7
+k8s_dual_stack: false
 k8s_cluster_name: '{{ inventory_dir | basename }}'
 k8s_image_repo: registry.k8s.io
 k8s_shared_api_server_endpoint: '{{ ansible_facts.default_ipv4.address }}'
-k8s_init_verbose: '{{ lookup("env", "CI") | default("false", true) | bool }}'
-k8s_pod_network_cidr: 10.244.0.0/16
+k8s_init_verbose: '{{ lookup("env", "CI") | default("false", true) | bool == false }}'
+k8s_pod_network_cidr: '{{ [k8s_pod_network_cidr_ipv4,k8s_pod_network_cidr_ipv6] | join(",") if(k8s_dual_stack) else k8s_pod_network_cidr_ipv4}}'
+k8s_service_network_cidr: '{{ [k8s_service_network_cidr_ipv4,k8s_service_network_cidr_ipv6] | join(",") if(k8s_dual_stack) else k8s_service_network_cidr_ipv4}}'
+k8s_pod_network_cidr_ipv4: 10.244.0.0/16
+k8s_service_network_cidr_ipv4: 10.96.0.0/16
+k8s_pod_network_cidr_ipv6: 2001:db8:42:0::/56
+k8s_service_network_cidr_ipv6: 2001:db8:42:1::/112
+
 k8s_cert_extra_sans: '{{ ["127.0.0.1"] + ansible_facts.all_ipv4_addresses }}'
 k8s_install_k9s: true
 
@@ -28,15 +35,29 @@ k8s_taints: []
 k8s_cni: flannel
 
 # Calico helm chart setup
+k8s_calico_ip_pools_ipv4:
+  - cidr: '{{ k8s_pod_network_cidr if("," not in k8s_pod_network_cidr) else k8s_pod_network_cidr | split(",") | first }}'
+  # - blockSize: 26
+  #   cidr: 10.48.0.0/21
+  #   encapsulation: IPIP
+  #   natOutgoing: Enabled
+  #   nodeSelector: all()
+
+k8s_calico_ip_pools_ipv6:
+  - blockSize: 122
+    cidr: '{{ k8s_pod_network_cidr if("," not in k8s_pod_network_cidr) else k8s_pod_network_cidr | split(",") | last }}'
+    encapsulation: None
+    natOutgoing: Enabled
+    nodeSelector: all()
+
 k8s_calico_chart_version: '{{ null | default(omit) }}'
 k8s_calico_helm_values:
-# See https://docs.tigera.io/calico/3.25/getting-started/kubernetes/helm
+# See https://docs.tigera.io/calico/3.26/getting-started/kubernetes/helm
   installation:
     cni:
       type: Calico
     calicoNetwork:
-      ipPools:
-        - cidr: '{{ k8s_pod_network_cidr }}'
+      ipPools: '{{ k8s_calico_ip_pools_ipv4 + k8s_calico_ip_pools_ipv6 if("," in k8s_pod_network_cidr) else k8s_calico_ip_pools_ipv4 }}'
 
 # Cilium helm chart setup
 k8s_cilium_chart_version: '{{ null | default(omit) }}'

@@ -8,7 +8,7 @@
       register: reset_cluster
       tags: [k8s, k8-init, k8-master-init]
 
-    - name: Copy kubeadm config - not used jet
+    - name: Copy kubeadm config
       ansible.builtin.template:
         src: 'kubeadm-config.yml.j2'
         dest: '{{ target_data_dir | default("") }}/srv/kubeadm-config.yml'
@@ -20,14 +20,8 @@
       ansible.builtin.debug:
         msg: |
           Running:
-          kubeadm init --kubernetes-version={{ k8s_version }} \
-            --pod-network-cidr={{ k8s_pod_network_cidr }} \
+          kubeadm init --config {{ target_data_dir | default("") }}/srv/kubeadm-config.yml \
             --upload-certs \
-            --ignore-preflight-errors=NumCPU \
-            --control-plane-endpoint={{ k8s_shared_api_server_endpoint }} \
-            --apiserver-cert-extra-sans={{ (k8s_cert_extra_sans + [k8s_shared_api_server_endpoint]) | unique | join(",") }} \
-            --apiserver-advertise-address={{ ansible_facts.all_ipv4_addresses | ansible.utils.reduce_on_network(k8s_cloud_net) | first if (k8s_cloud_net | default("none") != "none") else k8s_kubelet_advertise_address_bind | default(ansible_facts.default_ipv4.address) }} \
-            --certificate-key={{ k8_cert_key if (k8_cert_key != "none") else k8s_kubeadm_cert_key }} \
             {{ k8s_kubeadm_opts }} \
             {{ k8s_init_opts }}
       tags: [k8s, k8s-prepare, k8s-base, k8s-test]
@@ -35,14 +29,8 @@
     - name: Init Kubernetes cluster
       when: reset_cluster is succeeded
       ansible.builtin.command: |
-          kubeadm init --kubernetes-version={{ k8s_version }} \
-            --pod-network-cidr={{ k8s_pod_network_cidr }} \
+          kubeadm init --config {{ target_data_dir | default("") }}/srv/kubeadm-config.yml \
             --upload-certs \
-            --ignore-preflight-errors=NumCPU \
-            --control-plane-endpoint={{ k8s_shared_api_server_endpoint }} \
-            --apiserver-cert-extra-sans={{ (k8s_cert_extra_sans + [k8s_shared_api_server_endpoint]) | unique | join(",") }} \
-            --apiserver-advertise-address={{ ansible_facts.all_ipv4_addresses | ansible.utils.reduce_on_network(k8s_cloud_net) | first if (k8s_cloud_net | default("none") != "none") else k8s_kubelet_advertise_address_bind | default(ansible_facts.default_ipv4.address) }} \
-            --certificate-key={{ k8_cert_key if (k8_cert_key != "none") else k8s_kubeadm_cert_key }} \
             {{ k8s_kubeadm_opts }} \
             {{ k8s_init_opts }}
       register: init_cluster

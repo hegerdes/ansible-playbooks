@@ -1,2 +1,2 @@
 [Service]
-Environment="KUBELET_EXTRA_ARGS=--cgroup-driver=systemd --max-pods={{ k8s_max_pods }} --protect-kernel-defaults=true {{ "--node-ip=" + ansible_facts.all_ipv4_addresses | ansible.utils.reduce_on_network(k8s_cloud_net) | first if(k8s_cloud_net | default("none") != "none") }} {{ k8s_kubelet_extra_args }}"
+Environment="KUBELET_EXTRA_ARGS=--cgroup-driver=systemd --max-pods={{ k8s_max_pods }} --protect-kernel-defaults=true {{ k8s_kubelet_extra_args }}"

@@ -15,7 +15,7 @@
 - name: Generate certificate key
   when: groups.k8s_master | flatten | first == inventory_hostname
   ansible.builtin.command: kubeadm certs certificate-key
-  register: k8s_kubeadm_cert_key_res
+  register: __k8s_kubeadm_cert_key_res
   changed_when: false
   run_once: true
   tags: [k8s, k8-init, k8-master-init]
@@ -23,7 +23,7 @@
 - name: Save certificate key
   when: groups.k8s_master | flatten | first == inventory_hostname
   ansible.builtin.set_fact:
-    k8s_kubeadm_cert_key: '{{ k8s_kubeadm_cert_key_res.stdout }}'
+    k8s_kubeadm_cert_key: '{{ __k8s_kubeadm_cert_key_res.stdout }}'
   run_once: true
   tags: [k8s, k8-init, k8-master-init]
 

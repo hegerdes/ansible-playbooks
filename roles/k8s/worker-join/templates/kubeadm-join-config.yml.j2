@@ -1,0 +1,19 @@
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: JoinConfiguration
+discovery:
+  tlsBootstrapToken: {{ k8_worker_join_token_res | default(__k8_worker_join_token_res.stdout )}}
+  timeout: 4m0s
+  bootstrapToken:
+    apiServerEndpoint: {{ k8s_shared_api_server_endpoint if(":" in k8s_shared_api_server_endpoint) else k8s_shared_api_server_endpoint + ":6443"}}
+    token: {{ k8_worker_join_token_res | default(__k8_worker_join_token_res.stdout )}}
+    unsafeSkipCAVerification: true
+nodeRegistration:
+  kubeletExtraArgs:
+    node-ip: {{ ansible_facts.all_ipv4_addresses | ansible.utils.reduce_on_network(k8s_cloud_net) | first if (k8s_cloud_net | default("none") != "none") else k8s_kubelet_advertise_address_bind | default(ansible_facts.default_ipv4.address) }},{{ansible_facts.default_ipv6.address}}
+  ignorePreflightErrors:
+    - NumCPU
+  # criSocket: unix:///var/run/containerd/containerd.sock
+  # imagePullPolicy: IfNotPresent
+  # name: worker-node-amd64-cmkhxd
+  # taints: null
+
