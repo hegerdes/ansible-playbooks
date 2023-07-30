@@ -1,5 +1,4 @@
-FROM python:3.11-slim-bookworm
-# FROM python:3.11-slim-bookworm
+FROM debian:bookworm-slim
 
 WORKDIR /app
 COPY requirements.txt /app/requirements.txt
@@ -8,7 +7,7 @@ COPY requirements.txt /app/requirements.txt
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl nano gpg ssh-client jq net-tools ca-certificates iputils-ping \
-    iproute2 rsync apt-transport-https lsb-release gnupg \
+    iproute2 rsync apt-transport-https lsb-release gnupg python3 python3-pip \
     && mkdir -p /etc/apt/keyrings \
     && if [ "$(uname -m)" != "x86_64" ]; then \
     apt-get install -y --no-install-recommends make gcc libc6-dev libffi-dev; \
@@ -24,7 +23,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && echo "deb [arch=`dpkg --print-architecture` signed-by=/etc/apt/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli/ $OS_CODENAME main" \
     | tee /etc/apt/sources.list.d/azure-cli.list \
     && apt-get update && apt-get install -y --no-install-recommends nodejs azure-cli \
-    && pip3 install --no-cache-dir -r requirements.txt \
+    && pip3 install --break-system-packages --no-cache-dir -r requirements.txt \
     && apt-get remove -y make gcc libc6-dev libffi-dev && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
 
