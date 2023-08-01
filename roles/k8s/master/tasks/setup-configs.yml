@@ -3,7 +3,7 @@
   ansible.builtin.file:
     path: "{{ ansible_facts.env.HOME }}/.kube"
     state: directory
-  tags: [k8s, k8-init, k8s-init-config]
+  tags: [k8s, k8s-init, k8s-init-config]
 
 - name: Copy config file
   ansible.builtin.copy:
@@ -11,7 +11,7 @@
     dest: "{{ ansible_facts.env.HOME }}/.kube/config"
     remote_src: true
     mode: "0600"
-  tags: [k8s, k8-init, k8s-init-config]
+  tags: [k8s, k8s-init, k8s-init-config]
 
 - name: Create kube conf dir
   become: false
@@ -19,7 +19,7 @@
   ansible.builtin.file:
     path: "~/.kube"
     state: directory
-  tags: [k8s, k8-init, k8s-init-config]
+  tags: [k8s, k8s-init, k8s-init-config]
   delegate_to: localhost
 
 - name: Get kubeconf
@@ -27,14 +27,14 @@
   ansible.builtin.slurp:
     src: /etc/kubernetes/admin.conf
   register: _remote_k8s_kubeconf
-  tags: [k8s, k8-init, k8s-init-config]
+  tags: [k8s, k8s-init, k8s-init-config]
 
 - name: Set kubeconfig
   run_once: true
   ansible.builtin.set_fact:
     internal_k8s_kubeconfig: "{{ _remote_k8s_kubeconf.content | b64decode | from_yaml | combine({'clusters': [(_remote_k8s_kubeconf.content | b64decode | from_yaml).clusters[0] | combine({'cluster': {'server': 'https://' + k8s_external_cp_host + ':' + k8s_external_cp_port | default('6443')}}, recursive=true)]}) if (k8s_external_cp_host | default('') != '') else _remote_k8s_kubeconf.content | b64decode | from_yaml }}"
   no_log: true
-  tags: [k8s, k8-init, k8s-init-config]
+  tags: [k8s, k8s-init, k8s-init-config]
 
 - name: Creating a file with content
   become: false
@@ -45,4 +45,4 @@
     content: "{{ internal_k8s_kubeconfig | to_nice_yaml }}"
     mode: "0600"
   ignore_errors: true
-  tags: [k8s, k8-init, k8s-init-config]
+  tags: [k8s, k8s-init, k8s-init-config]

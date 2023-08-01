@@ -9,7 +9,7 @@
   ansible.builtin.stat:
     path: /etc/kubernetes/kubelet.conf
   register: __k8s_kubeadm_worker_ca
-  tags: [k8s, k8-init, k8s-join, k8s-worker-join]
+  tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
 - name: Get join token
   when: not __k8s_kubeadm_worker_ca.stat.exists
@@ -37,7 +37,7 @@
     src: 'kubeadm-join-config.yml.j2'
     dest: '{{ target_data_dir | default("") }}/srv/kubeadm-join-config.yml'
     mode: '0600'
-  tags: [k8s, k8-init, k8-master-init, k8s-worker-join]
+  tags: [k8s, k8s-init, k8-master-init, k8s-worker-join]
 
 - name: Join worker nodes
   when: not __k8s_kubeadm_worker_ca.stat.exists

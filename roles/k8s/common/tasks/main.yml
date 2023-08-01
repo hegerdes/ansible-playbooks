@@ -230,4 +230,4 @@
     group: root
   with_items:
     - {src: cilium-networkd.conf, dst: /etc/systemd/networkd.conf}
-  tags: [k8s, k8s-prepare, k8s-base, k8-init, k8-cri, k8s-cilium]
+  tags: [k8s, k8s-prepare, k8s-base, k8s-init, k8-cri, k8s-cilium]

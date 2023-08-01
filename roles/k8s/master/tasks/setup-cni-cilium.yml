@@ -10,14 +10,14 @@
     # - {src: cilium-systemd-sys-fs-bpf.conf, dst: /etc/systemd/system/sys-fs-bpf.mount}
     - {src: cilium-networkd.conf, dst: /etc/systemd/networkd.conf}
   # notify: Restart network service
-  tags: [k8s, k8-init, k8-master-init, k8-cri, k8s-cilium]
+  tags: [k8s, k8s-init, k8-master-init, k8-cri, k8s-cilium]
 
 # - name: Enable sys-fs-bpf
 #   ansible.builtin.systemd:
 #     name: sys-fs-bpf.mount
 #     enabled: false
 #     state: stopped
-#   tags: [k8s, k8-init, k8-master-init, k8-cri, k8s-cilium]
+#   tags: [k8s, k8s-init, k8-master-init, k8-cri, k8s-cilium]
 
 # Maybe use line in file?
 # - name: Set systemctl parameters
@@ -28,13 +28,13 @@
 #     sysctl_set: true
 #     reload: true
 #     sysctl_file: /etc/sysctl.d/99-cilium.conf
-#   tags: [k8s, k8-init, k8-master-init, k8-cri, k8s-cilium]
+#   tags: [k8s, k8s-init, k8-master-init, k8-cri, k8s-cilium]
 
 - name: Add Cilium helm chart repo
   kubernetes.core.helm_repository:
     name: cilium
     repo_url: https://helm.cilium.io/
-  tags: [k8s, k8-init, k8-master-init, k8-cri, k8s-cilium]
+  tags: [k8s, k8s-init, k8-master-init, k8-cri, k8s-cilium]
 
 - name: Install Cilium
   kubernetes.core.helm:
@@ -49,7 +49,7 @@
     values: '{{ k8s_cilium_helm_values | default({}) }}'
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
   run_once: true
-  tags: [k8s, k8-init, k8-master-init, k8-cri, k8s-cilium]
+  tags: [k8s, k8s-init, k8-master-init, k8-cri, k8s-cilium]
 
 - name: Download Cilium CLI
   ansible.builtin.unarchive:
@@ -60,4 +60,4 @@
     cilium_arch_map:
       x86_64: amd64
       aarch64: arm64
-  tags: [k8s, k8-init, k8-master-init, k8-cri, k8s-cilium]
+  tags: [k8s, k8s-init, k8-master-init, k8-cri, k8s-cilium]

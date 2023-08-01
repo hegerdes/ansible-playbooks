@@ -7,7 +7,7 @@
     kind: Namespace
     state: present
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
-  tags: [k8s, k8-init, k8s-monitor]
+  tags: [k8s, k8s-init, k8s-monitor]
 
 - name: Create grafana-agent config-maps
   kubernetes.core.k8s:
@@ -36,7 +36,7 @@
       config: '{{ k8s_grafana_agent_metrics_agent_config }}'
   loop_control:
     label: 'Setting {{ item.name }} configs'
-  tags: [k8s, k8-init, k8s-monitor, k8s-monitor-grafana-agent]
+  tags: [k8s, k8s-init, k8s-monitor, k8s-monitor-grafana-agent]
 
 - name: Apply grafana-agent manifests
   kubernetes.core.k8s:
@@ -60,4 +60,4 @@
       config: '{{ k8s_grafana_agent_traces_agent_config }}'
   loop_control:
     label: 'Installing {{ item.name }}'
-  tags: [k8s, k8-init, k8s-monitor, k8s-monitor-grafana-agent]
+  tags: [k8s, k8s-init, k8s-monitor, k8s-monitor-grafana-agent]

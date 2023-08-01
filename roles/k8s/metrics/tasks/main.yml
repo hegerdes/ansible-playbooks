@@ -7,13 +7,13 @@
     kind: Namespace
     state: present
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
-  tags: [k8s, k8-init, k8s-metrics]
+  tags: [k8s, k8s-init, k8s-metrics]
 
 - name: Add metrics-server helm-chart repo
   kubernetes.core.helm_repository:
     name: metrics-server
     repo_url: https://kubernetes-sigs.github.io/metrics-server/
-  tags: [k8s, k8-init, k8s-metrics]
+  tags: [k8s, k8s-init, k8s-metrics]
 
 - name: Deploy metrics-server
   kubernetes.core.helm:
@@ -28,13 +28,13 @@
     atomic: true
     values: '{{ k8s_metrics_server_helm_values | default({}) }}'
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
-  tags: [k8s, k8-init, k8s-metrics]
+  tags: [k8s, k8s-init, k8s-metrics]
 
 - name: Add k8s-dashboard helm-chart repo
   kubernetes.core.helm_repository:
     name: kubernetes-dashboard
     repo_url: https://kubernetes.github.io/dashboard/
-  tags: [k8s, k8-init, k8s-metrics, k8s-metrics-dashboard]
+  tags: [k8s, k8s-init, k8s-metrics, k8s-metrics-dashboard]
 
 - name: Deploy k8s-dashboard
   kubernetes.core.helm:
@@ -49,13 +49,13 @@
     atomic: true
     values: '{{ k8s_dashboard_helm_values | default({}) }}'
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
-  tags: [k8s, k8-init, k8s-metrics, k8s-metrics-dashboard]
+  tags: [k8s, k8s-init, k8s-metrics, k8s-metrics-dashboard]
 
 - name: Add prometheus helm-chart repo
   kubernetes.core.helm_repository:
     name: prometheus-community
     repo_url: https://prometheus-community.github.io/helm-charts
-  tags: [k8s, k8-init, k8s-metrics, k8s-metrics-node-exporter, k8s-metrics-ksm]
+  tags: [k8s, k8s-init, k8s-metrics, k8s-metrics-node-exporter, k8s-metrics-ksm]
 
 - name: Deploy prometheus node-exporter
   kubernetes.core.helm:
@@ -70,7 +70,7 @@
     wait: true
     values: '{{ k8s_node_exporter_helm_values | default({}) }}'
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
-  tags: [k8s, k8-init, k8s-metrics, k8s-metrics-node-exporter]
+  tags: [k8s, k8s-init, k8s-metrics, k8s-metrics-node-exporter]
 
 - name: Deploy prometheus kube-state-metrics
   kubernetes.core.helm:
@@ -85,5 +85,5 @@
     wait: true
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
     values: '{{ k8s_ksm_helm_values | default({}) }}'
-  tags: [k8s, k8-init, k8s-metrics, k8s-metrics-ksm]
+  tags: [k8s, k8s-init, k8s-metrics, k8s-metrics-ksm]
 
