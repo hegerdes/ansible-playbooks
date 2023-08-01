@@ -1,0 +1,29 @@
+# Main aws-route53
+---
+
+- name: Add records to aws route53
+  run_once: true
+  become: false
+  delegate_to: localhost
+  amazon.aws.route53:
+    state: '{{ item.state | default("present") }}'
+    zone: '{{item.zone }}'
+    record: '{{ item.record }}'
+    type: '{{ item.type | default("A") }}'
+    ttl: '{{ item.ttl | default(7200) }}'
+    value: '{{ item.value | default([]) }}'
+    wait: '{{ item.wait | default(true) }}'
+  loop: '{{ aws_route53_records | default([]) }}'
+  tags: [aws, aws-route53]
+
+- name: Get records to aws route53
+  run_once: true
+  become: false
+  delegate_to: localhost
+  amazon.aws.route53:
+    state: get
+    zone: '{{item.zone }}'
+    record: '{{ item.record }}'
+    type: '{{ item.type | default("A") }}'
+  loop: '{{ aws_route53_records_info | default([]) }}'
+  tags: [aws, aws-route53]

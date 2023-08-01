@@ -1,0 +1,28 @@
+# Role aws-route53
+
+## Purpose
+To set DNS records on aws
+
+## Defaults
+```yml
+---
+# aws-route53
+
+# List of dns records:
+aws_route53_records: []
+# Example
+# aws_route53_records:
+#   - zone: my-zone
+#     record: my-record
+#     value: 127.0.0.1
+#     type: A             # optional
+#     state: present      # optional
+#     ttl: 7200           # optional
+#     wait: true          # optional
+
+aws_route53_records_info: []
+# aws_route53_records_info:
+#   - zone: my-zone
+#     record: my-record
+#     type: A           # optional
+```
