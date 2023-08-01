@@ -12,7 +12,7 @@
       ansible.builtin.template:
         src: 'kubeadm-config.yml.j2'
         dest: '{{ target_data_dir | default("") }}/srv/kubeadm-config.yml'
-        mode: '0644'
+        mode: '0600'
       tags: [k8s, k8-init, k8-master-init]
 
     - name: Debug - Kubeadm init
@@ -20,10 +20,8 @@
       ansible.builtin.debug:
         msg: |
           Running:
-          kubeadm init --config {{ target_data_dir | default("") }}/srv/kubeadm-config.yml \
-            --upload-certs \
-            {{ k8s_kubeadm_opts }} \
-            {{ k8s_init_opts }}
+          kubeadm init -v 5 --config {{ target_data_dir | default("") }}/srv/kubeadm-config.yml \
+            --upload-certs {{ k8s_kubeadm_opts }} {{ k8s_init_opts }}
       tags: [k8s, k8s-prepare, k8s-base, k8s-test]
 
     - name: Init Kubernetes cluster

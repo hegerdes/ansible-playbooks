@@ -5,51 +5,46 @@
   changed_when: false
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
-- name: Get worker join command - legacy
-  ansible.builtin.command: kubeadm token create --print-join-command
-  register: __k8_worker_join_command_res
-  run_once: true
-  changed_when: false
-  delegate_to: "{{ groups.k8s_master | flatten | first }}"
-  tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
-
-- name: Get join token
-  ansible.builtin.command: kubeadm token create
-  register: __k8_worker_join_token_res
-  run_once: true
-  changed_when: false
-  delegate_to: "{{ groups.k8s_master | flatten | first }}"
-  tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
-
-- name: Debug - Print join command
-  when: k8s_init_verbose
-  ansible.builtin.debug:
-    msg: "{{ __k8_worker_join_command_res.stdout }}"
-
-- name: Copy kubeadm join config
-  ansible.builtin.template:
-    src: 'kubeadm-join-config.yml.j2'
-    dest: '{{ target_data_dir | default("") }}/srv/kubeadm-join-config.yml'
-    mode: '0644'
-  tags: [k8s, k8-init, k8-master-init, k8s-worker-join]
-
 - name: Check if kubeadm has already run
   ansible.builtin.stat:
     path: /etc/kubernetes/kubelet.conf
-  register: k8s_kubeadm_worker_ca
+  register: __k8s_kubeadm_worker_ca
   tags: [k8s, k8-init, k8s-join, k8s-worker-join]
 
-- name: Join Nodes - legacy
-  when: not k8s_kubeadm_worker_ca.stat.exists
-  ansible.builtin.command: "{{ __k8_worker_join_command_res.stdout }}"
-  register: k8s_join_res
+- name: Get join token
+  when: not __k8s_kubeadm_worker_ca.stat.exists
+  delegate_to: "{{ groups.k8s_master | flatten | first }}"
+  ansible.builtin.command: kubeadm token create
+  register: __k8_worker_join_token_res
+  changed_when: false
+  run_once: true
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
-# - name: Join Nodes
-#   when: not k8s_kubeadm_worker_ca.stat.exists
-#   ansible.builtin.command: 'kubeadm join -v 5 --config {{ target_data_dir | default("") }}/srv/kubeadm-join-config.yml'
-#   register: k8s_join_res
-#   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
+- name: Get CA certificate hash
+  when: not __k8s_kubeadm_worker_ca.stat.exists
+  delegate_to: "{{ groups.k8s_master | flatten | first }}"
+  community.crypto.x509_certificate_info:
+    path: /etc/kubernetes/pki/ca.crt
+  register: __k8s_pki_ca
+  changed_when: false
+  run_once: true
+  no_log: true
+  tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
+
+- name: Copy kubeadm join config
+  when: not __k8s_kubeadm_worker_ca.stat.exists
+  ansible.builtin.template:
+    src: 'kubeadm-join-config.yml.j2'
+    dest: '{{ target_data_dir | default("") }}/srv/kubeadm-join-config.yml'
+    mode: '0600'
+  tags: [k8s, k8-init, k8-master-init, k8s-worker-join]
+
+- name: Join worker nodes
+  when: not __k8s_kubeadm_worker_ca.stat.exists
+  ansible.builtin.command: |
+    kubeadm join -v 5 --config {{ target_data_dir | default("") }}/srv/kubeadm-join-config.yml
+  register: __k8s_join_res
+  tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
 - name: Change kubelet conf permissions
   ansible.builtin.file:
@@ -66,10 +61,10 @@
   register: _k8s_worker_role_set
   changed_when: ("node/" + inventory_hostname + " labeled") in _k8s_worker_role_set.stdout
   delegate_to: "{{ groups.k8s_master | flatten | first }}"
-  tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
   loop:
     - 'node-role.kubernetes.io/worker=worker'
     - 'node-arch.kubernetes.io/arch={{ ansible_facts.architecture }}'
+  tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
 - name: Enable and check kubelet service
   ansible.builtin.systemd:
@@ -80,7 +75,7 @@
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
 - name: Debug - Print join res
-  when: k8s_init_verbose
+  when: k8s_init_verbose and not __k8s_kubeadm_worker_ca.stat.exists
   ansible.builtin.debug:
-    var: k8s_join_res
+    var: __k8s_join_res
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
