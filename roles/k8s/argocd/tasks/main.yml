@@ -1,6 +1,6 @@
 # Main k8s Setup
 ---
-- name: Add ArgoCD Helm-Chart repo
+- name: Add ArgoCD helm-chart repo
   kubernetes.core.helm_repository:
     name: argocd
     repo_url: https://argoproj.github.io/argo-helm

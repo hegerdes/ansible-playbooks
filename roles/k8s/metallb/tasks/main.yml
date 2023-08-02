@@ -1,6 +1,6 @@
 # Main k8s MetalLB setup
 
-- name: Add MetalLB Helm-Chart repo
+- name: Add MetalLB helm-chart repo
   kubernetes.core.helm_repository:
     name: metallb
     repo_url: https://metallb.github.io/metallb
