@@ -1,19 +1,19 @@
 # Set up k8s with kubeadm
 ---
 
-- name: Init first master node with kubeadm
+- name: Init first control-plane node with kubeadm
   block:
     - name: Reset Kubernetes component
       ansible.builtin.command: "kubeadm reset --force"
       register: reset_cluster
-      tags: [k8s, k8s-init, k8-master-init]
+      tags: [k8s, k8s-init, k8s-cp-init]
 
     - name: Copy kubeadm config
       ansible.builtin.template:
         src: 'kubeadm-config.yml.j2'
         dest: '{{ target_data_dir | default("") }}/srv/kubeadm-config.yml'
         mode: '0600'
-      tags: [k8s, k8s-init, k8-master-init]
+      tags: [k8s, k8s-init, k8s-cp-init]
 
     - name: Debug - Kubeadm init
       when: k8s_init_verbose
@@ -28,11 +28,9 @@
       when: reset_cluster is succeeded
       ansible.builtin.command: |
           kubeadm init --config {{ target_data_dir | default("") }}/srv/kubeadm-config.yml \
-            --upload-certs \
-            {{ k8s_kubeadm_opts }} \
-            {{ k8s_init_opts }}
+            --upload-certs {{ k8s_kubeadm_opts }} {{ k8s_init_opts }}
       register: init_cluster
-      tags: [k8s, k8s-init, k8-master-init]
+      tags: [k8s, k8s-init, k8s-cp-init]
 
     - name: Enable and check kubelet service
       ansible.builtin.systemd:
@@ -41,32 +39,32 @@
         state: started
         enabled: true
       ignore_errors: '{{ ansible_check_mode }}'
-      tags: [k8s, k8s-init, k8-master-init]
+      tags: [k8s, k8s-init, k8s-cp-init]
 
     - name: Debug - Kubeadm init res
       when: k8s_init_verbose
       ansible.builtin.debug:
         var: init_cluster.stderr_lines + init_cluster.stdout_lines
-      tags: [k8s, k8s-init, k8-master-init]
+      tags: [k8s, k8s-init, k8s-cp-init]
 
   rescue:
     - name: Cleanup - Reset Kubernetes component
       ansible.builtin.command: "kubeadm reset --force"
       changed_when: true
       register: reset_cluster
-      tags: [k8s, k8s-init, k8-master-init]
+      tags: [k8s, k8s-init, k8s-cp-init]
 
     - name: Print Error Info
       ansible.builtin.debug:
-        msg: 'A error occured while bootstraping the first master node. The cluster was reset. Please see the error meassage below:'
-      tags: [k8s, k8s-init, k8-master-init]
+        msg: 'A error occurred while bootstrapping the first control-plane node. The cluster was reset. Please see the error meassage below:'
+      tags: [k8s, k8s-init, k8s-cp-init]
 
     - name: Kubeadm Error
       ansible.builtin.debug:
         var: init_cluster
-      tags: [k8s, k8s-init, k8-master-init]
+      tags: [k8s, k8s-init, k8s-cp-init]
 
     - name: Exit with error code!
       ansible.builtin.command: /bin/false
       changed_when: false
-      tags: [k8s, k8s-init, k8-master-init]
+      tags: [k8s, k8s-init, k8s-cp-init]

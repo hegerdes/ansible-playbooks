@@ -4,7 +4,7 @@
   ansible.builtin.command: kubectl get nodes -o name
   register: k8_aktive_nodes
   run_once: true
-  delegate_to: '{{ groups.k8s_master | first }}'
+  delegate_to: '{{ groups.k8s_control_plane | flatten | first }}'
   tags: [k8s, k8s-leave]
   check_mode: false
   changed_when: false
@@ -29,7 +29,7 @@
       ignore_daemonsets: true
       delete_emptydir_data: true
       force: '{{ k8s_froce_drain | default(true) }}'
-  delegate_to: '{{ groups.k8s_master | first }}'
+  delegate_to: '{{ groups.k8s_control_plane | flatten | first }}'
   tags: [k8s, k8s-leave]
 
 - name: Delete the node
@@ -37,7 +37,7 @@
   ansible.builtin.command: 'kubectl delete node {{ inventory_hostname }}'
   register: k8_delete_res
   changed_when: true
-  delegate_to: '{{ groups.k8s_master | first }}'
+  delegate_to: '{{ groups.k8s_control_plane | flatten | first }}'
   tags: [k8s, k8s-leave]
 
 - name: Reset the node

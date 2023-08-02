@@ -1,0 +1,146 @@
+# Main k8s Setup
+---
+- name: Test reachability to shared KubeControlPlaneHost
+  ansible.builtin.command: 'ping -c 5 {{ k8s_shared_api_server_endpoint }}'
+  changed_when: false
+  tags: [k8s, k8s-init, k8s-cp-init]
+
+- name: Check if kubeadm has already run
+  when: groups.k8s_control_plane | flatten | first == inventory_hostname
+  ansible.builtin.stat:
+    path: "/etc/kubernetes/pki/ca.key"
+  register: kubeadm_ca
+  tags: [k8s, k8s-init, k8s-cp-init]
+
+- name: Init cluster if needed
+  when: groups.k8s_control_plane | flatten | first == inventory_hostname and not kubeadm_ca.stat.exists
+  ansible.builtin.include_tasks: kubeadm-init.yml
+  tags: [k8s, k8s-init, k8s-cp-init]
+
+- name: Generate certificate key
+  delegate_to: '{{ groups.k8s_control_plane | flatten | first }}'
+  ansible.builtin.command: 'kubeadm init phase upload-certs --upload-certs --config {{ target_data_dir | default("") }}/srv/kubeadm-config.yml'
+  register: __k8s_kubeadm_cert_key_res
+  changed_when: false
+  run_once: true
+  no_log: true
+  tags: [k8s, k8s-init, k8s-cp-init]
+
+- name: Get join token
+  delegate_to: '{{ groups.k8s_control_plane | flatten | first }}'
+  ansible.builtin.command: kubeadm token create
+  register: __k8_cp_join_token_res
+  changed_when: false
+  run_once: true
+  no_log: true
+  tags: [k8s, k8s-init, k8s-cp-init]
+
+- name: Get CA certificate hash
+  delegate_to: '{{ groups.k8s_control_plane | flatten | first }}'
+  community.crypto.x509_certificate_info:
+    path: '{{ k8s_pki_ca_path }}'
+  register: __k8s_pki_ca
+  changed_when: false
+  run_once: true
+  no_log: true
+  tags: [k8s, k8s-init, k8s-cp-init]
+
+- name: Copy kubeadm join config
+  ansible.builtin.template:
+    src: 'kubeadm-join-config.yml.j2'
+    dest: '{{ target_data_dir | default("") }}/srv/kubeadm-join-config.yml'
+    mode: '0600'
+  tags: [k8s, k8s-init, k8s-cp-init]
+
+- name: Check if kubeadm has already run
+  ansible.builtin.stat:
+    path: /etc/kubernetes/kubelet.conf
+  register: k8s_kubeadm_all_init
+  tags: [k8s, k8s-init, k8s-cp-init]
+
+- name: Join control-plane nodes
+  when: not k8s_kubeadm_all_init.stat.exists
+  ansible.builtin.command: |
+    kubeadm join -v 5 --config {{ target_data_dir | default("") }}/srv/kubeadm-join-config.yml
+  register: __k8s_join_res
+  tags: [k8s, k8s-init, k8s-cp-init]
+
+- name: Change kubelet conf permissions
+  ansible.builtin.file:
+    path: '{{ item }}'
+    owner: root
+    group: root
+    mode: '0600'
+  loop: [/etc/systemd/system/kubelet.service.d/10-kubeadm.conf, /var/lib/kubelet/config.yaml]
+  tags: [k8s, k8s-init, k8s-cp-init]
+
+- name: Enable and check kubelet service
+  ansible.builtin.systemd:
+    name: kubelet
+    daemon_reload: true
+    state: started
+    enabled: true
+  ignore_errors: '{{ ansible_check_mode }}'
+  tags: [k8s, k8s-init, k8s-cp-init]
+
+- name: Show join results
+  ansible.builtin.debug:
+    var: __k8s_join_res
+  tags: [k8s, k8s-init, k8s-cp-init]
+
+- name: Remove NoSchedule taint form control-plane nodes
+  when: k8s_remove_no_schedule_cp_taints
+  kubernetes.core.k8s_taint:
+    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
+    state: absent
+    name: '{{ ansible_facts.hostname }}'
+    taints:
+      - key: node-role.kubernetes.io/control-plane
+        effect: NoSchedule
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      - key: node.cloudprovider.kubernetes.io/uninitialized
+        effect: NoSchedule
+      - key: dedicated
+  tags: [k8s, k8s-init, k8s-cp-init, k8-taint]
+
+- name: Setting taints
+  kubernetes.core.k8s_taint:
+    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
+    state: '{{ item.state | default("present") }}'
+    name: '{{ item.node }}'
+    taints:
+      - key: '{{ item.key }}'
+        effect: '{{ item.effect | default(omit) }}'
+  loop: '{{ k8s_taints | default([]) }}'
+  tags: [k8s, k8s-init, k8s-cp-init, k8-taint]
+
+- name: Setup configs
+  ansible.builtin.include_tasks: setup-configs.yml
+  tags: [k8s, k8s-init, k8s-cp-init, k8s-init-config]
+
+- name: Install Helm
+  ansible.builtin.include_role:
+    name: k8s/helm
+    public: true
+  tags: [k8s, k8s-init, k8s-cp-init, k8s-helm]
+
+- name: Setup CNI
+  ansible.builtin.include_tasks: 'setup-cni-{{ k8s_cni | lower }}.yml'
+  tags: [k8s, k8s-init, k8s-cp-init, k8-cri, k8s-flannel, k8s-calico, k8s-cilium, k8s-weave]
+
+- name: Setup k9s
+  when: k8s_install_k9s
+  ansible.builtin.include_tasks: 'setup-k9s.yml'
+  tags: [k8s, k8s-init, k8s-cp-init, k8s-k9s]
+
+# - name: Kubeadm check
+#   ansible.builtin.shell: kubectl cluster-info
+#   register: k8s_cluster_info
+#   tags: [k8s, k8s-init, k8s-cp-init]
+
+# - name: Debug - Print cluster info
+#   ansible.builtin.debug:
+#     var: k8s_cluster_info.stderr_lines + k8s_cluster_info.stdout_lines
+#   run_once: true
+#   tags: [k8s, k8s-init, k8s-cp-init]

@@ -1,4 +1,4 @@
-# Main k8s/master/flannel Setup
+# Main k8s/control-plane/flannel Setup
 
 - name: Download network CNI manifest
   ansible.builtin.uri:
@@ -7,7 +7,7 @@
     status_code: [200, 304]
   register: _k8s_intanal_cni_flannel_definition
   run_once: true
-  tags: [k8s, k8s-init, k8-master-init, k8-cri, k8-flannel]
+  tags: [k8s, k8s-init, k8s-cp-init, k8-cri, k8-flannel]
 
 - name: Apply flannel-cri manifest to the cluster
   kubernetes.core.k8s:
@@ -15,4 +15,4 @@
     definition: "{{ _k8s_intanal_cni_flannel_definition.content }}"
     state: present
   run_once: true
-  tags: [k8s, k8s-init, k8-master-init, k8-cri, k8-flannel]
+  tags: [k8s, k8s-init, k8s-cp-init, k8-cri, k8-flannel]

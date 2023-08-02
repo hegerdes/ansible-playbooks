@@ -167,9 +167,8 @@
   tags: [k8s, k8s-prepare, k8s-base, apt]
 
 - name: Print k8s package version info
-  run_once: true
   ansible.builtin.debug:
-    msg: 'Installing the {{ k8s_version if (k8s_version != "latest") else "latest" }} packages for k8s'
+    msg: 'Installing the {{ k8s_version if (k8s_version != "latest") else "latest" }} version of k8s'
   tags: [k8s, k8s-prepare, k8s-base, apt]
 
 - name: Install container runtime, kubelet and admin tools

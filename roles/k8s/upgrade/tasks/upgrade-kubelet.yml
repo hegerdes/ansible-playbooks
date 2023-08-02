@@ -1,6 +1,5 @@
 # Set up k8s with kubeadm
 ---
-
 - name: Upgrade kubelet
   block:
     # - name: Drain node
@@ -11,7 +10,7 @@
     #       ignore_daemonsets: true
     #       delete-emptydir-data: true
     #     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
-    #   delegate_to: groups.k8s_master | flatten | first
+    #   delegate_to: '{{ groups.k8s_control_plane | flatten | first }}'
     #   tags: [k8s, k8s-upgrade, k8s-upgrade-kubelet]
 
     - name: Update kubelet and kubectl
@@ -43,7 +42,7 @@
     #     name: '{{ _k8s_upgrade_node_name }}'
     #     state: uncordon
     #     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
-    #   delegate_to: groups.k8s_master | flatten | first
+    #   delegate_to: groups.k8s_control_plane | flatten | first
     #   tags: [k8s, k8s-upgrade, k8s-upgrade-kubelet]
 
   rescue:
@@ -55,7 +54,7 @@
 
     - name: Print Error Info
       ansible.builtin.debug:
-        msg: 'A error occured while bootstraping the first master node. The cluster was reset. Please see the error meassage below:'
+        msg: 'A error occurred while upgrading the first control-plane node. The cluster was reset. Please see the error messsage below:'
       tags: [k8s, k8s-upgrade, k8s-upgrade-kubelet]
 
     - name: Kubeadm Error

@@ -7,7 +7,7 @@ nodeRegistration:
     - NumCPU
   # criSocket: unix:///var/run/containerd/containerd.sock
   # imagePullPolicy: IfNotPresent
-  # name: master-node-amd64-cmkhxd
+  # name: cp-node-amd64-cmkhxd
   # taints: null
 localAPIEndpoint:
   advertiseAddress: {{ ansible_facts.all_ipv4_addresses | ansible.utils.reduce_on_network(k8s_cloud_net) | first if (k8s_cloud_net | default("none") != "none") else k8s_kubelet_advertise_address_bind | default(ansible_facts.default_ipv4.address) }}

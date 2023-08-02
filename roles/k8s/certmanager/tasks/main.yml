@@ -1,12 +1,12 @@
 # K8s install certmanager
 
-- name: Add Certmanager Helm-Chart repo
+- name: Add Certmanager helm-chart repo
   kubernetes.core.helm_repository:
     name: jetstack
     repo_url: https://charts.jetstack.io
-  tags: [k8s, k8s-init, k8-master-init, k8-helm, k8s-certmanager]
+  tags: [k8s, k8s-init, k8s-cp-init, k8-helm, k8s-certmanager]
 
-- name: Deploy Cert manager
+- name: Deploy Certmanager
   kubernetes.core.helm:
     name: cert-manager
     state: '{{ "present" if(k8s_certmanager_install) else "absent" }}'
@@ -19,7 +19,7 @@
     atomic: true
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
     values: '{{ k8s_certmanager_helm_values | default({}) }}'
-  tags: [k8s, k8s-init, k8-master-init, k8-helm, k8s-certmanager]
+  tags: [k8s, k8s-init, k8s-cp-init, k8-helm, k8s-certmanager]
 
 - name: Apply lets-encrypt issuer manifests
   when: k8s_certmanager_letsencrypt_mail != "none"
@@ -31,4 +31,4 @@
   loop: "{{ k8s_certmanager_ingress_classes | product(['lets-encrypt-issuer-staging.yml', 'lets-encrypt-issuer-prod.yml']) | list }}"
   loop_control:
     loop_var: ingress_class
-  tags: [k8s, k8s-init, k8-master-init, k8-helm, k8s-certmanager]
+  tags: [k8s, k8s-init, k8s-cp-init, k8-helm, k8s-certmanager]

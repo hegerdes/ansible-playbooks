@@ -13,7 +13,7 @@
 
 - name: Get join token
   when: not __k8s_kubeadm_worker_ca.stat.exists
-  delegate_to: "{{ groups.k8s_master | flatten | first }}"
+  delegate_to: '{{ groups.k8s_control_plane | flatten | first }}'
   ansible.builtin.command: kubeadm token create
   register: __k8_worker_join_token_res
   changed_when: false
@@ -22,7 +22,7 @@
 
 - name: Get CA certificate hash
   when: not __k8s_kubeadm_worker_ca.stat.exists
-  delegate_to: "{{ groups.k8s_master | flatten | first }}"
+  delegate_to: '{{ groups.k8s_control_plane | flatten | first }}'
   community.crypto.x509_certificate_info:
     path: '{{ k8s_pki_ca_path }}'
   register: __k8s_pki_ca
@@ -37,7 +37,7 @@
     src: 'kubeadm-join-config.yml.j2'
     dest: '{{ target_data_dir | default("") }}/srv/kubeadm-join-config.yml'
     mode: '0600'
-  tags: [k8s, k8s-init, k8-master-init, k8s-worker-join]
+  tags: [k8s, k8s-init, k8s-worker-join]
 
 - name: Join worker nodes
   when: not __k8s_kubeadm_worker_ca.stat.exists
@@ -60,7 +60,7 @@
   ansible.builtin.command: "kubectl label node {{ inventory_hostname }} {{ item }}"
   register: _k8s_worker_role_set
   changed_when: ("node/" + inventory_hostname + " labeled") in _k8s_worker_role_set.stdout
-  delegate_to: "{{ groups.k8s_master | flatten | first }}"
+  delegate_to: '{{ groups.k8s_control_plane | flatten | first }}'
   loop:
     - 'node-role.kubernetes.io/worker=worker'
     - 'node-arch.kubernetes.io/arch={{ ansible_facts.architecture }}'

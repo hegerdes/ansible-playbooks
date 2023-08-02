@@ -1,11 +1,16 @@
 apiVersion: kubeadm.k8s.io/v1beta3
 kind: JoinConfiguration
+controlPlane:
+  localAPIEndpoint:
+    advertiseAddress: {{ ansible_facts.all_ipv4_addresses | ansible.utils.reduce_on_network(k8s_cloud_net) | first if (k8s_cloud_net | default("none") != "none") else k8s_kubelet_advertise_address_bind | default(ansible_facts.default_ipv4.address) }}
+    bindPort: {{ k8s_kubelet_advertise_port | default(6443) | int }}
+  certificateKey: {{ k8_cert_key if (k8_cert_key != "none") else __k8s_kubeadm_cert_key_res.stdout_lines | last }}
 discovery:
-  tlsBootstrapToken: {{ k8_worker_join_token | default(__k8_worker_join_token_res.stdout )}}
+  tlsBootstrapToken: {{ k8_cp_join_token | default(__k8_cp_join_token_res.stdout )}}
   timeout: 4m0s
   bootstrapToken:
     apiServerEndpoint: {{ k8s_shared_api_server_endpoint if(":" in k8s_shared_api_server_endpoint) else k8s_shared_api_server_endpoint + ":" + k8s_kubelet_advertise_port | default("6443") }}
-    token: {{ k8_worker_join_token | default(__k8_worker_join_token_res.stdout )}}
+    token: {{ k8_cp_join_token | default(__k8_cp_join_token_res.stdout )}}
     caCertHashes: {{ [] + k8s_ca_cert_hashes | default([]) + ["sha256:" + __k8s_pki_ca["public_key_fingerprints"]["sha256"] | replace(":","")] | flatten }}
 nodeRegistration:
   kubeletExtraArgs:
