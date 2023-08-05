@@ -1,6 +1,5 @@
 # Set up k8s with kubeadm
 ---
-
 - name: Init first control-plane node with kubeadm
   block:
     - name: Reset Kubernetes component

@@ -54,8 +54,8 @@
 
 - name: Disable swap
   ansible.builtin.command: swapoff -a
-  register: k8s_swap_diable_tmp
-  changed_when: k8s_swap_diable_tmp.stdout != ""
+  register: __k8s_swap_disable_tmp
+  changed_when: __k8s_swap_disable_tmp.stdout != ""
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: Add entries to /etc/hosts
@@ -74,11 +74,12 @@
     path: '{{ item }}'
     state: directory
   loop:
-    - /srv
-    - /etc/apt/keyrings
-    - /etc/systemd/system/docker.service.d
-    - /etc/systemd/system/kubelet.service.d
-    - /usr/wasmedge/lib
+    - '/srv'
+    - '/etc/apt/keyrings'
+    - '/etc/systemd/system/docker.service.d'
+    - '/etc/systemd/system/kubelet.service.d'
+    - '/usr/wasmedge/lib'
+    - '{{ ansible_facts.env.HOME }}/.kube'
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: Copy docker and kubelet service conf
@@ -90,7 +91,7 @@
     group: root
   with_items:
     - { src: 00-docker-cgroup.conf, dst: /etc/systemd/system/docker.service.d }
-    - { src: 20-kublet-service.conf, dst: /etc/systemd/system/kubelet.service.d }
+    - { src: 20-kubelet-service.conf, dst: /etc/systemd/system/kubelet.service.d }
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: Ensure br_netfilter and overlay is enabled
@@ -101,7 +102,7 @@
   loop: [br_netfilter, overlay]
   tags: [k8s, k8s-prepare, k8s-base]
 
-- name: Allow container ip forwarding
+- name: Set sysctl parameters
   ansible.posix.sysctl:
     name: '{{ item.key }}'
     value: '{{ item.val }}'
