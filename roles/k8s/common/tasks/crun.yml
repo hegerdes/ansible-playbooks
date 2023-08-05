@@ -1,0 +1,20 @@
+# Setup wasm crun
+---
+- name: Install official crun
+  ansible.builtin.get_url:
+    url: https://github.com/containers/crun/releases/download/{{ k8s_crun_version }}/crun-{{ k8s_crun_version }}-linux-{{ crun_arch_map[ansible_facts.architecture] }}
+    dest: /usr/local/sbin/crun
+    owner: root
+    group: root
+    mode: '0754'
+  vars:
+    crun_arch_map:
+      x86_64: amd64
+      aarch64: arm64
+  tags: [k8s, k8s-prepare, k8s-base]
+
+- name: Test crun
+  ansible.builtin.command:
+    cmd: crun --version
+  changed_when: false
+  tags: [k8s, k8s-prepare, k8s-base]

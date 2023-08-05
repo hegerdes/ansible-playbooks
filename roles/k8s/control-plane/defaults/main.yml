@@ -13,16 +13,16 @@ k8s_service_network_cidr_ipv4: 10.96.0.0/16
 k8s_pod_network_cidr_ipv6: 2001:db8:42:0::/56
 k8s_service_network_cidr_ipv6: 2001:db8:42:1::/112
 
-k8s_cert_extra_sans: '{{ ["127.0.0.1"] + ansible_facts.all_ipv4_addresses }}'
+k8s_cert_extra_sans: '{{ ["127.0.0.1", "localhost"] + ansible_facts.all_ipv4_addresses }}'
 k8s_install_k9s: true
+k8s_install_gvisor: true
 
 k8s_kubeadm_opts: ''
 k8s_init_opts: ''
 k8_cert_key: none
 
+######### Taints #########
 k8s_remove_no_schedule_cp_taints: false
-
-# Taints
 k8s_taints: []
 # # Example
 # k8s_taints:
@@ -30,6 +30,35 @@ k8s_taints: []
 #     key: node-role.kubernetes.io/control-plane
 #     effect: NoSchedule
 #     state: absent
+
+######### INIT-Manifests #########
+k8s_init_resources_manifests: []
+# # Example
+# k8s_init_resources_manifests:
+#   - name: oauth2-proxy
+#     definition: '{{ lookup("template", k8s_init_resources.file) | from_yaml_all }}'
+#     namespace: default      # optional
+#     state: present          # optional
+#     wait: true              # optional
+
+k8s_gVisor_manifest:
+  name: gVisor RuntimeClass
+  definition:
+    apiVersion: node.k8s.io/v1
+    kind: RuntimeClass
+    metadata:
+      name: gvisor
+    handler: runsc
+
+k8s_crun_manifest:
+  name: crun RuntimeClass
+  definition:
+    apiVersion: node.k8s.io/v1
+    kind: RuntimeClass
+    metadata:
+      name: crun
+    handler: crun
+
 
 ######### CNI #########
 # Which CNI flannel, calico or cilium

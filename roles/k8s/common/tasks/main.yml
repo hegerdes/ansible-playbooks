@@ -9,6 +9,11 @@
   delay: 10
   tags: [k8s, k8s-prepare, k8s-base]
 
+- name: Set a hostname
+  ansible.builtin.hostname:
+    name: '{{ inventory_hostname }}'
+  tags: [k8s, k8s-prepare, k8s-base]
+
 # - name: Enable SELinux in enforcing mode
 #   ansible.posix.selinux:
 #     policy: '{{ k8s_selinux_policy }}'
@@ -82,18 +87,6 @@
     - '{{ ansible_facts.env.HOME }}/.kube'
   tags: [k8s, k8s-prepare, k8s-base]
 
-- name: Copy docker and kubelet service conf
-  ansible.builtin.template:
-    src: '{{ item.src }}.j2'
-    dest: '{{ item.dst }}/{{ item.src }}'
-    mode: '0600'
-    owner: root
-    group: root
-  with_items:
-    - { src: 00-docker-cgroup.conf, dst: /etc/systemd/system/docker.service.d }
-    - { src: 20-kubelet-service.conf, dst: /etc/systemd/system/kubelet.service.d }
-  tags: [k8s, k8s-prepare, k8s-base]
-
 - name: Ensure br_netfilter and overlay is enabled
   community.general.modprobe:
     name: '{{ item }}'
@@ -124,23 +117,8 @@
   loop: '{{ k8s_system_limits }}'
   tags: [k8s, k8s-prepare, k8s-base]
 
-- name: Install official crun
-  when: not k8s_crun_with_wasm
-  ansible.builtin.get_url:
-    url: https://github.com/containers/crun/releases/download/{{ k8s_crun_version }}/crun-{{ k8s_crun_version }}-linux-{{ crun_arch_map[ansible_facts.architecture] }}
-    dest: /usr/local/sbin/crun
-    owner: root
-    group: root
-    mode: '0754'
-  vars:
-    crun_arch_map:
-      x86_64: amd64
-      aarch64: arm64
-  tags: [k8s, k8s-prepare, k8s-base]
-
-- name: Install wasm crun
-  when: k8s_crun_with_wasm
-  ansible.builtin.include_tasks: crun_wasm.yml
+- name: Include install crun
+  ansible.builtin.include_tasks: 'crun{{ "_wasm" if(k8s_crun_with_wasm) }}.yml'
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: Adding apt GPG Keys
@@ -150,19 +128,23 @@
   loop:
     - 'https://download.docker.com/linux/{{ ansible_facts.distribution | lower }}/gpg'
     - 'https://packages.cloud.google.com/apt/doc/apt-key.gpg'
+    - 'https://gvisor.dev/archive.key'
   tags: [k8s, k8s-prepare, k8s-base, apt]
 
-- name: Add Docker/K8s repository
+- name: Add Docker/K8s/gVisor repository
   ansible.builtin.apt_repository:
     repo: '{{ item.repo }}'
     update_cache: true
-    state: present
+    state: '{{ item.state | default("present") }}'
     filename: '{{ item.name }}'
   with_items:
     - name: docker
       repo: 'deb https://download.docker.com/linux/{{ ansible_facts.distribution | lower }} {{ ansible_facts.lsb.codename }} stable'
     - name: k8s
       repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+    - name: gvisor
+      repo: deb https://storage.googleapis.com/gvisor/releases release main
+      state: '{{ "present" if(k8s_install_gvisor) else "absent" }}'
   loop_control:
     label: "{{ item.name }}"
   tags: [k8s, k8s-prepare, k8s-base, apt]
@@ -175,10 +157,11 @@
 - name: Install container runtime, kubelet and admin tools
   ansible.builtin.apt:
     name:
-      - kubeadm{{ "=" + k8s_version + "-00" if (k8s_version != "latest") }}
-      - kubectl{{ "=" + k8s_version + "-00" if (k8s_version != "latest") }}
-      - kubelet{{ "=" + k8s_version + "-00" if (k8s_version != "latest") }}
-      - containerd.io{{ "=" + k8s_containerd_version + "-1" if (k8s_containerd_version != "latest") }}
+      - 'kubeadm{{ "=" + k8s_version + "-00" if (k8s_version != "latest") }}'
+      - 'kubectl{{ "=" + k8s_version + "-00" if (k8s_version != "latest") }}'
+      - 'kubelet{{ "=" + k8s_version + "-00" if (k8s_version != "latest") }}'
+      - 'containerd.io{{ "=" + k8s_containerd_version + "-1" if (k8s_containerd_version != "latest") }}'
+      - '{{ "runsc" if(k8s_install_gvisor) }}'
     state: present
     update_cache: true
     cache_valid_time: 86400     # equal to 24h
@@ -196,16 +179,24 @@
   tags: [k8s, k8s-prepare, k8s-base, apt]
   loop: [kubeadm, kubectl, kubelet, containerd.io]
 
-- name: Copy containerd-conf
+- name: Copy kubelet/docker/containerd/crun/runsc-conf
   ansible.builtin.template:
-    src: containerd-config.toml.j2
-    dest: /etc/containerd/config.toml
-    mode: '0644'
+    src: '{{ item.src }}.j2'
+    dest: '{{ item.src }}'
+    mode: '0600'
+    owner: root
+    group: root
+  with_items:
+    - { src: 00-docker-cgroup.conf, dst: /etc/systemd/system/docker.service.d/00-docker-cgroup.conf }
+    - { src: 20-kubelet-service.conf, dst: /etc/systemd/system/kubelet.service.d/20-kubelet-service.conf }
+    - { src: containerd-config.toml, dst: /etc/containerd/config.toml }
+    - { src: runsc.toml, dst: /etc/containerd/runsc.toml }
+    - { src: crictl.yaml, dst: /etc/crictl.yaml }
+  register: __run_conf
   tags: [k8s, k8s-prepare, k8s-base]
-  register: run_containerd_conf
 
 - name: Restart containerd
-  when: run_containerd_conf.changed
+  when: __run_conf.changed
   ansible.builtin.service:
     name: containerd
     daemon_reload: true
@@ -219,8 +210,17 @@
     line: source <(kubectl completion bash)
   tags: [k8s, k8s-prepare, k8s-base]
 
+- name: Pre-pull images
+  ansible.builtin.command: |
+    kubeadm config images pull \
+      {{ "--kubernetes-version " + k8s_version if (k8s_version != "latest") }} \
+      {{ "--image-repository " + k8s_image_repo if (k8s_image_repo | default("") != "") }}
+  register: __k8s_pull_res
+  changed_when: ((__k8s_pull_res.end[:-7] | to_datetime) - (__k8s_pull_res.start[:-7] | to_datetime)).total_seconds() > 5
+  tags: [k8s, k8s-prepare, k8s-base]
+
 - name: Copy systemd sys-fs-bpf for cilium cni
-  when: k8s_cni | default('flannel') | lower == 'cilium'
+  when: k8s_cni | lower == 'cilium'
   # See https://docs.cilium.io/en/v1.13/operations/system_requirements/#systemd-based-distributions
   ansible.builtin.copy:
     src: '{{ item.src }}'

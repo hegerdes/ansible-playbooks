@@ -2,7 +2,7 @@
 ---
 - name: Install needed packages
   ansible.builtin.apt:
-    name: ['ca-certificates', 'curl', 'gnupg', 'lsb-release', 'cifs-utils']
+    name: [ca-certificates, curl, gnupg, lsb-release, cifs-utils, apt-transport-https]
     state: present
     update_cache: true
     install_recommends: true
@@ -38,6 +38,11 @@
       - 'python3-yaml'
       - 'gnupg2'
       - 'pass'
+  tags: [docker, docker-install]
+
+- name: gVisor user setup
+  when: docker_install_gvisor
+  ansible.builtin.import_tasks: install-gvisor.yml
   tags: [docker, docker-install]
 
 - name: Test Docker

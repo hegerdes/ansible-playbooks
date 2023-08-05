@@ -5,6 +5,7 @@ docker_edition: ce
 
 # Docker Compose options.
 docker_install_compose: true
+docker_install_gvisor: true
 docker_compose_version: latest
 
 # A list of users who will be added to the docker group.
