@@ -15,3 +15,5 @@ tools/terraform/hetzner/.terraform/providers
 tools/terraform/hetzner/terraform.tfstate
 tools/terraform/hetzner/vars.tfvars
 roles/k8s/common/files/ssh/ssh_host_*
+kube-bench-result.txt
+kunescape-scan.txt

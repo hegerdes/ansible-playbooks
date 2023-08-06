@@ -14,7 +14,8 @@ jobs:
   docker-build:
     uses: hegerdes/publish/.github/workflows/reusable-docker-build.yml@main
     with:
-      build-tags: ${{ github.repository_owner }}/playbooks:latest,ghcr.io/${{ github.repository_owner }}/playbooks:latest
+      build-name: ${{ github.repository_owner }}/playbooks,ghcr.io/${{ github.repository_owner }}/playbooks
+      build-tags: latest
       build-cache: type=gha
       build-args: COMMIT_HASH=${{ github.sha }},COMMIT_TAG=${{ github.ref_name }}
       build-labels: MAINTAINER=${{ github.repository_owner }}
