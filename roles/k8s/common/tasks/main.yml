@@ -80,11 +80,12 @@
     state: directory
   loop:
     - '/srv'
+    - '/opt/cni/bin'
+    - '{{ ansible_facts.env.HOME }}/.kube'
     - '/etc/apt/keyrings'
     - '/etc/systemd/system/docker.service.d'
     - '/etc/systemd/system/kubelet.service.d'
     - '/usr/wasmedge/lib'
-    - '{{ ansible_facts.env.HOME }}/.kube'
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: Ensure br_netfilter and overlay is enabled
@@ -179,10 +180,21 @@
   tags: [k8s, k8s-prepare, k8s-base, apt]
   loop: [kubeadm, kubectl, kubelet, containerd.io]
 
+- name: Create conf dirs
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: directory
+  loop:
+    - '/opt/cni/bin'
+    - '/etc/systemd/system/docker.service.d'
+    - '/etc/systemd/system/kubelet.service.d'
+    - '/usr/wasmedge/lib'
+  tags: [k8s, k8s-prepare, k8s-base]
+
 - name: Copy kubelet/docker/containerd/crun/runsc-conf
   ansible.builtin.template:
     src: '{{ item.src }}.j2'
-    dest: '{{ item.src }}'
+    dest: '{{ item.dst }}'
     mode: '0600'
     owner: root
     group: root
@@ -205,9 +217,11 @@
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: Enable kubectl bash completion
-  ansible.builtin.lineinfile:
+  ansible.builtin.blockinfile:
     path: '{{ ansible_facts.env.HOME }}/.bashrc'
-    line: source <(kubectl completion bash)
+    block: |
+      source <(kubectl completion bash)
+      source <(crictl completion)
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: Pre-pull images
