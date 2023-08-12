@@ -3,6 +3,11 @@ kind: InitConfiguration
 nodeRegistration:
   kubeletExtraArgs:
     node-ip: {{ ansible_facts.all_ipv4_addresses | ansible.utils.reduce_on_network(k8s_cloud_net) | first if (k8s_cloud_net | default("none") != "none") else k8s_kubelet_advertise_address_bind | default(ansible_facts.default_ipv4.address) }},{{ansible_facts.default_ipv6.address}}
+    max-pods: "220"
+    protect-kernel-defaults: "true"
+    serialize-image-pulls: "false"
+    cgroup-driver: systemd
+    anonymous-auth: "false"
   ignorePreflightErrors:
     - NumCPU
   # criSocket: unix:///var/run/containerd/containerd.sock
