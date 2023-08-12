@@ -1,10 +1,10 @@
 # Main k8s CNI - Calico
 
-- name: Add projectcalico helm chart repo
+- name: Add projectcalico Helm chart repo
   kubernetes.core.helm_repository:
     name: projectcalico
     repo_url: https://projectcalico.docs.tigera.io/charts
-  tags: [k8s, k8s-init, k8s-cp-init, k8-cri, k8s-calico]
+  tags: [k8s, k8s-init, k8s-cp-init, k8s-cni, k8s-calico]
 
 - name: Install Calico
   kubernetes.core.helm:
@@ -20,11 +20,11 @@
     values: '{{ k8s_calico_helm_values | default({}) }}'
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
   run_once: true
-  tags: [k8s, k8s-init, k8s-cp-init, k8-cri, k8s-calico]
+  tags: [k8s, k8s-init, k8s-cp-init, k8s-cni, k8s-calico]
 
 - name: Download calicoctl
   ansible.builtin.get_url:
     url: https://github.com/projectcalico/calico/releases/download/v3.24.1/calicoctl-linux-amd64
     dest: /usr/bin/kubectl-calico
     mode: '0754'
-  tags: [k8s, k8s-init, k8s-cp-init, k8-cri, k8s-calico]
+  tags: [k8s, k8s-init, k8s-cp-init, k8s-cni, k8s-calico]

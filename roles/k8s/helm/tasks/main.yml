@@ -6,7 +6,7 @@
     state: present
   tags: [k8s, k8s-init, k8s-helm]
 
-- name: Add helm package repository
+- name: Add Helm package repository
   ansible.builtin.apt_repository:
     repo: deb https://baltocdn.com/helm/stable/debian/ all main
     update_cache: true
@@ -14,7 +14,7 @@
     filename: helm.list
   tags: [k8s, k8s-init, k8s-helm]
 
-- name: Install helm
+- name: Install Helm
   ansible.builtin.apt:
     name: helm
     state: present

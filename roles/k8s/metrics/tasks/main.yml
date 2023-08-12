@@ -9,7 +9,7 @@
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
   tags: [k8s, k8s-init, k8s-metrics]
 
-- name: Add metrics-server helm-chart repo
+- name: Add metrics-server Helm-chart repo
   kubernetes.core.helm_repository:
     name: metrics-server
     repo_url: https://kubernetes-sigs.github.io/metrics-server/
@@ -30,7 +30,7 @@
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
   tags: [k8s, k8s-init, k8s-metrics]
 
-- name: Add k8s-dashboard helm-chart repo
+- name: Add k8s-dashboard Helm-chart repo
   kubernetes.core.helm_repository:
     name: kubernetes-dashboard
     repo_url: https://kubernetes.github.io/dashboard/
@@ -51,7 +51,7 @@
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
   tags: [k8s, k8s-init, k8s-metrics, k8s-metrics-dashboard]
 
-- name: Add prometheus helm-chart repo
+- name: Add prometheus Helm-chart repo
   kubernetes.core.helm_repository:
     name: prometheus-community
     repo_url: https://prometheus-community.github.io/helm-charts

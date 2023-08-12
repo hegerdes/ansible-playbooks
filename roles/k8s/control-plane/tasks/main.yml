@@ -1,5 +1,11 @@
 # Main k8s Setup
 ---
+- name: Include common vars
+  ansible.builtin.include_vars:
+    file: ../../common_vars.yml
+    name: common_vars
+  tags: [k8s, k8s-init, k8s-cp-init]
+
 - name: Test reachability to shared KubeControlPlaneHost
   ansible.builtin.command: 'ping -c 5 {{ k8s_shared_api_server_endpoint }}'
   changed_when: false
@@ -146,7 +152,7 @@
 
 - name: Setup CNI
   ansible.builtin.include_tasks: 'setup-cni-{{ k8s_cni | lower }}.yml'
-  tags: [k8s, k8s-init, k8s-cp-init, k8-cri, k8s-flannel, k8s-calico, k8s-cilium, k8s-weave]
+  tags: [k8s, k8s-init, k8s-cp-init, k8s-cni, k8s-flannel, k8s-calico, k8s-cilium, k8s-weave]
 
 - name: Setup k9s
   when: k8s_install_k9s

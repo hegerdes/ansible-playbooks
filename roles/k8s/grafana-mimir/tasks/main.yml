@@ -1,6 +1,6 @@
 # Main k8s Setup
 ---
-- name: Add Grafana helm-chart repo
+- name: Add Grafana Helm-chart repo
   kubernetes.core.helm_repository:
     name: grafana
     repo_url: https://grafana.github.io/helm-charts

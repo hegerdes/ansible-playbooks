@@ -5,7 +5,7 @@
     dest: ~/cri-weave.yml
     mode: '0664'
   run_once: true
-  tags: [k8s, k8s-init, k8s-cp-init, k8-cri, k8-weave]
+  tags: [k8s, k8s-init, k8s-cp-init, k8s-cni, k8-weave]
 
 - name: Apply weave-cri manifest to the cluster
   kubernetes.core.k8s:
@@ -13,4 +13,4 @@
     state: present
     src: ~/cri-weave.yml
   run_once: true
-  tags: [k8s, k8s-init, k8s-cp-init, k8-cri, k8-weave]
+  tags: [k8s, k8s-init, k8s-cp-init, k8s-cni, k8-weave]
