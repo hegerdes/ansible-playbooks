@@ -101,7 +101,7 @@ k8s_cilium_helm_values:
   hubble:
     metrics:
       enabled:
-        - dns:query;ignoreAAAA
+        - dns:query
         - drop
         - tcp
         - flow

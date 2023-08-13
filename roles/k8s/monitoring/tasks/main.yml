@@ -1,63 +1,24 @@
 # Main k8s Monitoring
 
-- name: Create a monitoring namespace
-  kubernetes.core.k8s:
-    name: monitoring
-    api_version: v1
-    kind: Namespace
-    state: present
-    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
-  tags: [k8s, k8s-init, k8s-monitor]
+# https://grafana.com/docs/grafana-cloud/monitor-infrastructure/kubernetes-monitoring/configuration/config-k8s-agent-flow/
+- name: Add Grafana Cloud Helm-Chart repo
+  kubernetes.core.helm_repository:
+    name: grafana
+    repo_url: '{{ k8s_grafana_helm_repo }}'
+  tags: [k8s, k8s-grafana]
 
-- name: Create grafana-agent config-maps
-  kubernetes.core.k8s:
-    namespace: monitoring
-    state: '{{ "present" if(item.install) else "absent" }}'
-    definition:
-      apiVersion: v1
-      kind: ConfigMap
-      metadata:
-        name: '{{ item.name }}'
-      data:
-        agent.yaml: |
-          {{ item.config | to_nice_yaml(indent=2) }}
-        strategies.json: '{{ item.extra_config | default({}) | to_json }}'
+- name: Deploy Grafana Agent Flow
+  kubernetes.core.helm:
+    name: grafana-flow-agent
+    state: '{{ "present" if(k8s_grafana_install) else "absent" }}'
+    chart_version: '{{ k8s_grafana_helm_chart_version }}'
+    chart_ref: grafana/k8s-monitoring
+    release_namespace: monitoring
+    create_namespace: true
+    update_repo_cache: true
+    atomic: true
+    wait: true
+    values: '{{ k8s_grafana_helm_values | default({}) }}'
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
-  with_items:
-    - name: grafana-agent-traces
-      install: '{{ k8s_grafana_agent_traces_install }}'
-      config: '{{ k8s_grafana_agent_traces_agent_config }}'
-      extra_config: '{{ k8s_grafana_agent_traces_strategies_config }}'
-    - name: grafana-agent-logs
-      install: '{{ k8s_grafana_agent_logs_install }}'
-      config: '{{ k8s_grafana_agent_logs_agent_config }}'
-    - name: grafana-agent
-      install: '{{ k8s_grafana_agent_metrics_install }}'
-      config: '{{ k8s_grafana_agent_metrics_agent_config }}'
-  loop_control:
-    label: 'Setting {{ item.name }} configs'
-  tags: [k8s, k8s-init, k8s-monitor, k8s-monitor-grafana-agent]
-
-- name: Apply grafana-agent manifests
-  kubernetes.core.k8s:
-    state: '{{ "present" if(item.install) else "absent" }}'
-    namespace: monitoring
-    wait: True
-    definition: '{{ lookup("template", item.file) | from_yaml_all }}'
-    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
-  with_items:
-    - name: grafana-agent
-      file: '{{ k8s_grafana_agent_metrics_agent_app_path }}'
-      install: '{{ k8s_grafana_agent_metrics_install }}'
-      config: '{{ k8s_grafana_agent_metrics_agent_config }}'
-    - name: grafana-agent-logs
-      file: '{{ k8s_grafana_agent_logs_agent_app_path }}'
-      install: '{{ k8s_grafana_agent_logs_install }}'
-      config: '{{ k8s_grafana_agent_logs_agent_config }}'
-    - name: grafana-agent-traces
-      file: '{{ k8s_grafana_agent_traces_agent_app_path }}'
-      install: '{{ k8s_grafana_agent_traces_install }}'
-      config: '{{ k8s_grafana_agent_traces_agent_config }}'
-  loop_control:
-    label: 'Installing {{ item.name }}'
-  tags: [k8s, k8s-init, k8s-monitor, k8s-monitor-grafana-agent]
+  run_once: true
+  tags: [k8s, k8s-grafana]
