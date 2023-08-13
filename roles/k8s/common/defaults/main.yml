@@ -1,11 +1,12 @@
 ---
 k8s_version: 1.26.7
-k8s_kubelet_extra_args: ''
 
-# Which cri to use. runc, crun or runsc
+# Which cri to use: runc, crun or runsc
 k8s_cri: crun
 k8s_install_gvisor: true
 k8s_crun_version: '{{ k8s_crun_default_version if(not k8s_crun_with_wasm) else k8s_crun_wasm_version }}'
+# Key value pairs passed to kubelet
+k8s_kubelet_extra_args: {}
 
 k8s_crun_with_wasm: false
 k8s_crun_wasm_query: assets[?starts_with(name, 'crun')].browser_download_url

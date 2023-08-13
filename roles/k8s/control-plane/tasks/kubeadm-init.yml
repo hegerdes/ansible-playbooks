@@ -14,20 +14,11 @@
         mode: '0600'
       tags: [k8s, k8s-init, k8s-cp-init]
 
-    - name: Debug - Kubeadm init
-      when: k8s_init_verbose
-      ansible.builtin.debug:
-        msg: |
-          Running:
-          kubeadm init -v 5 --config {{ target_data_dir | default("") }}/srv/kubeadm-config.yml \
-            --upload-certs {{ k8s_kubeadm_opts }} {{ k8s_init_opts }}
-      tags: [k8s, k8s-prepare, k8s-base, k8s-test]
-
     - name: Init Kubernetes cluster
       when: reset_cluster is succeeded
       ansible.builtin.command: |
           kubeadm init --config {{ target_data_dir | default("") }}/srv/kubeadm-config.yml \
-            --upload-certs {{ k8s_kubeadm_opts }} {{ k8s_init_opts }}
+            --upload-certs
       register: init_cluster
       tags: [k8s, k8s-init, k8s-cp-init]
 

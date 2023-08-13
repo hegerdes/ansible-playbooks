@@ -16,9 +16,6 @@ k8s_service_network_cidr_ipv6: 2001:db8:42:1::/112
 k8s_cert_extra_sans: '{{ ["127.0.0.1", "localhost"] + ansible_facts.all_ipv4_addresses }}'
 k8s_install_k9s: true
 k8s_install_gvisor: true
-
-k8s_kubeadm_opts: ''
-k8s_init_opts: ''
 k8_cert_key: none
 
 ######### Taints #########
@@ -68,6 +65,8 @@ k8s_cni: flannel
 k8s_calico_ip_pools_ipv4:
   - cidr: '{{ k8s_pod_network_cidr if("," not in k8s_pod_network_cidr) else k8s_pod_network_cidr | split(",") | first }}'
     # natOutgoing: Enabled
+    # encapsulation: IPIP
+    # nodeSelector: all()
   # - blockSize: 26
   #   cidr: 10.48.0.0/21
   #   encapsulation: IPIP
@@ -93,11 +92,12 @@ k8s_calico_helm_values:
 
 # Cilium helm chart setup
 k8s_cilium_chart_version: '{{ null | default(omit) }}'
-# See example setup: https://github.com/syself/cluster-api-provider-hetzner/blob/main/templates/cluster-templates/bases/hcloud-kcp-ubuntu.yaml#L136
+# See example setup: https://docs.cilium.io/en/stable/helm-reference/
 k8s_cilium_helm_values:
   rollOutCiliumPods: true
   priorityClassName: "system-node-critical"
-
+  cluster:
+    name: '{{ k8s_cluster_name }}'
   hubble:
     metrics:
       enabled:
@@ -107,20 +107,16 @@ k8s_cilium_helm_values:
         - flow
         - icmp
         - http
-    relay:
-      enabled: true
-      rollOutPods: true
-    ui:
-      enabled: true
-      rollOutPods: true
+    # relay:
+    #   enabled: true
+    #   rollOutPods: true
+    # ui:
+    #   enabled: true
+    #   rollOutPods: true
   ipam:
-    mode: "kubernetes"
-
-  kubeProxyReplacement: "partial"
-
-  operator:
-    rollOutPods: true
-    priorityClassName: "system-node-critical"
+    # mode: "kubernetes"
+    operator:
+      clusterPoolIPv4PodCIDRList: [10.244.0.0/16]
 
   # encryption:
   #   enabled: true
@@ -129,3 +125,7 @@ k8s_cilium_helm_values:
   # MTU: 1450 # for Hetzner
   # # Recreate agent on config map change
   # tunnel: "vxlan"
+
+system_arch_map:
+  x86_64: amd64
+  aarch64: arm64

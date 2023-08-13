@@ -1,35 +1,4 @@
 # Main k8s CNI - Cilium
-- name: Copy systemd sys-fs-bpf
-  ansible.builtin.copy:
-    src: '{{ item.src }}'
-    dest: '{{ item.dst }}'
-    mode: '0600'
-    owner: root
-    group: root
-  with_items:
-    # - {src: cilium-systemd-sys-fs-bpf.conf, dst: /etc/systemd/system/sys-fs-bpf.mount}
-    - {src: cilium-networkd.conf, dst: /etc/systemd/networkd.conf}
-  # notify: Restart network service
-  tags: [k8s, k8s-init, k8s-cp-init, k8s-cni, k8s-cilium]
-
-# - name: Enable sys-fs-bpf
-#   ansible.builtin.systemd:
-#     name: sys-fs-bpf.mount
-#     enabled: false
-#     state: stopped
-#   tags: [k8s, k8s-init, k8s-cp-init, k8s-cni, k8s-cilium]
-
-# Maybe use line in file?
-# - name: Set systemctl parameters
-#   ansible.posix.sysctl:
-#     name: net.ipv4.conf.lxc*.rp_filter
-#     value: 0
-#     state: present
-#     sysctl_set: true
-#     reload: true
-#     sysctl_file: /etc/sysctl.d/99-cilium.conf
-#   tags: [k8s, k8s-init, k8s-cp-init, k8s-cni, k8s-cilium]
-
 - name: Add Cilium helm chart repo
   kubernetes.core.helm_repository:
     name: cilium
@@ -44,6 +13,7 @@
     release_namespace: kube-system
     update_repo_cache: true
     create_namespace: true
+    state: present
     atomic: true
     wait: true
     values: '{{ k8s_cilium_helm_values | default({}) }}'
@@ -53,7 +23,15 @@
 
 - name: Download Cilium CLI
   ansible.builtin.unarchive:
-    src: 'https://github.com/cilium/cilium-cli/releases/download/{{ k8s_cilium_cli_version | default(lookup("ansible.builtin.url", "https://raw.githubusercontent.com/cilium/cilium-cli/master/stable.txt", split_lines=False)) | trim }}/cilium-linux-{{ system_arch_map[ansible_facts.architecture] }}.tar.gz'
+    src: 'https://github.com/cilium/cilium-cli/releases/download/{{ k8s_cilium_cli_version | default(lookup("url", "https://raw.githubusercontent.com/cilium/cilium-cli/master/stable.txt", split_lines=False)) | trim }}/cilium-linux-{{ system_arch_map[ansible_facts.architecture] }}.tar.gz'
     dest: /usr/local/bin
+    creates: /usr/local/bin/cilium
     remote_src: true
+  tags: [k8s, k8s-init, k8s-cp-init, k8s-cni, k8s-cilium]
+
+- name: Verify Cilium
+  ansible.builtin.command: cilium status --output json
+  register: __k8s_cilium_status
+  changed_when: false
+  run_once: true
   tags: [k8s, k8s-init, k8s-cp-init, k8s-cni, k8s-cilium]

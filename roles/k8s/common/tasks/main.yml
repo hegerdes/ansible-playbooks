@@ -133,10 +133,11 @@
         crun version: {{ k8s_crun_version }}
         crun with wasm: {{ k8s_crun_with_wasm }}
       {% if(k8s_containerd_variant | lower == "github") %}
-          containerd download url {{ k8s_containerd_download_url }}
-          runc download url {{ k8s_runc_download_url }}
-          cni plugin download url {{ k8s_cni_plugin_download_url }}
+        containerd download url {{ k8s_containerd_download_url }}
+        runc download url {{ k8s_runc_download_url }}
+        cni plugin download url {{ k8s_cni_plugin_download_url }}
       {% endif %}
+  run_once: true
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: Include install crun
@@ -222,7 +223,6 @@
     group: root
   with_items:
     - { src: 00-docker-cgroup.conf, dst: /etc/systemd/system/docker.service.d/00-docker-cgroup.conf }
-    - { src: 20-kubelet-service.conf, dst: /etc/systemd/system/kubelet.service.d/20-kubelet-service.conf }
     - { src: containerd-config.toml, dst: /etc/containerd/config.toml }
     - { src: runsc.toml, dst: /etc/containerd/runsc.toml }
     - { src: crictl.yaml, dst: /etc/crictl.yaml }
