@@ -23,7 +23,7 @@
 - name: Deploy App
   kubernetes.core.helm:
     name: '{{ k8s_helm_app.deploy_name | default(k8s_helm_app.chart_name) }}'
-    state: '{{ "present" if(k8s_helm_app.install | default(true)) else "absent" }}'
+    state: '{{ k8s_helm_app.state | default("present") }}'
     chart_version: '{{ k8s_helm_app.chart_version }} '
     chart_ref: '{{ k8s_helm_app.repo_name }}/{{ k8s_helm_app.chart_name }}'
     release_namespace: '{{ k8s_helm_app.deploy_namespace | default("default") }}'
