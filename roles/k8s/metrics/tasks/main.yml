@@ -9,11 +9,20 @@
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
   tags: [k8s, k8s-init, k8s-metrics]
 
-- name: Add metrics-server Helm-chart repo
+- name: Add Helm-chart repos
   kubernetes.core.helm_repository:
-    name: metrics-server
-    repo_url: https://kubernetes-sigs.github.io/metrics-server/
-  tags: [k8s, k8s-init, k8s-metrics]
+    name: '{{ item.name }}'
+    repo_url: '{{ item.url }}'
+  with_items:
+    - name: metrics-server
+      url: https://kubernetes-sigs.github.io/metrics-server/
+    - name: prometheus-community
+      url: https://prometheus-community.github.io/helm-charts
+    - name: kubernetes-dashboard
+      url: https://kubernetes.github.io/dashboard/
+    - name: ckotzbauer
+      url: https://ckotzbauer.github.io/helm-charts
+  tags: [k8s, k8s-init, k8s-metrics, k8s-metrics-node-exporter, k8s-metrics-ksm, k8s-metrics-dashboard, k8s-metrics-cadvisor]
 
 - name: Deploy metrics-server
   kubernetes.core.helm:
@@ -30,12 +39,6 @@
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
   tags: [k8s, k8s-init, k8s-metrics]
 
-- name: Add k8s-dashboard Helm-chart repo
-  kubernetes.core.helm_repository:
-    name: kubernetes-dashboard
-    repo_url: https://kubernetes.github.io/dashboard/
-  tags: [k8s, k8s-init, k8s-metrics, k8s-metrics-dashboard]
-
 - name: Deploy k8s-dashboard
   kubernetes.core.helm:
     name: kubernetes-dashboard
@@ -50,12 +53,6 @@
     values: '{{ k8s_dashboard_helm_values | default({}) }}'
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
   tags: [k8s, k8s-init, k8s-metrics, k8s-metrics-dashboard]
-
-- name: Add prometheus Helm-chart repo
-  kubernetes.core.helm_repository:
-    name: prometheus-community
-    repo_url: https://prometheus-community.github.io/helm-charts
-  tags: [k8s, k8s-init, k8s-metrics, k8s-metrics-node-exporter, k8s-metrics-ksm]
 
 - name: Deploy prometheus node-exporter
   kubernetes.core.helm:
@@ -86,4 +83,19 @@
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
     values: '{{ k8s_ksm_helm_values | default({}) }}'
   tags: [k8s, k8s-init, k8s-metrics, k8s-metrics-ksm]
+
+- name: Deploy cAdvisor
+  kubernetes.core.helm:
+    name: cadvisor
+    state: '{{ "present" if(k8s_metrics_install_cadvisor) else "absent" }}'
+    chart_ref: ckotzbauer/cadvisor
+    chart_version: '{{ k8s_cadvisor_helm_chart_version }}'
+    release_namespace: monitoring
+    create_namespace: true
+    update_repo_cache: true
+    atomic: true
+    wait: true
+    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
+    values: '{{ k8s_cadvisor_helm_values | default({}) }}'
+  tags: [k8s, k8s-init, k8s-metrics, k8s-metrics-cadvisor]
 
