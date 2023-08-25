@@ -1,5 +1,5 @@
 ---
-k8s_version: 1.26.7
+k8s_version: 1.27.4
 
 # Which cri to use: runc, crun or runsc
 k8s_cri: crun
