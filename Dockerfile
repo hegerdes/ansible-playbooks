@@ -25,7 +25,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get update && apt-get install -y --no-install-recommends nodejs azure-cli \
     && pip3 install --break-system-packages --no-cache-dir -r requirements.txt \
     && apt-get remove -y make gcc libc6-dev libffi-dev && apt-get autoremove -y \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* && rm -rf /tmp/*
 
 # Data and Labels
 COPY . /app/playbooks
