@@ -87,8 +87,9 @@
   loop:
     - '/srv'
     - '/opt/cni/bin'
-    - '{{ ansible_facts.env.HOME }}/.kube'
     - '/etc/apt/keyrings'
+    - '/etc/containerd'
+    - '{{ ansible_facts.env.HOME }}/.kube'
     - '/etc/systemd/system/docker.service.d'
     - '/etc/systemd/system/kubelet.service.d'
     - '/usr/wasmedge/lib'
@@ -150,6 +151,7 @@
     state: present
   loop:
     - 'https://download.docker.com/linux/{{ ansible_facts.distribution | lower }}/gpg'
+    - 'https://pkgs.k8s.io/core:/stable:/v{{ (k8s_version | split("."))[0:2] | join(".") }}/deb/Release.key'
     - 'https://dl.k8s.io/apt/doc/apt-key.gpg'
     - 'https://gvisor.dev/archive.key'
   tags: [k8s, k8s-prepare, k8s-base, apt]
@@ -161,8 +163,10 @@
     state: '{{ item.state | default("present") }}'
     filename: '{{ item.name }}'
   with_items:
-    - name: k8s
+    - name: k8s-legacy
       repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+    - name: k8s
+      repo: 'deb https://pkgs.k8s.io/core:/stable:/v{{ (k8s_version | split("."))[0:2] | join(".") }}/deb/ /'
     - name: docker
       repo: 'deb https://download.docker.com/linux/{{ ansible_facts.distribution | lower }} {{ ansible_facts.lsb.codename }} stable'
       state: '{{ "present" if(k8s_containerd_variant | lower == "docker") else "absent" }}'
@@ -209,6 +213,7 @@
     state: directory
   loop:
     - '/opt/cni/bin'
+    - '/etc/containerd'
     - '/etc/systemd/system/docker.service.d'
     - '/etc/systemd/system/kubelet.service.d'
     - '/usr/wasmedge/lib'
