@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     iproute2 rsync apt-transport-https lsb-release gnupg python3 python3-pip \
     && mkdir -p /etc/apt/keyrings \
     && if [ "$(uname -m)" != "x86_64" ]; then \
-    apt-get install -y --no-install-recommends make gcc libc6-dev libffi-dev; \
+    apt-get install -y --no-install-recommends make gcc python3-dev libc6-dev libffi-dev; \
     fi && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | gpg --dearmor -o \
     /usr/share/keyrings/nodejs-archive-keyring.gpg \
     && export NODE_ARCH="arch=`dpkg --print-architecture` signed-by=/usr/share/keyrings/nodejs-archive-keyring.gpg" \
