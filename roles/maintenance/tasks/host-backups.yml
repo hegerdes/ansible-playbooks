@@ -67,7 +67,7 @@
 
 - name: Post backup log to GitLab
   when: ansible_play_hosts_all | last == inventory_hostname and all_main_backup_res is defined and maintenance_post_to_git | bool
-  ansible.builtin.import_tasks: shared/gitlab-post-log.yml
+  ansible.builtin.include_tasks: shared/gitlab-post-log.yml
   vars:
     gitlab_conf:
       branch: '{{ maintenance_git_branch }}'

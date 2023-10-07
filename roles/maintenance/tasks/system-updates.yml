@@ -60,7 +60,7 @@
 
 - name: Post log for performed update-scan
   when: ansible_play_hosts_all | last == inventory_hostname and maintenance_post_to_git | bool
-  ansible.builtin.import_tasks: shared/gitlab-update-json-file.yml
+  ansible.builtin.include_tasks: shared/gitlab-update-json-file.yml
   vars:
     gitlab_conf:
       branch: '{{ maintenance_git_branch }}'
@@ -74,7 +74,7 @@
 
 - name: Post update log to GitLab
   when: ansible_play_hosts_all | last == inventory_hostname and all_updates is defined and maintenance_post_to_git | bool
-  ansible.builtin.import_tasks: shared/gitlab-post-log.yml
+  ansible.builtin.include_tasks: shared/gitlab-post-log.yml
   vars:
     gitlab_conf:
       branch: '{{ maintenance_git_branch }}'
@@ -88,7 +88,7 @@
 
 - name: Get issue on GitLab
   when: maintenance_post_to_git and all_updates is defined
-  ansible.builtin.import_tasks: shared/gitlab-get-issue.yml
+  ansible.builtin.include_tasks: shared/gitlab-get-issue.yml
   vars:
     gitlab_conf:
       url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/issues?labels=aptPendingUpdates,{{ inventory_dir | basename }}&state=opened'
@@ -98,7 +98,7 @@
 
 - name: Update issue on GitLab
   when: ansible_play_hosts_all | last == inventory_hostname and maintenance_post_to_git and not maintenance_run_upgrades and all_updates is defined
-  ansible.builtin.import_tasks: shared/gitlab-post-issue.yml
+  ansible.builtin.include_tasks: shared/gitlab-post-issue.yml
   vars:
     gitlab_conf:
       url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/issues/{{ main_reop_get_issue_res.json | json_query("[0].iid") if (main_reop_get_issue_res.json is defined and main_reop_get_issue_res.json | length > 0) else ""}}'
@@ -184,7 +184,7 @@
 
 - name: Post update log to GitLab
   when: ansible_play_hosts_all | last == inventory_hostname and all_performed_updates is defined and maintenance_post_to_git | bool
-  ansible.builtin.import_tasks: shared/gitlab-post-log.yml
+  ansible.builtin.include_tasks: shared/gitlab-post-log.yml
   vars:
     gitlab_conf:
       branch: '{{ maintenance_git_branch }}'
@@ -198,7 +198,7 @@
 
 - name: Comment on issue on GitLab
   when: ansible_play_hosts_all | last == inventory_hostname and all_updates is defined and maintenance_post_to_git and maintenance_run_upgrades
-  ansible.builtin.import_tasks: shared/gitlab-post-issue.yml
+  ansible.builtin.include_tasks: shared/gitlab-post-issue.yml
   vars:
     gitlab_conf:
       token: '{{ maintenance_git_token }}'
@@ -215,7 +215,7 @@
 
 - name: Close issue on GitLab
   when: ansible_play_hosts_all | last == inventory_hostname and all_updates is defined and maintenance_post_to_git and maintenance_run_upgrades
-  ansible.builtin.import_tasks: shared/gitlab-post-issue.yml
+  ansible.builtin.include_tasks: shared/gitlab-post-issue.yml
   vars:
     gitlab_conf:
       url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/issues/{{ main_reop_get_issue_res.json | json_query("[0].iid") if (main_reop_get_issue_res.json is defined and main_reop_get_issue_res.json | length > 0) else ""}}?state_event=close'

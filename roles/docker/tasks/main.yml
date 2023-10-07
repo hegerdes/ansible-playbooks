@@ -1,11 +1,11 @@
 # Main Docker Setup
 ---
 - name: Install Docker
-  ansible.builtin.import_tasks: install-docker.yml
+  ansible.builtin.include_tasks: install-docker.yml
   tags: [docker, docker-install]
 
 - name: Log into regestry
-  ansible.builtin.import_tasks: docker-login.yml
+  ansible.builtin.include_tasks: docker-login.yml
   tags: [docker, docker-regestry]
 
 - name: Docker-Compose install
@@ -14,7 +14,7 @@
   tags: [docker, docker-compose]
 
 - name: Docker user setup
-  ansible.builtin.import_tasks: docker-users.yml
+  ansible.builtin.include_tasks: docker-users.yml
   tags: [docker, docker-user]
 
 - name: Setup SWARM

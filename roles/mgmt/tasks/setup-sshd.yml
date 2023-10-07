@@ -59,7 +59,7 @@
   tags: [mgmt, ssh, ssh-keys]
 
 - name: Add ssh keys
-  ansible.builtin.import_tasks: shared/set-ssh-keys.yml
+  ansible.builtin.include_tasks: shared/set-ssh-keys.yml
   vars:
     ssh_key_list: '{{ mgmt_ssh_keys }}'
   tags: [mgmt, ssh, ssh-keys]

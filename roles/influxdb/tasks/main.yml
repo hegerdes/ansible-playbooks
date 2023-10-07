@@ -61,7 +61,7 @@
   tags: [influxdb]
 
 - name: Setup cron jobs
-  ansible.builtin.import_tasks: shared/install-cron-jobs.yml
+  ansible.builtin.include_tasks: shared/install-cron-jobs.yml
   vars:
     cron_jobs: '{{ influx_cron_jobs }}'
   tags: [influxdb, cron]

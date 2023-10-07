@@ -9,11 +9,11 @@
     label: '{{ item.key }}'
 
 - name: Setup sshd
-  ansible.builtin.import_tasks: setup-sshd.yml
+  ansible.builtin.include_tasks: setup-sshd.yml
   tags: [mgmt, ssh]
 
 - name: Setup fail2ban
-  ansible.builtin.import_tasks: setup-fail2ban.yml
+  ansible.builtin.include_tasks: setup-fail2ban.yml
   tags: [mgmt, ssh]
 
 - name: Install backup tools
@@ -44,7 +44,7 @@
   tags: [mgmt]
 
 - name: Install mgmt stack
-  ansible.builtin.import_tasks: install-mgmt-stack.yml
+  ansible.builtin.include_tasks: install-mgmt-stack.yml
   tags: [mgmt, mgmt-stack]
 
 - name: Setup portainer

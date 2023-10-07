@@ -106,11 +106,11 @@
 #   tags: [common, selinux]
 
 - name: Set hostnames
-  ansible.builtin.import_tasks: install-hostnames.yml
+  ansible.builtin.include_tasks: install-hostnames.yml
   tags: [common, hostnames]
 
 - name: Add ssh keys
-  ansible.builtin.import_tasks: set-ssh-keys.yml
+  ansible.builtin.include_tasks: shared/set-ssh-keys.yml
   tags: [common, ssh-keys]
 
 - name: Disable swap
@@ -164,7 +164,7 @@
 
 - name: Set floating IPs
   when: common_floating_ips | length > 0
-  ansible.builtin.import_tasks: shared/set-floting-ip.yml
+  ansible.builtin.include_tasks: shared/set-floting-ip.yml
   vars:
     floating_ips: '{{ common_floating_ips }}'
   tags: [common, ingress-ip]
@@ -194,7 +194,7 @@
   tags: [common, cron]
 
 - name: Install cron jobs
-  ansible.builtin.import_tasks: shared/install-cron-jobs.yml
+  ansible.builtin.include_tasks: shared/install-cron-jobs.yml
   vars:
     cron_jobs: '{{ common_cron_jobs }}'
   tags: [common, cron]

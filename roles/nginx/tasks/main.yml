@@ -19,7 +19,7 @@
   tags: [ingress, nginx]
 
 - name: Install nginx
-  ansible.builtin.import_tasks: install-nginx.yml
+  ansible.builtin.include_tasks: install-nginx.yml
   tags: [ingress, nginx]
 
 - name: Ensure handlers are notified now
@@ -28,11 +28,11 @@
 
 - name: Setup nginx routes
   when: nginx_install_hosts | bool
-  ansible.builtin.import_tasks: setup-nginx-routes.yml
+  ansible.builtin.include_tasks: setup-nginx-routes.yml
   tags: [ingress, nginx, ingress-hosts]
 
 - name: Start nginx
-  ansible.builtin.import_tasks: start-nginx.yml
+  ansible.builtin.include_tasks: start-nginx.yml
   tags: [ingress, nginx, ingress-hosts]
 
 - name: Setup firewall
@@ -48,7 +48,7 @@
 
 - name: Setup cron jobs
   when: nginx_run_certbot | bool
-  ansible.builtin.import_tasks: shared/install-cron-jobs.yml
+  ansible.builtin.include_tasks: shared/install-cron-jobs.yml
   tags: [ingress, nginx, cron]
   vars:
     cron_jobs: '{{ nginx_cron_jobs }}'

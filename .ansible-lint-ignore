@@ -1,0 +1,2 @@
+.gitlab-ci.yml syntax-check
+.pre-commit-config.yaml syntax-check

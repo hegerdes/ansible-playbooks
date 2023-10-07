@@ -42,7 +42,7 @@
 
 - name: gVisor user setup
   when: docker_install_gvisor
-  ansible.builtin.import_tasks: install-gvisor.yml
+  ansible.builtin.include_tasks: install-gvisor.yml
   tags: [docker, docker-install]
 
 - name: Test Docker
