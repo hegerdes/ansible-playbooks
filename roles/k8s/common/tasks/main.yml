@@ -180,9 +180,9 @@
 - name: Install kubelet and admin tools
   ansible.builtin.apt:
     name:
-      - 'kubeadm{{ "=" + k8s_version + "-00" if (k8s_version != "latest") }}'
-      - 'kubectl{{ "=" + k8s_version + "-00" if (k8s_version != "latest") }}'
-      - 'kubelet{{ "=" + k8s_version + "-00" if (k8s_version != "latest") }}'
+      - 'kubeadm{{ "=" + k8s_version + "*" if (k8s_version != "latest") }}'
+      - 'kubectl{{ "=" + k8s_version + "*" if (k8s_version != "latest") }}'
+      - 'kubelet{{ "=" + k8s_version + "*" if (k8s_version != "latest") }}'
       - '{{ "runsc" if(k8s_install_gvisor) }}'
     state: present
     update_cache: true
