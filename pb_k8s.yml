@@ -1,27 +1,27 @@
 # Deploy playbook
 
-# - hosts: k8s
-#   become: true
-#   gather_facts: true
-#   vars_files: ['{{ inventory_dir }}/secrets/vault.yml']
-#   roles:
-#     - netlify-dns
-#     - k8s/common
-#     # - k8s/upgrade
+- hosts: k8s
+  become: true
+  gather_facts: true
+  vars_files: ['{{ inventory_dir }}/secrets/vault.yml']
+  roles:
+    - netlify-dns
+    - k8s/common
+    # - k8s/upgrade
 
-# - hosts: k8s_control_plane
-#   become: true
-#   gather_facts: true
-#   vars_files: ['{{ inventory_dir }}/secrets/vault.yml']
-#   roles:
-#     - k8s/control-plane
+- hosts: k8s_control_plane
+  become: true
+  gather_facts: true
+  vars_files: ['{{ inventory_dir }}/secrets/vault.yml']
+  roles:
+    - k8s/control-plane
 
-# - hosts: k8s_worker
-#   become: true
-#   gather_facts: true
-#   vars_files: ['{{ inventory_dir }}/secrets/vault.yml']
-#   roles:
-#     - k8s/worker-join
+- hosts: k8s_worker
+  become: true
+  gather_facts: true
+  vars_files: ['{{ inventory_dir }}/secrets/vault.yml']
+  roles:
+    - k8s/worker-join
 
 - hosts: k8s_control_plane
   become: true
@@ -41,20 +41,6 @@
     - k8s/deploy
     # - k8s/rancher
 
-
-# - hosts: k8s_control_plane
-#   become: true
-#   gather_facts: true
-#   roles:
-#     - k8s/grafana-mimir
-#     - k8s/longhorn
-#     # - k8s/metallb
-#     - k8s/deploy
-#     - k8s/argocd
-#     # - k8s/rancher
-#   vars_files:
-#     - '{{ inventory_dir }}/secrets/vault.yml'
-
 # # Leave
 # - hosts: k8s_worker
 #   become: true
@@ -64,13 +50,14 @@
 
 # - hosts: localhost
 #   become: false
-#   gather_facts: true
+#   gather_facts: false
 #   roles:
-    # - k8s/metallb
-    # - k8s/hetzner
-    # - k8s/longhorn
-    # - k8s/certmanager
-    # - k8s/ingress-nginx
-    # - k8s/ingress-traefik
-    # - k8s/monitoring
-    # - k8s/deploy
+#     # - k8s/metallb
+#     # - k8s/hetzner
+#     # - k8s/longhorn
+#     # - k8s/certmanager
+#     # - k8s/ingress-nginx
+#     # - k8s/ingress-traefik
+#     # - k8s/monitoring
+#     - k8s/argocd
+#     # - k8s/deploy
