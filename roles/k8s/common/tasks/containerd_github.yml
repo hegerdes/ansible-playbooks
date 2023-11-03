@@ -1,7 +1,6 @@
 # Setup wasm crun
 ---
 - name: Install containerd
-  become: true
   ansible.builtin.unarchive:
     src: '{{ k8s_containerd_download_url }}'
     dest: /usr/local
@@ -10,7 +9,6 @@
   retries: 3
 
 - name: Install runc
-  become: true
   ansible.builtin.get_url:
     url: '{{ k8s_runc_download_url }}'
     dest: /usr/local/runc
@@ -18,7 +16,6 @@
   retries: 3
 
 - name: Install cni plugins
-  become: true
   ansible.builtin.unarchive:
     src: '{{ k8s_cni_plugin_download_url }}'
     dest: /opt/cni/bin
@@ -27,11 +24,11 @@
   retries: 3
 
 - name: Install containerd service
-  become: true
   ansible.builtin.get_url:
     url: https://raw.githubusercontent.com/containerd/containerd/main/containerd.service
     dest: /etc/systemd/system/containerd.service
     mode: '0600'
+  retries: 3
 
 - name: Test containerd
   ansible.builtin.command:

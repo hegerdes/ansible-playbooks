@@ -3,7 +3,6 @@
 - hosts: k8s
   become: true
   gather_facts: true
-  vars_files: ['{{ inventory_dir }}/secrets/vault.yml']
   roles:
     - netlify-dns
     - k8s/common
@@ -12,21 +11,18 @@
 - hosts: k8s_control_plane
   become: true
   gather_facts: true
-  vars_files: ['{{ inventory_dir }}/secrets/vault.yml']
   roles:
     - k8s/control-plane
 
 - hosts: k8s_worker
   become: true
   gather_facts: true
-  vars_files: ['{{ inventory_dir }}/secrets/vault.yml']
   roles:
     - k8s/worker-join
 
 - hosts: k8s_control_plane
   become: true
   gather_facts: true
-  vars_files: ['{{ inventory_dir }}/secrets/vault.yml']
   roles:
     - k8s/hetzner
     - k8s/certmanager

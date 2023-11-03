@@ -2,7 +2,7 @@
 ---
 - name: Install kubelet and admin tools
   ansible.builtin.apt:
-    name: 'containerd.io{{ "=" + k8s_containerd_version + "-1" if (k8s_containerd_version != "latest") }}'
+    name: 'containerd.io{{ "=" + k8s_containerd_version + "*" if (k8s_containerd_version != "latest") }}'
     state: present
     update_cache: true
     cache_valid_time: 86400 # equal to 24h
@@ -11,10 +11,8 @@
     autoremove: true
     allow_change_held_packages : true
   ignore_errors: '{{ ansible_check_mode }}'
-  tags: [k8s, k8s-prepare, k8s-base, apt]
 
 - name: Test containerd
   ansible.builtin.command:
     cmd: containerd --version
   changed_when: false
-  tags: [k8s, k8s-prepare, k8s-base]
