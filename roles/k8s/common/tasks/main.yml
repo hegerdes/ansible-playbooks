@@ -196,6 +196,7 @@
 
 - name: Include install containerd
   ansible.builtin.include_tasks: 'containerd_{{ k8s_containerd_variant | lower }}.yml'
+  apply.tags: [k8s, k8s-prepare, k8s-base, apt]
   tags: [k8s, k8s-prepare, k8s-base, apt]
 
 - name: Set packages to fixed versions
