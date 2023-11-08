@@ -35,4 +35,4 @@ networking:
   dnsDomain: "cluster.local"
 apiServer:
   timeoutForControlPlane: 4m0s
-  certSANs: {{ k8s_cert_extra_sans + [k8s_shared_api_server_endpoint] | unique}}
+  certSANs: {{ k8s_cert_extra_sans + [k8s_shared_api_server_endpoint] | flatten |unique}}
