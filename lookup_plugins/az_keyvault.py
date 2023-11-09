@@ -77,7 +77,7 @@ class LookupModule(LookupBase):
 
 
         vault_url = kwargs.pop('vault_url', None)
-        keyvaultType = kwargs.pop('vault_object', "secret")
+        keyvaultType = kwargs.pop('vault_object', 'secret')
         keyvaultPvtKey = kwargs.pop('private_key', False)
         azSecClient = SecretClient(vault_url=vault_url, credential=azCreds)
         azKeyClient = KeyClient(vault_url=vault_url, credential=azCreds)
@@ -87,15 +87,15 @@ class LookupModule(LookupBase):
         ret = []
 
         for term in terms:
-            display.debug("Getting secret: %s" % term)
-            if keyvaultType == "secret":
+            display.debug('Getting secret: %s' % term)
+            if keyvaultType == 'secret':
                     ret.append(azSecClient.get_secret(term).value)
-            elif keyvaultType == "key":
+            elif keyvaultType == 'key':
                     az_key = azKeyClient.get_key(term).key
                     az_jwk = JWK.from_json(json.dumps(az_key._to_generated_model().serialize()))
-                    ret.append(az_jwk.export_to_pem(private_key=keyvaultPvtKey).decode("utf-8"))
+                    ret.append(az_jwk.export_to_pem(private_key=keyvaultPvtKey).decode('utf-8'))
             else:
-                    raise NotImplemented("Unsupported KeyVault Type")
+                    raise NotImplemented('Unsupported KeyVault Type')
             # match keyvaultType:
             #     case "secret":
             #         ret.append(azSecClient.get_secret(term).value)

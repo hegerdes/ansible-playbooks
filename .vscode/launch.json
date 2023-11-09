@@ -1,17 +1,20 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "type": "pwa-node",
-            "request": "launch",
-            "name": "Launch Program",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "program": "${workspaceFolder}\\ingress-generator\\generate-ingress-conf.js",
-            "console": "integratedTerminal",
-            "args": ["nginx", "ingress-hosts-nginx.yml"],
-            "cwd": "${workspaceFolder}\\ingress-generator\\"
-        }
-    ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "pwa-node",
+      "request": "launch",
+      "name": "Launch Program",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "program": "${workspaceFolder}\\ingress-generator\\generate-ingress-conf.js",
+      "console": "integratedTerminal",
+      "args": [
+        "nginx",
+        "ingress-hosts-nginx.yml"
+      ],
+      "cwd": "${workspaceFolder}\\ingress-generator\\"
+    }
+  ]
 }

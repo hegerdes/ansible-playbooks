@@ -155,7 +155,7 @@ spec:
         - name: map-param
           map:
             param-name: param-value
-  
+
   # Sources field specifies the list of sources for the application
   sources:
     - repoURL: https://github.com/argoproj/argocd-example-apps.git  # Can point to either a Helm chart repo or a git repo.
@@ -171,12 +171,12 @@ spec:
     # name: in-cluster
     # The namespace will only be set for namespace-scoped resources that have not set a value for .metadata.namespace
     namespace: guestbook
-    
+
   # Extra information to show in the Argo CD Application details tab
   info:
     - name: 'Example:'
       value: 'https://example.com'
-      
+
   # Sync policy
   syncPolicy:
     automated: # automated sync by default retries failed attempts 5 times with following delays between attempts ( 5s, 10s, 20s, 40s, 80s ); retry controlled using `retry` field.

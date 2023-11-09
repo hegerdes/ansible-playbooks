@@ -5,11 +5,28 @@ repos:
       - id: check-yaml
         exclude: roles/k8s/monitoring/files|roles/k8s/rancher/tasks/main.yml|roles/k8s/ingress-nginx/files|roles/k8s/deploy/files/demo/heimdall.yml
       - id: check-json
+      - id: pretty-format-json
+        args: [--autofix, --no-sort-keys, --no-ensure-ascii]
         exclude: frontend/.devcontainer
       - id: check-added-large-files
       - id: check-shebang-scripts-are-executable
       - id: end-of-file-fixer
       - id: trailing-whitespace
+      - id: detect-private-key
+        exclude: roles/nginx/files/privkey.pem.dummy
+      - id: mixed-line-ending
+      - id: check-ast
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: check-vcs-permalinks
+      - id: double-quote-string-fixer
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.0
+    hooks:
+      - id: gitleaks
+
   # - repo: https://github.com/ansible-community/ansible-lint
   #   rev: v6.14.0
   #   hooks:

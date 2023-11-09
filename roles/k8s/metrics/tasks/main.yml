@@ -98,4 +98,3 @@
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
     values: '{{ k8s_cadvisor_helm_values | default({}) }}'
   tags: [k8s, k8s-init, k8s-metrics, k8s-metrics-cadvisor]
-
