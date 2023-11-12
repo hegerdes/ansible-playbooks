@@ -1,3 +1,3 @@
 ---
 k8s_init_verbose: '{{ lookup("env", "CI") | default("false", true) | bool == false }}'
-k8s_pki_ca_path: /etc/kubernetes/pki/ca.crt
+k8s_pki_cert_path: /etc/kubernetes/pki

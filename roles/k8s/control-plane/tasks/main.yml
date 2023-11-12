@@ -11,10 +11,23 @@
   changed_when: false
   tags: [k8s, k8s-init, k8s-cp-init]
 
+- name: Assert that k8s_etcd_encryption_secret has the right length
+  ansible.builtin.assert:
+    that: [k8s_etcd_encryption_secret | length == 32]
+    fail_msg: "'k8s_etcd_encryption_secret' must be 32 characters long"
+  tags: [k8s, k8s-init, k8s-cp-init]
+
+- name: Copy etcd encryption config
+  ansible.builtin.template:
+    src: encryption-config.yaml.j2
+    dest: /etc/kubernetes/enc/encryption-config.yaml
+    mode: '0600'
+  tags: [k8s, k8s-init, k8s-cp-init]
+
 - name: Check if kubeadm has already run
   when: groups.k8s_control_plane | flatten | first == inventory_hostname
   ansible.builtin.stat:
-    path: "/etc/kubernetes/pki/ca.key"
+    path: "{{ k8s_pki_cert_path }}"
   register: kubeadm_ca
   tags: [k8s, k8s-init, k8s-cp-init]
 
@@ -44,7 +57,7 @@
 - name: Get CA certificate hash
   delegate_to: '{{ groups.k8s_control_plane | flatten | first }}'
   community.crypto.x509_certificate_info:
-    path: '{{ k8s_pki_ca_path }}'
+    path: '{{ k8s_pki_cert_path }}/ca.crt'
   register: __k8s_pki_ca
   changed_when: false
   run_once: true
@@ -77,7 +90,7 @@
     owner: root
     group: root
     mode: '0600'
-  loop: [/var/lib/kubelet/config.yaml]
+  loop: [/var/lib/kubelet/config.yaml, /lib/systemd/system/kubelet.service ]
   tags: [k8s, k8s-init, k8s-cp-init]
 
 - name: Enable and check kubelet service

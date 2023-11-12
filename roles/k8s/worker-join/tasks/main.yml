@@ -24,7 +24,7 @@
   when: not __k8s_kubeadm_worker_ca.stat.exists
   delegate_to: '{{ groups.k8s_control_plane | flatten | first }}'
   community.crypto.x509_certificate_info:
-    path: '{{ k8s_pki_ca_path }}'
+    path: '{{ k8s_pki_cert_path }}/ca.crt'
   register: __k8s_pki_ca
   changed_when: false
   run_once: true
@@ -52,7 +52,7 @@
     owner: root
     group: root
     mode: '0600'
-  loop: [/var/lib/kubelet/config.yaml]
+  loop: [/var/lib/kubelet/config.yaml, /lib/systemd/system/kubelet.service ]
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
 # https://www.reddit.com/r/kubernetes/comments/hixx7z/ansible_k8s_kubectl_label/

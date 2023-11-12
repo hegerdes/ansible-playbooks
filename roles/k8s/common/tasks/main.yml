@@ -80,19 +80,21 @@
     label: '{{ item.name }}'
   tags: [k8s, k8s-prepare, k8s-base]
 
-- name: Create conf dirs
+- name: Create config dirs
   ansible.builtin.file:
-    path: '{{ item }}'
+    path: '{{ item.path }}'
+    mode: '{{ item.mode | default("0644") }}'
     state: directory
-  loop:
-    - '/srv'
-    - '/opt/cni/bin'
-    - '/etc/apt/keyrings'
-    - '/etc/containerd'
-    - '{{ ansible_facts.env.HOME }}/.kube'
-    - '/etc/systemd/system/docker.service.d'
-    - '/etc/systemd/system/kubelet.service.d'
-    - '/usr/wasmedge/lib'
+  with_items:
+    - {path: '/srv'}
+    - {path: '/opt/cni/bin'}
+    - {path: '/etc/apt/keyrings'}
+    - {path: '/etc/containerd'}
+    - {path: '{{ ansible_facts.env.HOME }}/.kube'}
+    - {path: '/etc/systemd/system/docker.service.d'}
+    - {path: '/etc/kubernetes/enc', mode: "0775"}
+    - {path: '/etc/systemd/system/kubelet.service.d', mode: "0600"}
+    - {path: '/usr/wasmedge/lib'}
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: Ensure br_netfilter and overlay is enabled
@@ -184,6 +186,7 @@
       - 'kubectl{{ "=" + k8s_version + "*" if (k8s_version != "latest") }}'
       - 'kubelet{{ "=" + k8s_version + "*" if (k8s_version != "latest") }}'
       - '{{ "runsc" if(k8s_install_gvisor) }}'
+      - 'etcd-client'
     state: present
     update_cache: true
     cache_valid_time: 86400 # equal to 24h
