@@ -41,3 +41,12 @@
     content: "{{ internal_k8s_kubeconfig | to_nice_yaml }}"
     mode: "0600"
   tags: [k8s, k8s-init, k8s-init-config]
+
+- name: Save kubeconf in keyvault
+  become: false
+  ignore_errors: true
+  delegate_to: localhost
+  when: keyvault_name is defined
+  run_once: true
+  command: "az keyvault secret set --vault-name {{ keyvault_name }} --name k8s_kube_config-{{ inventory_dir | basename | replace(' ', '-') }} --value {{ internal_k8s_kubeconfig | to_nice_yaml | b64encode }} "
+  tags: [k8s, k8s-init, k8s-init-config]
