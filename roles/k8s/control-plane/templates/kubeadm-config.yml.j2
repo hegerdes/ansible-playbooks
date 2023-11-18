@@ -37,7 +37,7 @@ apiServer:
   timeoutForControlPlane: 4m0s
   extraArgs:
     encryption-provider-config: /etc/kubernetes/enc/encryption-config.yaml
-    encryption-provider-config-automatic-reload: true
+    encryption-provider-config-automatic-reload: "true"
   certSANs: {{ k8s_cert_extra_sans + [k8s_shared_api_server_endpoint] | flatten | unique }}
   extraVolumes:
     - name: etcd-encrypt
