@@ -2,23 +2,26 @@
 ---
 - name: Upgrade kubelet
   block:
-    # - name: Drain node
-    #   kubernetes.core.k8s_drain:
-    #     state: drain
-    #     name: '{{ _k8s_upgrade_node_name }}'
-    #     delete_options:
-    #       ignore_daemonsets: true
-    #       delete-emptydir-data: true
-    #     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
-    #   delegate_to: '{{ groups.k8s_control_plane | flatten | first }}'
-    #   tags: [k8s, k8s-upgrade, k8s-upgrade-kubelet]
+    - name: Drain node
+      kubernetes.core.k8s_drain:
+        state: drain
+        name: '{{ _k8s_upgrade_node_name }}'
+        delete_options:
+          ignore_daemonsets: true
+          delete_emptydir_data : true
+          force: true
+          wait_timeout: 60
+          wait_sleep: 10
+        kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
+      delegate_to: '{{ groups.k8s_control_plane | flatten | first }}'
+      tags: [k8s, k8s-upgrade, k8s-upgrade-kubelet]
 
     - name: Update kubelet and kubectl
       ansible.builtin.apt:
         name:
-          - kubeadm{{ "=" + k8s_version + "-00" if (k8s_version != "latest") }}
-          - kubectl{{ "=" + k8s_version + "-00" if (k8s_version != "latest") }}
-          - kubelet{{ "=" + k8s_version + "-00" if (k8s_version != "latest") }}
+          - kubeadm{{ "=" + k8s_version + "*" if (k8s_version != "latest") }}
+          - kubectl{{ "=" + k8s_version + "*" if (k8s_version != "latest") }}
+          - kubelet{{ "=" + k8s_version + "*" if (k8s_version != "latest") }}
         state: present
         update_cache: true
         cache_valid_time: 86400 # equal to 24h
@@ -37,13 +40,19 @@
         state: restarted
       tags: [k8s, k8s-upgrade, k8s-upgrade-kubelet]
 
-    # - name: Reschdule node
-    #   kubernetes.core.k8s_drain:
-    #     name: '{{ _k8s_upgrade_node_name }}'
-    #     state: uncordon
-    #     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
-    #   delegate_to: groups.k8s_control_plane | flatten | first
-    #   tags: [k8s, k8s-upgrade, k8s-upgrade-kubelet]
+    - name: Reschedule node
+      kubernetes.core.k8s_drain:
+        name: '{{ _k8s_upgrade_node_name }}'
+        state: uncordon
+        kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
+      delegate_to: '{{ groups.k8s_control_plane | flatten | first }}'
+      tags: [k8s, k8s-upgrade, k8s-upgrade-kubelet]
+
+    - name: Pause for 30s
+      ansible.builtin.pause:
+        seconds: 30
+      tags: [k8s, k8s-upgrade, k8s-upgrade-kubelet]
+
 
   rescue:
     - name: Cleanup - Reset Kubernetes component
@@ -63,6 +72,5 @@
       tags: [k8s, k8s-upgrade, k8s-upgrade-kubelet]
 
     - name: Exit with error code!
-      ansible.builtin.command: /bin/false
-      changed_when: false
+      fail:
       tags: [k8s, k8s-upgrade, k8s-upgrade-kubelet]

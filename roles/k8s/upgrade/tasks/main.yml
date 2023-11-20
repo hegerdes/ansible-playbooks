@@ -7,11 +7,17 @@
     manager: auto
   tags: [k8s, k8s-upgrade, k8s-upgrade-cp]
 
+- name: Assert that cluster was installed with kubeadm
+  ansible.builtin.assert:
+    that:
+      - '"kubeadm" in ansible_facts.packages'
+    fail_msg: "Cluster not installed with kubeadm"
+  tags: [k8s, k8s-upgrade, k8s-upgrade-cp]
+
 - name: Update kubeadm
-  when: '"kubeadm" in ansible_facts.packages'
   ansible.builtin.apt:
     name:
-      - kubeadm{{ "=" + k8s_version + "-00" if (k8s_version != "latest") }}
+      - kubeadm{{ "=" + k8s_version + "*" if (k8s_version != "latest") }}
     state: present
     update_cache: true
     cache_valid_time: 86400 # equal to 24h
@@ -66,4 +72,5 @@
   loop: '{{ groups.k8s | flatten }}'
   loop_control:
     loop_var: _k8s_upgrade_node_name
+    pause: 5
   tags: [k8s, k8s-upgrade, k8s-upgrade-cp]
