@@ -27,12 +27,12 @@
 - name: Check if kubeadm has already run
   when: groups.k8s_control_plane | flatten | first == inventory_hostname
   ansible.builtin.stat:
-    path: "{{ k8s_pki_cert_path }}"
-  register: kubeadm_ca
+    path: /etc/kubernetes/admin.conf
+  register: __k8s_kubeadm_conf
   tags: [k8s, k8s-init, k8s-cp-init]
 
 - name: Init cluster if needed
-  when: groups.k8s_control_plane | flatten | first == inventory_hostname and not kubeadm_ca.stat.exists
+  when: groups.k8s_control_plane | flatten | first == inventory_hostname and not __k8s_kubeadm_conf.stat.exists
   ansible.builtin.include_tasks: kubeadm-init.yml
   tags: [k8s, k8s-init, k8s-cp-init]
 
@@ -42,7 +42,7 @@
   register: __k8s_kubeadm_cert_key_res
   changed_when: false
   run_once: true
-  no_log: true
+  # no_log: true
   tags: [k8s, k8s-init, k8s-cp-init]
 
 - name: Get join token
