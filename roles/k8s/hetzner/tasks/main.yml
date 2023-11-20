@@ -1,6 +1,6 @@
 # Main k8s/hetzner Setup
 ---
-- name: Create a monitoring namespace
+- name: Create a hcloud namespace
   kubernetes.core.k8s:
     name: hcloud
     api_version: v1
@@ -8,7 +8,7 @@
     state: present
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
   run_once: true
-  tags: [k8s, k8s-hetzner]
+  tags: [k8s, k8s-init, k8s-hetzner]
 
 - name: Create Hetzner Secret
   when: k8s_hetzner_api_key != "none"
@@ -26,7 +26,7 @@
         network: '{{ k8s_hetzner_network_name_or_id }}'
   no_log: true
   run_once: true
-  tags: [k8s, k8s-hetzner]
+  tags: [k8s, k8s-init, k8s-hetzner]
 
 - name: Apply Hetzner Cloud CSI Driver
   when: k8s_hetzner_api_key != "none" and k8s_hetzner_csi_driver_install
@@ -36,14 +36,14 @@
     state: '{{ "present" if(k8s_hetzner_csi_driver_install) else "absent" }}'
     definition: '{{ lookup("url", "https://raw.githubusercontent.com/hetznercloud/csi-driver/" + k8s_hcloud_csi_version + "/deploy/kubernetes/hcloud-csi.yml", split_lines=false) | from_yaml_all }}'
   run_once: true
-  tags: [k8s, k8s-hetzner]
+  tags: [k8s, k8s-init, k8s-hetzner]
 
 # https://github.com/hetznercloud/hcloud-cloud-controller-manager/blob/main/chart/README.md
 - name: Add Hetzner Cloud Controller Helm-Chart repo
   kubernetes.core.helm_repository:
     name: hcloud
     repo_url: '{{ k8s_hetzner_ccm_helm_repo }}'
-  tags: [k8s, k8s-hetzner]
+  tags: [k8s, k8s-init, k8s-hetzner]
 
 - name: Deploy Cloud Controller
   when: k8s_hetzner_api_key != "none"
@@ -60,14 +60,14 @@
     values: '{{ k8s_hetzner_ccm_helm_values | default({}) }}'
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
   run_once: true
-  tags: [k8s, k8s-hetzner]
+  tags: [k8s, k8s-init, k8s-hetzner]
 
 # https://github.com/wacken89/hetzner-load-balancer-prometheus-exporter
 - name: Add hcloud-lb-exporter Helm-Chart repo
   kubernetes.core.helm_repository:
     name: hcloud-lb-exporter
     repo_url: '{{ k8s_hetzner_lb_exporter_helm_repo }}'
-  tags: [k8s, k8s-hetzner]
+  tags: [k8s, k8s-init, k8s-hetzner]
 
 - name: Deploy hcloud-lb-exporter
   when: k8s_hetzner_api_key != "none"
@@ -84,4 +84,4 @@
     values: '{{ k8s_hetzner_lb_exporter_helm_values | default({}) }}'
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
   run_once: true
-  tags: [k8s, k8s-hetzner]
+  tags: [k8s, k8s-init, k8s-hetzner]
