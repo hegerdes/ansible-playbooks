@@ -6,7 +6,6 @@
   roles:
     - netlify-dns
     - k8s/common
-    # - k8s/upgrade
 
 - hosts: k8s_control_plane
   become: true
@@ -36,6 +35,13 @@
     - k8s/argocd
     - k8s/deploy
     # - k8s/rancher
+
+# Upgrade
+- hosts: k8s
+  become: true
+  gather_facts: true
+  roles:
+    - k8s/upgrade
 
 # # Leave
 # - hosts: k8s_worker

@@ -165,8 +165,6 @@
     state: '{{ item.state | default("present") }}'
     filename: '{{ item.name }}'
   with_items:
-    - name: k8s-legacy
-      repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
     - name: k8s
       repo: 'deb https://pkgs.k8s.io/core:/stable:/v{{ (k8s_version | split("."))[0:2] | join(".") }}/deb/ /'
     - name: docker
