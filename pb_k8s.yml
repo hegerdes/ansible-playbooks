@@ -1,25 +1,35 @@
 # Deploy playbook
 
-- hosts: k8s
+- name: DNS
+  hosts: k8s
+  become: false
+  gather_facts: false
+  roles:
+    - netlify-dns
+
+- name: K8s-ClusterPreb
+  hosts: k8s
   become: true
   gather_facts: true
   roles:
-    - netlify-dns
     - k8s/common
 
-- hosts: k8s_control_plane
+- name: K8s-Bootstrab
+  hosts: k8s_control_plane
   become: true
   gather_facts: true
   roles:
     - k8s/control-plane
 
-- hosts: k8s_worker
+- name: K8s-Worker-Join
+  hosts: k8s_worker
   become: true
   gather_facts: true
   roles:
     - k8s/worker-join
 
-- hosts: k8s_control_plane
+- name: K8s-Deploy
+  hosts: k8s_control_plane
   become: true
   gather_facts: true
   roles:
@@ -36,12 +46,12 @@
     - k8s/deploy
     # - k8s/rancher
 
-# Upgrade
-- hosts: k8s
-  become: true
-  gather_facts: true
-  roles:
-    - k8s/upgrade
+# # Upgrade
+# - hosts: k8s
+#   become: true
+#   gather_facts: true
+#   roles:
+#     - k8s/upgrade
 
 # # Leave
 # - hosts: k8s_worker
