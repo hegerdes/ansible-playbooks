@@ -14,7 +14,7 @@ k8s_crun_wasm_version: '{{ lookup("url", "https://api.github.com/repos/hegerdes/
 k8s_crun_wasmlib_version: 0.0.3
 k8s_crun_default_version: '{{ lookup("url", "https://api.github.com/repos/containers/crun/releases/latest") | from_json | json_query("tag_name") }}'
 
-k8s_containerd_variant: docker # can be docker (uses docker apt repo) or github (official github upstream release)
+k8s_containerd_variant: github # can be docker (uses docker apt repo) or github (official github upstream release)
 k8s_containerd_version: latest
 k8s_cni_plugins_version: latest # only applies if k8s_containerd_variant is equal to github
 k8s_runc_version: latest # only applies if k8s_containerd_variant is equal to github
