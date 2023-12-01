@@ -1,0 +1,23 @@
+# Local k8s prep
+
+- name: K8s-ClusterPreb
+  hosts: localhost
+  become: true
+  gather_facts: true
+  roles:
+    - k8s/common
+
+# - name: K8s-Bootstrab
+#   hosts: k8s_control_plane
+#   become: true
+#   gather_facts: true
+#   roles:
+#     - k8s/control-plane
+
+# - name: K8s-Worker-Join
+#   hosts: k8s_worker
+#   become: true
+#   gather_facts: true
+#   roles:
+#     - k8s/worker-join
+

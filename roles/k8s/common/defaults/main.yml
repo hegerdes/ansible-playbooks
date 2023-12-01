@@ -21,6 +21,7 @@ k8s_runc_version: latest # only applies if k8s_containerd_variant is equal to gi
 k8s_unattended_upgrades_state: present
 k8s_selinux_mode: permissive # can be: disabled,enforcing,permissive
 k8s_selinux_policy: targeted
+k8s_cni: calico
 
 k8s_etc_hosts: []
 # Example
@@ -47,7 +48,7 @@ k8s_common_sysctl_conf:
 k8s_system_limits:
   - user: "root"
     limit: "nofile"
-    value: 4096
+    value: 8192
     comment: ""
 # Example
 # k8s_system_limits:

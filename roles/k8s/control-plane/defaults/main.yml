@@ -60,7 +60,7 @@ k8s_crun_manifest:
 
 ######### CNI #########
 # Which CNI flannel, calico or cilium
-k8s_cni: flannel
+k8s_cni: calico
 
 # Calico helm chart setup
 k8s_calico_ip_pools_ipv4:
