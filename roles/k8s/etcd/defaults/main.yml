@@ -1,0 +1,8 @@
+---
+k8s_pki_cert_path: /etc/kubernetes/pki
+etcd_backup_remote_destination: /tmp/etcd-backup.db
+etcd_backup_local_destination: '/tmp/prefix-{{ inventory_hostname }}/etcd-backup.db'
+etcd_ca_cert: '{{ k8s_pki_cert_path }}/etcd/ca.crt'
+etcd_cert: '{{ k8s_pki_cert_path }}/apiserver-etcd-client.crt'
+etcd_key: '{{ k8s_pki_cert_path }}/apiserver-etcd-client.key'
+etcd_endpoint: "[127.0.0.1:2379]"

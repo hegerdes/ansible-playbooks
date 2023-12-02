@@ -1,0 +1,21 @@
+# Main etcd setup
+---
+- name: Make etcd backup
+  ansible.builtin.command:
+    cmd: |
+      etcdctl --cacert={{ etcd_ca_cert }}
+        --cert={{ etcd_cert }}
+        --key={{ etcd_key }}
+        snapshot save {{ etcd_backup_remote_destination }}
+    creates: '{{ etcd_backup_remote_destination }}'
+        # --endpoints={{ etcd_endpoint }}
+  environment:
+    ETCDCTL_API: "3"
+  tags: [k8s, etcd, etcd-backup]
+
+- name: Copy backup to localhost
+  ansible.builtin.fetch:
+    src: '{{ etcd_backup_remote_destination }}'
+    dest: '{{ etcd_backup_local_destination }}'
+    flat: yes
+  tags: [k8s, etcd, etcd-backup]
