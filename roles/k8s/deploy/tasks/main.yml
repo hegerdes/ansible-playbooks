@@ -1,13 +1,5 @@
 # K8s install generic helm apps
 
-- name: Install Helm App
-  ansible.builtin.include_tasks: helm-deploy.yml
-  loop: '{{ k8s_app_helm_apps | default([]) }}'
-  loop_control:
-    loop_var: k8s_helm_app
-    label: '{{ k8s_helm_app.chart_name }}'
-  tags: [k8s, k8s-deploy, helm-deploy]
-
 - name: Deploying custom apps
   kubernetes.core.k8s:
     namespace: '{{ k8s_app.namespace | default(omit) }}'
@@ -20,3 +12,11 @@
     loop_var: k8s_app
     label: '{{ k8s_app.name }}'
   tags: [k8s, k8s-deploy, k8s-deploy-manifest]
+
+- name: Install Helm App
+  ansible.builtin.include_tasks: helm-deploy.yml
+  loop: '{{ k8s_app_helm_apps | default([]) }}'
+  loop_control:
+    loop_var: k8s_helm_app
+    label: '{{ k8s_helm_app.chart_name }}'
+  tags: [k8s, k8s-deploy, helm-deploy]
