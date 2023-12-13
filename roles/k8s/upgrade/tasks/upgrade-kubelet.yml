@@ -1,11 +1,11 @@
-# Set up k8s with kubeadm
+# Drain and update nodes
 ---
 - name: Upgrade kubelet
   block:
     - name: Drain node
       kubernetes.core.k8s_drain:
         state: drain
-        name: '{{ _k8s_upgrade_node_name }}'
+        name: '{{ __k8s_upgrade_node_name }}'
         delete_options:
           ignore_daemonsets: true
           delete_emptydir_data : true
@@ -29,11 +29,11 @@
         allow_downgrade: true
         autoremove: true
         allow_change_held_packages: true
-      register: _k8s_cp_upgrade_packages
+      register: __k8s_cp_upgrade_packages
       tags: [k8s, k8s-upgrade, k8s-upgrade-kubelet]
 
     - name: Restart kubelet
-      when: _k8s_cp_upgrade_packages.changed
+      when: __k8s_cp_upgrade_packages.changed
       ansible.builtin.service:
         name: kubelet
         daemon_reload: true
@@ -42,7 +42,7 @@
 
     - name: Reschedule node
       kubernetes.core.k8s_drain:
-        name: '{{ _k8s_upgrade_node_name }}'
+        name: '{{ __k8s_upgrade_node_name }}'
         state: uncordon
         kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
       delegate_to: '{{ groups.k8s_control_plane | flatten | first }}'
@@ -52,7 +52,6 @@
       ansible.builtin.pause:
         seconds: 30
       tags: [k8s, k8s-upgrade, k8s-upgrade-kubelet]
-
 
   rescue:
     - name: Cleanup - Reset Kubernetes component
@@ -64,11 +63,6 @@
     - name: Print Error Info
       ansible.builtin.debug:
         msg: 'A error occurred while upgrading the first control-plane node. The cluster was reset. Please see the error messsage below:'
-      tags: [k8s, k8s-upgrade, k8s-upgrade-kubelet]
-
-    - name: Kubeadm Error
-      ansible.builtin.debug:
-        var: init_cluster
       tags: [k8s, k8s-upgrade, k8s-upgrade-kubelet]
 
     - name: Exit with error code!

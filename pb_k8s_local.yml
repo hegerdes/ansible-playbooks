@@ -7,7 +7,7 @@
   roles:
     - k8s/common
 
-# - name: K8s-Bootstrab
+# - name: K8s-bootstrap
 #   hosts: k8s_control_plane
 #   become: true
 #   gather_facts: true

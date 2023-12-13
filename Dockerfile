@@ -36,6 +36,6 @@ ENV COMMIT_TAG=$COMMIT_TAG
 ENV ANSIBLE_CONFIG=/app/playbooks/ansible.cfg
 LABEL commit-hash=$COMMIT_HASH
 LABEL commit-tag=$COMMIT_TAG
-LABEL org.opencontainers.image.description Ansible Playbook image containing all deps needed to run and bootstab machines
+LABEL org.opencontainers.image.description Ansible Playbook image containing all deps needed to run and bootstrap machines
 
 ENTRYPOINT [ "/app/playbooks/ansible-entrypoint.sh" ]
