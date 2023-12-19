@@ -1,10 +1,11 @@
 k8s_hetzner_api_key: none
 k8s_hetzner_network_name_or_id: my-k8s-network
 k8s_hetzner_csi_driver_install: true
-k8s_hcloud_csi_version: v2.3.2
+k8s_hetzner_csi_helm_chart_version : '{{ null | default(omit) }}'
+k8s_hetzner_csi_helm_values: {}
 
 k8s_hetzner_ccm_install: true
-k8s_hetzner_ccm_helm_repo: https://charts.hetzner.cloud
+k8s_hetzner_helm_repo: https://charts.hetzner.cloud
 k8s_hetzner_ccm_helm_chart_version: '{{ null | default(omit) }}'
 k8s_hetzner_ccm_helm_values: {}
 # Example
