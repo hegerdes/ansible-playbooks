@@ -15,3 +15,4 @@ PyYAML
 netaddr
 azure-keyvault
 azure-identity
+azure-cli-core

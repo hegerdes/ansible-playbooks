@@ -8,7 +8,7 @@
     k8s_init_resources_manifests: []
     k8s_init_default_resources: []
     k8s_install_gvisor: false
-    k8s_version: 1.28.4
+    k8s_version: 1.28.5
 
     k8s_containerd_query: "assets[?ends_with(name, '{{ ansible_facts.system | lower }}-{{ containerd_arch_map[ansible_facts.architecture] }}.tar.gz' )].browser_download_url"
     k8s_runc_query: "assets[?ends_with(name, '{{ containerd_arch_map[ansible_facts.architecture] }}' )].browser_download_url"
