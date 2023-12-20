@@ -1,6 +1,13 @@
 # Main etcd setup
 ---
+- name: Look for etcd-certs
+  ansible.builtin.stat:
+    path: '{{ etcd_ca_cert }}'
+  register: __etcd_certs_stat
+  tags: [k8s, etcd, etcd-backup]
+
 - name: Make etcd backup
+  when: __etcd_certs_stat.stat.exists
   ansible.builtin.command:
     cmd: |
       etcdctl --cacert={{ etcd_ca_cert }}
@@ -14,6 +21,7 @@
   tags: [k8s, etcd, etcd-backup]
 
 - name: Copy backup to localhost
+  when: __etcd_certs_stat.stat.exists
   ansible.builtin.fetch:
     src: '{{ etcd_backup_remote_destination }}'
     dest: '{{ etcd_backup_local_destination }}'
