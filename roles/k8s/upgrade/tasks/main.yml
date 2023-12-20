@@ -1,7 +1,5 @@
 # Main k8s upgrade setup
 ---
-
-# TODO: Use https://docs.ansible.com/ansible/latest/collections/kubernetes/core/k8s_info_module.html#ansible-collections-kubernetes-core-k8s-info-module
 - name: Gather the package facts
   ansible.builtin.package_facts:
     manager: auto
@@ -34,14 +32,28 @@
     selection: hold
   tags: [k8s, k8s-upgrade, k8s-upgrade-cp]
 
+- name: Get cluster info
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Node
+    name: '{{ inventory_hostname }}'
+    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
+  delegate_to: '{{ groups.k8s_control_plane | flatten | first }}'
+  register: __k8s_node_info
+  tags: [k8s, k8s-upgrade, k8s-upgrade-cp]
+
 - name: Plan upgrade
-  when: groups.k8s_control_plane | flatten | first == inventory_hostname
+  when:
+    - groups.k8s_control_plane | flatten | first == inventory_hostname
+    - __k8s_node_info.resources[0].status.nodeInfo.kubeletVersion != "v" + k8s_version
   ansible.builtin.command: kubeadm upgrade plan
   register: __k8s_cp_upgrade_plan
   tags: [k8s, k8s-upgrade, k8s-upgrade-cp]
 
 - name: Debug - Kubeadm plan upgrade
-  when: groups.k8s_control_plane | flatten | first == inventory_hostname
+  when:
+    - groups.k8s_control_plane | flatten | first == inventory_hostname
+    - __k8s_node_info.resources[0].status.nodeInfo.kubeletVersion != "v" + k8s_version
   ansible.builtin.debug:
     var: __k8s_cp_upgrade_plan
   tags: [k8s, k8s-upgrade, k8s-upgrade-cp]
@@ -60,17 +72,35 @@
   tags: [k8s, k8s-upgrade, k8s-upgrade-cp]
 
 - name: Apply upgrade on other cp nodes
-  when: groups.k8s_control_plane | flatten | first != inventory_hostname
+  when:
+    - groups.k8s_control_plane | flatten | first != inventory_hostname
+    - __k8s_node_info.resources[0].status.nodeInfo.kubeletVersion != "v" + k8s_version
   ansible.builtin.command: "kubeadm upgrade node"
   register: __k8s_cp_upgrade_exe_other
   throttle: 1
   tags: [k8s, k8s-upgrade, k8s-upgrade-cp]
 
+- name: Refresh cluster info
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Node
+    name: '{{ inventory_hostname }}'
+    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
+  delegate_to: '{{ groups.k8s_control_plane | flatten | first }}'
+  register: __k8s_node_info
+  tags: [k8s, k8s-upgrade, k8s-upgrade-cp]
+
+- name: Saving cluster info
+  ansible.builtin.set_fact:
+    k8s_node_info: '{{ __k8s_node_info.resources[0].status.nodeInfo }}'
+  tags: [k8s, k8s-upgrade, k8s-upgrade-cp]
+
 - name: Upgrade kubelet's
   ansible.builtin.include_tasks: upgrade-kubelet.yml
+  when: hostvars[__k8s_upgrade_node_name].k8s_node_info.kubeletVersion != "v" + k8s_version
   run_once: true
   loop: '{{ groups.k8s | flatten }}'
   loop_control:
-    loop_var: _k8s_upgrade_node_name
+    loop_var: __k8s_upgrade_node_name
     pause: 5
   tags: [k8s, k8s-upgrade, k8s-upgrade-cp]
