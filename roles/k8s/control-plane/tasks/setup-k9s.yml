@@ -19,5 +19,5 @@
     creates: /usr/local/bin/k9s
     exclude: [README.md, LICENSE]
   vars:
-    __k9s_url_query: "assets[?contains(name,'Linux_amd64')].browser_download_url"
+    __k9s_url_query: "assets[?contains(name,'Linux_{{ system_arch_map[ansible_facts.architecture] }}')].browser_download_url"
   tags: [k8s, k8s-hetzner, k8s-k9s]
