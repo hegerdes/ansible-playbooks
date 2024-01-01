@@ -44,6 +44,22 @@
 
 - name: Save kubeconf in keyvault
   become: false
+  run_once: true
+  delegate_to: localhost
+  ignore_errors: true
+  azure.azcollection.azure_rm_keyvaultsecret:
+    secret_name: "k8s-kube-config-{{ inventory_dir | basename | replace(' ', '-') | replace('_', '-') }}"
+    secret_value: '{{ internal_k8s_kubeconfig | to_nice_yaml | b64encode }}'
+    keyvault_uri: "{{ keyvault }}"
+    tags:
+      origin: ansible
+      type: kubeconfig
+      encoding: base64
+      cluster: "{{ inventory_dir | basename }}"
+  tags: [k8s, k8s-init, k8s-init-config]
+
+- name: Save kubeconf in keyvault
+  become: false
   ignore_errors: true
   delegate_to: localhost
   when: keyvault_name is defined

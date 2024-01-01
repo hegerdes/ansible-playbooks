@@ -16,6 +16,8 @@
     k8s_cni_plugins_version: latest
     k8s_containerd_version: latest
     k8s_runc_version: latest
+    keyvault: 'https://{{ keyvault_name }}.vault.azure.net'
+    keyvault_name: hegerdes
     # k8s_containerd_version: 1.6.22
     # k8s_runc_version: 1.17
     # k8s_cni_plugins_version: 1.2.0
@@ -40,6 +42,18 @@
       var: lookup("url", "https://raw.githubusercontent.com/hetznercloud/csi-driver/" + k8s_hcloud_csi_version + "/deploy/kubernetes/hcloud-csi.yml", split_lines=False) | from_yaml_all
   - debug:
       msg: "K8s version {{ k8s_version }} type: {{ k8s_version | type_debug  }}"
+  - debug:
+      msg: "{{ lookup('azure.azcollection.azure_keyvault_secret', 'github-oauth-demo-client-id', vault_url=keyvault) }}"
+
+  - name: Save kubeconf in keyvault
+    ignore_errors: true
+    azure.azcollection.azure_rm_keyvaultsecret:
+      secret_name: "test"
+      auth_source: cli
+      secret_value: 'test'
+      keyvault_uri: "{{ keyvault }}"
+      tags:
+        origin: ansible
 
   # - debug:
   #     msg: '{{ k8s_containerd_download_url_default }}'
