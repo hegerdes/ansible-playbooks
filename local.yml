@@ -10,6 +10,11 @@
     k8s_install_gvisor: false
     k8s_version: 1.28.5
 
+    azure_dns_records:
+    - { host: "test.demeter-discovery.com", value: "127.0.0.1" }
+    - { host: "test.k8s.demeter-discovery.com", value: "127.0.0.1", type: A, ttl: 3600 }
+    - { host: "test.k8s.demeter-discovery.com", value: "::1", type: AAAA, ttl: 3600 }
+
     k8s_containerd_query: "assets[?ends_with(name, '{{ ansible_facts.system | lower }}-{{ containerd_arch_map[ansible_facts.architecture] }}.tar.gz' )].browser_download_url"
     k8s_runc_query: "assets[?ends_with(name, '{{ containerd_arch_map[ansible_facts.architecture] }}' )].browser_download_url"
     k8s_cni_plugins_query: "assets[?starts_with(name, 'cni-plugins-{{ ansible_facts.system | lower }}-{{ containerd_arch_map[ansible_facts.architecture] }}' )].browser_download_url"
@@ -35,8 +40,13 @@
   tasks:
   # - debug:
   #     var: ansible_facts
-  # - debug:
-  #     var: k8s_containerd_query
+
+  - debug:
+      msg: '{{ (item.host | split("."))[-2:] | join(".") }}'
+    loop: '{{ azure_dns_records }}'
+
+  - include_role:
+      name: azure-dns
 
   - debug:
       var: lookup("url", "https://raw.githubusercontent.com/hetznercloud/csi-driver/" + k8s_hcloud_csi_version + "/deploy/kubernetes/hcloud-csi.yml", split_lines=False) | from_yaml_all

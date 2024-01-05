@@ -1,0 +1,19 @@
+# Main azure-dns
+---
+- name: Setting Azure DNS records
+  run_once: true
+  become: false
+  delegate_to: localhost
+  azure_rm_dnsrecordset:
+    resource_group: '{{ item.resource_group | default(azure_dns_resource_group) }}'
+    state: '{{ item.state | default("present") }}'
+    relative_name: '{{ item.host if(item.zone is defined) else (item.host | split("."))[:-2] | join(".") }}'
+    zone_name: '{{ item.zone | default((item.host | split("."))[-2:] | join(".")) }}'
+    record_type: '{{ item.type | default("A") }}'
+    tags: '{{ azure_dns_default_tags | combine(item.tags | default({})) }}'
+    time_to_live: '{{ item.ttl | default(3600) }}'
+    record_mode: '{{ item.mode | default("purge")}}'
+    records:
+      - entry: '{{ item.value }}'
+  tags: [azure, azure-dns]
+  loop: '{{ azure_dns_records }}'

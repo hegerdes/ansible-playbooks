@@ -1,0 +1,23 @@
+# Role azure-dns
+
+## Purpose
+To set DNS records on azure
+
+
+## Defaults
+```yml
+---
+# Azure-DNS
+
+# List of dns records:
+azure_dns_records: []
+azure_dns_resource_group: default
+azure_dns_default_tags:
+  managed_by: ansible
+  owner: "{{ lookup('ansible.builtin.env', 'USER') | default('UNKNOWN', True) }}."
+
+# Example
+# azure_dns_records:
+#  - { host: "my-domain.example", value: "127.0.0.1" }
+#  - { host: "test.k8s.example.me", value: "127.0.0.1", type: A, ttl: 3600, zone: example.com, resource_group: my-group, mode: "purge/append", state: present, tags: {used_by: abc}}
+```
