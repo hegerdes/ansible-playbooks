@@ -24,6 +24,7 @@
   tags: [common, ssh]
 
 - name: Add Debian Backports apt repo
+  ignore_errors: true
   ansible.builtin.apt_repository:
     repo: "deb http://deb.debian.org/debian {{ ansible_distribution_release }}-backports main"
     state: present
@@ -66,7 +67,7 @@
     - 'unattended-upgrades'
     - 'python3-requests'
     - 'python3-jsondiff'
-    - 'selinux-basics '
+    - 'selinux-basics'
     - 'python3-yaml'
     - 'unzip'
     - 'git'
@@ -138,7 +139,14 @@
   loop: '{{ common_device_mounts }}'
   tags: [common, mounts]
 
+- name: Get stats group file
+  ansible.builtin.stat:
+    path: /etc/default/grub
+  register: __group_file
+  tags: [common, sys]
+
 - name: Ensue cgroup memory support
+  when: __group_file.stat.exists
   ansible.builtin.lineinfile:
     path: /etc/default/grub
     regexp: '^GRUB_CMDLINE_LINUX='

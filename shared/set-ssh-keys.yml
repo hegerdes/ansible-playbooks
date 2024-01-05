@@ -4,4 +4,4 @@
     state: '{{ item.state | default("present") }}'
     key_options: '{{ item.key_options | default("") }}'
     key: '{{ lookup("file", item.filename) }}'
-  loop: '{{ ssh_key_list }}'
+  loop: '{{ ssh_key_list | default([]) }}'

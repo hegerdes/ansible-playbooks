@@ -1,0 +1,8 @@
+# Main Playbook
+- hosts: home
+  become: true
+  gather_facts: true
+  roles:
+    - common
+    - promtail
+    # - node-exporter
