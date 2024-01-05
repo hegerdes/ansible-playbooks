@@ -18,6 +18,6 @@ netlify_dns_records: []
 # Example
 # netlify_dns_records:
 #  - { host: "my-domain.example", value: "127.0.0.1" }
-#  - { host: "test.k8s.henrikgerdes.me", value: "127.0.0.1", type: A, ttl: 3600 }
+#  - { host: "test.k8s.example.com", value: "127.0.0.1", type: A, ttl: 3600 }
 
 ```

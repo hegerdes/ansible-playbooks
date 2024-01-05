@@ -63,7 +63,7 @@ metadata:
     cert-manager.io/cluster-issuer: letsencrypt-heimdall-prod
 spec:
   rules:
-    - host: k8s-heimdall.henrikgerdes.me
+    - host: k8s-heimdall.example.com
       http:
         paths:
           - path: /
@@ -75,7 +75,7 @@ spec:
                   number: 80
   tls:
     - hosts:
-      - k8s-heimdall.henrikgerdes.me
+      - k8s-heimdall.example.com
       secretName: heimdall-prod
 
 # apiVersion: networking.k8s.io/v1
@@ -86,7 +86,7 @@ spec:
 # spec:
 #   ingressClassName: nginx
 #   rules:
-#     - host: k8s-dashboard.henrikgerdes.me
+#     - host: k8s-dashboard.example.com
 #       http:
 #         paths:
 #           - path: /

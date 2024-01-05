@@ -61,17 +61,17 @@ ingress_conf:
               return 404;
         server_settings: ''
 ############################## sites-traefik #####################################
-    - host: default.work.henrikgerdes.me
+    - host: default.work.example.com
       ip: 162.55.216.225
       upstreams:
         - 10.10.0.4:8001
-    - host: whoami.work.henrikgerdes.me
+    - host: whoami.work.example.com
       upstreams:
         - 10.10.0.4:8003
       traefik:
         protocol: http
         middlewares: [auth, testHeader]
-    - host: custom.work.henrikgerdes.me
+    - host: custom.work.example.com
       upstreams:
         - 10.10.0.4:22
         - 10.10.0.4:22

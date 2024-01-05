@@ -10,7 +10,7 @@ traefik_install_hosts: true
 traefik_hosts_default_listen_addr: '{{ ansible_default_ipv4.address }}'
 traefik_run_certbot: true
 traefik_certbot_mail: info@xyz.com
-traefik_default_tld: work.henrikgerdes.me
+traefik_default_tld: work.example.com
 
 # Floating IPs
 ingress_floating_ips: []

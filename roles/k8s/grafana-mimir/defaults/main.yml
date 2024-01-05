@@ -34,7 +34,7 @@ k8s_mimir_helm_values:
         cert-manager.io/cluster-issuer: letsencrypt-prod-nginx
         nginx.ingress.kubernetes.io/add-base-url : "true"
       hosts:
-        - host: mimir.k8s.henrikgerdes.me
+        - host: mimir.k8s.example.com
           paths:
             - path: /
               # -- pathType (e.g. ImplementationSpecific, Prefix, .. etc.) might also be required by some Ingress Controllers
@@ -43,7 +43,7 @@ k8s_mimir_helm_values:
       tls:
         - secretName: mimir-tls
           hosts:
-            - mimir.k8s.henrikgerdes.me
+            - mimir.k8s.example.com
 
     nginx:
       verboseLogging: true
