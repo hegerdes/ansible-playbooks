@@ -35,7 +35,7 @@
 
 - name: Ensue required packages are installed
   ansible.builtin.apt:
-    name: [gnupg, git, lsb-release, ca-certificates, curl, apparmor, python3-kubernetes, apt-transport-https, jq, unzip, wget, socat, mtr-tiny, logrotate, open-iscsi, ipvsadm, dbus, libyajl2, policycoreutils, selinux-basics, selinux-policy-default, auditd, semodule-utils, setools, apparmor-profiles-extra]
+    name: [gnupg, git, lsb-release, ca-certificates, curl, apparmor, python3-kubernetes, apt-transport-https, jq, unzip, wget, socat, mtr-tiny, logrotate, open-iscsi, ipvsadm, dbus, libyajl2, policycoreutils, selinux-basics, selinux-policy-default, auditd, semodule-utils, setools, apparmor-profiles-extra, criu]
     state: present
     update_cache: true
     install_recommends: false
@@ -240,7 +240,6 @@
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: Enable containerd service
-  become: true
   ansible.builtin.systemd:
     name: containerd.service
     state: started

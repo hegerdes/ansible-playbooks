@@ -33,9 +33,11 @@
 
 - name: Creating a file with content
   become: false
+  no_log: true
   run_once: true
   ignore_errors: true
   delegate_to: localhost
+  when: lookup("env", "CI") | default("false", true) | bool == false
   ansible.builtin.copy:
     dest: "{{ lookup('env', 'HOME') }}/.kube/{{ inventory_dir | basename }}-kubeconfig.yml"
     content: "{{ internal_k8s_kubeconfig | to_nice_yaml }}"
@@ -44,6 +46,7 @@
 
 - name: Save kubeconf in keyvault
   become: false
+  no_log: true
   run_once: true
   delegate_to: localhost
   ignore_errors: true
@@ -61,6 +64,7 @@
 - name: Save kubeconf in keyvault
   become: false
   ignore_errors: true
+  no_log: true
   delegate_to: localhost
   when: keyvault_name is defined
   run_once: true
