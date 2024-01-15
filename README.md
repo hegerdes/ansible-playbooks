@@ -43,12 +43,14 @@ ansible-vault encrypt <PATH_TO_VAULT>
 ```
 
 ## Available playbooks
+ * pb_k8s_remote.yml - Bootstrab a full cluster
  * pb_main.yml - Runs all of the Tasks below on the hosts configured in the inventory
  * pb_maintenance.yml - Checks for updates (and eventually performs them) on all hosts & runs the backup scripts on the host if it is present
  * pb_deploy_app.yml - Deploys one or more apps via Docker - use with the limit option
 
 ## Supported Tasks
  * **common:** Install basic packages (like ``curl``, ``wget``, ``tar``... ) to any Debian based host
+ * **kubernetes:** Lots of kubernetes tasks to bootstrab and manage a cluster
  * **promtail:** Install a log shipper to send *authlog*, *syslog*, *daemonlog*... to a management host (hostname mgmt)
  * **node-exporter:** Install system metrics exporter that can be scraped by Prometheus (listens on port 9100)
  * **nginx:** Installs the official nginx version, deploys default config, forwards logs, can automatically install hosts and https
