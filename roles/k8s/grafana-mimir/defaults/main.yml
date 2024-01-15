@@ -2,7 +2,7 @@
 # Version of the chart to deploy
 k8s_mimir_helm_chart_version: '{{ null | default(omit) }}'
 k8s_mimir_install: True
-
+grafana_mimir_azure_storage_key: null
 
 # Values for Grafana Mimir Chart
 # See: https://github.com/grafana/mimir/blob/main/operations/helm/charts/mimir-distributed/values.yaml
@@ -55,7 +55,7 @@ k8s_mimir_helm_values:
         backend: azure
         azure:
           container_name: mimir-blocks
-          account_key: ckSxCJS+r0mc0N/kVq6g12ZVUJvB5LZYfh2r4bTMjsfOEDaHHyw5p93sJjtQgGkvbu2R3fHBQxW6+AStfwMO0Q==
+          account_key: '{{ grafana_mimir_azure_storage_key | mandatory }}'
           account_name: hegerdesdevblobs
           endpoint_suffix: blob.core.windows.net
 
@@ -63,7 +63,7 @@ k8s_mimir_helm_values:
         backend: azure
         azure:
           container_name: mimir-alertmanager
-          account_key: ckSxCJS+r0mc0N/kVq6g12ZVUJvB5LZYfh2r4bTMjsfOEDaHHyw5p93sJjtQgGkvbu2R3fHBQxW6+AStfwMO0Q==
+          account_key: '{{ grafana_mimir_azure_storage_key | mandatory }}'
           account_name: hegerdesdevblobs
           endpoint_suffix: blob.core.windows.net
 
@@ -71,7 +71,7 @@ k8s_mimir_helm_values:
         backend: azure
         azure:
           container_name: mimir-ruler
-          account_key: ckSxCJS+r0mc0N/kVq6g12ZVUJvB5LZYfh2r4bTMjsfOEDaHHyw5p93sJjtQgGkvbu2R3fHBQxW6+AStfwMO0Q==
+          account_key: '{{ grafana_mimir_azure_storage_key | mandatory }}'
           account_name: hegerdesdevblobs
           endpoint_suffix: blob.core.windows.net
 
