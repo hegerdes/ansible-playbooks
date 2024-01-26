@@ -3,7 +3,7 @@ apiVersion: kubeadm.k8s.io/v1beta3
 kind: InitConfiguration
 nodeRegistration:
   kubeletExtraArgs:
-    node-ip: {{ ansible_facts.all_ipv4_addresses | ansible.utils.reduce_on_network(k8s_cloud_net) | first if (k8s_cloud_net | default("none") != "none") else k8s_kubelet_advertise_address_bind | default(ansible_facts.default_ipv4.address) }}{{ "," + ansible_facts.default_ipv6.address if(k8s_dual_stack) }}
+    node-ip: {{ k8s_node_ip_v4 | default(ansible_facts.default_ipv4.address) }}{{ "," + k8s_node_ip_v6 | default(ansible_facts.default_ipv6.address) if(k8s_dual_stack) }}
     max-pods: "220"
     protect-kernel-defaults: "true"
     serialize-image-pulls: "false"
@@ -17,7 +17,7 @@ nodeRegistration:
   # name: cp-node-amd64-cmkhxd
   # taints: null
 localAPIEndpoint:
-  advertiseAddress: {{ ansible_facts.all_ipv4_addresses | ansible.utils.reduce_on_network(k8s_cloud_net) | first if (k8s_cloud_net | default("none") != "none") else k8s_kubelet_advertise_address_bind | default(ansible_facts.default_ipv4.address) }}
+  advertiseAddress: {{ k8s_node_ip_v4 | default(ansible_facts.default_ipv4.address) }}
   bindPort: {{ k8s_kubelet_advertise_port | default(6443) | int }}
 ---
 apiVersion: kubeadm.k8s.io/v1beta3
