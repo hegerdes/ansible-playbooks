@@ -1,5 +1,5 @@
 ---
-k8s_version: 1.28.5
+k8s_version: 1.28.6
 k8s_dual_stack: true
 k8s_cluster_name: '{{ inventory_dir | basename }}'
 k8s_image_repo: registry.k8s.io
@@ -13,8 +13,11 @@ k8s_service_network_cidr_ipv4: 10.96.0.0/16
 k8s_pod_network_cidr_ipv6: 2001:db8:42:0::/56
 k8s_service_network_cidr_ipv6: 2001:db8:42:1::/112
 k8s_etcd_encryption_secret: my-super-secure-k8s-etcd-secret!
+# k8s_node_ip_v4:
+# k8s_node_ip_v6:
 
-k8s_cert_extra_sans: '{{ ["127.0.0.1", "localhost"] + ansible_facts.all_ipv4_addresses }}'
+k8s_cert_extra_sans_ipv6: '{{ ["::1"] + ansible_facts.all_ipv6_addresses if(k8s_dual_stack) else [] }}'
+k8s_cert_extra_sans: '{{ ["127.0.0.1", "localhost"] + ansible_facts.all_ipv4_addresses + k8s_cert_extra_sans_ipv6 }}'
 k8s_install_k9s: true
 k8s_install_gvisor: true
 k8_cert_key: none
