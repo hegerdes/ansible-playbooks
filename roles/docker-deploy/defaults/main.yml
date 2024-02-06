@@ -30,11 +30,6 @@ docker_deploy_projects: []
 
 # Settings for individual files
 backup_dir: /backup_dumps
-docker_deploy_generated_files: []
-# Example
-# docker_deploy_generated_files:
-#   - ansible.builtin.file: my-file-path
-#     content: '{{ lookup("file", docker_deploy_src_config_files + "my-file-path") }}'
 
 docker_deploy_rsync_args: []
 # Example

@@ -49,7 +49,6 @@
   tags: [docker-deploy]
 
 - name: Check Docker images
-# - name: Starting async Docker Images Download
   community.docker.docker_image:
     name: '{{ item.split(":")[0] if(item | regex_findall(":") | length <= 1) else item.split(":")[0] + ":" + item.split(":")[1] }}'
     tag: '{{ item.split(":")[1] | default("latest") if(item | regex_findall(":") | length <= 1) else item.split(":")[2] }}'
@@ -57,20 +56,7 @@
     force_source: true
   loop: '{{ deploy_compose_conetent_img | default([]) | unique }}'
   register: docker_image_pull_res
-  # async: 60
-  # poll: 2
   tags: [docker-deploy]
-
-# - name: wait
-#   async_status:
-#     jid: '{{ item.ansible_job_id }}'
-#     mode: status
-#   changed_when: item.changed
-#   retries: 64
-#   delay: 1
-#   loop: '{{ docker_image_pull_res.results }}'
-#   register: docker_image_pulled_res
-#   until: docker_image_pulled_res.finished
 
 - name: Format Docker Image-Facts
   ansible.builtin.set_fact:
@@ -81,10 +67,10 @@
     label: '{{ item.item }}'
   tags: [docker-deploy]
 
-- name: Show image labels
-  ansible.builtin.debug:
-    var: image_info_data
-  tags: [docker-deploy]
+# - name: Show image labels
+#   ansible.builtin.debug:
+#     var: image_info_data
+#   tags: [docker-deploy]
 
 - name: Deploy app-stack via stack
   when: docker_deploy_use_swarm_mode and swarm_info.docker_swarm_manager

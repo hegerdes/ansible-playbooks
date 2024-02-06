@@ -8,11 +8,6 @@
   ansible.builtin.include_tasks: docker-login.yml
   tags: [docker, docker-regestry]
 
-- name: Docker-Compose install
-  ansible.builtin.include_tasks: install-compose.yml
-  when: docker_install_compose
-  tags: [docker, docker-compose]
-
 - name: Docker user setup
   ansible.builtin.include_tasks: docker-users.yml
   tags: [docker, docker-user]

@@ -28,7 +28,6 @@
 - name: Create networks
   community.docker.docker_network:
     name: '{{ item }}'
-    driver: overlay
     attachable: true
   loop: '{{ docker_deploy_networks | default([]) }}'
   tags: [docker-deploy, docker-deploy-service]
@@ -39,6 +38,7 @@
     tag: '{{ item.image.split(":")[1] | default("latest") if(item.image | regex_findall(":") | length <= 1) else item.image.split(":")[2] }}'
     source: pull
     force_source: true
+  ignore_errors: true
   loop: '{{ docker_deploy_services }}'
   tags: [docker-deploy]
 
