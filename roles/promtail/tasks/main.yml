@@ -11,20 +11,20 @@
   when: promtail_check_result.stdout == ""
   unarchive:
     src: '{{ lookup("url", "https://api.github.com/repos/grafana/loki/releases/latest") | from_json | json_query(query) | select("search", promtail_arch_map[ansible_facts.architecture]) | list | first }}'
-    dest: /tmp
+    dest: /usr/local/bin/
     remote_src: true
-    creates: '/tmp/promtail-linux-{{ promtail_arch_map[ansible_facts.architecture] }}'
+    creates: /usr/local/bin/promtail-linux-{{ promtail_arch_map[ansible_facts.architecture] }}'
   vars:
     query: assets[?starts_with(name, 'promtail-linux')].browser_download_url
   tags: [promtail, monitoring]
+  notify: Restart promtail
 
 - name: Install promtail
-  when: promtail_check_result.stdout == ""
-  ansible.builtin.copy:
-    src: 'promtail-linux-{{ promtail_arch_map[ansible_facts.architecture] }}'
+  ansible.builtin.file:
+    src: '/usr/local/bin/promtail-linux-{{ promtail_arch_map[ansible_facts.architecture] }}'
     dest: /usr/local/bin/promtail
-    remote_src: true
     mode: 0755
+    state: link
   notify: Restart promtail
   tags: [promtail, monitoring]
 
