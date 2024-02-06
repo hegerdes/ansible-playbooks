@@ -1,0 +1,14 @@
+# Main cloudflare-dns
+---
+- name: Set DNS records
+  community.general.cloudflare_dns:
+    zone: '{{ item.zone | default((item.host | split("."))[-2:] | join(".")) }}'
+    type: '{{ item.type | default("A") }}'
+    value: '{{ item.value }}'
+    record: '{{ item.host }}'
+    ttl: '{{ item.ttl | default(600) }}'
+    account_email: '{{ cloudflare_email }}'
+    api_token : '{{ cloudflare_token }}'
+    state: '{{ item.state | default("present") }}'
+  loop: '{{ cloudflare_dns_records }}'
+  tags: [cloudflare, cloudflare-dns]

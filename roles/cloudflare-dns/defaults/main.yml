@@ -1,0 +1,9 @@
+---
+# Coudflare-DNS
+
+# See: https://developers.cloudflare.com/api/operations/dns-records-for-a-zone-list-dns-records
+cloudflare_email: demo@example.com
+cloudflare_token: xxx
+cloudflare_dns_records:
+  - { host: "*.demo.example.com", value: "127.0.0.1" }
+  - { host: "*.demo.example.com", value: "::1", type: "AAAA", zone: example.com, ttl: 300, state: present }
