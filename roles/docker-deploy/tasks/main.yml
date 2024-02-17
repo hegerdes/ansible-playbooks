@@ -45,12 +45,6 @@
     rsync_opts: '{{ docker_deploy_rsync_args }}'
   tags: [docker-deploy]
 
-- name: Using override-file with the following content
-  when: docker_deploy_override is defined and docker_deploy_override | length > 0
-  ansible.builtin.debug:
-    var: docker_deploy_override
-  tags: [docker-deploy, docker-deploy-stack]
-
 - name: Copy backup script
   when: docker_deploy_backup_script | default("none") != "none"
   ansible.builtin.copy:

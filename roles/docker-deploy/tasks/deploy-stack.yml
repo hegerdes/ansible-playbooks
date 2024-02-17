@@ -18,6 +18,14 @@
   loop: '{{ docker_project.compose_files }}'
   tags: [docker-deploy]
 
+- name: Copy template files
+  ansible.builtin.template:
+    src: '{{ docker_deploy_src_config_files + item.src }}'
+    dest: '{{ docker_deploy_dst_config_files + item.dest }}'
+    mode: '{{ item.mode | default("0644") }}'
+  loop: '{{ docker_project.conf_files | default([]) }}'
+  tags: [docker-deploy]
+
 - name: Create absolut paths for stack files
   ansible.builtin.set_fact:
     compose_files_stack: '{{ compose_files_stack | default([]) + ["".join((docker_deploy_dst_config_files, item if(item[-3:] == "yml") else item[:-3]))] }}'
@@ -67,10 +75,10 @@
     label: '{{ item.item }}'
   tags: [docker-deploy]
 
-# - name: Show image labels
-#   ansible.builtin.debug:
-#     var: image_info_data
-#   tags: [docker-deploy]
+- name: Show image labels
+  ansible.builtin.debug:
+    var: image_info_data
+  tags: [docker-deploy]
 
 - name: Deploy app-stack via stack
   when: docker_deploy_use_swarm_mode and swarm_info.docker_swarm_manager
