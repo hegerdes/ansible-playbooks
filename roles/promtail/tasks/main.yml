@@ -8,7 +8,6 @@
   tags: [promtail, monitoring]
 
 - name: Download and unzip promtail
-  when: promtail_check_result.stdout == ""
   unarchive:
     src: '{{ lookup("url", "https://api.github.com/repos/grafana/loki/releases/latest") | from_json | json_query(query) | select("search", promtail_arch_map[ansible_facts.architecture]) | list | first }}'
     dest: /usr/local/bin/
