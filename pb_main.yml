@@ -8,6 +8,8 @@
     - common
     - promtail
     - node-exporter
+    - docker
+    - docker-deploy
 
 - hosts: docker_hosts
   become: true

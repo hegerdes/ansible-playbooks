@@ -38,6 +38,7 @@
     # - k8s/hetzner
     # - k8s/certmanager
     # - k8s/ingress-nginx
+    # - k8s/ingress-kong
     # - k8s/metrics
     # - k8s/monitoring
     # - k8s/ingress-traefik

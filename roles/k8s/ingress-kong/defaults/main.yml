@@ -1,0 +1,12 @@
+---
+# Version of the chart to deploy
+k8s_kong_helm_chart_version: '{{ null | default(omit) }}'
+k8s_kong_install: true
+
+# See: https://github.com/Kong/charts/blob/main/charts/kong/values.yaml
+k8s_kong_helm_values:
+  ingressController:
+    installCRDs:
+      false
+  proxy:
+    type: NodePort

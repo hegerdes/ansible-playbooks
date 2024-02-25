@@ -1,0 +1,22 @@
+# Main k8s/nginx-kong setup
+---
+- name: Add Kong Helm-chart repo
+  kubernetes.core.helm_repository:
+    name: kong
+    repo_url: https://charts.konghq.com
+  tags: [k8s, k8s-init, k8s-ingress, k8s-kong]
+
+- name: Deploy Kong
+  kubernetes.core.helm:
+    name: kong
+    state: '{{ "present" if(k8s_kong_install) else "absent" }}'
+    chart_version: '{{ k8s_kong_helm_chart_version }}'
+    chart_ref: kong/kong
+    release_namespace: kong
+    create_namespace: true
+    update_repo_cache: true
+    atomic: true
+    wait: true
+    values: '{{ k8s_kong_helm_values | default({}) }}'
+    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
+  tags: [k8s, k8s-init, k8s-ingress, k8s-kong]
