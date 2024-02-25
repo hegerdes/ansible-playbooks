@@ -16,7 +16,7 @@
     state: directory
   tags: [k8s, k8s-init, k8s-init-config]
 
-- name: Get kubeconf
+- name: Get kubeconf - remote
   run_once: true
   no_log: true
   ansible.builtin.slurp:
@@ -24,7 +24,18 @@
   register: __remote_k8s_kubeconf
   tags: [k8s, k8s-init, k8s-init-config]
 
-- name: Set kubeconfig
+- name: Get kubeconf - local
+  when: k8s_merge_kubeconfig
+  become: false
+  run_once: true
+  no_log: true
+  delegate_to: localhost
+  ansible.builtin.slurp:
+    src: "{{ lookup('env', 'HOME') }}/.kube/config"
+  register: __lokal_k8s_kubeconf
+  tags: [k8s, k8s-init, k8s-init-config]
+
+- name: Configure kubeconfig
   run_once: true
   no_log: true
   ansible.builtin.set_fact:
@@ -39,10 +50,13 @@
   delegate_to: localhost
   when: lookup("env", "CI") | default("false", true) | bool == false
   ansible.builtin.copy:
-    dest: "{{ lookup('env', 'HOME') }}/.kube/{{ inventory_dir | basename }}-kubeconfig.yml"
-    content: "{{ internal_k8s_kubeconfig | to_nice_yaml }}"
+    dest: "{{ lookup('env', 'HOME') }}/.kube/{{ __k8s_kube_conf_dest }}"
+    content: "{{ __k8s_kube_conf_content | to_nice_yaml(indent=2, sort_keys=true) }}"
     mode: "0600"
   tags: [k8s, k8s-init, k8s-init-config]
+  vars:
+    __k8s_kube_conf_dest: '{{ "config" if (k8s_merge_kubeconfig) else (inventory_dir | basename) + "-kubeconfig.yml" }}'
+    __k8s_kube_conf_content: '{{ internal_k8s_kubeconfig | combine((__lokal_k8s_kubeconf.content | b64decode | from_yaml), recursive=true, list_merge="append_rp") if (k8s_merge_kubeconfig) else internal_k8s_kubeconfig }}'
 
 - name: Save kubeconf in keyvault
   become: false
@@ -70,3 +84,5 @@
   run_once: true
   command: "az keyvault secret set --vault-name {{ keyvault_name }} --name k8s-kube-config-{{ inventory_dir | basename | replace(' ', '-') | replace('_', '-') }} --value {{ internal_k8s_kubeconfig | to_nice_yaml | b64encode }} --tags origin=ansible"
   tags: [k8s, k8s-init, k8s-init-config]
+
+# kubeadm kubeconfig user --config /srv/kubeadm-config.yml --client-name admin  --org system --validity-period 168h > tmp.yaml
