@@ -20,7 +20,8 @@ k8s_app_manifests: []
 # # Example
 # k8s_app_manifests:
 #   - name: oauth2-proxy
-#     file: '{{ inventory_dir}}/data/oauth2-proxy.yml'
+#     file: '{{ inventory_dir }}/data/oauth2-proxy.yml'
+#     definitions: '{{ lookup("file", "xyz") | from_yaml_all }}' # If file is not given use this.
 #     namespace: default      # optional
 #     state: present          # optional
 #     wait: true              # optional

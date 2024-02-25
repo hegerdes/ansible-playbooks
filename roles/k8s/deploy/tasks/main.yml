@@ -5,7 +5,7 @@
     namespace: '{{ k8s_app.namespace | default(omit) }}'
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
     state: '{{ k8s_app.state | default("present") }}'
-    definition: '{{ lookup("template", k8s_app.file) | from_yaml_all }}'
+    definition: '{{ lookup("template", k8s_app.file) | from_yaml_all if(k8s_app.file is defined) else k8s_app.definitions }}'
     wait: '{{ k8s_app.wait | default(true) }}'
   loop: '{{ k8s_app_manifests | default([]) }}'
   loop_control:
