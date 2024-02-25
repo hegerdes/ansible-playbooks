@@ -5,6 +5,7 @@
     zone: '{{ item.zone | default((item.host | split("."))[-2:] | join(".")) }}'
     type: '{{ item.type | default("A") }}'
     value: '{{ item.value }}'
+    solo: true
     record: '{{ item.host }}'
     ttl: '{{ item.ttl | default(600) }}'
     api_token : '{{ cloudflare_token }}'
