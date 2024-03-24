@@ -20,7 +20,7 @@ jobs:
       build-args: COMMIT_HASH=${{ github.sha }},COMMIT_TAG=${{ github.ref_name }}
       build-labels: MAINTAINER=${{ github.repository_owner }}
       build-platforms: linux/amd64,linux/arm64
-      extra-commands: echo "Checkout my website henrikgerdes.me"
+      extra-commands: echo "Checkout my website https://henrikgerdes.me"
     secrets:
       REGISTRY_USER: ${{ secrets.DOCKERHUB_USERNAME }}
       REGISTRY_PW: ${{ secrets.DOCKERHUB_TOKEN }}

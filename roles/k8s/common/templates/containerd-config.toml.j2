@@ -16,6 +16,9 @@
 # sudo ctr i pull docker.io/wasmedge/example-wasi:latest
 # ctr run --rm --runc-binary crun --runtime io.containerd.runc.v2 --label module.wasm.image/variant=compat-smart docker.io/wasmedge/example-wasi:latest wasm-example
 
+# Other container image snapshotter:
+# https://github.com/containerd/stargz-snapshotter/blob/main/docs/INSTALL.md
+
 # K8s config settings for systemd (runc and crun)
 version = 2
 # runc
