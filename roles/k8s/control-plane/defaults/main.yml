@@ -20,7 +20,6 @@ k8s_cert_extra_sans_ipv6: '{{ ["::1"] + ansible_facts.all_ipv6_addresses if(k8s_
 k8s_cert_extra_sans: '{{ ["127.0.0.1", "localhost"] + ansible_facts.all_ipv4_addresses + k8s_cert_extra_sans_ipv6 }}'
 k8s_install_k9s: true
 k8s_install_gvisor: true
-k8s_merge_kubeconfig: false
 k8_cert_key: none
 k8s_controlplane_extra_args: {}
 # # Example
