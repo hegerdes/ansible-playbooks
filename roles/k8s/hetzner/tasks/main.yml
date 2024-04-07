@@ -13,7 +13,7 @@
         namespace: kube-system
       data:
         token: '{{ k8s_hetzner_api_key | b64encode }}'
-        network: '{{ k8s_hetzner_network_name_or_id | b64encode }}'
+        network: '{{ k8s_hetzner_network_name | b64encode }}'
   no_log: true
   run_once: true
   tags: [k8s, k8s-init, k8s-hetzner]
