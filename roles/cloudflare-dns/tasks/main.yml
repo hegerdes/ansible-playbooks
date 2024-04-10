@@ -14,4 +14,5 @@
     state: '{{ item.state | default("present") }}'
   loop: '{{ cloudflare_dns_records }}'
   run_once: '{{ cloudflare_run_once }}'
+  delegate_to: localhost
   tags: [cloudflare, cloudflare-dns]
