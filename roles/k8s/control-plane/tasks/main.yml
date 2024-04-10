@@ -76,11 +76,17 @@
   no_log: true
   tags: [k8s, k8s-init, k8s-cp-init]
 
-- name: Copy kubeadm join config
-  ansible.builtin.template:
-    src: 'kubeadm-join-config.yml.j2'
-    dest: '{{ target_data_dir | default("") }}/srv/kubeadm-join-config.yml'
+- name: kubeadm-join config
+  ansible.builtin.copy:
+    content: '{{ item.content }}'
+    dest: '{{ item.dst }}'
     mode: '0600'
+  with_items:
+    - name: kubeadm-join-conf
+      dst: '{{ target_data_dir | default("") }}/srv/kubeadm-join-config.yml'
+      content: '{{ k8s_kubeadm_join_conf }}'
+  loop_control:
+    label: "{{ item.name }}"
   tags: [k8s, k8s-init, k8s-cp-init]
 
 - name: Check if kubeadm has already run

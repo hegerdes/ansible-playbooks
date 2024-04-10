@@ -16,6 +16,7 @@ k8s_service_network_cidr_ipv6: 2001:db8:42:1::/112
 
 k8s_kubelet_conf: '{{ lookup("template", "kubelet-conf.yml.j2") }}'
 k8s_kubeadm_conf: '{{ lookup("template", "kubeadm-config.yml.j2") }}'
+k8s_kubeadm_join_conf: '{{ lookup("template", "kubeadm-join-config.yml.j2") }}'
 k8s_etcd_encryption_secret: my-super-secure-k8s-etcd-secret!
 k8s_etcd_encryption_conf: '{{ lookup("template", "encryption-config.yml.j2") }}'
 
