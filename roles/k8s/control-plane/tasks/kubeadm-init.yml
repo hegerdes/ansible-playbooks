@@ -7,13 +7,6 @@
       register: reset_cluster
       tags: [k8s, k8s-init, k8s-cp-init]
 
-    - name: Copy kubeadm config
-      ansible.builtin.template:
-        src: 'kubeadm-config.yml.j2'
-        dest: '{{ target_data_dir | default("") }}/srv/kubeadm-config.yml'
-        mode: '0600'
-      tags: [k8s, k8s-init, k8s-cp-init]
-
     - name: Init Kubernetes cluster
       when: reset_cluster is succeeded
       ansible.builtin.command: |

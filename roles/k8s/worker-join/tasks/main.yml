@@ -31,12 +31,20 @@
   no_log: true
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
-- name: Copy kubeadm join config
-  when: not __k8s_kubeadm_worker_ca.stat.exists
-  ansible.builtin.template:
-    src: 'kubeadm-join-config.yml.j2'
-    dest: '{{ target_data_dir | default("") }}/srv/kubeadm-join-config.yml'
+- name: Copy kubelet, kubeadm config
+  ansible.builtin.copy:
+    content: '{{ item.content }}'
+    dest: '{{ item.dst }}'
     mode: '0600'
+  with_items:
+    - name: kubeadm-join-conf
+      dst: '{{ target_data_dir | default("") }}/srv/kubeadm-join-config.yml'
+      content: '{{ k8s_kubeadm_join_conf }}'
+    - name: kubelet-conf
+      dst: /var/lib/kubelet/config.yaml
+      content: '{{ k8s_kubelet_conf }}'
+  loop_control:
+    label: "{{ item.name }}"
   tags: [k8s, k8s-init, k8s-worker-join]
 
 - name: Join worker nodes

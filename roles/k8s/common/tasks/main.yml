@@ -95,6 +95,7 @@
     - {path: '/etc/systemd/system/docker.service.d'}
     - {path: '/etc/kubernetes/enc', mode: "0775"}
     - {path: '/etc/systemd/system/kubelet.service.d', mode: "0600"}
+    - {path: '/var/lib/kubelet'}
     - {path: '/usr/wasmedge/lib'}
   tags: [k8s, k8s-prepare, k8s-base]
 
@@ -153,6 +154,7 @@
   ansible.builtin.apt_key:
     url: '{{ item }}'
     state: present
+  retries: 3
   loop:
     - 'https://download.docker.com/linux/{{ ansible_facts.distribution | lower }}/gpg'
     - 'https://pkgs.k8s.io/core:/stable:/v{{ (k8s_version | split("."))[0:2] | join(".") }}/deb/Release.key'
@@ -178,6 +180,16 @@
   loop_control:
     label: "{{ item.name }}"
   tags: [k8s, k8s-prepare, k8s-base, apt]
+
+  # - name: Add Kubernetes APT repository
+  #   ansible.builtin.deb822_repository:
+  #     name: kubernetes
+  #     types: [deb]
+  #     uris: "https://pkgs.k8s.io/core:/stable:/v1.29/deb/"
+  #     signed_by: "https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key"
+  #     suites: [/]
+  #     state: present
+  #     enabled: yes
 
 - name: Install kubelet and admin tools
   ansible.builtin.apt:
