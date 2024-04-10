@@ -8,7 +8,7 @@
     k8s_init_resources_manifests: []
     k8s_init_default_resources: []
     k8s_install_gvisor: false
-    k8s_version: 1.28.7
+    k8s_version: 1.29.3
 
     azure_dns_records:
     - { host: "test.demeter-discovery.com", value: "127.0.0.1" }
