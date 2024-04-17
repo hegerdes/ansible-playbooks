@@ -115,10 +115,10 @@ image:
 affinity:
   podAntiAffinity:
     requiredDuringSchedulingIgnoredDuringExecution:
-    - topologyKey: kubernetes.io/hostname
-      labelSelector:
-        matchLabels:
-          k8s-app: cilium
+      - topologyKey: kubernetes.io/hostname
+        labelSelector:
+          matchLabels:
+            k8s-app: cilium
 
 # -- Node selector for cilium-agent.
 nodeSelector:
@@ -127,11 +127,11 @@ nodeSelector:
 # -- Node tolerations for agent scheduling to nodes with taints
 # ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
 tolerations:
-- operator: Exists
-  # - key: "key"
-  #   operator: "Equal|Exists"
-  #   value: "value"
-  #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
+  - operator: Exists
+    # - key: "key"
+    #   operator: "Equal|Exists"
+    #   value: "value"
+    #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
 
 # -- The priority class to use for cilium-agent.
 priorityClassName: ""
@@ -150,7 +150,8 @@ extraArgs: []
 extraEnv: []
 
 # -- Additional agent hostPath mounts.
-extraHostPathMounts: []
+extraHostPathMounts:
+  []
   # - name: host-mnt-data
   #   mountPath: /host/mnt/data
   #   hostPath: /mnt/data
@@ -181,7 +182,8 @@ podLabels: {}
 
 # -- Agent resource limits & requests
 # ref: https://kubernetes.io/docs/user-guide/compute-resources/
-resources: {}
+resources:
+  {}
   # limits:
   #   cpu: 4000m
   #   memory: 4Gi
@@ -196,11 +198,11 @@ securityContext:
   privileged: false
   # -- SELinux options for the `cilium-agent` and init containers
   seLinuxOptions:
-    level: 's0'
+    level: "s0"
     # Running with spc_t since we have removed the privileged mode.
     # Users can change it to a different type as long as they have the
     # type available on the system.
-    type: 'spc_t'
+    type: "spc_t"
   capabilities:
     # -- Capabilities for the `cilium-agent` container
     ciliumAgent:
@@ -601,7 +603,8 @@ ingressController:
 
   # -- IngressLBAnnotations are the annotation prefixes, which are used to filter annotations to propagate
   # from Ingress to the Load Balancer service
-  ingressLBAnnotationPrefixes: ['service.beta.kubernetes.io', 'service.kubernetes.io', 'cloud.google.com']
+  ingressLBAnnotationPrefixes:
+    ["service.beta.kubernetes.io", "service.kubernetes.io", "cloud.google.com"]
 
   # -- SecretsNamespace is the namespace in which envoy SDS will retrieve TLS secrets from.
   secretsNamespace:
@@ -629,7 +632,7 @@ ingressController:
     # -- Configure a specific nodePort for insecure HTTP traffic on the shared LB service
     insecureNodePort: ~
     # -- Configure a specific nodePort for secure HTTPS traffic on the shared LB service
-    secureNodePort : ~
+    secureNodePort: ~
 
 gatewayAPI:
   # -- Enable support for Gateway API in cilium
@@ -974,8 +977,9 @@ hubble:
     image:
       override: ~
       repository: "quay.io/cilium/hubble-relay"
-      tag: "v1.13.0"
-       # hubble-relay-digest
+      tag:
+        "v1.13.0"
+        # hubble-relay-digest
       digest: "sha256:bc00f086285d2d287dd662a319d3dbe90e57179515ce8649425916aecaa9ac3c"
       useDigest: true
       pullPolicy: "IfNotPresent"
@@ -990,13 +994,14 @@ hubble:
     affinity:
       podAffinity:
         requiredDuringSchedulingIgnoredDuringExecution:
-        - topologyKey: kubernetes.io/hostname
-          labelSelector:
-            matchLabels:
-              k8s-app: cilium
+          - topologyKey: kubernetes.io/hostname
+            labelSelector:
+              matchLabels:
+                k8s-app: cilium
 
     # -- Pod topology spread constraints for hubble-relay
-    topologySpreadConstraints: []
+    topologySpreadConstraints:
+      []
       # - maxSkew: 1
       #   topologyKey: topology.kubernetes.io/zone
       #   whenUnsatisfiable: DoNotSchedule
@@ -1145,7 +1150,8 @@ hubble:
       tls:
         # -- When deploying Hubble UI in standalone, with tls enabled for Hubble relay, it is required
         # to provide a volume for mounting the client certificates.
-        certsVolume: {}
+        certsVolume:
+          {}
           # projected:
           #   defaultMode: 0400
           #   sources:
@@ -1239,7 +1245,8 @@ hubble:
     affinity: {}
 
     # -- Pod topology spread constraints for hubble-ui
-    topologySpreadConstraints: []
+    topologySpreadConstraints:
+      []
       # - maxSkew: 1
       #   topologyKey: topology.kubernetes.io/zone
       #   whenUnsatisfiable: DoNotSchedule
@@ -1282,7 +1289,8 @@ hubble:
     # -- hubble-ui ingress configuration.
     ingress:
       enabled: false
-      annotations: {}
+      annotations:
+        {}
         # kubernetes.io/ingress.class: nginx
         # kubernetes.io/tls-acme: "true"
       className: ""
@@ -1292,7 +1300,6 @@ hubble:
       #  - secretName: chart-example-tls
       #    hosts:
       #      - chart-example.local
-
 
 # -- Method to use for identity allocation (`crd` or `kvstore`).
 identityAllocationMode: "crd"
@@ -1326,8 +1333,9 @@ ipam:
     clusterPoolIPv4MaskSize: 24
     # -- Deprecated in favor of ipam.operator.clusterPoolIPv6PodCIDRList.
     # IPv6 CIDR range to delegate to individual nodes for IPAM.
-    clusterPoolIPv6PodCIDR: "fd00::/104"
-     # -- IPv6 CIDR list range to delegate to individual nodes for IPAM.
+    clusterPoolIPv6PodCIDR:
+      "fd00::/104"
+      # -- IPv6 CIDR list range to delegate to individual nodes for IPAM.
     clusterPoolIPv6PodCIDRList: []
     # -- IPv6 CIDR mask size to delegate to individual nodes for IPAM.
     clusterPoolIPv6MaskSize: 120
@@ -1346,8 +1354,8 @@ ipMasqAgent:
   enabled: false
 # the config of nonMasqueradeCIDRs
 # config:
-  # nonMasqueradeCIDRs: []
-  # masqLinkLocal: false
+# nonMasqueradeCIDRs: []
+# masqLinkLocal: false
 
 # iptablesLockTimeout defines the iptables "--wait" option when invoked from Cilium.
 # iptablesLockTimeout: "5s"
@@ -1361,7 +1369,8 @@ ipv6:
   enabled: false
 
 # -- Configure Kubernetes specific configuration
-k8s: {}
+k8s:
+  {}
   # -- requireIPv4PodCIDR enables waiting for Kubernetes to provide the PodCIDR
   # range via the Kubernetes node resource
   # requireIPv4PodCIDR: false
@@ -1426,9 +1435,9 @@ localRedirectPolicy: false
 # -- Enables periodic logging of system load
 logSystemLoad: false
 
-
 # -- Configure maglev consistent hashing
-maglev: {}
+maglev:
+  {}
   # -- tableSize is the size (parameter M) for the backend table of one
   # service entry
   # tableSize:
@@ -1454,17 +1463,17 @@ egressGateway:
   installRoutes: false
 
 vtep:
-# -- Enables VXLAN Tunnel Endpoint (VTEP) Integration (beta) to allow
-# Cilium-managed pods to talk to third party VTEP devices over Cilium tunnel.
+  # -- Enables VXLAN Tunnel Endpoint (VTEP) Integration (beta) to allow
+  # Cilium-managed pods to talk to third party VTEP devices over Cilium tunnel.
   enabled: false
 
-# -- A space separated list of VTEP device endpoint IPs, for example "1.1.1.1  1.1.2.1"
+  # -- A space separated list of VTEP device endpoint IPs, for example "1.1.1.1  1.1.2.1"
   endpoint: ""
-# -- A space separated list of VTEP device CIDRs, for example "1.1.1.0/24 1.1.2.0/24"
+  # -- A space separated list of VTEP device CIDRs, for example "1.1.1.0/24 1.1.2.0/24"
   cidr: ""
-# -- VTEP CIDRs Mask that applies to all VTEP CIDRs, for example "255.255.255.0"
+  # -- VTEP CIDRs Mask that applies to all VTEP CIDRs, for example "255.255.255.0"
   mask: ""
-# -- A space separated list of VTEP device MAC addresses (VTEP MAC), for example "x:x:x:x:x:x  y:y:y:y:y:y:y"
+  # -- A space separated list of VTEP device MAC addresses (VTEP MAC), for example "x:x:x:x:x:x  y:y:y:y:y:y:y"
   mac: ""
 
 # -- (string) Allows to explicitly specify the IPv4 CIDR for native routing.
@@ -1716,14 +1725,15 @@ etcd:
   # -- Node tolerations for cilium-etcd-operator scheduling to nodes with taints
   # ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
   tolerations:
-  - operator: Exists
-    # - key: "key"
-    #   operator: "Equal|Exists"
-    #   value: "value"
-    #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
+    - operator: Exists
+      # - key: "key"
+      #   operator: "Equal|Exists"
+      #   value: "value"
+      #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
 
   # -- Pod topology spread constraints for cilium-etcd-operator
-  topologySpreadConstraints: []
+  topologySpreadConstraints:
+    []
     # - maxSkew: 1
     #   topologyKey: topology.kubernetes.io/zone
     #   whenUnsatisfiable: DoNotSchedule
@@ -1752,7 +1762,8 @@ etcd:
 
   # -- cilium-etcd-operator resource limits & requests
   # ref: https://kubernetes.io/docs/user-guide/compute-resources/
-  resources: {}
+  resources:
+    {}
     # limits:
     #   cpu: 4000m
     #   memory: 4Gi
@@ -1761,7 +1772,8 @@ etcd:
     #   memory: 512Mi
 
   # -- Security context to be added to cilium-etcd-operator pods
-  securityContext: {}
+  securityContext:
+    {}
     # runAsUser: 0
 
   # -- cilium-etcd-operator update strategy
@@ -1832,13 +1844,14 @@ operator:
   affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
-      - topologyKey: kubernetes.io/hostname
-        labelSelector:
-          matchLabels:
-            io.cilium/app: operator
+        - topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchLabels:
+              io.cilium/app: operator
 
   # -- Pod topology spread constraints for cilium-operator
-  topologySpreadConstraints: []
+  topologySpreadConstraints:
+    []
     # - maxSkew: 1
     #   topologyKey: topology.kubernetes.io/zone
     #   whenUnsatisfiable: DoNotSchedule
@@ -1852,11 +1865,11 @@ operator:
   # -- Node tolerations for cilium-operator scheduling to nodes with taints
   # ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
   tolerations:
-  - operator: Exists
-    # - key: "key"
-    #   operator: "Equal|Exists"
-    #   value: "value"
-    #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
+    - operator: Exists
+      # - key: "key"
+      #   operator: "Equal|Exists"
+      #   value: "value"
+      #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
 
   # -- Additional cilium-operator container arguments.
   extraArgs: []
@@ -1865,7 +1878,8 @@ operator:
   extraEnv: []
 
   # -- Additional cilium-operator hostPath mounts.
-  extraHostPathMounts: []
+  extraHostPathMounts:
+    []
     # - name: host-mnt-data
     #   mountPath: /host/mnt/data
     #   hostPath: /mnt/data
@@ -1898,7 +1912,8 @@ operator:
 
   # -- cilium-operator resource limits & requests
   # ref: https://kubernetes.io/docs/user-guide/compute-resources/
-  resources: {}
+  resources:
+    {}
     # limits:
     #   cpu: 1000m
     #   memory: 1Gi
@@ -1907,7 +1922,8 @@ operator:
     #   memory: 128Mi
 
   # -- Security context to be added to cilium-operator pods
-  securityContext: {}
+  securityContext:
+    {}
     # runAsUser: 0
 
   # -- Interval for endpoint garbage collection.
@@ -2004,11 +2020,11 @@ nodeinit:
   # -- Node tolerations for nodeinit scheduling to nodes with taints
   # ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
   tolerations:
-  - operator: Exists
-    # - key: "key"
-    #   operator: "Equal|Exists"
-    #   value: "value"
-    #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
+    - operator: Exists
+      # - key: "key"
+      #   operator: "Equal|Exists"
+      #   value: "value"
+      #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
 
   # -- Annotations to be added to node-init pods.
   podAnnotations: {}
@@ -2027,11 +2043,11 @@ nodeinit:
   securityContext:
     privileged: false
     seLinuxOptions:
-      level: 's0'
+      level: "s0"
       # Running with spc_t since we have removed the privileged mode.
       # Users can change it to a different type as long as they have the
       # type available on the system.
-      type: 'spc_t'
+      type: "spc_t"
     capabilities:
       add:
         # Used in iptables. Consider removing once we are iptables-free
@@ -2074,10 +2090,10 @@ preflight:
   affinity:
     podAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
-      - topologyKey: kubernetes.io/hostname
-        labelSelector:
-          matchLabels:
-            k8s-app: cilium
+        - topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchLabels:
+              k8s-app: cilium
 
   # -- Node labels for preflight pod assignment
   # ref: https://kubernetes.io/docs/user-guide/node-selection/
@@ -2088,21 +2104,21 @@ preflight:
   # -- Node tolerations for preflight scheduling to nodes with taints
   # ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
   tolerations:
-  - key: node.kubernetes.io/not-ready
-    effect: NoSchedule
-  - key: node-role.kubernetes.io/master
-    effect: NoSchedule
-  - key: node-role.kubernetes.io/control-plane
-    effect: NoSchedule
-  - key: node.cloudprovider.kubernetes.io/uninitialized
-    effect: NoSchedule
-    value: "true"
-  - key: CriticalAddonsOnly
-    operator: "Exists"
-    # - key: "key"
-    #   operator: "Equal|Exists"
-    #   value: "value"
-    #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
+    - key: node.kubernetes.io/not-ready
+      effect: NoSchedule
+    - key: node-role.kubernetes.io/master
+      effect: NoSchedule
+    - key: node-role.kubernetes.io/control-plane
+      effect: NoSchedule
+    - key: node.cloudprovider.kubernetes.io/uninitialized
+      effect: NoSchedule
+      value: "true"
+    - key: CriticalAddonsOnly
+      operator: "Exists"
+      # - key: "key"
+      #   operator: "Equal|Exists"
+      #   value: "value"
+      #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
 
   # -- Annotations to be added to preflight pods
   podAnnotations: {}
@@ -2123,7 +2139,8 @@ preflight:
 
   # -- preflight resource limits & requests
   # ref: https://kubernetes.io/docs/user-guide/compute-resources/
-  resources: {}
+  resources:
+    {}
     # limits:
     #   cpu: 4000m
     #   memory: 4Gi
@@ -2132,7 +2149,8 @@ preflight:
     #   memory: 512Mi
 
   # -- Security context to be added to preflight pods
-  securityContext: {}
+  securityContext:
+    {}
     # runAsUser: 0
 
   # -- Path to write the `--tofqdns-pre-cache` file to.
@@ -2271,7 +2289,8 @@ clustermesh:
     #         cpu: 100m
     #         memory: 64Mi
     # -- Resource requests and limits for the clustermesh-apiserver
-    resources: {}
+    resources:
+      {}
       # requests:
       #   cpu: 100m
       #   memory: 64Mi
@@ -2283,13 +2302,14 @@ clustermesh:
     affinity:
       podAntiAffinity:
         requiredDuringSchedulingIgnoredDuringExecution:
-        - topologyKey: kubernetes.io/hostname
-          labelSelector:
-            matchLabels:
-              k8s-app: clustermesh-apiserver
+          - topologyKey: kubernetes.io/hostname
+            labelSelector:
+              matchLabels:
+                k8s-app: clustermesh-apiserver
 
     # -- Pod topology spread constraints for clustermesh-apiserver
-    topologySpreadConstraints: []
+    topologySpreadConstraints:
+      []
       # - maxSkew: 1
       #   topologyKey: topology.kubernetes.io/zone
       #   whenUnsatisfiable: DoNotSchedule
@@ -2402,7 +2422,8 @@ cgroup:
     # volume will be mounted inside the cilium agent pod at the same path.
     enabled: true
     # -- Init Container Cgroup Automount resource limits & requests
-    resources: {}
+    resources:
+      {}
       # limits:
       #   cpu: 100m
       #   memory: 128Mi

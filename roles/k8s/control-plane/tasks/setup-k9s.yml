@@ -8,11 +8,11 @@
     status_code: [200]
   run_once: true
   register: __k8s_internal_k9s_release_res
-  tags: [k8s, k8s-hetzner, k8s-k9s]
+  tags: [k8s, k8s-init, k8s-k9s]
 
 - name: Install k9s
   ansible.builtin.unarchive:
-    src: '{{ __k8s_internal_k9s_release_res.json | community.general.json_query(__k9s_url_query) | first }}'
+    src: "{{ __k8s_internal_k9s_release_res.json | community.general.json_query(__k9s_url_query) | first }}"
     dest: /usr/local/bin
     remote_src: true
     mode: "0755"
@@ -20,4 +20,4 @@
     exclude: [README.md, LICENSE]
   vars:
     __k9s_url_query: "assets[?contains(name,'Linux_{{ system_arch_map[ansible_facts.architecture] }}')].browser_download_url"
-  tags: [k8s, k8s-hetzner, k8s-k9s]
+  tags: [k8s, k8s-init, k8s-k9s]

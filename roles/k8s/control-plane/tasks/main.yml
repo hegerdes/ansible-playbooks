@@ -7,7 +7,7 @@
   tags: [k8s, k8s-init, k8s-cp-init]
 
 - name: Test reachability to shared KubeControlPlaneHost
-  ansible.builtin.command: 'ping -c 5 {{ k8s_shared_api_server_endpoint }}'
+  ansible.builtin.command: "ping -c 5 {{ k8s_shared_api_server_endpoint }}"
   changed_when: false
   tags: [k8s, k8s-init, k8s-cp-init]
 
@@ -19,19 +19,19 @@
 
 - name: Copy kubelet, kubeadm and etcd encryption config
   ansible.builtin.copy:
-    content: '{{ item.content }}'
-    dest: '{{ item.dst }}'
-    mode: '0600'
+    content: "{{ item.content }}"
+    dest: "{{ item.dst }}"
+    mode: "0600"
   with_items:
     - name: kubeadm-conf
       dst: '{{ target_data_dir | default("") }}/srv/kubeadm-config.yml'
-      content: '{{ k8s_kubeadm_conf }}'
+      content: "{{ k8s_kubeadm_conf }}"
     - name: kubelet-conf
       dst: /var/lib/kubelet/config.yaml
-      content: '{{ k8s_kubelet_conf }}'
+      content: "{{ k8s_kubelet_conf }}"
     - name: etcd-encryption-conf
       dst: /etc/kubernetes/enc/encryption-config.yaml
-      content: '{{ k8s_etcd_encryption_conf }}'
+      content: "{{ k8s_etcd_encryption_conf }}"
   loop_control:
     label: "{{ item.name }}"
   tags: [k8s, k8s-init, k8s-cp-init]
@@ -49,7 +49,7 @@
   tags: [k8s, k8s-init, k8s-cp-init]
 
 - name: Generate certificate key
-  delegate_to: '{{ groups.k8s_control_plane | flatten | first }}'
+  delegate_to: "{{ groups.k8s_control_plane | flatten | first }}"
   ansible.builtin.command: 'kubeadm init phase upload-certs --upload-certs --config {{ target_data_dir | default("") }}/srv/kubeadm-config.yml'
   register: __k8s_kubeadm_cert_key_res
   changed_when: false
@@ -58,7 +58,7 @@
   tags: [k8s, k8s-init, k8s-cp-init]
 
 - name: Get join token
-  delegate_to: '{{ groups.k8s_control_plane | flatten | first }}'
+  delegate_to: "{{ groups.k8s_control_plane | flatten | first }}"
   ansible.builtin.command: kubeadm token create
   register: __k8_cp_join_token_res
   changed_when: false
@@ -67,9 +67,9 @@
   tags: [k8s, k8s-init, k8s-cp-init]
 
 - name: Get CA certificate hash
-  delegate_to: '{{ groups.k8s_control_plane | flatten | first }}'
+  delegate_to: "{{ groups.k8s_control_plane | flatten | first }}"
   community.crypto.x509_certificate_info:
-    path: '{{ k8s_pki_cert_path }}/ca.crt'
+    path: "{{ k8s_pki_cert_path }}/ca.crt"
   register: __k8s_pki_ca
   changed_when: false
   run_once: true
@@ -78,13 +78,13 @@
 
 - name: kubeadm-join config
   ansible.builtin.copy:
-    content: '{{ item.content }}'
-    dest: '{{ item.dst }}'
-    mode: '0600'
+    content: "{{ item.content }}"
+    dest: "{{ item.dst }}"
+    mode: "0600"
   with_items:
     - name: kubeadm-join-conf
       dst: '{{ target_data_dir | default("") }}/srv/kubeadm-join-config.yml'
-      content: '{{ k8s_kubeadm_join_conf }}'
+      content: "{{ k8s_kubeadm_join_conf }}"
   loop_control:
     label: "{{ item.name }}"
   tags: [k8s, k8s-init, k8s-cp-init]
@@ -104,11 +104,11 @@
 
 - name: Change kubelet conf permissions
   ansible.builtin.file:
-    path: '{{ item }}'
+    path: "{{ item }}"
     owner: root
     group: root
-    mode: '0600'
-  loop: [/var/lib/kubelet/config.yaml, /lib/systemd/system/kubelet.service ]
+    mode: "0600"
+  loop: [/var/lib/kubelet/config.yaml, /lib/systemd/system/kubelet.service]
   tags: [k8s, k8s-init, k8s-cp-init]
 
 - name: Enable and check kubelet service
@@ -117,7 +117,7 @@
     daemon_reload: true
     state: started
     enabled: true
-  ignore_errors: '{{ ansible_check_mode }}'
+  ignore_errors: "{{ ansible_check_mode }}"
   tags: [k8s, k8s-init, k8s-cp-init]
 
 - name: Show join results
@@ -131,7 +131,7 @@
   kubernetes.core.k8s_taint:
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
     state: absent
-    name: '{{ ansible_facts.hostname }}'
+    name: "{{ ansible_facts.hostname }}"
     taints:
       - key: node-role.kubernetes.io/control-plane
         effect: NoSchedule
@@ -146,29 +146,30 @@
   kubernetes.core.k8s_taint:
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
     state: '{{ item.state | default("present") }}'
-    name: '{{ item.node }}'
+    name: "{{ item.node }}"
     taints:
-      - key: '{{ item.key }}'
-        effect: '{{ item.effect | default(omit) }}'
-  loop: '{{ k8s_taints | default([]) }}'
+      - key: "{{ item.key }}"
+        effect: "{{ item.effect | default(omit) }}"
+  loop: "{{ k8s_taints | default([]) }}"
   tags: [k8s, k8s-init, k8s-cp-init, k8s-taint]
 
 - name: Deploying initial resource manifests
   kubernetes.core.k8s:
-    namespace: '{{ k8s_init_resources.namespace | default(omit) }}'
+    namespace: "{{ k8s_init_resources.namespace | default(omit) }}"
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
     state: '{{ k8s_init_resources.state | default("present") }}'
-    definition: '{{ k8s_init_resources.definition }}'
-    wait: '{{ k8s_init_resources.wait | default(true) }}'
-  loop: '{{ k8s_init_resources_manifests_all | flatten }}'
+    definition: "{{ k8s_init_resources.definition }}"
+    wait: "{{ k8s_init_resources.wait | default(true) }}"
+  loop: "{{ k8s_init_resources_manifests_all | flatten }}"
   loop_control:
     loop_var: k8s_init_resources
-    label: '{{ k8s_init_resources.name }}'
+    label: "{{ k8s_init_resources.name }}"
   vars:
     k8s_init_resources_manifests_all:
-      - '{{ k8s_init_resources_manifests }}'
-      - '{{ [k8s_crun_manifest] }}'
-      - '{{ [k8s_gVisor_manifest] if(k8s_install_gvisor) else [] }}'
+      - "{{ k8s_init_resources_manifests }}"
+      - "{{ [k8s_runc_manifest] }}"
+      - "{{ [k8s_crun_manifest] }}"
+      - "{{ [k8s_gVisor_manifest] if(k8s_install_gvisor) else [] }}"
   tags: [k8s, k8s-init, k8s-cp-init, k8s-cp-init-maifests]
 
 - name: Setup configs
@@ -183,13 +184,13 @@
 
 - name: Setup k9s
   when: k8s_install_k9s
-  ansible.builtin.include_tasks: 'setup-k9s.yml'
+  ansible.builtin.include_tasks: "setup-k9s.yml"
   tags: [k8s, k8s-init, k8s-cp-init, k8s-k9s]
 
 - name: Setup CNI
-  ansible.builtin.include_tasks: 'setup-cni-{{ k8s_cni | lower }}.yml'
-  tags: [k8s, k8s-init, k8s-cp-init, k8s-cni, k8s-flannel, k8s-calico, k8s-cilium, k8s-weave]
-
+  ansible.builtin.include_tasks: "setup-cni-{{ k8s_cni | lower }}.yml"
+  tags:
+    [k8s, k8s-init, k8s-cp-init, k8s-cni, k8s-flannel, k8s-calico, k8s-cilium]
 # - name: Kubeadm check
 #   ansible.builtin.shell: kubectl cluster-info
 #   register: k8s_cluster_info

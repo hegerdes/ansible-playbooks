@@ -11,13 +11,13 @@
     name: calico
     state: present
     chart_ref: projectcalico/tigera-operator
-    chart_version: '{{ k8s_calico_chart_version }}'
+    chart_version: "{{ k8s_calico_chart_version }}"
     release_namespace: tigera-operator
     update_repo_cache: true
     create_namespace: true
     atomic: true
     wait: true
-    values: '{{ k8s_calico_helm_values | default({}) }}'
+    values: "{{ k8s_calico_helm_values | default({}) }}"
     kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
   run_once: true
   tags: [k8s, k8s-init, k8s-cp-init, k8s-cni, k8s-calico]
@@ -26,5 +26,5 @@
   ansible.builtin.get_url:
     url: https://github.com/projectcalico/calico/releases/download/v3.24.1/calicoctl-linux-amd64
     dest: /usr/bin/kubectl-calico
-    mode: '0754'
+    mode: "0754"
   tags: [k8s, k8s-init, k8s-cp-init, k8s-cni, k8s-calico]

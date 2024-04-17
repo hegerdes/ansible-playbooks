@@ -2,7 +2,7 @@
 ---
 - name: Download crun
   ansible.builtin.unarchive:
-    src: '{{ k8s_crun_wasm_version }}'
+    src: "{{ k8s_crun_wasm_download_url }}"
     dest: /tmp
     remote_src: true
     creates: /tmp/crun
@@ -11,9 +11,9 @@
 
 - name: Copy crun wasm files
   ansible.builtin.copy:
-    src: '{{ item.src }}'
-    dest: '{{ item.dest }}'
-    mode: '0754'
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "0754"
     remote_src: true
   with_items:
     - src: /tmp/crun
@@ -22,12 +22,16 @@
       dest: "/usr/wasmedge/lib/libwasmedge.so.{{ k8s_crun_wasmlib_version }}"
   tags: [k8s, k8s-prepare, k8s-base]
 
-- name: Create sym link to wasm lib
+- name: Create symlink to wasm lib
   ansible.builtin.file:
     src: "/usr/wasmedge/lib/libwasmedge.so.{{ k8s_crun_wasmlib_version }}"
-    dest: '/usr/wasmedge/lib/{{ item }}'
+    dest: "/usr/wasmedge/lib/{{ item }}"
     state: link
-  loop: ['libwasmedge.so.{{ k8s_crun_wasmlib_version | split(".") | first }}', 'libwasmedge.so']
+  loop:
+    [
+      'libwasmedge.so.{{ k8s_crun_wasmlib_version | split(".") | first }}',
+      "libwasmedge.so",
+    ]
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: Add wasm libs to server lib store

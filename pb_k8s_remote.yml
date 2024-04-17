@@ -46,7 +46,6 @@
     # - k8s/grafana-mimir
     # - k8s/metallb
     # - k8s/rancher
-
 # # Upgrade
 # - hosts: k8s
 #   become: true

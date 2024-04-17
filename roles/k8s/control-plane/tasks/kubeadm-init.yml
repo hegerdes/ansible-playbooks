@@ -10,8 +10,8 @@
     - name: Init Kubernetes cluster
       when: reset_cluster is succeeded
       ansible.builtin.command: |
-          kubeadm init --config {{ target_data_dir | default("") }}/srv/kubeadm-config.yml \
-            --upload-certs
+        kubeadm init --config {{ target_data_dir | default("") }}/srv/kubeadm-config.yml \
+          --upload-certs
       register: init_cluster
       tags: [k8s, k8s-init, k8s-cp-init]
 
@@ -21,7 +21,7 @@
         daemon_reload: true
         state: started
         enabled: true
-      ignore_errors: '{{ ansible_check_mode }}'
+      ignore_errors: "{{ ansible_check_mode }}"
       tags: [k8s, k8s-init, k8s-cp-init]
 
     - name: Debug - Kubeadm init res
@@ -39,7 +39,7 @@
 
     - name: Print Error Info
       ansible.builtin.debug:
-        msg: 'A error occurred while bootstrapping the first control-plane node. The cluster was reset. Please see the error meassage below:'
+        msg: "A error occurred while bootstrapping the first control-plane node. The cluster was reset. Please see the error meassage below:"
       tags: [k8s, k8s-init, k8s-cp-init]
 
     - name: Kubeadm Error

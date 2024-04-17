@@ -51,13 +51,13 @@
   delegate_to: localhost
   ignore_errors: true
   azure.azcollection.azure_rm_keyvaultsecret:
-    secret_name: '{{ item.name }}'
-    secret_value: '{{ item.content }}'
+    secret_name: "{{ item.name }}"
+    secret_value: "{{ item.content }}"
     keyvault_uri: "{{ keyvault }}"
-    tags: '{{ default_tags | combine(item.tags) }}'
+    tags: "{{ default_tags | combine(item.tags) }}"
   with_items:
     - name: 'k8s-{{ inventory_dir | basename | replace(" ", "-") | replace("_", "-") }}-kube-config'
-      content: '{{ internal_k8s_kubeconfig | to_nice_yaml | b64encode }}'
+      content: "{{ internal_k8s_kubeconfig | to_nice_yaml | b64encode }}"
       tags:
         type: kubeconfig
     - name: 'k8s-{{ inventory_dir | basename | replace(" ", "-") | replace("_", "-") }}-ca'
@@ -70,7 +70,6 @@
       origin: ansible
       encoding: base64
       cluster: "{{ inventory_dir | basename }}"
-
 # - name: Save kubeconf in keyvault
 #   become: false
 #   ignore_errors: true
