@@ -1,7 +1,7 @@
 # k8s join
 ---
 - name: Test reachability to shared KubeControlPlaneHost
-  ansible.builtin.command: 'ping -c 5 {{ k8s_shared_api_server_endpoint }}'
+  ansible.builtin.command: "ping -c 5 {{ k8s_shared_api_server_endpoint }}"
   changed_when: false
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
@@ -13,8 +13,11 @@
 
 - name: Get join token
   when: not __k8s_kubeadm_worker_ca.stat.exists
-  delegate_to: '{{ groups.k8s_control_plane | flatten | first }}'
-  ansible.builtin.command: kubeadm token create
+  delegate_to: "{{ groups.k8s_control_plane | flatten | first }}"
+  ansible.builtin.command: |
+    kubeadm token create \
+    --ttl 15m \
+    --description "{{ ansible_date_time.date }} Token used to join node {{ ansible_hostname }}"
   register: __k8_worker_join_token_res
   changed_when: false
   run_once: true
@@ -22,9 +25,9 @@
 
 - name: Get CA certificate hash
   when: not __k8s_kubeadm_worker_ca.stat.exists
-  delegate_to: '{{ groups.k8s_control_plane | flatten | first }}'
+  delegate_to: "{{ groups.k8s_control_plane | flatten | first }}"
   community.crypto.x509_certificate_info:
-    path: '{{ k8s_pki_cert_path }}/ca.crt'
+    path: "{{ k8s_pki_cert_path }}/ca.crt"
   register: __k8s_pki_ca
   changed_when: false
   run_once: true
@@ -34,16 +37,16 @@
 - name: Copy kubelet, kubeadm config
   when: not __k8s_kubeadm_worker_ca.stat.exists
   ansible.builtin.copy:
-    content: '{{ item.content }}'
-    dest: '{{ item.dst }}'
-    mode: '0600'
+    content: "{{ item.content }}"
+    dest: "{{ item.dst }}"
+    mode: "0600"
   with_items:
     - name: kubeadm-join-conf
       dst: '{{ target_data_dir | default("") }}/srv/kubeadm-join-config.yml'
-      content: '{{ k8s_kubeadm_join_conf }}'
+      content: "{{ k8s_kubeadm_join_conf }}"
     - name: kubelet-conf
       dst: /var/lib/kubelet/config.yaml
-      content: '{{ k8s_kubelet_conf }}'
+      content: "{{ k8s_kubelet_conf }}"
   loop_control:
     label: "{{ item.name }}"
   tags: [k8s, k8s-init, k8s-worker-join]
@@ -57,11 +60,11 @@
 
 - name: Change kubelet conf permissions
   ansible.builtin.file:
-    path: '{{ item }}'
+    path: "{{ item }}"
     owner: root
     group: root
-    mode: '0600'
-  loop: [/var/lib/kubelet/config.yaml, /lib/systemd/system/kubelet.service ]
+    mode: "0600"
+  loop: [/var/lib/kubelet/config.yaml, /lib/systemd/system/kubelet.service]
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
 # https://www.reddit.com/r/kubernetes/comments/hixx7z/ansible_k8s_kubectl_label/
@@ -69,10 +72,10 @@
   ansible.builtin.command: "kubectl label node {{ inventory_hostname }} {{ item }}"
   register: _k8s_worker_role_set
   changed_when: ("node/" + inventory_hostname + " labeled") in _k8s_worker_role_set.stdout
-  delegate_to: '{{ groups.k8s_control_plane | flatten | first }}'
+  delegate_to: "{{ groups.k8s_control_plane | flatten | first }}"
   loop:
-    - 'node-role.kubernetes.io/worker=worker'
-    - 'node-arch.kubernetes.io/arch={{ ansible_facts.architecture }}'
+    - "node-role.kubernetes.io/worker=worker"
+    - "node-arch.kubernetes.io/arch={{ ansible_facts.architecture }}"
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
 - name: Enable and check kubelet service

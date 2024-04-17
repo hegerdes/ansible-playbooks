@@ -1,10 +1,10 @@
 ---
-k8s_version: 1.29.3
+k8s_version: 1.29.4
 k8s_dual_stack: false
-k8s_cluster_name: '{{ inventory_dir | basename }}'
 k8s_image_repo: registry.k8s.io
-k8s_shared_api_server_endpoint: '{{ ansible_facts.default_ipv4.address }}'
+k8s_cluster_name: "{{ inventory_dir | basename }}"
 k8s_pki_cert_path: /etc/kubernetes/pki
+k8s_shared_api_server_endpoint: "{{ ansible_facts.default_ipv4.address }}"
 k8s_init_verbose: '{{ lookup("env", "CI") | default("false", true) | bool == false }}'
 
 k8s_pod_network_cidr: '{{ [k8s_pod_network_cidr_ipv4,k8s_pod_network_cidr_ipv6] | join(",") if(k8s_dual_stack) else k8s_pod_network_cidr_ipv4}}'
@@ -33,7 +33,7 @@ k8s_controlplane_extra_args: {}
 # k8s_controlplane_extra_args:
 #   anonymous-auth: "false"
 
-######### Taints #########
+######### Taints & Roles #########
 k8s_remove_no_schedule_cp_taints: false
 k8s_taints: []
 # # Example
@@ -71,6 +71,14 @@ k8s_crun_manifest:
       name: crun
     handler: crun
 
+k8s_runc_manifest:
+  name: runc RuntimeClass
+  definition:
+    apiVersion: node.k8s.io/v1
+    kind: RuntimeClass
+    metadata:
+      name: runc
+    handler: runc
 
 ######### CNI #########
 # Which CNI flannel, calico or cilium
@@ -95,10 +103,10 @@ k8s_calico_ip_pools_ipv6:
     natOutgoing: Enabled
     nodeSelector: all()
 
-k8s_calico_chart_version: '{{ null | default(omit) }}'
+k8s_calico_chart_version: "{{ null | default(omit) }}"
 k8s_calico_helm_values:
-# See https://docs.tigera.io/calico/3.26/getting-started/kubernetes/helm
-# See https://docs.tigera.io/calico/latest/networking/ipam/ipv6#enable-dual-stack
+  # See https://docs.tigera.io/calico/3.26/getting-started/kubernetes/helm
+  # See https://docs.tigera.io/calico/latest/networking/ipam/ipv6#enable-dual-stack
   installation:
     cni:
       type: Calico
@@ -106,13 +114,13 @@ k8s_calico_helm_values:
       ipPools: '{{ k8s_calico_ip_pools_ipv4 + k8s_calico_ip_pools_ipv6 if("," in k8s_pod_network_cidr) else k8s_calico_ip_pools_ipv4 }}'
 
 # Cilium helm chart setup
-k8s_cilium_chart_version: '{{ null | default(omit) }}'
+k8s_cilium_chart_version: "{{ null | default(omit) }}"
 # See example setup: https://docs.cilium.io/en/stable/helm-reference/
 k8s_cilium_helm_values:
   rollOutCiliumPods: true
   priorityClassName: "system-node-critical"
   cluster:
-    name: '{{ k8s_cluster_name }}'
+    name: "{{ k8s_cluster_name }}"
   hubble:
     metrics:
       enabled:

@@ -32,6 +32,8 @@ networking:
 apiServer:
   timeoutForControlPlane: 4m0s
   extraArgs:
+    profiling: "false"
+    audit-log-path: "-"
     encryption-provider-config: /etc/kubernetes/enc/encryption-config.yaml
     encryption-provider-config-automatic-reload: "true"
     {{ k8s_controlplane_extra_args | to_nice_yaml(indent=2) | indent(width=4) }}
@@ -43,3 +45,9 @@ apiServer:
       mountPath: /etc/kubernetes/enc
       readOnly: true
       pathType: DirectoryOrCreate
+controllerManager:
+  extraArgs:
+    profiling: "false"
+scheduler:
+  extraArgs:
+    profiling: "false"
