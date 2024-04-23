@@ -20,7 +20,8 @@ clusterDomain: cluster.local
 clusterDNS:
 - 10.96.0.10
 
-# serverTLSBootstrap: true
+# See https://kubernetes.io/docs/reference/access-authn-authz/kubelet-tls-bootstrapping/
+serverTLSBootstrap: true
 imageGCLowThresholdPercent: 70
 maxPods: 220
 nodeStatusMaxImages: 100
