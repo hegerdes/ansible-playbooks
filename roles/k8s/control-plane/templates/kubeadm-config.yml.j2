@@ -1,6 +1,7 @@
 # kubeadm config
 apiVersion: kubeadm.k8s.io/v1beta3
 kind: InitConfiguration
+
 nodeRegistration:
   kubeletExtraArgs:
     config: /var/lib/kubelet/config.yaml
@@ -8,13 +9,15 @@ nodeRegistration:
     {{ k8s_kubelet_extra_args | default({}) | to_nice_yaml(indent=2) | indent(width=4) }}
   ignorePreflightErrors:
     - NumCPU
+  taints: []
+  imagePullPolicy: IfNotPresent
+  name: {{ ansible_hostname }}
   # criSocket: unix:///var/run/containerd/containerd.sock
-  # imagePullPolicy: IfNotPresent
-  # name: cp-node-amd64-cmkhxd
-  # taints: null
 localAPIEndpoint:
   advertiseAddress: {{ k8s_node_ip_v4 | default(ansible_facts.default_ipv4.address) }}
   bindPort: {{ k8s_kubelet_advertise_port | default(6443) | int }}
+skipPhases:
+  {{ k8s_kubeadm_skip_phases | to_nice_yaml(indent=2) | indent(width=2) }}
 ---
 apiVersion: kubeadm.k8s.io/v1beta3
 kind: ClusterConfiguration
@@ -36,6 +39,7 @@ apiServer:
     audit-log-path: "-"
     encryption-provider-config: /etc/kubernetes/enc/encryption-config.yaml
     encryption-provider-config-automatic-reload: "true"
+    enable-admission-plugins: NodeRestriction
     {{ k8s_controlplane_extra_args | to_nice_yaml(indent=2) | indent(width=4) }}
     # anonymous-auth: "false"
   certSANs: {{ k8s_cert_extra_sans + [k8s_shared_api_server_endpoint] | flatten | unique }}

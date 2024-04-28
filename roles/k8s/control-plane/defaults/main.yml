@@ -28,6 +28,11 @@ k8s_cert_extra_sans: '{{ ["127.0.0.1", "localhost"] + ansible_facts.all_ipv4_add
 k8s_install_k9s: true
 k8s_install_gvisor: true
 k8_cert_key: none
+
+k8s_kubeadm_skip_phases: []
+# # Example
+# k8s_kubeadm_skip_phases:
+#   - addon/kube-proxy
 k8s_controlplane_extra_args: {}
 # # Example
 # k8s_controlplane_extra_args:
@@ -116,26 +121,15 @@ k8s_calico_helm_values:
 # Cilium helm chart setup
 k8s_cilium_chart_version: "{{ null | default(omit) }}"
 # See example setup: https://docs.cilium.io/en/stable/helm-reference/
+# Kube-proxy-free: https://docs.cilium.io/en/stable/network/kubernetes/kubeproxy-free/
 k8s_cilium_helm_values:
+  k8sServiceHost: "{{ k8s_shared_api_server_endpoint }}"
+  kubeProxyReplacement: "true"
+  k8sServicePort: 6443
   rollOutCiliumPods: true
   priorityClassName: "system-node-critical"
   cluster:
     name: "{{ k8s_cluster_name }}"
-  hubble:
-    metrics:
-      enabled:
-        - dns:query
-        - drop
-        - tcp
-        - flow
-        - icmp
-        - http
-    # relay:
-    #   enabled: true
-    #   rollOutPods: true
-    # ui:
-    #   enabled: true
-    #   rollOutPods: true
   ipam:
     # mode: "kubernetes"
     operator:

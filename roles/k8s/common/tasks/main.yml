@@ -17,7 +17,7 @@
 
 - name: Set a hostname
   ansible.builtin.hostname:
-    name: '{{ inventory_hostname }}'
+    name: "{{ inventory_hostname }}"
   tags: [k8s, k8s-prepare, k8s-base]
 
 # - name: Enable SELinux in enforcing mode
@@ -48,9 +48,9 @@
   ansible.builtin.lineinfile:
     path: /etc/apt/apt.conf.d/20auto-upgrades
     create: true
-    state: '{{ k8s_unattended_upgrades_state }}'
-    line: '{{ item }}'
-    mode: '0644'
+    state: "{{ k8s_unattended_upgrades_state }}"
+    line: "{{ item }}"
+    mode: "0644"
   loop:
     - APT::Periodic::Update-Package-Lists "1";
     - APT::Periodic::Unattended-Upgrade "1";
@@ -73,35 +73,35 @@
 - name: Add entries to /etc/hosts
   ansible.builtin.lineinfile:
     path: /etc/hosts
-    line: '{{ item.ip }} {{ item.name }}'
+    line: "{{ item.ip }} {{ item.name }}"
     create: true
     state: '{{ item.state | default("present")}}'
-  loop: '{{ k8s_etc_hosts }}'
+  loop: "{{ k8s_etc_hosts }}"
   loop_control:
-    label: '{{ item.name }}'
+    label: "{{ item.name }}"
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: Create config dirs
   ansible.builtin.file:
-    path: '{{ item.path }}'
+    path: "{{ item.path }}"
     mode: '{{ item.mode | default("0644") }}'
     state: directory
   with_items:
-    - {path: '/srv'}
-    - {path: '/opt/cni/bin'}
-    - {path: '/etc/apt/keyrings'}
-    - {path: '/etc/containerd'}
-    - {path: '{{ ansible_facts.env.HOME }}/.kube'}
-    - {path: '/etc/systemd/system/docker.service.d'}
-    - {path: '/etc/kubernetes/enc', mode: "0775"}
-    - {path: '/etc/systemd/system/kubelet.service.d', mode: "0600"}
-    - {path: '/var/lib/kubelet'}
-    - {path: '/usr/wasmedge/lib'}
+    - { path: "/srv" }
+    - { path: "/etc/apt/keyrings" }
+    - { path: "/etc/containerd" }
+    - { path: "{{ ansible_facts.env.HOME }}/.kube" }
+    - { path: "/etc/systemd/system/docker.service.d" }
+    - { path: "/etc/kubernetes/enc", mode: "0775" }
+    - { path: "/etc/systemd/system/kubelet.service.d", mode: "0600" }
+    - { path: "/opt/cni/bin", mode: "0755" }
+    - { path: "/var/lib/kubelet" }
+    - { path: "/usr/wasmedge/lib" }
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: Ensure br_netfilter and overlay is enabled
   community.general.modprobe:
-    name: '{{ item }}'
+    name: "{{ item }}"
     state: present
     persistent: present
   loop: [br_netfilter, overlay]
@@ -109,24 +109,24 @@
 
 - name: Set sysctl parameters
   ansible.posix.sysctl:
-    name: '{{ item.key }}'
-    value: '{{ item.val }}'
+    name: "{{ item.key }}"
+    value: "{{ item.val }}"
     state: '{{ item.state | default("present") }}'
     sysctl_set: true
     reload: true
-  with_items: '{{ k8s_common_sysctl_conf }}'
+  with_items: "{{ k8s_common_sysctl_conf }}"
   loop_control:
     label: "{{ item.key }}={{ item.val }}"
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: Setting system limits
   pam_limits:
-    domain: '{{ item.user }}'
+    domain: "{{ item.user }}"
     limit_type: '{{ item.type | default("-") }}'
-    limit_item: '{{ item.limit }}'
-    value: '{{ item.value }}'
-    comment: '{{ item.comment | default(omit) }}'
-  loop: '{{ k8s_system_limits }}'
+    limit_item: "{{ item.limit }}"
+    value: "{{ item.value }}"
+    comment: "{{ item.comment | default(omit) }}"
+  loop: "{{ k8s_system_limits }}"
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: Print used version info
@@ -152,27 +152,27 @@
 
 - name: Adding apt GPG Keys
   ansible.builtin.apt_key:
-    url: '{{ item }}'
+    url: "{{ item }}"
     state: present
   retries: 3
   loop:
-    - 'https://download.docker.com/linux/{{ ansible_facts.distribution | lower }}/gpg'
+    - "https://download.docker.com/linux/{{ ansible_facts.distribution | lower }}/gpg"
     - 'https://pkgs.k8s.io/core:/stable:/v{{ (k8s_version | split("."))[0:2] | join(".") }}/deb/Release.key'
-    - 'https://dl.k8s.io/apt/doc/apt-key.gpg'
-    - 'https://gvisor.dev/archive.key'
+    - "https://dl.k8s.io/apt/doc/apt-key.gpg"
+    - "https://gvisor.dev/archive.key"
   tags: [k8s, k8s-prepare, k8s-base, apt]
 
 - name: Add Docker/K8s/gVisor repository
   ansible.builtin.apt_repository:
-    repo: '{{ item.repo }}'
+    repo: "{{ item.repo }}"
     update_cache: true
     state: '{{ item.state | default("present") }}'
-    filename: '{{ item.name }}'
+    filename: "{{ item.name }}"
   with_items:
     - name: k8s
       repo: 'deb https://pkgs.k8s.io/core:/stable:/v{{ (k8s_version | split("."))[0:2] | join(".") }}/deb/ /'
     - name: docker
-      repo: 'deb https://download.docker.com/linux/{{ ansible_facts.distribution | lower }} {{ ansible_facts.lsb.codename }} stable'
+      repo: "deb https://download.docker.com/linux/{{ ansible_facts.distribution | lower }} {{ ansible_facts.lsb.codename }} stable"
       state: '{{ "present" if(k8s_containerd_variant | lower == "docker") else "absent" }}'
     - name: gvisor
       repo: deb https://storage.googleapis.com/gvisor/releases release main
@@ -198,27 +198,27 @@
       - 'kubectl{{ "=" + k8s_version + "*" if (k8s_version != "latest") }}'
       - 'kubelet{{ "=" + k8s_version + "*" if (k8s_version != "latest") }}'
       - '{{ "runsc" if(k8s_install_gvisor) }}'
-      - 'etcd-client'
+      - "etcd-client"
     state: present
     update_cache: true
     cache_valid_time: 86400 # equal to 24h
     install_recommends: false
     allow_downgrade: true
     autoremove: true
-    allow_change_held_packages : true
-  ignore_errors: '{{ ansible_check_mode }}'
+    allow_change_held_packages: true
+  ignore_errors: "{{ ansible_check_mode }}"
   tags: [k8s, k8s-prepare, k8s-base, apt]
 
 - name: Include install containerd
   ansible.builtin.include_tasks:
-    file: 'containerd_{{ k8s_containerd_variant | lower }}.yml'
+    file: "containerd_{{ k8s_containerd_variant | lower }}.yml"
     apply:
       tags: [k8s, k8s-prepare, k8s-base, apt]
   tags: [k8s, k8s-prepare, k8s-base, apt]
 
 - name: Set packages to fixed versions
   ansible.builtin.dpkg_selections:
-    name: '{{ item }}'
+    name: "{{ item }}"
     selection: hold
   loop: '{{ __default_k8s_packages + ["containerd.io"] if(k8s_containerd_variant | lower == "docker") else __default_k8s_packages }}'
   vars:
@@ -227,25 +227,27 @@
 
 - name: Create conf dirs
   ansible.builtin.file:
-    path: '{{ item }}'
+    path: "{{ item }}"
     state: directory
   loop:
-    - '/opt/cni/bin'
-    - '/etc/containerd'
-    - '/etc/systemd/system/docker.service.d'
-    - '/etc/systemd/system/kubelet.service.d'
-    - '/usr/wasmedge/lib'
+    - "/etc/containerd"
+    - "/etc/systemd/system/docker.service.d"
+    - "/etc/systemd/system/kubelet.service.d"
+    - "/usr/wasmedge/lib"
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: Copy kubelet/docker/containerd/crun/runsc-conf
   ansible.builtin.template:
-    src: '{{ item.src }}.j2'
-    dest: '{{ item.dst }}'
-    mode: '0600'
+    src: "{{ item.src }}.j2"
+    dest: "{{ item.dst }}"
+    mode: "0600"
     owner: root
     group: root
   with_items:
-    - { src: 00-docker-cgroup.conf, dst: /etc/systemd/system/docker.service.d/00-docker-cgroup.conf }
+    - {
+        src: 00-docker-cgroup.conf,
+        dst: /etc/systemd/system/docker.service.d/00-docker-cgroup.conf,
+      }
     - { src: containerd-config.toml, dst: /etc/containerd/config.toml }
     - { src: runsc.toml, dst: /etc/containerd/runsc.toml }
     - { src: crictl.yaml, dst: /etc/crictl.yaml }
@@ -258,7 +260,7 @@
     state: started
     daemon_reload: true
     enabled: true
-  ignore_errors: '{{ ansible_check_mode }}'
+  ignore_errors: "{{ ansible_check_mode }}"
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: Restart containerd
@@ -267,12 +269,12 @@
     name: containerd
     daemon_reload: true
     state: restarted
-  ignore_errors: '{{ ansible_check_mode }}'
+  ignore_errors: "{{ ansible_check_mode }}"
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: Enable kubectl bash completion
   ansible.builtin.blockinfile:
-    path: '{{ ansible_facts.env.HOME }}/.bashrc'
+    path: "{{ ansible_facts.env.HOME }}/.bashrc"
     block: |
       source <(kubectl completion bash)
       source <(crictl completion)
@@ -292,11 +294,11 @@
   when: k8s_cni | lower == 'cilium'
   # See https://docs.cilium.io/en/v1.13/operations/system_requirements/#systemd-based-distributions
   ansible.builtin.copy:
-    src: '{{ item.src }}'
-    dest: '{{ item.dst }}'
-    mode: '0600'
+    src: "{{ item.src }}"
+    dest: "{{ item.dst }}"
+    mode: "0600"
     owner: root
     group: root
   with_items:
-    - {src: cilium-networkd.conf, dst: /etc/systemd/networkd.conf}
+    - { src: cilium-networkd.conf, dst: /etc/systemd/networkd.conf }
   tags: [k8s, k8s-prepare, k8s-base, k8s-init, k8s-cni, k8s-cilium]
