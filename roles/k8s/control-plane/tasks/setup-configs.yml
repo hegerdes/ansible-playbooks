@@ -1,37 +1,34 @@
-# Main k8s Setup
-- name: Copy config file
+---
+# Main k8s config setup
+- name: k8s cp - configs | Copy config file
   ansible.builtin.copy:
     src: /etc/kubernetes/admin.conf
     dest: "{{ ansible_facts.env.HOME }}/.kube/config"
     remote_src: true
     mode: "0600"
-  tags: [k8s, k8s-init, k8s-init-config]
 
-- name: Create kube conf dir
+- name: k8s cp - configs | Create kube conf dir
   become: false
   run_once: true
   delegate_to: localhost
   ansible.builtin.file:
     path: "~/.kube"
     state: directory
-  tags: [k8s, k8s-init, k8s-init-config]
 
-- name: Get kubeconf - remote
+- name: k8s cp - configs | Get kubeconfig - remote
   run_once: true
   no_log: true
   ansible.builtin.slurp:
     src: /etc/kubernetes/admin.conf
   register: __remote_k8s_kubeconf
-  tags: [k8s, k8s-init, k8s-init-config]
 
-- name: Configure kubeconfig
+- name: k8s cp - configs | Configure kubeconfig
   run_once: true
   no_log: true
   ansible.builtin.set_fact:
     internal_k8s_kubeconfig: "{{ __remote_k8s_kubeconf.content | b64decode | from_yaml | combine({'clusters': [(__remote_k8s_kubeconf.content | b64decode | from_yaml).clusters[0] | combine({'cluster': {'server': 'https://' + k8s_external_cp_host + ':' + k8s_external_cp_port | default('6443')}}, recursive=true)]}) if (k8s_external_cp_host | default('') != '') else __remote_k8s_kubeconf.content | b64decode | from_yaml }}"
-  tags: [k8s, k8s-init, k8s-init-config]
 
-- name: Creating a file with kubeconf
+- name: k8s cp - configs | Creating a file with kubeconf
   become: false
   no_log: true
   run_once: true
@@ -42,9 +39,8 @@
     dest: "{{ lookup('env', 'HOME') }}/.kube/{{ (inventory_dir | basename) + '-kubeconfig.yml' }}"
     content: "{{ internal_k8s_kubeconfig | to_nice_yaml(indent=2, sort_keys=true) }}"
     mode: "0600"
-  tags: [k8s, k8s-init, k8s-init-config]
 
-- name: Save kubeconf in keyvault
+- name: k8s cp - configs | Save kubeconf in keyvault
   become: false
   no_log: true
   run_once: true
@@ -56,28 +52,17 @@
     keyvault_uri: "{{ keyvault }}"
     tags: "{{ default_tags | combine(item.tags) }}"
   with_items:
-    - name: 'k8s-{{ inventory_dir | basename | replace(" ", "-") | replace("_", "-") }}-kube-config'
+    - name: "k8s-{{ cluster_slug }}-kube-config"
       content: "{{ internal_k8s_kubeconfig | to_nice_yaml | b64encode }}"
       tags:
         type: kubeconfig
-    - name: 'k8s-{{ inventory_dir | basename | replace(" ", "-") | replace("_", "-") }}-ca'
-      content: '{{ (internal_k8s_kubeconfig.clusters | first).cluster["certificate-authority-data"] }}'
+    - name: "k8s-{{ cluster_slug }}-ca"
+      content: "{{ (internal_k8s_kubeconfig.clusters | first).cluster['certificate-authority-data'] }}"
       tags:
-        type: kubeconfig
-  tags: [k8s, k8s-init, k8s-init-config]
+        type: certificate
   vars:
+    cluster_slug: "{{ inventory_dir | basename | replace(' ', '-') | replace('_', '-') }}"
     default_tags:
       origin: ansible
       encoding: base64
       cluster: "{{ inventory_dir | basename }}"
-# - name: Save kubeconf in keyvault
-#   become: false
-#   ignore_errors: true
-#   no_log: true
-#   delegate_to: localhost
-#   when: keyvault_name is defined
-#   run_once: true
-#   command: "az keyvault secret set --vault-name {{ keyvault_name }} --name k8s-{{ inventory_dir | basename | replace(' ', '-') | replace('_', '-') }}-kube-config --value {{ internal_k8s_kubeconfig | to_nice_yaml | b64encode }} --tags origin=ansible"
-#   tags: [k8s, k8s-init, k8s-init-config]
-
-# kubeadm kubeconfig user --config /srv/kubeadm-config.yml --client-name admin  --org system --validity-period 168h > tmp.yaml

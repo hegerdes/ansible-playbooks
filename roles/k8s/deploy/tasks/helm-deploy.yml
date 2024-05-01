@@ -1,50 +1,46 @@
+---
 # K8s install generic helm apps
-
-- name: Add Helm repo
+- name: k8s deploy - helm | Add Helm repo
   kubernetes.core.helm_repository:
-    name: '{{ k8s_helm_app.repo_name }}'
-    repo_url: '{{ k8s_helm_app.repo_url }}'
+    name: "{{ k8s_helm_app.repo_name }}"
+    repo_url: "{{ k8s_helm_app.repo_url }}"
   no_log: true
-  tags: [k8s, k8s-deploy, helm-deploy]
 
-- name: Setting pre-deploy manifests
+- name: k8s deploy - helm | Setting pre-deploy manifests
   kubernetes.core.k8s:
     wait: true
     namespace: '{{ k8s_helm_pre.namespace | default(k8s_helm_app.deploy_namespace) | default("default") }}'
-    definition: '{{ k8s_helm_pre.definition }}'
+    definition: "{{ k8s_helm_pre.definition }}"
     state: '{{ k8s_helm_pre.state | default("present") }}'
-    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
-  loop: '{{ k8s_helm_app.pre_deploy_manifests | default([]) }}'
+    kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
+  loop: "{{ k8s_helm_app.pre_deploy_manifests | default([]) }}"
   loop_control:
     loop_var: k8s_helm_pre
-    label: '{{ k8s_helm_pre.name }}'
-  tags: [k8s, k8s-deploy, helm-deploy, helm-deploy-pre]
+    label: "{{ k8s_helm_pre.name }}"
 
-- name: Deploy App
+- name: k8s deploy - helm | Deploy App
   kubernetes.core.helm:
-    name: '{{ k8s_helm_app.deploy_name | default(k8s_helm_app.chart_name) }}'
+    name: "{{ k8s_helm_app.deploy_name | default(k8s_helm_app.chart_name) }}"
     state: '{{ k8s_helm_app.state | default("present") }}'
-    chart_version: '{{ k8s_helm_app.chart_version }} '
-    chart_ref: '{{ k8s_helm_app.repo_name }}/{{ k8s_helm_app.chart_name }}'
+    chart_version: "{{ k8s_helm_app.chart_version }} "
+    chart_ref: "{{ k8s_helm_app.repo_name }}/{{ k8s_helm_app.chart_name }}"
     release_namespace: '{{ k8s_helm_app.deploy_namespace | default("default") }}'
     create_namespace: true
     update_repo_cache: true
     atomic: true
     wait: true
     wait_timeout: '{{ k8s_helm_app.wait_timeout | default("2m") }}'
-    values: '{{ k8s_helm_app.chart_values | default({}) }}'
-    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
-  tags: [k8s, k8s-deploy, helm-deploy]
+    values: "{{ k8s_helm_app.chart_values | default({}) }}"
+    kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
 
-- name: Setting post-deploy manifests
+- name: k8s deploy - helm | Setting post-deploy manifests
   kubernetes.core.k8s:
     wait: true
     namespace: '{{ k8s_helm_post.namespace | default(k8s_helm_app.deploy_namespace) | default("default") }}'
-    definition: '{{ k8s_helm_post.definition }}'
+    definition: "{{ k8s_helm_post.definition }}"
     state: '{{ k8s_helm_post.state | default("present") }}'
-    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
-  loop: '{{ k8s_helm_app.post_deploy_manifests | default([]) }}'
+    kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
+  loop: "{{ k8s_helm_app.post_deploy_manifests | default([]) }}"
   loop_control:
     loop_var: k8s_helm_post
-    label: '{{ k8s_helm_post.name }}'
-  tags: [k8s, k8s-deploy, helm-deploy, helm-deploy-pre]
+    label: "{{ k8s_helm_post.name }}"

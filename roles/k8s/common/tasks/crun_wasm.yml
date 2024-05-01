@@ -1,15 +1,14 @@
-# Setup wasm crun
 ---
-- name: Download crun
+# Setup wasm crun
+- name: k8s common - crun | Download crun
   ansible.builtin.unarchive:
     src: "{{ k8s_crun_wasm_download_url }}"
     dest: /tmp
     remote_src: true
     creates: /tmp/crun
   retries: 3
-  tags: [k8s, k8s-prepare, k8s-base]
 
-- name: Copy crun wasm files
+- name: k8s common - crun | Copy crun wasm files
   ansible.builtin.copy:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
@@ -20,9 +19,8 @@
       dest: /usr/local/sbin/crun
     - src: "/tmp/wasmlibs/libwasmedge.so.{{ k8s_crun_wasmlib_version }}"
       dest: "/usr/wasmedge/lib/libwasmedge.so.{{ k8s_crun_wasmlib_version }}"
-  tags: [k8s, k8s-prepare, k8s-base]
 
-- name: Create symlink to wasm lib
+- name: k8s common - crun | Create symlink to wasm lib
   ansible.builtin.file:
     src: "/usr/wasmedge/lib/libwasmedge.so.{{ k8s_crun_wasmlib_version }}"
     dest: "/usr/wasmedge/lib/{{ item }}"
@@ -32,23 +30,19 @@
       'libwasmedge.so.{{ k8s_crun_wasmlib_version | split(".") | first }}',
       "libwasmedge.so",
     ]
-  tags: [k8s, k8s-prepare, k8s-base]
 
-- name: Add wasm libs to server lib store
+- name: k8s common - crun | Add wasm libs to server lib store
   ansible.builtin.lineinfile:
     path: /etc/ld.so.conf
     line: /usr/wasmedge/lib
   register: _was_lib_link_ad
-  tags: [k8s, k8s-prepare, k8s-base]
 
-- name: Reload lib link config
+- name: k8s common - crun | Reload lib link config
   when: _was_lib_link_ad.changed
   ansible.builtin.command:
     cmd: ldconfig
-  tags: [k8s, k8s-prepare, k8s-base]
 
-- name: Test crun
+- name: k8s common - crun | Test crun
   ansible.builtin.command:
     cmd: crun --version
   changed_when: false
-  tags: [k8s, k8s-prepare, k8s-base]

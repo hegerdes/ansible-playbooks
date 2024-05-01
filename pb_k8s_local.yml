@@ -20,4 +20,3 @@
 #   gather_facts: true
 #   roles:
 #     - k8s/worker-join
-

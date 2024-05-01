@@ -1,13 +1,13 @@
-# Set up k8s with kubeadm
 ---
-- name: Init first control-plane node with kubeadm
+# Set up k8s with kubeadm
+- name: k8s cp - kubeadm | Init first control-plane node
   block:
-    - name: Reset Kubernetes component
+    - name: k8s cp - kubeadm | Reset Kubernetes components
       ansible.builtin.command: "kubeadm reset --force"
       register: reset_cluster
       tags: [k8s, k8s-init, k8s-cp-init]
 
-    - name: Init Kubernetes cluster
+    - name: k8s cp - kubeadm | Init Kubernetes cluster
       when: reset_cluster is succeeded
       ansible.builtin.command: |
         kubeadm init --config {{ target_data_dir | default("") }}/srv/kubeadm-config.yml \
@@ -15,7 +15,7 @@
       register: init_cluster
       tags: [k8s, k8s-init, k8s-cp-init]
 
-    - name: Enable and check kubelet service
+    - name: k8s cp - kubeadm | Enable and check kubelet service
       ansible.builtin.systemd:
         name: kubelet
         daemon_reload: true
@@ -24,30 +24,31 @@
       ignore_errors: "{{ ansible_check_mode }}"
       tags: [k8s, k8s-init, k8s-cp-init]
 
-    - name: Debug - Kubeadm init res
+    - name: k8s cp - kubeadm | Debug - Kubeadm init res
       when: k8s_init_verbose
       ansible.builtin.debug:
         var: init_cluster.stderr_lines + init_cluster.stdout_lines
       tags: [k8s, k8s-init, k8s-cp-init]
 
   rescue:
-    - name: Cleanup - Reset Kubernetes component
+    - name: k8s cp - kubeadm | Cleanup - Reset Kubernetes component
       ansible.builtin.command: "kubeadm reset --force"
       changed_when: true
       register: reset_cluster
       tags: [k8s, k8s-init, k8s-cp-init]
 
-    - name: Print Error Info
+    - name: k8s cp - kubeadm | Print Error Info
       ansible.builtin.debug:
-        msg: "A error occurred while bootstrapping the first control-plane node. The cluster was reset. Please see the error meassage below:"
+        msg: |
+          A error occurred while bootstrapping the first control-plane node.
+          The cluster was reset. Please see the error message below:"
       tags: [k8s, k8s-init, k8s-cp-init]
 
-    - name: Kubeadm Error
+    - name: k8s cp - kubeadm | Kubeadm Error
       ansible.builtin.debug:
         var: init_cluster
       tags: [k8s, k8s-init, k8s-cp-init]
 
-    - name: Exit with error code!
+    - name: k8s cp - kubeadm | Exit with error code!
       ansible.builtin.command: /bin/false
-      changed_when: false
       tags: [k8s, k8s-init, k8s-cp-init]

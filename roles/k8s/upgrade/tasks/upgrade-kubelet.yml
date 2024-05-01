@@ -5,15 +5,15 @@
     - name: Drain node
       kubernetes.core.k8s_drain:
         state: drain
-        name: '{{ __k8s_upgrade_node_name }}'
+        name: "{{ __k8s_upgrade_node_name }}"
         delete_options:
           ignore_daemonsets: true
-          delete_emptydir_data : true
+          delete_emptydir_data: true
           force: true
           wait_timeout: 90
           wait_sleep: 30
-        kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
-      delegate_to: '{{ groups.k8s_control_plane | flatten | first }}'
+        kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
+      delegate_to: "{{ groups.k8s_control_plane | flatten | first }}"
       tags: [k8s, k8s-upgrade, k8s-upgrade-kubelet]
 
     - name: Update kubelet and kubectl
@@ -42,10 +42,10 @@
 
     - name: Reschedule node
       kubernetes.core.k8s_drain:
-        name: '{{ __k8s_upgrade_node_name }}'
+        name: "{{ __k8s_upgrade_node_name }}"
         state: uncordon
-        kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
-      delegate_to: '{{ groups.k8s_control_plane | flatten | first }}'
+        kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
+      delegate_to: "{{ groups.k8s_control_plane | flatten | first }}"
       tags: [k8s, k8s-upgrade, k8s-upgrade-kubelet]
 
     - name: Pause for 60s
@@ -62,7 +62,7 @@
 
     - name: Print Error Info
       ansible.builtin.debug:
-        msg: 'A error occurred while upgrading the first control-plane node. The cluster was reset. Please see the error messsage below:'
+        msg: "A error occurred while upgrading the first control-plane node. The cluster was reset. Please see the error messsage below:"
       tags: [k8s, k8s-upgrade, k8s-upgrade-kubelet]
 
     - name: Exit with error code!

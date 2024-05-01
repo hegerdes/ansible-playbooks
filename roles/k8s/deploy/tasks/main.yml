@@ -1,22 +1,25 @@
-# K8s install generic helm apps
-
-- name: Deploying custom apps
+---
+# K8s install generic apps
+- name: k8s deploy | Deploying custom apps
   kubernetes.core.k8s:
-    namespace: '{{ k8s_app.namespace | default(omit) }}'
-    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
+    namespace: "{{ k8s_app.namespace | default(omit) }}"
+    kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
     state: '{{ k8s_app.state | default("present") }}'
     definition: '{{ lookup("template", k8s_app.file) | from_yaml_all if(k8s_app.file is defined) else k8s_app.definitions }}'
-    wait: '{{ k8s_app.wait | default(true) }}'
-  loop: '{{ k8s_app_manifests | default([]) }}'
+    wait: "{{ k8s_app.wait | default(true) }}"
+  loop: "{{ k8s_app_manifests | default([]) }}"
   loop_control:
     loop_var: k8s_app
-    label: '{{ k8s_app.name }}'
+    label: "{{ k8s_app.name }}"
   tags: [k8s, k8s-deploy, k8s-deploy-manifest]
 
-- name: Install Helm App
-  ansible.builtin.include_tasks: helm-deploy.yml
-  loop: '{{ k8s_app_helm_apps | default([]) }}'
+- name: k8s deploy | Install Helm App
+  ansible.builtin.include_tasks:
+    file: helm-deploy.yml
+    apply:
+      tags: [k8s, k8s-deploy, helm-deploy]
+  tags: [k8s, k8s-deploy, helm-deploy]
+  loop: "{{ k8s_app_helm_apps | default([]) }}"
   loop_control:
     loop_var: k8s_helm_app
-    label: '{{ k8s_helm_app.chart_name }}'
-  tags: [k8s, k8s-deploy, helm-deploy]
+    label: "{{ k8s_helm_app.chart_name }}"

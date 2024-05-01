@@ -4,21 +4,21 @@
 - name: Add Grafana Cloud Helm-Chart repo
   kubernetes.core.helm_repository:
     name: grafana
-    repo_url: '{{ k8s_grafana_helm_repo }}'
+    repo_url: "{{ k8s_grafana_helm_repo }}"
   tags: [k8s, k8s-monitoring, k8s-grafana-cloud]
 
 - name: Deploy Grafana Agent Flow
   kubernetes.core.helm:
     name: grafana-flow-agent
     state: '{{ "present" if(k8s_grafana_install) else "absent" }}'
-    chart_version: '{{ k8s_grafana_helm_chart_version }}'
+    chart_version: "{{ k8s_grafana_helm_chart_version }}"
     chart_ref: grafana/k8s-monitoring
     release_namespace: monitoring
     create_namespace: true
     update_repo_cache: true
     atomic: true
     wait: true
-    values: '{{ k8s_grafana_helm_values | default({}) }}'
-    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
+    values: "{{ k8s_grafana_helm_values | default({}) }}"
+    kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
   run_once: true
   tags: [k8s, k8s-monitoring, k8s-grafana-cloud]

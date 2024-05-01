@@ -1,11 +1,12 @@
+---
 # Main k8s CNI - Cilium
-- name: Add Cilium helm chart repo
+- name: k8s cp - cni cilium | Add Cilium helm chart repo
   kubernetes.core.helm_repository:
     name: cilium
     repo_url: https://helm.cilium.io/
   tags: [k8s, k8s-init, k8s-cp-init, k8s-cni, k8s-cilium]
 
-- name: Install Cilium
+- name: k8s cp - cni cilium | Install Cilium
   kubernetes.core.helm:
     name: cilium
     chart_ref: cilium/cilium
@@ -17,19 +18,19 @@
     atomic: true
     wait: true
     values: "{{ k8s_cilium_helm_values | default({}) }}"
-    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
+    kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
   run_once: true
   tags: [k8s, k8s-init, k8s-cp-init, k8s-cni, k8s-cilium]
 
-- name: Download Cilium CLI
+- name: k8s cp - cni cilium | Download Cilium CLI
   ansible.builtin.unarchive:
-    src: 'https://github.com/cilium/cilium-cli/releases/download/{{ k8s_cilium_cli_version | default(lookup("url", "https://raw.githubusercontent.com/cilium/cilium-cli/master/stable.txt", split_lines=False)) | trim }}/cilium-linux-{{ system_arch_map[ansible_facts.architecture] }}.tar.gz'
+    src: "https://github.com/cilium/cilium-cli/releases/download/{{ k8s_cilium_cli_version | default(lookup('url', 'https://raw.githubusercontent.com/cilium/cilium-cli/master/stable.txt', split_lines=False)) | trim }}/cilium-linux-{{ system_arch_map[ansible_facts.architecture] }}.tar.gz"
     dest: /usr/local/bin
     creates: /usr/local/bin/cilium
     remote_src: true
   tags: [k8s, k8s-init, k8s-cp-init, k8s-cni, k8s-cilium]
 
-- name: Verify Cilium
+- name: k8s cp - cni cilium | Verify Cilium
   ansible.builtin.command: cilium status --output json
   register: __k8s_cilium_status
   changed_when: false

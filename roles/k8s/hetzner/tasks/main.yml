@@ -3,7 +3,7 @@
 - name: Create Hetzner Secret
   when: k8s_hetzner_api_key != "none"
   kubernetes.core.k8s:
-    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
+    kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
     state: present
     definition:
       apiVersion: v1
@@ -12,8 +12,8 @@
         name: hcloud
         namespace: kube-system
       data:
-        token: '{{ k8s_hetzner_api_key | b64encode }}'
-        network: '{{ k8s_hetzner_network_name | b64encode }}'
+        token: "{{ k8s_hetzner_api_key | b64encode }}"
+        network: "{{ k8s_hetzner_network_name | b64encode }}"
   no_log: true
   run_once: true
   tags: [k8s, k8s-init, k8s-hetzner]
@@ -21,40 +21,40 @@
 - name: Add Hetzner Cloud Helm-Chart repo
   kubernetes.core.helm_repository:
     name: hcloud
-    repo_url: '{{ k8s_hetzner_helm_repo }}'
+    repo_url: "{{ k8s_hetzner_helm_repo }}"
   tags: [k8s, k8s-init, k8s-hetzner]
 
 - name: Deploy Cloud Controller & CSI Driver
   when: k8s_hetzner_api_key != "none"
   kubernetes.core.helm:
-    name: '{{ item.name }}'
+    name: "{{ item.name }}"
     state: '{{ item.state | default("present") }}'
-    chart_version: '{{ item.version }}'
-    chart_ref: 'hcloud/{{ item.chart }}'
+    chart_version: "{{ item.version }}"
+    chart_ref: "hcloud/{{ item.chart }}"
     release_namespace: '{{ item.namespace | default("kube-system") }}'
     create_namespace: true
     update_repo_cache: true
     atomic: true
     wait: true
-    values: '{{ item.chart_values | default({}) }}'
-    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
+    values: "{{ item.chart_values | default({}) }}"
+    kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
   loop:
     # https://github.com/hetznercloud/hcloud-cloud-controller-manager/blob/main/chart/README.md
     - name: hccm
       chart: hcloud-cloud-controller-manager
       state: absent
       # state: '{{ "present" if(k8s_hetzner_ccm_install) else "absent" }}'
-      version: '{{ k8s_hetzner_ccm_helm_chart_version }}'
-      chart_values: '{{ k8s_hetzner_ccm_helm_values }}'
+      version: "{{ k8s_hetzner_ccm_helm_chart_version }}"
+      chart_values: "{{ k8s_hetzner_ccm_helm_values }}"
     # https://github.com/hetznercloud/csi-driver/tree/main/chart
     - name: hcsi
       chart: hcloud-csi
       state: absent
       # state: '{{ "present" if(k8s_hetzner_csi_driver_install) else "absent" }}'
-      version: '{{ k8s_hetzner_csi_helm_chart_version }}'
-      chart_values: '{{ k8s_hetzner_csi_helm_values }}'
+      version: "{{ k8s_hetzner_csi_helm_chart_version }}"
+      chart_values: "{{ k8s_hetzner_csi_helm_values }}"
   loop_control:
-    label: '{{ item.name }}'
+    label: "{{ item.name }}"
   run_once: true
   tags: [k8s, k8s-init, k8s-hetzner]
 
@@ -62,7 +62,7 @@
 - name: Add hcloud-lb-exporter Helm-Chart repo
   kubernetes.core.helm_repository:
     name: hcloud-lb-exporter
-    repo_url: '{{ k8s_hetzner_lb_exporter_helm_repo }}'
+    repo_url: "{{ k8s_hetzner_lb_exporter_helm_repo }}"
   tags: [k8s, k8s-init, k8s-hetzner]
 
 - name: Deploy hcloud-lb-exporter
@@ -71,14 +71,14 @@
     name: hcloud-lb-exporter
     state: absent
     # state: '{{ "present" if(k8s_hetzner_lb_exporter_install) else "absent" }}'
-    chart_version: '{{ k8s_hetzner_lb_exporter_helm_chart_version }}'
+    chart_version: "{{ k8s_hetzner_lb_exporter_helm_chart_version }}"
     chart_ref: hcloud-lb-exporter/hetzner-load-balancer-exporter
     release_namespace: kube-system
     create_namespace: true
     update_repo_cache: true
     atomic: true
     wait: true
-    values: '{{ k8s_hetzner_lb_exporter_helm_values | default({}) }}'
-    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
+    values: "{{ k8s_hetzner_lb_exporter_helm_values | default({}) }}"
+    kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
   run_once: true
   tags: [k8s, k8s-init, k8s-hetzner]

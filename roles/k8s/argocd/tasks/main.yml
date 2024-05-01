@@ -1,35 +1,35 @@
-# Main k8s Setup
 ---
-- name: Add ArgoCD Helm-chart repo
+# Main argocd setup
+- name: k8s argocd | Add ArgoCD Helm-chart repo
   kubernetes.core.helm_repository:
     name: argocd
     repo_url: https://argoproj.github.io/argo-helm
   tags: [k8s, k8s-argocd]
 
-- name: Deploy ArgoCD
+- name: k8s argocd | Deploy ArgoCD
   kubernetes.core.helm:
     name: argocd
     state: '{{ "present" if(k8s_argocd_install) else "absent" }}'
-    chart_version: '{{ k8s_argocd_helm_chart_version }}'
+    chart_version: "{{ k8s_argocd_helm_chart_version }}"
     chart_ref: argocd/argo-cd
     release_namespace: argocd
     create_namespace: true
     update_repo_cache: true
     atomic: true
     wait: true
-    values: '{{ k8s_argocd_helm_values | default({}) }}'
-    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
+    values: "{{ k8s_argocd_helm_values | default({}) }}"
+    kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
   tags: [k8s, k8s-argocd]
 
-- name: Deploying argocd apps
+- name: k8s argocd | Deploying argocd apps
   kubernetes.core.k8s:
-    namespace: '{{ k8s_app.namespace | default(omit) }}'
-    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
+    namespace: "{{ k8s_app.namespace | default(omit) }}"
+    kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
     state: '{{ k8s_app.state | default("present") }}'
-    definition: '{{ k8s_app.definition | default({}) }}'
-    wait: '{{ k8s_app.wait | default(true) }}'
-  loop: '{{ k8s_argocd_apps | default([]) }}'
+    definition: "{{ k8s_app.definition | default({}) }}"
+    wait: "{{ k8s_app.wait | default(true) }}"
+  loop: "{{ k8s_argocd_apps | default([]) }}"
   loop_control:
     loop_var: k8s_app
-    label: '{{ k8s_app.name }}'
+    label: "{{ k8s_app.name }}"
   tags: [k8s, k8s-argocd, k8s-argocd-apps]

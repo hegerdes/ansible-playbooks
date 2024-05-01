@@ -60,30 +60,19 @@ k8s_init_resources_manifests: []
 
 k8s_gVisor_manifest:
   name: gVisor RuntimeClass
-  definition:
-    apiVersion: node.k8s.io/v1
-    kind: RuntimeClass
-    metadata:
-      name: gvisor
-    handler: runsc
+  definition: "{{ lookup('template', role_path + '/files/k8s-runtime-class-gvisor.yaml') | from_yaml }}"
 
 k8s_crun_manifest:
   name: crun RuntimeClass
-  definition:
-    apiVersion: node.k8s.io/v1
-    kind: RuntimeClass
-    metadata:
-      name: crun
-    handler: crun
+  definition: "{{ lookup('template', role_path + '/files/k8s-runtime-class-crun.yaml') | from_yaml }}"
 
 k8s_runc_manifest:
   name: runc RuntimeClass
-  definition:
-    apiVersion: node.k8s.io/v1
-    kind: RuntimeClass
-    metadata:
-      name: runc
-    handler: runc
+  definition: "{{ lookup('template', role_path + '/files/k8s-runtime-class-runc.yaml') | from_yaml }}"
+
+k8s_kata_manifest:
+  name: kata RuntimeClass
+  definition: "{{ lookup('template', role_path + '/files/k8s-runtime-class-kata.yaml') | from_yaml }}"
 
 ######### CNI #########
 # Which CNI flannel, calico or cilium

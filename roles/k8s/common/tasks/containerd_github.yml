@@ -1,36 +1,36 @@
-# Setup wasm crun
 ---
-- name: Install containerd
+# Setup upstream containerd
+- name: k8s common - containerd | Install containerd
   ansible.builtin.unarchive:
-    src: '{{ k8s_containerd_download_url }}'
+    src: "{{ k8s_containerd_download_url }}"
     dest: /usr/local
     remote_src: true
     creates: /usr/local/bin/containerd
   retries: 3
 
-- name: Install runc
+- name: k8s common - containerd | Install runc
   ansible.builtin.get_url:
-    url: '{{ k8s_runc_download_url }}'
+    url: "{{ k8s_runc_download_url }}"
     dest: /usr/local/runc
-    mode: '0755'
+    mode: "0755"
   retries: 3
 
-- name: Install cni plugins
+- name: k8s common - containerd | Install cni plugins
   ansible.builtin.unarchive:
-    src: '{{ k8s_cni_plugin_download_url }}'
+    src: "{{ k8s_cni_plugin_download_url }}"
     dest: /opt/cni/bin
     remote_src: true
     creates: /opt/cni/bin/loopback
   retries: 3
 
-- name: Install containerd service
+- name: k8s common - containerd | Install containerd service
   ansible.builtin.get_url:
     url: https://raw.githubusercontent.com/containerd/containerd/main/containerd.service
     dest: /etc/systemd/system/containerd.service
-    mode: '0600'
+    mode: "0600"
   retries: 3
 
-- name: Test containerd
+- name: k8s common - containerd | Test containerd
   ansible.builtin.command:
     cmd: containerd --version
   changed_when: false

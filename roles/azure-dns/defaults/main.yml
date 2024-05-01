@@ -12,4 +12,3 @@ azure_dns_default_tags:
 # azure_dns_records:
 #  - { host: "my-domain.example", value: "127.0.0.1" }
 #  - { host: "test.k8s.example.com", value: "127.0.0.1", type: A, ttl: 3600, zone: example.com, resource_group: my-group, mode: "purge/append", state: present, tags: {used_by: abc}}
-

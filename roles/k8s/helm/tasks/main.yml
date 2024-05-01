@@ -1,17 +1,14 @@
+---
 # K8s install helm
 
-- name: Adding apt gpg keys
-  ansible.builtin.apt_key:
-    url: https://baltocdn.com/helm/signing.asc
-    state: present
-  tags: [k8s, k8s-init, k8s-helm]
-
 - name: Add Helm package repository
-  ansible.builtin.apt_repository:
-    repo: deb https://baltocdn.com/helm/stable/debian/ all main
-    update_cache: true
-    state: present
-    filename: helm.list
+  ansible.builtin.deb822_repository:
+    name: helm
+    types: [deb]
+    uris: https://baltocdn.com/helm/stable/debian/
+    signed_by: "https://baltocdn.com/helm/signing.asc"
+    components: [main]
+    suites: [all]
   tags: [k8s, k8s-init, k8s-helm]
 
 - name: Install Helm
@@ -20,11 +17,12 @@
     state: present
     update_cache: true
     install_recommends: false
-  ignore_errors: '{{ ansible_check_mode }}'
+  ignore_errors: "{{ ansible_check_mode }}"
   tags: [k8s, k8s-init, k8s-helm]
 
 - name: Install Helm Diff
   kubernetes.core.helm_plugin:
     plugin_path: https://github.com/databus23/helm-diff
     state: present
+  ignore_errors: "{{ ansible_check_mode }}"
   tags: [k8s, k8s-init, k8s-helm]

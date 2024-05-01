@@ -15,13 +15,13 @@
   kubernetes.core.helm:
     name: rancher
     state: '{{ "present" if(k8s_rancher_install) else "absent" }}'
-    chart_version: '{{ k8s_rancher_helm_chart_version }}'
+    chart_version: "{{ k8s_rancher_helm_chart_version }}"
     chart_ref: rancher-stable/rancher
     release_namespace: cattle-system
     create_namespace: true
     update_repo_cache: true
     wait: true
     atomic: true
-    values: '{{ k8s_rancher_helm_values | default({}) }}'
-    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
+    values: "{{ k8s_rancher_helm_values | default({}) }}"
+    kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
   tags: [k8s, k8s-rancher]

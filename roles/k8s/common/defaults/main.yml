@@ -1,10 +1,12 @@
 ---
 k8s_version: 1.29.4
 
-# Which cri to use: runc, crun or runsc
+# Which cri to use: runc, crun or runsc, kata-containers
 k8s_cri: crun
 k8s_install_gvisor: true
+k8s_install_kata_containers: false
 k8s_crun_version: "{{ k8s_crun_default_version if(not k8s_crun_with_wasm) else k8s_crun_wasm_download_url }}"
+
 # Key value pairs passed to kubelet
 k8s_kubelet_extra_args: {}
 
@@ -67,8 +69,11 @@ k8s_runc_download_url: '{{ lookup("url", "https://api.github.com/repos/openconta
 k8s_cni_plugin_download_url: '{{ lookup("url", "https://api.github.com/repos/containernetworking/plugins/releases/latest") | from_json | json_query(k8s_cni_plugins_query) | first if(k8s_cni_plugins_version == "latest") else "https://github.com/containernetworking/plugins/releases/download/v" + k8s_cni_plugins_version + "/cni-plugins-" + ansible_facts.system | lower + "-" + system_arch_map[ansible_facts.architecture] + "-v" + k8s_cni_plugins_version + ".tgz" }}'
 k8s_crun_wasm_download_url: '{{ lookup("url", "https://api.github.com/repos/hegerdes/publish/releases/latest") | from_json | json_query(k8s_crun_wasm_query) | select("search", ansible_facts.architecture) | list | first }}'
 k8s_crun_default_version: '{{ lookup("url", "https://api.github.com/repos/containers/crun/releases/latest") | from_json | json_query("tag_name") }}'
+k8s_kata_containers_download_url: '{{ lookup("url", "https://api.github.com/repos/kata-containers/kata-containers/releases/latest") | from_json | json_query(k8s_kata_containers_query) | select("search", system_arch_map[ansible_facts.architecture]) | list | first }}'
+k8s_kata_containers_default_version: '{{ lookup("url", "https://api.github.com/repos/kata-containers/kata-containers/releases/latest") | from_json | json_query("tag_name") }}'
 
 k8s_crun_wasm_query: assets[?starts_with(name, 'crun')].browser_download_url
+k8s_kata_containers_query: assets[?starts_with(name, 'kata-static')].browser_download_url
 k8s_runc_query: "assets[?ends_with(name, '{{ system_arch_map[ansible_facts.architecture] }}' )].browser_download_url"
 k8s_containerd_query: "assets[?ends_with(name, '{{ ansible_facts.system | lower }}-{{ system_arch_map[ansible_facts.architecture] }}.tar.gz' )].browser_download_url"
 k8s_cni_plugins_query: "assets[?starts_with(name, 'cni-plugins-{{ ansible_facts.system | lower }}-{{ system_arch_map[ansible_facts.architecture] }}' )].browser_download_url"

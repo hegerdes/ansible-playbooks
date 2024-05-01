@@ -1,6 +1,6 @@
-# Main k8s/control-plane/flannel Setup
-
-- name: Download network CNI manifest
+---
+# Main k8s CNI - flannel
+- name: k8s cp - cni flannel | Download network CNI manifest
   ansible.builtin.uri:
     url: https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
     return_content: true
@@ -9,9 +9,9 @@
   run_once: true
   tags: [k8s, k8s-init, k8s-cp-init, k8s-cni, k8-flannel]
 
-- name: Apply flannel-cri manifest to the cluster
+- name: k8s cp - cni flannel | Apply flannel-cri manifest to the cluster
   kubernetes.core.k8s:
-    kubeconfig: '{{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}'
+    kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
     definition: "{{ _k8s_intanal_cni_flannel_definition.content }}"
     state: present
   run_once: true
