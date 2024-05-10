@@ -121,6 +121,7 @@
     - { path: "{{ ansible_facts.env.HOME }}/.kube" }
     - { path: "/etc/systemd/system/docker.service.d" }
     - { path: "/etc/kubernetes/enc", mode: "0775" }
+    - { path: "/etc/kubernetes/kubelet.conf.d", mode: "0744" }
     - { path: "/etc/systemd/system/kubelet.service.d", mode: "0600" }
     - { path: "/opt/cni/bin", mode: "0755" }
     - { path: "/var/lib/kubelet" }
