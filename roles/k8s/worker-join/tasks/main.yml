@@ -17,7 +17,8 @@
   ansible.builtin.command: |
     kubeadm token create \
     --ttl 15m \
-    --description "{{ ansible_date_time.date }} Token used to join node {{ ansible_hostname }}"
+    --description "{{ ansible_date_time.date }} Token used to join node {{ ansible_hostname }}" \
+    --kubeconfig {{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}
   register: __k8_worker_join_token_res
   changed_when: false
   run_once: true
