@@ -5,16 +5,15 @@ kind: InitConfiguration
 nodeRegistration:
   kubeletExtraArgs:
     config: /var/lib/kubelet/config.yaml
-    node-ip: {{ k8s_node_ip_v4 | default(ansible_facts.default_ipv4.address) }}{{ "," + k8s_node_ip_v6 | default(ansible_facts.default_ipv6.address) if(k8s_dual_stack) }}
+    address: {{ k8s_node_ip_v4 }}
+    config-dir: /etc/kubernetes/kubelet.conf.d
+    node-ip: {{ k8s_node_ip_v4 }}{{ "," + k8s_node_ip_v6 | default(ansible_facts.default_ipv6.address) if(k8s_dual_stack) }}
     {{ k8s_kubelet_extra_args | default({}) | to_nice_yaml(indent=2) | indent(width=4) }}
   ignorePreflightErrors:
     - NumCPU
   taints: []
-  imagePullPolicy: IfNotPresent
-  name: {{ ansible_hostname }}
-  # criSocket: unix:///var/run/containerd/containerd.sock
 localAPIEndpoint:
-  advertiseAddress: {{ k8s_node_ip_v4 | default(ansible_facts.default_ipv4.address) }}
+  advertiseAddress: {{ k8s_node_ip_v4 }}
   bindPort: {{ k8s_kubelet_advertise_port | default(6443) | int }}
 skipPhases:
   {{ k8s_kubeadm_skip_phases | to_nice_yaml(indent=2) | indent(width=2) }}

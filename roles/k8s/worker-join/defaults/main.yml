@@ -5,5 +5,5 @@ k8s_pki_cert_path: /etc/kubernetes/pki
 k8s_kubelet_conf: '{{ lookup("template", "kubelet-conf.yml.j2") }}'
 k8s_kubeadm_join_conf: '{{ lookup("template", "kubeadm-join-config.yml.j2") }}'
 
-# k8s_node_ip_v4:
-# k8s_node_ip_v6:
+k8s_node_ip_v4: "{{ ansible_facts.default_ipv4.address }}"
+k8s_node_ip_v6: "{{ ansible_facts.default_ipv6.address }}"

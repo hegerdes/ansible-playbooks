@@ -1,6 +1,11 @@
 # kubelet config
 apiVersion: kubelet.config.k8s.io/v1beta1
 kind: KubeletConfiguration
+
+# See https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet/
+# featureGates:
+#  HPAScaleToZero: true
+
 authentication:
   anonymous:
     enabled: false
@@ -8,36 +13,31 @@ authentication:
     cacheTTL: 0s
     enabled: true
   x509:
-    clientCAFile: "{{ k8s_pki_cert_path}} /ca.crt"
+    clientCAFile: "{{ k8s_pki_cert_path}}/ca.crt"
 authorization:
   mode: Webhook
   webhook:
     cacheAuthorizedTTL: 0s
     cacheUnauthorizedTTL: 0s
-rotateCertificates: true
-protectKernelDefaults: true
-clusterDomain: cluster.local
-clusterDNS:
-- 10.96.0.10
 
-# serverTLSBootstrap: true
-imageGCLowThresholdPercent: 70
+# See https://kubernetes.io/docs/reference/access-authn-authz/kubelet-tls-bootstrapping/
+rotateCertificates: true
+serverTLSBootstrap: true
+
+address: {{ k8s_node_ip_v4 }}
+containerRuntimeEndpoint: unix:///run/containerd/containerd.sock
+clusterDomain: cluster.local
+clusterDNS: [10.96.0.10]
+
 maxPods: 220
+imageGCLowThresholdPercent: 70
+protectKernelDefaults: true
 nodeStatusMaxImages: 100
 serializeImagePulls: false
 staticPodPath: /etc/kubernetes/manifests
 maxParallelImagePulls: 8
 cgroupDriver: systemd
 failSwapOn: true
-# featureGates:
-#   CloudDualStackNodeIPs: true
-containerRuntimeEndpoint: unix:///run/containerd/containerd.sock
-logging:
-  flushFrequency: 0
-  options:
-    json:
-      infoBufferSize: "0"
-
 streamingConnectionIdleTimeout: 0s
 syncFrequency: 0s
 volumeStatsAggPeriod: 0s
@@ -50,3 +50,9 @@ imageMinimumGCAge: 0s
 fileCheckFrequency: 0s
 cpuManagerReconcilePeriod: 0s
 evictionPressureTransitionPeriod: 0s
+
+logging:
+  flushFrequency: 0
+  options:
+    json:
+      infoBufferSize: "0"
