@@ -28,6 +28,7 @@
       content: "{{ k8s_kubeadm_conf }}"
     - name: kubelet-conf
       dst: /var/lib/kubelet/config.yaml
+      # dst: /etc/kubernetes/kubelet.conf.d/20-kubelet.conf
       content: "{{ k8s_kubelet_conf }}"
     - name: etcd-encryption-conf
       dst: /etc/kubernetes/enc/encryption-config.yaml
@@ -48,6 +49,28 @@
   ansible.builtin.include_tasks: kubeadm-init.yml
   tags: [k8s, k8s-init, k8s-cp-init]
 
+- name: k8s cp | Deploying initial resource manifests
+  when: groups.k8s_control_plane | flatten | first == inventory_hostname
+  kubernetes.core.k8s:
+    namespace: "{{ k8s_init_resources.namespace | default(omit) }}"
+    kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
+    state: "{{ k8s_init_resources.state | default('present') }}"
+    definition: "{{ k8s_init_resources.definition }}"
+    wait: "{{ k8s_init_resources.wait | default(true) }}"
+  loop: "{{ k8s_init_resources_manifests_all | flatten }}"
+  loop_control:
+    loop_var: k8s_init_resources
+    label: "{{ k8s_init_resources.name }}"
+  vars:
+    k8s_init_resources_manifests_all:
+      - "{{ k8s_init_resources_manifests }}"
+      - "{{ [k8s_runc_manifest] }}"
+      - "{{ [k8s_crun_manifest] }}"
+      - "{{ [k8s_csr_sing_bootstrab_manifests] if(k8s_auto_approve_bootstrab_csr) else [] }}"
+      - "{{ [k8s_gVisor_manifest] if(k8s_install_gvisor | default(True)) else [] }}"
+      - "{{ [k8s_kata_manifest] if(k8s_install_kata_containers | default(False)) else [] }}"
+  tags: [k8s, k8s-init, k8s-cp-init, k8s-cp-init-maifests]
+
 - name: k8s cp | Generate certificate key
   delegate_to: "{{ groups.k8s_control_plane | flatten | first }}"
   ansible.builtin.command: |
@@ -61,7 +84,11 @@
 
 - name: k8s cp | Get join token
   delegate_to: "{{ groups.k8s_control_plane | flatten | first }}"
-  ansible.builtin.command: kubeadm token create
+  ansible.builtin.command: |
+    kubeadm token create \
+    --ttl 15m \
+    --description "{{ ansible_date_time.date }} Token used to join node {{ ansible_hostname }}" \
+    --kubeconfig {{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}
   register: __k8_cp_join_token_res
   changed_when: false
   run_once: true
@@ -130,6 +157,7 @@
 
 - name: k8s cp | Remove NoSchedule taint form control-plane nodes
   when: k8s_remove_no_schedule_cp_taints
+  delegate_to: "{{ groups.k8s_control_plane | flatten | first }}"
   kubernetes.core.k8s_taint:
     kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
     state: absent
@@ -145,6 +173,7 @@
   tags: [k8s, k8s-init, k8s-cp-init, k8s-taint]
 
 - name: k8s cp | Setting taints
+  run_once: true
   kubernetes.core.k8s_taint:
     kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
     state: "{{ item.state | default('present') }}"
@@ -154,26 +183,6 @@
         effect: "{{ item.effect | default(omit) }}"
   loop: "{{ k8s_taints | default([]) }}"
   tags: [k8s, k8s-init, k8s-cp-init, k8s-taint]
-
-- name: k8s cp | Deploying initial resource manifests
-  kubernetes.core.k8s:
-    namespace: "{{ k8s_init_resources.namespace | default(omit) }}"
-    kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
-    state: "{{ k8s_init_resources.state | default('present') }}"
-    definition: "{{ k8s_init_resources.definition }}"
-    wait: "{{ k8s_init_resources.wait | default(true) }}"
-  loop: "{{ k8s_init_resources_manifests_all | flatten }}"
-  loop_control:
-    loop_var: k8s_init_resources
-    label: "{{ k8s_init_resources.name }}"
-  vars:
-    k8s_init_resources_manifests_all:
-      - "{{ k8s_init_resources_manifests }}"
-      - "{{ [k8s_runc_manifest] }}"
-      - "{{ [k8s_crun_manifest] }}"
-      - "{{ [k8s_gVisor_manifest] if(k8s_install_gvisor | default(True)) else [] }}"
-      - "{{ [k8s_kata_manifest] if(k8s_install_kata_containers | default(False)) else [] }}"
-  tags: [k8s, k8s-init, k8s-cp-init, k8s-cp-init-maifests]
 
 - name: k8s cp | Setup configs
   ansible.builtin.include_tasks:
@@ -198,5 +207,6 @@
 
 - name: k8s cp | Setup CNI
   ansible.builtin.include_tasks: "setup-cni-{{ k8s_cni | lower }}.yml"
+  run_once: true
   tags:
     [k8s, k8s-init, k8s-cp-init, k8s-cni, k8s-flannel, k8s-calico, k8s-cilium]
