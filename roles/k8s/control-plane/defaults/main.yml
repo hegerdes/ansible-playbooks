@@ -7,6 +7,7 @@ k8s_pki_cert_path: /etc/kubernetes/pki
 k8s_shared_api_server_endpoint: "{{ ansible_facts.default_ipv4.address }}"
 k8s_init_verbose: '{{ lookup("env", "CI") | default("false", true) | bool == false }}'
 
+# Service & Pod CIDR
 k8s_pod_network_cidr: '{{ [k8s_pod_network_cidr_ipv4,k8s_pod_network_cidr_ipv6] | join(",") if(k8s_dual_stack) else k8s_pod_network_cidr_ipv4}}'
 k8s_service_network_cidr: '{{ [k8s_service_network_cidr_ipv4,k8s_service_network_cidr_ipv6] | join(",") if(k8s_dual_stack) else k8s_service_network_cidr_ipv4}}'
 k8s_pod_network_cidr_ipv4: 10.244.0.0/16
@@ -14,19 +15,23 @@ k8s_service_network_cidr_ipv4: 10.96.0.0/16
 k8s_pod_network_cidr_ipv6: 2001:db8:42:0::/56
 k8s_service_network_cidr_ipv6: 2001:db8:42:1::/112
 
+# Kubeadm & Kubelet conf
 k8s_kubelet_conf: '{{ lookup("template", "kubelet-conf.yml.j2") }}'
 k8s_kubeadm_conf: '{{ lookup("template", "kubeadm-config.yml.j2") }}'
 k8s_kubeadm_join_conf: '{{ lookup("template", "kubeadm-join-config.yml.j2") }}'
 k8s_etcd_encryption_secret: my-super-secure-k8s-etcd-secret!
 k8s_etcd_encryption_conf: '{{ lookup("template", "encryption-config.yml.j2") }}'
 
-# k8s_node_ip_v4:
-# k8s_node_ip_v6:
-
+# IPs & cert sans
+k8s_node_ip_v4: "{{ ansible_facts.default_ipv4.address }}"
+k8s_node_ip_v6: "{{ ansible_facts.default_ipv6.address }}"
 k8s_cert_extra_sans_ipv6: '{{ ["::1"] + ansible_facts.all_ipv6_addresses if(k8s_dual_stack) else [] }}'
 k8s_cert_extra_sans: '{{ ["127.0.0.1", "localhost"] + ansible_facts.all_ipv4_addresses + k8s_cert_extra_sans_ipv6 }}'
+k8s_auto_approve_bootstrab_csr: true
 k8s_install_k9s: true
 k8s_install_gvisor: true
+
+# K8s cert key for cp join. Default one is generated
 k8_cert_key: none
 
 k8s_kubeadm_skip_phases: []
@@ -58,21 +63,25 @@ k8s_init_resources_manifests: []
 #     state: present          # optional
 #     wait: true              # optional
 
+k8s_csr_sing_bootstrab_manifests:
+  name: csr-sign-bootstrapping
+  definition: "{{ lookup('template', role_path + '/files/k8s-crb-csr-sign-bootstrapping.yaml') | from_yaml_all }}"
+
 k8s_gVisor_manifest:
   name: gVisor RuntimeClass
-  definition: "{{ lookup('template', role_path + '/files/k8s-runtime-class-gvisor.yaml') | from_yaml }}"
+  definition: "{{ lookup('template', role_path + '/files/k8s-runtime-class-gvisor.yaml') | from_yaml_all }}"
 
 k8s_crun_manifest:
   name: crun RuntimeClass
-  definition: "{{ lookup('template', role_path + '/files/k8s-runtime-class-crun.yaml') | from_yaml }}"
+  definition: "{{ lookup('template', role_path + '/files/k8s-runtime-class-crun.yaml') | from_yaml_all }}"
 
 k8s_runc_manifest:
   name: runc RuntimeClass
-  definition: "{{ lookup('template', role_path + '/files/k8s-runtime-class-runc.yaml') | from_yaml }}"
+  definition: "{{ lookup('template', role_path + '/files/k8s-runtime-class-runc.yaml') | from_yaml_all }}"
 
 k8s_kata_manifest:
   name: kata RuntimeClass
-  definition: "{{ lookup('template', role_path + '/files/k8s-runtime-class-kata.yaml') | from_yaml }}"
+  definition: "{{ lookup('template', role_path + '/files/k8s-runtime-class-kata.yaml') | from_yaml_all }}"
 
 ######### CNI #########
 # Which CNI flannel, calico or cilium
