@@ -5,17 +5,17 @@ COPY requirements.txt /app/requirements.txt
 
 # Install nodejs, ssh, rsync and other needed packages
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl nano gpg ssh-client jq net-tools ca-certificates iputils-ping \
+RUN apt-get update && apt-get install --yes --no-install-recommends \
+    curl nano gpg ssh-client jq yq net-tools ca-certificates iputils-ping \
     iproute2 rsync apt-transport-https lsb-release gnupg python3 python3-pip \
     && mkdir -p /etc/apt/keyrings \
     && if [ "$(uname -m)" != "x86_64" ]; then \
-    apt-get install -y --no-install-recommends make gcc python3-dev libc6-dev libffi-dev; \
+    apt-get install --yes --no-install-recommends make gcc python3-dev libc6-dev libffi-dev; \
     fi && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | gpg --dearmor -o \
     /usr/share/keyrings/nodejs-archive-keyring.gpg \
     && export NODE_ARCH="arch=`dpkg --print-architecture` signed-by=/usr/share/keyrings/nodejs-archive-keyring.gpg" \
     && export OS_CODENAME=$(lsb_release -cs) \
-    && echo "deb [$NODE_ARCH] https://deb.nodesource.com/node_18.x $OS_CODENAME main" \
+    && echo "deb [$NODE_ARCH] https://deb.nodesource.com/node_20.x $OS_CODENAME main" \
     > /etc/apt/sources.list.d/nodesource.list \
     && curl -sLS https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | tee \
     /etc/apt/keyrings/microsoft.gpg > /dev/null \
