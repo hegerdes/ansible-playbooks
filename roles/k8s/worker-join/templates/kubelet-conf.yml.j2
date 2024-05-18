@@ -13,7 +13,7 @@ authentication:
     cacheTTL: 0s
     enabled: true
   x509:
-    clientCAFile: "{{ k8s_pki_cert_path}}/ca.crt"
+    clientCAFile: "{{ k8s_pki_cert_path }}/ca.crt"
 authorization:
   mode: Webhook
   webhook:

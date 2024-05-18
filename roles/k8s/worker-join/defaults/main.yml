@@ -7,3 +7,10 @@ k8s_kubeadm_join_conf: '{{ lookup("template", "kubeadm-join-config.yml.j2") }}'
 
 k8s_node_ip_v4: "{{ ansible_facts.default_ipv4.address }}"
 k8s_node_ip_v6: "{{ ansible_facts.default_ipv6.address }}"
+
+k8s_taints: []
+# # Example
+# k8s_taints:
+# See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#taint-v1-core
+#   - key: node-role.kubernetes.io/control-plane
+#     effect: NoSchedule

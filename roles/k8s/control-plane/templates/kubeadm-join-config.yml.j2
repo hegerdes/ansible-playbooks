@@ -1,11 +1,5 @@
 apiVersion: kubeadm.k8s.io/v1beta3
 kind: JoinConfiguration
-controlPlane:
-  localAPIEndpoint:
-    advertiseAddress: {{ k8s_node_ip_v4 }}
-    bindPort: {{ k8s_kubelet_advertise_port | default(6443) | int }}
-  certificateKey: {{ k8_cert_key if (k8_cert_key != "none") else __k8s_kubeadm_cert_key_res.stdout_lines | last }}
-
 discovery:
   tlsBootstrapToken: {{ k8_cp_join_token | default(__k8_cp_join_token_res.stdout )}}
   timeout: 4m0s
@@ -13,14 +7,20 @@ discovery:
     apiServerEndpoint: {{ k8s_shared_api_server_endpoint if(":" in k8s_shared_api_server_endpoint) else k8s_shared_api_server_endpoint + ":" + k8s_kubelet_advertise_port | default("6443") }}
     token: {{ k8_cp_join_token | default(__k8_cp_join_token_res.stdout )}}
     caCertHashes: {{ [] + k8s_ca_cert_hashes | default([]) + ["sha256:" + __k8s_pki_ca["public_key_fingerprints"]["sha256"] | replace(":","")] | flatten }}
-
 nodeRegistration:
   kubeletExtraArgs:
-    config: /var/lib/kubelet/config.yaml
-    address: {{ k8s_node_ip_v4 }}
+
     # config-dir: /etc/kubernetes/kubelet.conf.d
+    address: {{ k8s_node_ip_v4 }}
     node-ip: {{ k8s_node_ip_v4 }}{{ "," + k8s_node_ip_v6 | default(ansible_facts.default_ipv6.address) if(k8s_dual_stack) }}
     {{ k8s_kubelet_extra_args | default({}) | to_nice_yaml(indent=2) | indent(width=4) }}
   ignorePreflightErrors:
     - NumCPU
-  taints: []
+  taints: {{ k8s_taints | to_nice_yaml(indent=2) | indent(width=4) }}
+controlPlane:
+  localAPIEndpoint:
+    advertiseAddress: {{ k8s_node_ip_v4 }}
+    bindPort: {{ k8s_kubelet_advertise_port | default(6443) | int }}
+  certificateKey: {{ k8_cert_key if (k8_cert_key != "none") else __k8s_kubeadm_cert_key_res.stdout_lines | last }}
+---
+{{ k8s_kubelet_conf }}

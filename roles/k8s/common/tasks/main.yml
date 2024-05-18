@@ -47,6 +47,7 @@
         python3-kubernetes,
         apt-transport-https,
         jq,
+        yq,
         unzip,
         wget,
         socat,
@@ -207,7 +208,7 @@
     state: present
     enabled: "{{ item.state | default(True) }}"
   with_items:
-    - name: k8s
+    - name: kubernetes
       repo: "https://pkgs.k8s.io/core:/stable:/v{{ (k8s_version | split('.'))[0:2] | join('.') }}/deb/"
       key: "https://pkgs.k8s.io/core:/stable:/v{{ (k8s_version | split('.'))[0:2] | join('.') }}/deb/Release.key"
     - name: docker

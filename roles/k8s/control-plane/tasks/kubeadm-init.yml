@@ -10,7 +10,8 @@
     - name: k8s cp - kubeadm | Init Kubernetes cluster
       when: reset_cluster is succeeded
       ansible.builtin.command: |
-        kubeadm init --config {{ target_data_dir | default("") }}/srv/kubeadm-config.yml \
+        kubeadm init \
+          --config {{ target_data_dir | default("") }}/srv/kubeadm-config.yaml \
           --upload-certs
       register: init_cluster
       tags: [k8s, k8s-init, k8s-cp-init]

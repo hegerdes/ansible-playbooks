@@ -1,17 +1,17 @@
 # k8s join
 ---
-- name: Test reachability to shared KubeControlPlaneHost
+- name: k8s worker join | Test reachability to shared KubeControlPlaneHost
   ansible.builtin.command: "ping -c 5 {{ k8s_shared_api_server_endpoint }}"
   changed_when: false
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
-- name: Check if kubeadm has already run
+- name: k8s worker join | Check if kubeadm has already run
   ansible.builtin.stat:
     path: /etc/kubernetes/kubelet.conf
   register: __k8s_kubeadm_worker_ca
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
-- name: Get join token
+- name: k8s worker join | Get join token
   when: not __k8s_kubeadm_worker_ca.stat.exists
   delegate_to: "{{ groups.k8s_control_plane | flatten | first }}"
   ansible.builtin.command: |
@@ -21,45 +21,45 @@
     --kubeconfig {{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}
   register: __k8_worker_join_token_res
   changed_when: false
-  run_once: true
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
-- name: Get CA certificate hash
+- name: k8s worker join | Get CA certificate hash
   when: not __k8s_kubeadm_worker_ca.stat.exists
   delegate_to: "{{ groups.k8s_control_plane | flatten | first }}"
   community.crypto.x509_certificate_info:
     path: "{{ k8s_pki_cert_path }}/ca.crt"
   register: __k8s_pki_ca
   changed_when: false
-  run_once: true
   no_log: true
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
-- name: Copy kubelet, kubeadm config
+- name: k8s worker join | Copy kubelet, kubeadm config
   when: not __k8s_kubeadm_worker_ca.stat.exists
   ansible.builtin.copy:
     content: "{{ item.content }}"
     dest: "{{ item.dst }}"
     mode: "0600"
+    validate: yq . %s
   with_items:
     - name: kubeadm-join-conf
-      dst: '{{ target_data_dir | default("") }}/srv/kubeadm-join-config.yml'
+      dst: '{{ target_data_dir | default("") }}/srv/kubeadm-join-config.yaml'
       content: "{{ k8s_kubeadm_join_conf }}"
-    - name: kubelet-conf
-      dst: /var/lib/kubelet/config.yaml
-      content: "{{ k8s_kubelet_conf }}"
+    # - name: kubelet-conf
+    # Now included in kubeadm conf
+    #   dst: /var/lib/kubelet/config.yaml
+    #   content: "{{ k8s_kubelet_conf }}"
   loop_control:
     label: "{{ item.name }}"
-  tags: [k8s, k8s-init, k8s-worker-join]
+  tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
-- name: Join worker nodes
+- name: k8s worker join | Join worker nodes
   when: not __k8s_kubeadm_worker_ca.stat.exists
   ansible.builtin.command: |
-    kubeadm join -v 5 --config {{ target_data_dir | default("") }}/srv/kubeadm-join-config.yml
+    kubeadm join -v 5 --config {{ target_data_dir | default("") }}/srv/kubeadm-join-config.yaml
   register: __k8s_join_res
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
-- name: Change kubelet conf permissions
+- name: k8s worker join | Change kubelet conf permissions
   ansible.builtin.file:
     path: "{{ item }}"
     owner: root
@@ -68,18 +68,46 @@
   loop: [/var/lib/kubelet/config.yaml, /lib/systemd/system/kubelet.service]
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
-# https://www.reddit.com/r/kubernetes/comments/hixx7z/ansible_k8s_kubectl_label/
-- name: Set node role and arch label
-  ansible.builtin.command: "kubectl label node {{ inventory_hostname }} {{ item }}"
-  register: _k8s_worker_role_set
-  changed_when: ("node/" + inventory_hostname + " labeled") in _k8s_worker_role_set.stdout
+- name: k8s worker join | Get csr resources
   delegate_to: "{{ groups.k8s_control_plane | flatten | first }}"
-  loop:
-    - "node-role.kubernetes.io/worker=worker"
-    - "node-arch.kubernetes.io/arch={{ ansible_facts.architecture }}"
+  run_once: true
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
+    api_version: certificates.k8s.io/v1
+    kind: certificatesigningrequests
+  register: __k8s_kubelet_csr_list_res
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
-- name: Enable and check kubelet service
+- name: k8s worker join | Approve kubelet csr
+  delegate_to: "{{ groups.k8s_control_plane | flatten | first }}"
+  ansible.builtin.command: "kubectl certificate approve {{ __k8s_kubelet_csr }}"
+  when: __k8s_kubelet_csr_list_res.resources | json_query(__k8s_kubelet_csr_query) | length > 0
+  register: _k8s_worker_role_set
+  changed_when: ("certificatesigningrequest.certificates.k8s.io/" + __k8s_kubelet_csr + " approved") in _k8s_worker_role_set.stdout
+  environment:
+    KUBECONFIG: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
+  vars:
+    __k8s_kubelet_csr_query: "[?spec.username == 'system:node:{{ inventory_hostname }}' && status == `{}`]"
+    __k8s_kubelet_csr: "{{ (__k8s_kubelet_csr_list_res.resources | json_query(__k8s_kubelet_csr_query) | first).metadata.name }}"
+  tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
+
+- name: k8s worker join | Set node role and arch label
+  delegate_to: "{{ groups.k8s_control_plane | flatten | first }}"
+  kubernetes.core.k8s:
+    kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
+    state: present
+    wait: true
+    definition:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: "{{ inventory_hostname }}"
+        labels:
+          node-role.kubernetes.io/worker: "worker"
+          node-arch.kubernetes.io/arch: "{{ ansible_facts.architecture }}"
+  tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
+
+- name: k8s worker join | Enable and check kubelet service
   ansible.builtin.systemd:
     name: kubelet
     daemon_reload: true
@@ -87,7 +115,7 @@
     enabled: true
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
-- name: Debug - Print join res
+- name: k8s worker join | Debug - Print join res
   when: k8s_init_verbose and not __k8s_kubeadm_worker_ca.stat.exists
   ansible.builtin.debug:
     var: __k8s_join_res
