@@ -1,5 +1,5 @@
 ---
-k8s_version: 1.30.0
+k8s_version: 1.30.1
 k8s_dual_stack: false
 k8s_image_repo: registry.k8s.io
 k8s_cluster_name: "{{ inventory_dir | basename }}"
@@ -27,7 +27,6 @@ k8s_node_ip_v4: "{{ ansible_facts.default_ipv4.address }}"
 k8s_node_ip_v6: "{{ ansible_facts.default_ipv6.address }}"
 k8s_cert_extra_sans_ipv6: '{{ ["::1"] + ansible_facts.all_ipv6_addresses if(k8s_dual_stack) else [] }}'
 k8s_cert_extra_sans: '{{ ["127.0.0.1", "localhost"] + ansible_facts.all_ipv4_addresses + k8s_cert_extra_sans_ipv6 }}'
-k8s_auto_approve_bootstrab_csr: true
 k8s_install_k9s: true
 k8s_install_gvisor: true
 
@@ -48,10 +47,9 @@ k8s_remove_no_schedule_cp_taints: false
 k8s_taints: []
 # # Example
 # k8s_taints:
-#   - node: '{{ ansible_facts.hostname }}'
-#     key: node-role.kubernetes.io/control-plane
+# See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#taint-v1-core
+#   - key: node-role.kubernetes.io/control-plane
 #     effect: NoSchedule
-#     state: absent
 
 ######### INIT-Manifests #########
 k8s_init_resources_manifests: []
@@ -62,10 +60,6 @@ k8s_init_resources_manifests: []
 #     namespace: default      # optional
 #     state: present          # optional
 #     wait: true              # optional
-
-k8s_csr_sing_bootstrab_manifests:
-  name: csr-sign-bootstrapping
-  definition: "{{ lookup('template', role_path + '/files/k8s-crb-csr-sign-bootstrapping.yaml') | from_yaml_all }}"
 
 k8s_gVisor_manifest:
   name: gVisor RuntimeClass
