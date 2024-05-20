@@ -10,18 +10,38 @@
     k8s_install_gvisor: false
     k8s_version: 1.29.3
 
-    azure_dns_records:
-    - { host: "test.demeter-discovery.com", value: "127.0.0.1" }
-    - { host: "test.k8s.demeter-discovery.com", value: "127.0.0.1", type: A, ttl: 3600 }
-    - { host: "test.k8s.demeter-discovery.com", value: "::1", type: AAAA, ttl: 3600 }
+    k8s_wasmedge_download_url: '{{ lookup("url", "https://api.github.com/repos/containerd/runwasi/releases/tags/" + k8s_wasmedge_version) | from_json }}'
+    k8s_wasmtime_download_url: '{{ lookup("url", "https://api.github.com/repos/containerd/runwasi/releases/tags/" + k8s_wasmedge_version) | from_json | json_query(k8s_wasmtime_query) | first }}'
+    # TODO: Remove version query one none pre-release is public
+    k8s_wasmedge_version: '{{ lookup("url", "https://api.github.com/repos/containerd/runwasi/releases?per_page=3") | from_json }}'
 
-    k8s_containerd_query: "assets[?ends_with(name, '{{ ansible_facts.system | lower }}-{{ containerd_arch_map[ansible_facts.architecture] }}.tar.gz' )].browser_download_url"
-    k8s_runc_query: "assets[?ends_with(name, '{{ containerd_arch_map[ansible_facts.architecture] }}' )].browser_download_url"
-    k8s_cni_plugins_query: "assets[?starts_with(name, 'cni-plugins-{{ ansible_facts.system | lower }}-{{ containerd_arch_map[ansible_facts.architecture] }}' )].browser_download_url"
+    k8s_crun_wasm_query: assets[?starts_with(name, 'crun')].browser_download_url
+    k8s_kata_containers_query: assets[?starts_with(name, 'kata-static')].browser_download_url
+    k8s_runc_query: "assets[?ends_with(name, '{{ system_arch_map[ansible_facts.architecture] }}' )].browser_download_url"
+    k8s_containerd_query: "assets[?ends_with(name, '{{ ansible_facts.system | lower }}-{{ system_arch_map[ansible_facts.architecture] }}.tar.gz' )].browser_download_url"
+    k8s_cni_plugins_query: "assets[?starts_with(name, 'cni-plugins-{{ ansible_facts.system | lower }}-{{ system_arch_map[ansible_facts.architecture] }}' )].browser_download_url"
+    k8s_wasmedge_query: "assets[?starts_with(name, 'containerd-shim-wasmedge-{{ ansible_facts.architecture }}')].browser_download_url"
+    k8s_wasmtime_query: "assets[?starts_with(name, 'containerd-shim-wasmtime-{{ ansible_facts.architecture }}')].browser_download_url"
+
+    azure_dns_records:
+      - { host: "test.demeter-discovery.com", value: "127.0.0.1" }
+      - {
+          host: "test.k8s.demeter-discovery.com",
+          value: "127.0.0.1",
+          type: A,
+          ttl: 3600,
+        }
+      - {
+          host: "test.k8s.demeter-discovery.com",
+          value: "::1",
+          type: AAAA,
+          ttl: 3600,
+        }
+
     k8s_cni_plugins_version: latest
     k8s_containerd_version: latest
     k8s_runc_version: latest
-    keyvault: 'https://{{ keyvault_name }}.vault.azure.net'
+    keyvault: "https://{{ keyvault_name }}.vault.azure.net"
     keyvault_name: hegerdes
     # k8s_containerd_version: 1.6.22
     # k8s_runc_version: 1.17
@@ -38,32 +58,56 @@
       aarch64: arm64
     k8s_hcloud_csi_version: v2.3.2
   tasks:
-  # - debug:
-  #     var: ansible_facts
+    # - debug:
+    #     var: ansible_facts
+    - debug:
+        msg: "{{ lookup('url', 'https://api.github.com/repos/containerd/runwasi/releases?per_page=3') | from_json | json_query('[*].tag_name') }}"
 
-  - debug:
-      msg: '{{ (item.host | split("."))[-2:] | join(".") }}'
-    loop: '{{ azure_dns_records }}'
+    - name: Get urls
+      ansible.builtin.uri:
+        url: "https://api.github.com/repos/containerd/runwasi/releases/tags/{{item }}"
+        return_content: true
+      register: __k8s_wasi_download_urls
+      loop: "{{ lookup('url', 'https://api.github.com/repos/containerd/runwasi/releases?per_page=3') | from_json | json_query('[*].tag_name') }}"
 
-  - include_role:
-      name: azure-dns
+    - name: k8s common - wasi | Get download urls
+      ansible.builtin.set_fact:
+        wasi_download_urls: "{{ wasi_download_urls | combine({(item.item | split('/') | first): item.json | json_query('assets[*].browser_download_url') | select('search', ansible_facts.architecture) | first}) }}"
+      loop: "{{ __k8s_wasi_download_urls.results }}"
+      vars:
+        wasi_download_urls: {}
 
-  - debug:
-      var: lookup("url", "https://raw.githubusercontent.com/hetznercloud/csi-driver/" + k8s_hcloud_csi_version + "/deploy/kubernetes/hcloud-csi.yml", split_lines=False) | from_yaml_all
-  - debug:
-      msg: "K8s version {{ k8s_version }} type: {{ k8s_version | type_debug  }}"
-  - debug:
-      msg: "{{ lookup('azure.azcollection.azure_keyvault_secret', 'github-oauth-demo-client-id', vault_url=keyvault) }}"
+    - debug:
+        msg: "{{ item.key }} => {{ item.value }}"
+      loop: "{{ wasi_download_urls | dict2items }}"
 
-  - name: Save kubeconf in keyvault
-    ignore_errors: true
-    azure.azcollection.azure_rm_keyvaultsecret:
-      secret_name: "test"
-      auth_source: cli
-      secret_value: 'test'
-      keyvault_uri: "{{ keyvault }}"
-      tags:
-        origin: ansible
+    # - debug:
+    #     var: k8s_wasmedge_download_url | json_query(k8s_wasmedge_query)
+    - fail:
+
+    - debug:
+        msg: '{{ (item.host | split("."))[-2:] | join(".") }}'
+      loop: "{{ azure_dns_records }}"
+
+    - include_role:
+        name: azure-dns
+
+    - debug:
+        var: lookup("url", "https://raw.githubusercontent.com/hetznercloud/csi-driver/" + k8s_hcloud_csi_version + "/deploy/kubernetes/hcloud-csi.yml", split_lines=False) | from_yaml_all
+    - debug:
+        msg: "K8s version {{ k8s_version }} type: {{ k8s_version | type_debug  }}"
+    - debug:
+        msg: "{{ lookup('azure.azcollection.azure_keyvault_secret', 'github-oauth-demo-client-id', vault_url=keyvault) }}"
+
+    - name: Save kubeconf in keyvault
+      ignore_errors: true
+      azure.azcollection.azure_rm_keyvaultsecret:
+        secret_name: "test"
+        auth_source: cli
+        secret_value: "test"
+        keyvault_uri: "{{ keyvault }}"
+        tags:
+          origin: ansible
 
   # - debug:
   #     msg: '{{ k8s_containerd_download_url_default }}'
@@ -107,16 +151,15 @@
   #     dest: /etc/systemd/system/containerd.service
   #     mode: '0600'
 
-    # loop_control:
-    #   loop_var: k8s_init_resources
+  # loop_control:
+  #   loop_var: k8s_init_resources
   # vars_files:
   #   - '{{ inventory_dir }}/secrets/vault.yml'
   # roles:
-    # - k8s/hetzner
-    # - k8s/ingress-nginx
-    # - k8s/monitoring
-    # - k8s/deploy
-
+  # - k8s/hetzner
+  # - k8s/ingress-nginx
+  # - k8s/monitoring
+  # - k8s/deploy
 # - hosts: localhost
 #   become: true
 #   gather_facts: true
@@ -143,19 +186,19 @@
 #   # vars_files:
 #   #   - '{{ inventory_dir }}/secrets/vault.yml'
 
-    # - debug:
-    #     msg: '{{ lookup("url", "https://api.github.com/repos/prometheus/node_exporter/releases/latest") | from_json | json_query(query) | select("search", crun_arch_map[ansible_facts.architecture]) | list | first }}'
-    #   vars:
-    #     # query: assets[*].browser_download_url
-    #     query: assets[?contains(name, 'linux')].browser_download_url
-    #     crun_arch_map:
-    #       x86_64: amd64
-    #       aarch64: arm64
+# - debug:
+#     msg: '{{ lookup("url", "https://api.github.com/repos/prometheus/node_exporter/releases/latest") | from_json | json_query(query) | select("search", crun_arch_map[ansible_facts.architecture]) | list | first }}'
+#   vars:
+#     # query: assets[*].browser_download_url
+#     query: assets[?contains(name, 'linux')].browser_download_url
+#     crun_arch_map:
+#       x86_64: amd64
+#       aarch64: arm64
 
-    # - debug:
-    #     msg: '{{ lookup("az_keyvault", "test-secret", vault_url=keyvault ) }}'
-    #   vars:
-    #     keyvault: https://hegerdes.vault.azure.net
+# - debug:
+#     msg: '{{ lookup("az_keyvault", "test-secret", vault_url=keyvault ) }}'
+#   vars:
+#     keyvault: https://hegerdes.vault.azure.net
 
 # - name: Get promtail URL
 #   when: promtail_check_result.stdout == ""
@@ -164,54 +207,54 @@
 #   register: promtail_url
 #   tags: [promtail, monitoring]
 
-  # - name: Give users access to multiple databases
-  #   debug:
-  #     msg: "{{ ingress_class[0] }} {{ ingress_class[1] }}"
-  #   loop: "{{ ['nginx', 'traefik'] | product(['lets-encrypt-issuer-staging.yml', 'lets-encrypt-issuer-prod.yml']) | list }}"
-  #   loop_control:
-  #     loop_var: ingress_class
-  # tasks:
-  # - name: Determine latest wasm crun GitHub release
-  #   uri:
-  #     url: "https://api.github.com/repos/hegerdes/publish/releases/latest"
-  #     body_format: json
-  #   register: _k8s_wasm_crun_github_release
-  #   until: _k8s_wasm_crun_github_release.status == 200
-  #   run_once: true
-  #   retries: 3
-  #   tags: [k8s, k8s-prepare, k8s-base]
+# - name: Give users access to multiple databases
+#   debug:
+#     msg: "{{ ingress_class[0] }} {{ ingress_class[1] }}"
+#   loop: "{{ ['nginx', 'traefik'] | product(['lets-encrypt-issuer-staging.yml', 'lets-encrypt-issuer-prod.yml']) | list }}"
+#   loop_control:
+#     loop_var: ingress_class
+# tasks:
+# - name: Determine latest wasm crun GitHub release
+#   uri:
+#     url: "https://api.github.com/repos/hegerdes/publish/releases/latest"
+#     body_format: json
+#   register: _k8s_wasm_crun_github_release
+#   until: _k8s_wasm_crun_github_release.status == 200
+#   run_once: true
+#   retries: 3
+#   tags: [k8s, k8s-prepare, k8s-base]
 
-  # - name: debug
-  #   debug:
-  #     msg: '{{ ansible_facts.architecture }}'
-  #   tags: [k8s, k8s-prepare, k8s-base]
+# - name: debug
+#   debug:
+#     msg: '{{ ansible_facts.architecture }}'
+#   tags: [k8s, k8s-prepare, k8s-base]
 
-  # - name: debug
-  #   debug:
-  #     msg: '{{ _k8s_wasm_crun_github_release.json | json_query(query) | select("search", ansible_facts.architecture) | list }}'
-  #   vars:
-  #     query: assets[?starts_with(name, 'crun')].browser_download_url
-  #   tags: [k8s, k8s-prepare, k8s-base]
+# - name: debug
+#   debug:
+#     msg: '{{ _k8s_wasm_crun_github_release.json | json_query(query) | select("search", ansible_facts.architecture) | list }}'
+#   vars:
+#     query: assets[?starts_with(name, 'crun')].browser_download_url
+#   tags: [k8s, k8s-prepare, k8s-base]
 
-  # - name: Install official crun
-  #   ansible.builtin.get_url:
-  #     url: https://github.com/containers/crun/releases/download/{{ k8s_crun_version }}/crun-{{ k8s_crun_version }}-linux-{{ crun_arch_map[ansible_facts.architecture] }}
-  #     dest: /tmp/crun_tmp
-  #     mode: '0754'
-  #   vars:
-  #     k8s_crun_version: 1.8.4
-  #     crun_arch_map:
-  #       x86_64: amd64
-  #       aarch64: arm64
-  #   tags: [k8s, k8s-prepare, k8s-base]
+# - name: Install official crun
+#   ansible.builtin.get_url:
+#     url: https://github.com/containers/crun/releases/download/{{ k8s_crun_version }}/crun-{{ k8s_crun_version }}-linux-{{ crun_arch_map[ansible_facts.architecture] }}
+#     dest: /tmp/crun_tmp
+#     mode: '0754'
+#   vars:
+#     k8s_crun_version: 1.8.4
+#     crun_arch_map:
+#       x86_64: amd64
+#       aarch64: arm64
+#   tags: [k8s, k8s-prepare, k8s-base]
 
-  # - name: Download crun
-  #   ansible.builtin.unarchive:
-  #     src: '{{ _k8s_wasm_crun_github_release.json | json_query(query) | first }}'
-  #     dest: /tmp
-  #     remote_src: true
-  #     creates: /tmp/crun
-  #   retries: 3
-  #   vars:
-  #     query: assets[?starts_with(name, 'crun')].browser_download_url
-  #   tags: [k8s, k8s-prepare, k8s-base]
+# - name: Download crun
+#   ansible.builtin.unarchive:
+#     src: '{{ _k8s_wasm_crun_github_release.json | json_query(query) | first }}'
+#     dest: /tmp
+#     remote_src: true
+#     creates: /tmp/crun
+#   retries: 3
+#   vars:
+#     query: assets[?starts_with(name, 'crun')].browser_download_url
+#   tags: [k8s, k8s-prepare, k8s-base]

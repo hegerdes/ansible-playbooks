@@ -41,8 +41,6 @@ version = 2
     # See: https://github.com/containers/crun/blob/main/docs/wasm-wasi-on-kubernetes.md
     pod_annotations = ["*.wasm.*", "wasm.*", "module.wasm.image/*", "*.module.wasm.image", "module.wasm.image/variant.*"]
   [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.crun.options]
-    BinaryName = "crun"
-    Root = "/usr/local/sbin"
     SystemdCgroup = true
 
   # gVisor
@@ -52,6 +50,21 @@ version = 2
   [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runsc.options]
     TypeUrl = "io.containerd.runsc.v1.options"
     ConfigPath = "/etc/containerd/runsc.toml"
+
+  # wasmedge
+  # Docs: https://github.com/containerd/runwasi
+  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.wasmedge]
+  runtime_type = "io.containerd.wasmedge.v1"
+
+  # wasmtime
+  # Docs: https://github.com/containerd/runwasi
+  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.wasmtime]
+  runtime_type = "io.containerd.wasmtime.v1"
+
+  # wasmer
+  # Docs: https://github.com/containerd/runwasi
+  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.wasmer]
+  runtime_type = "io.containerd.wasmer.v1"
 
 #root = "/var/lib/containerd"
 #state = "/run/containerd"

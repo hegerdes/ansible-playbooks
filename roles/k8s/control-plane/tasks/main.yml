@@ -1,11 +1,5 @@
 ---
 # Main k8s Setup
-- name: k8s cp | Include common vars
-  ansible.builtin.include_vars:
-    file: ../../common_vars.yml
-    name: common_vars
-  tags: [k8s, k8s-init, k8s-cp-init]
-
 - name: k8s cp | Test reachability to KubeControlPlane
   ansible.builtin.command: "ping -c 5 {{ k8s_shared_api_server_endpoint }}"
   changed_when: false
@@ -68,6 +62,7 @@
       - "{{ k8s_init_resources_manifests }}"
       - "{{ [k8s_runc_manifest] }}"
       - "{{ [k8s_crun_manifest] }}"
+      - "{{ [k8s_wasmedge_manifest] if(k8s_install_wasi | default(True)) else [] }}"
       - "{{ [k8s_gVisor_manifest] if(k8s_install_gvisor | default(True)) else [] }}"
       - "{{ [k8s_kata_manifest] if(k8s_install_kata_containers | default(False)) else [] }}"
   tags: [k8s, k8s-init, k8s-cp-init, k8s-cp-init-maifests]

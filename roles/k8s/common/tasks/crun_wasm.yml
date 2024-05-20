@@ -16,7 +16,7 @@
     remote_src: true
   with_items:
     - src: /tmp/crun
-      dest: /usr/local/sbin/crun
+      dest: /usr/local/bin/crun
     - src: "/tmp/wasmlibs/libwasmedge.so.{{ k8s_crun_wasmlib_version }}"
       dest: "/usr/wasmedge/lib/libwasmedge.so.{{ k8s_crun_wasmlib_version }}"
 

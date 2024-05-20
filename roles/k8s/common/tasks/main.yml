@@ -1,11 +1,5 @@
 # Main k8s Setup
 ---
-- name: k8s common | Include common vars
-  ansible.builtin.include_vars:
-    file: ../../common_vars.yml
-    name: common_vars
-  tags: [k8s, k8s-prepare, k8s-base]
-
 - name: k8s common | Wait for cloud init to finish
   community.general.cloud_init_data_facts:
     filter: status
@@ -19,12 +13,6 @@
   ansible.builtin.hostname:
     name: "{{ inventory_hostname }}"
   tags: [k8s, k8s-prepare, k8s-base]
-
-# - name: k8s common | Enable SELinux in enforcing mode
-#   ansible.posix.selinux:
-#     policy: '{{ k8s_selinux_policy }}'
-#     state: '{{ k8s_selinux_mode }}'
-#   tags: [k8s, k8s-prepare, k8s-base, selinux]
 
 - name: k8s common | Add Debian Backports apt repo
   when: ansible_facts.distribution == "Debian"
@@ -171,6 +159,7 @@
         containerd version: {{ k8s_containerd_version }}
         container runtime: {{ k8s_cri }}
         gvisor enabled: {{ k8s_install_gvisor }}
+        wasmedge enabled: {{ k8s_install_wasi }}
         kata-containers enabled: {{ k8s_install_kata_containers }}
         crun version: {{ k8s_crun_version }}
         crun with wasm: {{ k8s_crun_with_wasm }}
@@ -182,20 +171,20 @@
   run_once: true
   tags: [k8s, k8s-prepare, k8s-base]
 
-- name: k8s common | Include install crun
+- name: k8s common | Include container runtime install
+  when: task.run
   ansible.builtin.include_tasks:
-    file: "crun{{ '_wasm' if(k8s_crun_with_wasm) }}.yml"
+    file: "{{ task.file }}"
     apply:
-      tags: [k8s, k8s-prepare, k8s-base, k8s-crun]
-  tags: [k8s, k8s-prepare, k8s-base, k8s-crun]
-
-- name: k8s common | Include install kata containers
-  when: k8s_install_kata_containers
-  ansible.builtin.include_tasks:
-    file: kata_containers.yml
-    apply:
-      tags: [k8s, k8s-prepare, k8s-base, k8s-kata]
-  tags: [k8s, k8s-prepare, k8s-base, k8s-kata]
+      tags: [k8s, k8s-prepare, k8s-base, k8s-runtime]
+  with_items:
+    - { file: "crun{{ '_wasm' if(k8s_crun_with_wasm) }}.yml", run: true }
+    - { file: "kata_containers.yml", run: "{{ k8s_install_kata_containers }}" }
+    - { file: "wasi.yml", run: "{{ k8s_install_wasi }}" }
+  loop_control:
+    loop_var: task
+    label: "{{ task.file }}"
+  tags: [k8s, k8s-prepare, k8s-base, k8s-runtime]
 
 - name: k8s common | Add Docker/K8s/gVisor repository
   ansible.builtin.deb822_repository:
@@ -225,7 +214,7 @@
       state: "{{ k8s_install_gvisor }}"
   loop_control:
     label: "{{ item.name }}"
-  tags: [k8s, k8s-prepare, k8s-base, apt]
+  tags: [k8s, k8s-prepare, k8s-base, k8s-runtime, apt]
 
 - name: k8s common | Install kubelet and admin tools
   ansible.builtin.apt:
@@ -249,7 +238,7 @@
     file: "containerd_{{ k8s_containerd_variant | lower }}.yml"
     apply:
       tags: [k8s, k8s-prepare, k8s-base, apt]
-  tags: [k8s, k8s-prepare, k8s-base, apt]
+  tags: [k8s, k8s-prepare, k8s-base, k8s-runtime, apt]
 
 - name: k8s common | Set packages to fixed versions
   ansible.builtin.dpkg_selections:
@@ -294,7 +283,7 @@
       dst: /etc/systemd/networkd.conf
       run: "{{ k8s_cni | lower == 'cilium'}}"
   register: __run_conf
-  tags: [k8s, k8s-prepare, k8s-base]
+  tags: [k8s, k8s-prepare, k8s-base, k8s-runtime]
 
 - name: k8s common | Enable containerd service
   ansible.builtin.systemd:

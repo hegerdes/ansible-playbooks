@@ -1,0 +1,39 @@
+---
+# Setup wasm wasmedge
+
+- name: k8s common - wasi | Get latest releases
+  run_once: true
+  ansible.builtin.uri:
+    url: "https://api.github.com/repos/containerd/runwasi/releases/tags/{{ item }}"
+    return_content: true
+  register: __k8s_wasi_download_urls
+  loop: "{{ k8s_wasmi_version }}"
+
+- name: k8s common - wasi | Get download urls
+  ansible.builtin.set_fact:
+    wasi_download_urls: "{{ wasi_download_urls | default({}) | combine({(item.item | split('/') | first): item.json | json_query('assets[*].browser_download_url') | select('search', ansible_facts.architecture) | first}) }}"
+  loop: "{{ __k8s_wasi_download_urls.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+
+- name: k8s common - wasi | Download wasi-shims
+  ansible.builtin.unarchive:
+    src: "{{ item.value }}"
+    dest: /usr/local/bin
+    remote_src: true
+    exclude:
+      - "{{ item.key }}d-v1.pem"
+      - "{{ item.key }}d-v1.sig"
+      - "{{ item.key }}-v1.pem"
+      - "{{ item.key }}-v1.sig"
+      - "containerd-wasmedged.pem"
+      - "containerd-wasmedged.sig"
+      - "containerd-wamtimed.pem"
+      - "containerd-wamtimed.sig"
+      - "containerd-wamerd.pem"
+      - "containerd-wamerd.sig"
+    creates: "/usr/local/bin/containerd-{{ item.key | split('-') | last }}"
+  retries: 3
+  loop: "{{ wasi_download_urls | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
