@@ -3,7 +3,7 @@
   become: true
   gather_facts: true
   vars_files:
-    - '{{ inventory_dir }}/secrets/vault.yml'
+    - "{{ inventory_dir }}/secrets/vault.yml"
 
   roles:
     # - common

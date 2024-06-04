@@ -3,14 +3,14 @@
 - name: Copy wireguard config
   ansible.builtin.template:
     src: mgmt-stack-wiregurd.yml.j2
-    dest: '{{ mgmt_dst_config_files }}/mgmt-stack-wiregurd.yml'
-    mode: '0644'
+    dest: "{{ mgmt_dst_config_files }}/mgmt-stack-wiregurd.yml"
+    mode: "0644"
   tags: [mgmt, mgmt-stack, wireguard]
 
 - name: Deploy wireguard-stack
-  community.docker.docker_compose:
+  community.docker.docker_compose_v2:
     project_name: monitor-stack
     remove_orphans: true
-    project_src: '{{ mgmt_dst_config_files }}'
-    files: ['mgmt-stack-wiregurd.yml']
+    project_src: "{{ mgmt_dst_config_files }}"
+    files: ["mgmt-stack-wiregurd.yml"]
   tags: [mgmt, mgmt-stack, wireguard]

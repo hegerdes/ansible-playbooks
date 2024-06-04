@@ -1,5 +1,3 @@
-
-
 - name: Ensue config folder exists
   ansible.builtin.file:
     path: /srv/influxdb
@@ -9,7 +7,7 @@
 - name: Check if container exists
   community.docker.docker_container_exec:
     container: influxdb
-    ansible.builtin.command: 'influx setup --org {{ influx_organization }} --bucket {{ influx_root_bucket }} --username {{ influx_root_user }} --password {{ influx_root_pw }} --host http://{{ influx_listen_addr }} --force'
+    ansible.builtin.command: "influx setup --org {{ influx_organization }} --bucket {{ influx_root_bucket }} --username {{ influx_root_user }} --password {{ influx_root_pw }} --host http://{{ influx_listen_addr }} --force"
   register: influx_setup_check
   failed_when: false
   changed_when: false
@@ -19,7 +17,7 @@
   when: '"stderr" in influx_setup_check.keys() and "instance has already been set up" in influx_setup_check.stderr'
   community.docker.docker_container_exec:
     container: influxdb
-    ansible.builtin.command: 'influx auth ls --user root --json'
+    ansible.builtin.command: "influx auth ls --user root --json"
   register: influx_setup_auth_res
   ignore_errors: true
   changed_when: false
@@ -35,11 +33,11 @@
   ansible.builtin.template:
     src: influx-docker-compose.yml.j2
     dest: /srv/influxdb/influx-docker-compose.yml
-    mode: '0644'
+    mode: "0644"
   tags: [influxdb]
 
 - name: Deploy influxdb via compose
-  community.docker.docker_compose:
+  community.docker.docker_compose_v2:
     project_src: /srv/influxdb
     state: present
     remove_orphans: true
@@ -57,7 +55,7 @@
 - name: Run Influx init
   community.docker.docker_container_exec:
     container: influxdb
-    ansible.builtin.command: 'influx setup --org {{ influx_organization }} --bucket {{ influx_root_bucket }} --username {{ influx_root_user }} --password {{ influx_root_pw }} --host http://{{ influx_listen_addr }} --force'
+    ansible.builtin.command: "influx setup --org {{ influx_organization }} --bucket {{ influx_root_bucket }} --username {{ influx_root_user }} --password {{ influx_root_pw }} --host http://{{ influx_listen_addr }} --force"
   register: influx_setup_res
   changed_when: 'influx_setup_res.stderr != "Error: instance has already been set up"'
   failed_when: 'influx_setup_res.stderr != "Error: instance has already been set up" and influx_setup_res.rc != 0'
@@ -67,7 +65,7 @@
   when: influx_deploy_res.changed
   community.docker.docker_container_exec:
     container: influxdb
-    ansible.builtin.command: 'influx auth ls --json'
+    ansible.builtin.command: "influx auth ls --json"
   register: influx_setup_auth_res
   ignore_errors: true
   tags: [influxdb]
@@ -83,12 +81,12 @@
   ansible.builtin.template:
     src: influx-docker-compose.yml.j2
     dest: /srv/influxdb/influx-docker-compose.yml
-    mode: '0644'
+    mode: "0644"
   tags: [influxdb]
 
 - name: Deploy influxdb via compose
   when: influx_deploy_res.changed
-  community.docker.docker_compose:
+  community.docker.docker_compose_v2:
     project_src: /srv/influxdb
     state: present
     remove_orphans: true

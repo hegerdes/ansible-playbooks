@@ -216,7 +216,7 @@
 # tasks:
 # - name: Determine latest wasm crun GitHub release
 #   uri:
-#     url: "https://api.github.com/repos/hegerdes/publish/releases/latest"
+#     url: "https://api.github.com/repos/hegerdes/helper-suite/releases/latest"
 #     body_format: json
 #   register: _k8s_wasm_crun_github_release
 #   until: _k8s_wasm_crun_github_release.status == 200

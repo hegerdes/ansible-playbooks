@@ -17,18 +17,18 @@
 - name: Log into Docker registries
   community.docker.docker_login:
     registry_url: '{{ item.regestry | default("https://index.docker.io/v1/") }}'
-    username: '{{ item.username }}'
-    password: '{{ item.password }}'
+    username: "{{ item.username }}"
+    password: "{{ item.password }}"
     reauthorize: true
-  loop: '{{ docker_regesties | default([]) }}'
+  loop: "{{ docker_regesties | default([]) }}"
   loop_control:
     label: '{{ item.regestry | default("https://index.docker.io/v1/") }}'
   tags: [mgmt, mgmt-stack]
 
 - name: Copy MGMT compose|stack base files
   ansible.builtin.copy:
-    src: 'srv/'
-    dest: '{{ mgmt_dst_config_files }}'
+    src: "srv/"
+    dest: "{{ mgmt_dst_config_files }}"
     owner: root
     group: root
   tags: [mgmt, mgmt-stack]
@@ -36,42 +36,42 @@
 - name: Copy MGMT compose|stack custom files (rsync)
   when: mgmt_use_srync_copy
   ansible.posix.synchronize:
-    src: '{{ mgmt_src_config_files }}'
-    dest: '{{ mgmt_dst_config_files }}'
+    src: "{{ mgmt_src_config_files }}"
+    dest: "{{ mgmt_dst_config_files }}"
   tags: [mgmt, mgmt-stack]
 
 - name: Copy MGMT compose|stack custom files
   when: not mgmt_use_srync_copy
   ansible.builtin.copy:
-    src: '{{ mgmt_src_config_files }}'
-    dest: '{{ mgmt_dst_config_files }}'
+    src: "{{ mgmt_src_config_files }}"
+    dest: "{{ mgmt_dst_config_files }}"
   tags: [mgmt, mgmt-stack]
 
 - name: Configuring compose|stack files
   ansible.builtin.template:
-    src: '{{ item }}.j2'
-    dest: '{{ mgmt_dst_config_files }}/{{ item }}'
-    mode: '0644'
-  loop: '{{ mgmt_services_to_install }}'
+    src: "{{ item }}.j2"
+    dest: "{{ mgmt_dst_config_files }}/{{ item }}"
+    mode: "0644"
+  loop: "{{ mgmt_services_to_install }}"
   tags: [mgmt, mgmt-stack]
 
 - name: Setting Grafana password
   ansible.builtin.copy:
-    content: '{{ mgmt_grafana_pw }}'
-    dest: '{{ mgmt_dst_config_files }}/mgmt-grafana/grafana_admin_pw.txt'
+    content: "{{ mgmt_grafana_pw }}"
+    dest: "{{ mgmt_dst_config_files }}/mgmt-grafana/grafana_admin_pw.txt"
     mode: 0644
   tags: [mgmt, mgmt-stack]
 
 - name: Init a new swarm
   when: mgmt_use_swarm_mode | bool
   community.docker.docker_swarm:
-    advertise_addr: '{{ ansible_host }}'
+    advertise_addr: "{{ ansible_host }}"
     state: present
   tags: [mgmt, mgmt-stack]
 
 - name: Create network
   community.docker.docker_network:
-    name: '{{ mgmt_docker_stack_name }}_mgmt_net'
+    name: "{{ mgmt_docker_stack_name }}_mgmt_net"
     driver: overlay
     attachable: true
     driver_options:
@@ -81,27 +81,27 @@
   when: mgmt_use_swarm_mode | bool and item != "mgmt-stack-nginx.yml"
   ansible.builtin.set_fact:
     mgmt_compose_files_stack: '{{ mgmt_compose_files_stack | default([]) + ["".join((mgmt_dst_config_files,item))] }}'
-  loop: '{{ mgmt_services_to_install | list}}'
+  loop: "{{ mgmt_services_to_install | list} }"
   tags: [mgmt, mgmt-stack]
 
 - name: Deploy mgmt-stack [via docker stack]
   when: mgmt_use_swarm_mode | bool
   community.docker.docker_stack:
     state: present
-    name: '{{ mgmt_docker_stack_name }}'
+    name: "{{ mgmt_docker_stack_name }}"
     resolve_image: always
     with_registry_auth: true
     prune: true
-    compose: '{{ mgmt_compose_files_stack | list }}'
+    compose: "{{ mgmt_compose_files_stack | list }}"
   tags: [mgmt, mgmt-stack]
 
 - name: Deploy mgmt-stack [via docker-compose]
   when: mgmt_use_swarm_mode | bool != true
-  community.docker.docker_compose:
-    project_name: '{{ mgmt_docker_stack_name }}'
+  community.docker.docker_compose_v2:
+    project_name: "{{ mgmt_docker_stack_name }}"
     remove_orphans: true
-    project_src: '{{ mgmt_dst_config_files }}'
-    files: '{{ mgmt_services_to_install | list }}'
+    project_src: "{{ mgmt_dst_config_files }}"
+    files: "{{ mgmt_services_to_install | list }}"
   tags: [mgmt, mgmt-stack]
 
 - name: Setup Wireguard

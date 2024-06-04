@@ -4,21 +4,21 @@
   community.docker.docker_swarm_info:
   ignore_errors: true
   register: swarm_info
-  failed_when: 'not swarm_info.can_talk_to_docker'
+  failed_when: "not swarm_info.can_talk_to_docker"
   tags: [docker, docker-portainer]
 
 - name: Ensue config folder exists
   when: docker_install_portainer | bool
   ansible.builtin.file:
-    path: '{{ docker_portainer_dst_stack | dirname }}'
+    path: "{{ docker_portainer_dst_stack | dirname }}"
     state: directory
   tags: [docker, docker-portainer]
 
 - name: Copy portainer stack files
   when: docker_install_portainer and docker_init_swarm | bool
   ansible.builtin.copy:
-    src: '{{ docker_portainer_src }}'
-    dest: '{{ docker_portainer_dst_stack }}'
+    src: "{{ docker_portainer_src }}"
+    dest: "{{ docker_portainer_dst_stack }}"
     owner: root
     group: docker
   tags: [docker, docker-portainer]
@@ -33,8 +33,8 @@
 - name: Copy portainer compose files
   when: docker_install_portainer and (not docker_init_swarm or not docker_swarm_result.docker_swarm_manager) | bool
   ansible.builtin.copy:
-    src: '{{ docker_portainer_src }}'
-    dest: '{{ docker_portainer_dst_stack }}'
+    src: "{{ docker_portainer_src }}"
+    dest: "{{ docker_portainer_dst_stack }}"
     owner: root
     group: docker
   tags: [docker, docker-portainer]
@@ -47,7 +47,7 @@
     resolve_image: always
     with_registry_auth: true
     compose:
-      - '{{ docker_portainer_dst_stack }}'
+      - "{{ docker_portainer_dst_stack }}"
   tags: [docker, docker-portainer]
 
 - name: Install pip3
@@ -65,9 +65,9 @@
 
 - name: Deploy portainer via docker-compose
   when: docker_install_portainer and (not docker_init_swarm or not docker_swarm_result.docker_swarm_manager) | bool
-  community.docker.docker_compose:
+  community.docker.docker_compose_v2:
     project_name: portainer
     remove_orphans: true
-    project_src: '{{ docker_portainer_dst_stack | dirname }}'
+    project_src: "{{ docker_portainer_dst_stack | dirname }}"
     files: '{{ [docker_portainer_dst_stack.split("/") | last] }}'
   tags: [docker, docker-portainer]

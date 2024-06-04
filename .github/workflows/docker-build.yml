@@ -2,7 +2,7 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
 
 permissions:
   contents: read
@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   docker-build:
-    uses: hegerdes/publish/.github/workflows/reusable-docker-build.yml@main
+    uses: hegerdes/helper-suite/.github/workflows/reusable-docker-build.yml@main
     with:
       build-name: ${{ github.repository_owner }}/playbooks,ghcr.io/${{ github.repository_owner }}/playbooks
       build-tags: latest

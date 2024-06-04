@@ -1,5 +1,3 @@
-
-
 - name: Ensue config folder exists
   ansible.builtin.file:
     path: /srv/mariadb
@@ -10,11 +8,11 @@
   ansible.builtin.template:
     src: mariadb-docker-compose.yml.j2
     dest: /srv/mariadb/mariadb-docker-compose.yml
-    mode: '0644'
+    mode: "0644"
   tags: [mariadb]
 
 - name: Deploy mariadb via compose
-  community.docker.docker_compose:
+  community.docker.docker_compose_v2:
     project_src: /srv/mariadb
     state: present
     remove_orphans: true
@@ -32,13 +30,13 @@
 
 - name: Collect all possible DB information
   mysql_info:
-    login_user: '{{ mariadb_root_user }}'
-    login_password : '{{ mariadb_root_pw }}'
+    login_user: "{{ mariadb_root_user }}"
+    login_password: "{{ mariadb_root_pw }}"
     login_host: localhost
   register: mariadb_info_res
   tags: [mariadb]
 
 - name: Print DB infomation
   ansible.builtin.debug:
-    msg: 'Version: {{ mariadb_info_res.version.full }}; Faild: {{ mariadb_info_res.failed }}; DBs: {{ mariadb_info_res.databases }}'
+    msg: "Version: {{ mariadb_info_res.version.full }}; Faild: {{ mariadb_info_res.failed }}; DBs: {{ mariadb_info_res.databases }}"
   tags: [mariadb]

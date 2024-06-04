@@ -1,18 +1,19 @@
 # Main cloudflare-dns
 ---
 - name: Set DNS records
+  become: false
   community.general.cloudflare_dns:
     zone: '{{ item.zone | default((item.host | split("."))[-2:] | join(".")) }}'
     type: '{{ item.type | default("A") }}'
-    value: '{{ item.value }}'
+    value: "{{ item.value }}"
     solo: true
-    record: '{{ item.host }}'
-    ttl: '{{ item.ttl | default(600) }}'
-    api_token : '{{ cloudflare_token }}'
-    account_email: '{{ cloudflare_email }}'
-    proxied : '{{ item.proxied | default(false) }}'
+    record: "{{ item.host }}"
+    ttl: "{{ item.ttl | default(600) }}"
+    api_token: "{{ cloudflare_token }}"
+    account_email: "{{ cloudflare_email }}"
+    proxied: "{{ item.proxied | default(false) }}"
     state: '{{ item.state | default("present") }}'
-  loop: '{{ cloudflare_dns_records }}'
-  run_once: '{{ cloudflare_run_once }}'
+  loop: "{{ cloudflare_dns_records }}"
+  run_once: "{{ cloudflare_run_once }}"
   delegate_to: localhost
   tags: [cloudflare, cloudflare-dns]
