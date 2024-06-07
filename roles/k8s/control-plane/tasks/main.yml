@@ -62,6 +62,7 @@
       - "{{ k8s_init_resources_manifests }}"
       - "{{ [k8s_runc_manifest] }}"
       - "{{ [k8s_crun_manifest] }}"
+      - "{{ [k8s_youki_manifest] if(k8s_install_youki | default(True)) else [] }}"
       - "{{ [k8s_wasmedge_manifest] if(k8s_install_wasi | default(True)) else [] }}"
       - "{{ [k8s_gVisor_manifest] if(k8s_install_gvisor | default(True)) else [] }}"
       - "{{ [k8s_kata_manifest] if(k8s_install_kata_containers | default(False)) else [] }}"

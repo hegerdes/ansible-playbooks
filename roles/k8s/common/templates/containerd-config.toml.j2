@@ -51,6 +51,12 @@ version = 2
     TypeUrl = "io.containerd.runsc.v1.options"
     ConfigPath = "/etc/containerd/runsc.toml"
 
+  # youki
+  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.youki]
+    runtime_type = "io.containerd.youki.v2"
+  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.youki.options]
+    SystemdCgroup = true
+
   # wasmedge
   # Docs: https://github.com/containerd/runwasi
   [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.wasmedge]

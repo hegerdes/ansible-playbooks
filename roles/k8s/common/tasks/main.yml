@@ -160,6 +160,7 @@
         container runtime: {{ k8s_cri }}
         gvisor enabled: {{ k8s_install_gvisor }}
         wasmedge enabled: {{ k8s_install_wasi }}
+        youki enabled: {{ k8s_install_youki }}
         kata-containers enabled: {{ k8s_install_kata_containers }}
         crun version: {{ k8s_crun_version }}
         crun with wasm: {{ k8s_crun_with_wasm }}
@@ -179,6 +180,7 @@
       tags: [k8s, k8s-prepare, k8s-base, k8s-runtime]
   with_items:
     - { file: "crun{{ '_wasm' if(k8s_crun_with_wasm) }}.yml", run: true }
+    - { file: "youki.yml", run: "{{ k8s_install_youki }}" }
     - { file: "kata_containers.yml", run: "{{ k8s_install_kata_containers }}" }
     - { file: "wasi.yml", run: "{{ k8s_install_wasi }}" }
   loop_control:
@@ -320,5 +322,8 @@
       {{ "--kubernetes-version " + k8s_version if (k8s_version != "latest") }} \
       {{ "--image-repository " + k8s_image_repo if (k8s_image_repo | default("") != "") }}
   register: __k8s_pull_res
-  changed_when: ((__k8s_pull_res.end[:-7] | to_datetime) - (__k8s_pull_res.start[:-7] | to_datetime)).total_seconds() > 5
+  changed_when: >-
+    ((__k8s_pull_res.end[:-7]
+    | to_datetime) - (__k8s_pull_res.start[:-7]
+    | to_datetime)).total_seconds() > 5
   tags: [k8s, k8s-prepare, k8s-base]

@@ -2,7 +2,7 @@
 # Setup crun
 - name: k8s common - crun | Install official crun
   ansible.builtin.get_url:
-    url: https://github.com/containers/crun/releases/download/{{ k8s_crun_version }}/crun-{{ k8s_crun_version }}-linux-{{ system_arch_map[ansible_facts.architecture] }}
+    url: "{{ k8s_crun_download_url }}"
     dest: /usr/local/sbin/crun
     owner: root
     group: root

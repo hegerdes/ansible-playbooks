@@ -11,7 +11,7 @@
 - name: k8s common - containerd | Install runc
   ansible.builtin.get_url:
     url: "{{ k8s_runc_download_url }}"
-    dest: /usr/local/runc
+    dest: /usr/local/bin/runc
     mode: "0755"
   retries: 3
 
@@ -19,8 +19,10 @@
   ansible.builtin.unarchive:
     src: "{{ k8s_cni_plugin_download_url }}"
     dest: /opt/cni/bin
+    group: root
+    owner: root
+    exclude: [README.md, LICENSE]
     remote_src: true
-    creates: /opt/cni/bin/loopback
   retries: 3
 
 - name: k8s common - containerd | Install containerd service
@@ -34,4 +36,8 @@
   ansible.builtin.command:
     cmd: containerd --version
   changed_when: false
-  tags: [k8s, k8s-prepare, k8s-base]
+
+- name: k8s common - containerd | Test runc
+  ansible.builtin.command:
+    cmd: runc --version
+  changed_when: false

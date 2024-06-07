@@ -1,0 +1,15 @@
+---
+# Setup youki
+- name: k8s common - youki | Install youki
+  ansible.builtin.unarchive:
+    src: "{{ k8s_youki_download_url }}"
+    dest: /usr/local/bin
+    remote_src: true
+    exclude: [README.md, LICENSE]
+    creates: /usr/local/bin/youki
+  retries: 3
+
+- name: k8s common - youki | Check youki
+  ansible.builtin.command:
+    cmd: youki info
+  changed_when: false
