@@ -5,11 +5,23 @@ k8s_image_repo: registry.k8s.io
 k8s_cluster_name: "{{ inventory_dir | basename }}"
 k8s_pki_cert_path: /etc/kubernetes/pki
 k8s_shared_api_server_endpoint: "{{ ansible_facts.default_ipv4.address }}"
-k8s_init_verbose: '{{ lookup("env", "CI") | default("false", true) | bool == false }}'
+k8s_init_verbose: "{{ lookup('env', 'CI') | default('false', true) | bool == false }}"
 
 # Service & Pod CIDR
-k8s_pod_network_cidr: '{{ [k8s_pod_network_cidr_ipv4,k8s_pod_network_cidr_ipv6] | join(",") if(k8s_dual_stack) else k8s_pod_network_cidr_ipv4}}'
-k8s_service_network_cidr: '{{ [k8s_service_network_cidr_ipv4,k8s_service_network_cidr_ipv6] | join(",") if(k8s_dual_stack) else k8s_service_network_cidr_ipv4}}'
+k8s_pod_network_cidr: >-
+  {{
+  [k8s_pod_network_cidr_ipv4,k8s_pod_network_cidr_ipv6]
+  | join(",")
+  if(k8s_dual_stack) else
+  k8s_pod_network_cidr_ipv4
+  }}
+k8s_service_network_cidr: >-
+  {{
+  [k8s_service_network_cidr_ipv4,k8s_service_network_cidr_ipv6]
+  | join(",")
+  if(k8s_dual_stack) else
+  k8s_service_network_cidr_ipv4
+  }}
 k8s_pod_network_cidr_ipv4: 10.244.0.0/16
 k8s_service_network_cidr_ipv4: 10.96.0.0/16
 k8s_pod_network_cidr_ipv6: 2001:db8:42:0::/56
@@ -72,6 +84,10 @@ k8s_crun_manifest:
 k8s_runc_manifest:
   name: runc RuntimeClass
   definition: "{{ lookup('template', role_path + '/files/k8s-runtime-class-runc.yaml') | from_yaml_all }}"
+
+k8s_youki_manifest:
+  name: youki RuntimeClass
+  definition: "{{ lookup('template', role_path + '/files/k8s-runtime-class-youki.yaml') | from_yaml_all }}"
 
 k8s_kata_manifest:
   name: kata RuntimeClass

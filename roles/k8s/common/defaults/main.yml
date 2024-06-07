@@ -1,18 +1,18 @@
 ---
 k8s_version: 1.30.1
 
-# Which cri to use: runc, crun or runsc, kata-containers
+# Which cri to use: runc, crun, youki or runsc, kata-containers
 k8s_cri: crun
 k8s_install_gvisor: true
 k8s_install_wasi: true
+k8s_install_youki: true
 k8s_install_kata_containers: false
-k8s_crun_version: "{{ k8s_crun_default_version if(not k8s_crun_with_wasm) else k8s_crun_wasm_download_url }}"
 
 # Key value pairs passed to kubelet
 k8s_kubelet_extra_args: {}
 
 k8s_crun_with_wasm: false
-k8s_crun_wasmlib_version: 0.0.3
+k8s_crun_wasmlib_version: 0.1.0
 
 k8s_prepull_images: true
 k8s_unattended_upgrades_state: present
@@ -20,6 +20,8 @@ k8s_containerd_variant: github # can be docker (uses docker apt repo) or github 
 k8s_containerd_version: latest # can be set for docker an github version of containerd
 k8s_cni_plugins_version: latest # only applies if k8s_containerd_variant is equal to github
 k8s_runc_version: latest # only applies if k8s_containerd_variant is equal to github
+k8s_crun_version: latest
+k8s_youki_version: latest
 k8s_selinux_mode: permissive # can be: disabled,enforcing,permissive
 k8s_selinux_policy: targeted
 k8s_cni: calico
@@ -109,20 +111,119 @@ k8s_system_limits:
 #     value: 1048576
 #     comment: ""     # optional
 
-# Containerd github setup
-k8s_containerd_download_url: '{{ lookup("url", "https://api.github.com/repos/containerd/containerd/releases/latest") | from_json | json_query(k8s_containerd_query) | first if(k8s_containerd_version == "latest") else "https://github.com/containerd/containerd/releases/download/v" + k8s_containerd_version + "/containerd-" + k8s_containerd_version + "-" + ansible_facts.system | lower + "-" + system_arch_map[ansible_facts.architecture] + ".tar.gz" }}'
-k8s_runc_download_url: '{{ lookup("url", "https://api.github.com/repos/opencontainers/runc/releases/latest") | from_json | json_query(k8s_runc_query) | first if(k8s_runc_version == "latest") else "https://github.com/opencontainers/runc/releases/download/v" + k8s_runc_version + "/runc." + system_arch_map[ansible_facts.architecture] }}'
-k8s_cni_plugin_download_url: '{{ lookup("url", "https://api.github.com/repos/containernetworking/plugins/releases/latest") | from_json | json_query(k8s_cni_plugins_query) | first if(k8s_cni_plugins_version == "latest") else "https://github.com/containernetworking/plugins/releases/download/v" + k8s_cni_plugins_version + "/cni-plugins-" + ansible_facts.system | lower + "-" + system_arch_map[ansible_facts.architecture] + "-v" + k8s_cni_plugins_version + ".tgz" }}'
-k8s_crun_wasm_download_url: '{{ lookup("url", "https://api.github.com/repos/hegerdes/helper-suite/releases/latest") | from_json | json_query(k8s_crun_wasm_query) | select("search", ansible_facts.architecture) | list | first }}'
-k8s_crun_default_version: '{{ lookup("url", "https://api.github.com/repos/containers/crun/releases/latest") | from_json | json_query("tag_name") }}'
-k8s_kata_containers_download_url: '{{ lookup("url", "https://api.github.com/repos/kata-containers/kata-containers/releases/latest") | from_json | json_query(k8s_kata_containers_query) | select("search", system_arch_map[ansible_facts.architecture]) | list | first }}'
+# Set and get versions and urls
+k8s_containerd_download_url: >-
+  {{
+  lookup("url", "https://api.github.com/repos/containerd/containerd/releases/latest")
+  | from_json
+  | json_query(k8s_containerd_query)
+  | first
+  if(k8s_containerd_version == "latest")
+  else "https://github.com/containerd/containerd/releases/download/v"
+  + k8s_containerd_version + "/containerd-" + k8s_containerd_version
+  + "-" + ansible_facts.system | lower + "-"
+  + system_arch_map[ansible_facts.architecture] + ".tar.gz"
+  }}
+k8s_cni_plugin_download_url: >-
+  {{
+  lookup("url", "https://api.github.com/repos/containernetworking/plugins/releases/latest")
+  | from_json
+  | json_query(k8s_cni_plugins_query)
+  | first
+  if(k8s_cni_plugins_version == "latest")
+  else "https://github.com/containernetworking/plugins/releases/download/v"
+  + k8s_cni_plugins_version + "/cni-plugins-" + ansible_facts.system
+  | lower + "-" + system_arch_map[ansible_facts.architecture]
+  + "-v" + k8s_cni_plugins_version + ".tgz"
+  }}
+k8s_runc_download_url: >-
+  {{
+  lookup("url", "https://api.github.com/repos/opencontainers/runc/releases/latest")
+  | from_json
+  | json_query(k8s_runc_query)
+  | first
+  if(k8s_runc_version == "latest")
+  else
+  "https://github.com/opencontainers/runc/releases/download/v"
+  + k8s_runc_version + "/runc."
+  + system_arch_map[ansible_facts.architecture]
+  }}
+k8s_crun_download_url: >-
+  {{
+  lookup("url", "https://api.github.com/repos/containers/crun/releases/latest")
+  | from_json
+  | json_query(k8s_crun_query)
+  | first
+  if(k8s_crun_version == "latest")
+  else
+  "https://github.com/containers/crun/releases/download/"
+  + k8s_crun_version + "/crun-" + k8s_crun_version
+  + "-linux-" + system_arch_map[ansible_facts.architecture]
+  }}
+k8s_crun_wasm_download_url: >-
+  {{
+  lookup("url", "https://api.github.com/repos/hegerdes/helper-suite/releases/latest")
+  | from_json
+  | json_query(k8s_crun_wasm_query)
+  | select("search", ansible_facts.architecture)
+  | list
+  | first
+  }}
+k8s_youki_download_url: >-
+  {{
+  lookup("url", "https://api.github.com/repos/containers/youki/releases/latest")
+  | from_json
+  | json_query(k8s_youki_query)
+  | first
+  if(k8s_youki_version == "latest")
+  else
+  "https://github.com/containers/youki/releases/download/v"
+  + k8s_youki_version + "/youki-" + k8s_youki_version
+  + "-" + ansible_facts.architecture + "-gnu.tar.gz"
+  }}
+k8s_kata_containers_download_url: >-
+  {{
+  lookup("url", "https://api.github.com/repos/kata-containers/kata-containers/releases/latest")
+  | from_json
+  | json_query(k8s_kata_containers_query)
+  | select("search", system_arch_map[ansible_facts.architecture])
+  | list
+  | first
+  }}
 
-k8s_crun_wasm_query: assets[?starts_with(name, 'crun')].browser_download_url
-k8s_kata_containers_query: assets[?starts_with(name, 'kata-static')].browser_download_url
-k8s_runc_query: "assets[?ends_with(name, '{{ system_arch_map[ansible_facts.architecture] }}' )].browser_download_url"
-k8s_containerd_query: "assets[?ends_with(name, '{{ ansible_facts.system | lower }}-{{ system_arch_map[ansible_facts.architecture] }}.tar.gz' )].browser_download_url"
-k8s_cni_plugins_query: "assets[?starts_with(name, 'cni-plugins-{{ ansible_facts.system | lower }}-{{ system_arch_map[ansible_facts.architecture] }}' )].browser_download_url"
+k8s_crun_wasm_query: "assets[?starts_with(name, 'crun')].browser_download_url"
+k8s_kata_containers_query: assets[?starts_with(name, "kata-static")].browser_download_url
+k8s_runc_query: >-
+  {{
+  "assets[?ends_with(name,'"
+  + system_arch_map[ansible_facts.architecture]
+  + "' )].browser_download_url"
+  }}
+k8s_containerd_query: >-
+  {{
+  "assets[?ends_with(name, '" + ansible_facts.system
+  | lower
+  + "-"
+  + system_arch_map[ansible_facts.architecture]
+  + ".tar.gz' )].browser_download_url"
+  }}
+k8s_cni_plugins_query: >-
+  {{
+  "assets[?starts_with(name, 'cni-plugins-"
+  + ansible_facts.system
+  | lower
+  + "-"
+  + system_arch_map[ansible_facts.architecture]
+  +"' )].browser_download_url"
+  }}
+k8s_crun_query: >-
+  {{
+  "assets[?contains(name, 'linux-"
+  + system_arch_map[ansible_facts.architecture]
+  + "')].browser_download_url"
+  }}
 
+k8s_youki_query: "assets[?contains(name, '{{ ansible_facts.architecture }}-gnu.tar.gz' )].browser_download_url"
 k8s_wasmi_version: "{{ lookup('url', 'https://api.github.com/repos/containerd/runwasi/releases?per_page=3') | from_json | json_query('[*].tag_name') }}"
 
 system_arch_map:

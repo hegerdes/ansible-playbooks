@@ -2,7 +2,7 @@
 # Setup docker containerd
 - name: k8s common - containerd | Install kubelet and admin tools
   ansible.builtin.apt:
-    name: 'containerd.io{{ "=" + k8s_containerd_version + "*" if (k8s_containerd_version != "latest") }}'
+    name: "containerd.io{{ '=' + k8s_containerd_version + '*' if (k8s_containerd_version != 'latest') }}"
     state: present
     update_cache: true
     cache_valid_time: 86400 # equal to 24h

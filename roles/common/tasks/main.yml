@@ -3,7 +3,7 @@
 - name: Set timezone
   timezone:
     hwclock: UTC
-    name: '{{ common_time_zone }}'
+    name: "{{ common_time_zone }}"
   tags: [common, time]
 
 - name: Getting all hostkeys
@@ -11,15 +11,15 @@
   run_once: true
   ansible.builtin.set_fact:
     all_hostkeys: "{{ all_hostkeys | default([]) + [hostvars[item].ansible_facts[common_default_network_device].ipv4.address + ' ssh-rsa ' + hostvars[item].ansible_facts.ssh_host_key_rsa_public] + [hostvars[item].ansible_facts[common_default_network_device].ipv4.address + ' ssh-ed25519 ' + hostvars[item].ansible_facts.ssh_host_key_ed25519_public] + [hostvars[item].ansible_facts[common_default_network_device].ipv4.address + ' ecdsa-sha2-nistp256 ' + hostvars[item].ansible_facts.ssh_host_key_ecdsa_public] }}"
-  with_items: '{{ groups.all }}'
+  with_items: "{{ groups.all }}"
   tags: [common, hostnames]
 
 - name: Setup ssh options
   ansible.builtin.lineinfile:
     path: /etc/ssh/sshd_config
-    regexp: '^{{ item }}$'
-    line: '{{ item }}'
-  loop: '{{ sshd_options }}'
+    regexp: "^{{ item }}$"
+    line: "{{ item }}"
+  loop: "{{ sshd_options }}"
   notify: Restart SSHD
   tags: [common, ssh]
 
@@ -40,71 +40,64 @@
 
 - name: Install required system packages
   ansible.builtin.apt:
-    name: '{{ item }}'
+    name: "{{ common_packages }}"
     state: latest
     install_recommends: false
-  loop:
-    - 'software-properties-common'
-    - 'apt-transport-https'
-    - 'ca-certificates'
-    - 'wget'
-    - 'curl'
-    - 'tar'
-    - 'jq'
-    - 'gzip'
-    - 'pigz'
-    - 'pass'
-    - 'rsync'
-    - 'gnupg'
-    - 'gnupg2'
-    - 'openssl'
-    - 'apparmor'
-    - 'libffi-dev'
-    - 'lsb-release'
-    - 'python3-pip'
-    - 'policycoreutils'
-    - 'selinux-policy-default'
-    - 'unattended-upgrades'
-    - 'python3-requests'
-    - 'python3-jsondiff'
-    - 'selinux-basics'
-    - 'python3-yaml'
-    - 'unzip'
-    - 'git'
   tags: [common, apt]
+  vars:
+    common_packages:
+      - "software-properties-common"
+      - "apt-transport-https"
+      - "ca-certificates"
+      - "wget"
+      - "curl"
+      - "tar"
+      - "jq"
+      - "gzip"
+      - "pigz"
+      - "pass"
+      - "rsync"
+      - "gnupg"
+      - "gnupg2"
+      - "openssl"
+      - "apparmor"
+      - "libffi-dev"
+      - "lsb-release"
+      - "python3-pip"
+      - "policycoreutils"
+      - "selinux-policy-default"
+      - "unattended-upgrades"
+      - "python3-requests"
+      - "python3-jsondiff"
+      - "selinux-basics"
+      - "python3-yaml"
+      - "unzip"
+      - "git"
 
 - name: Install additional packages
   ansible.builtin.apt:
-    name: '{{ item }}'
+    name: "{{ common_extra_packages }}"
     state: latest
     install_recommends: false
-  loop: '{{ common_extra_packages }}'
   tags: [common, apt]
 
 - name: Remove specified packages
   ansible.builtin.apt:
-    name: '{{ item }}'
+    name: "{{ common_delete_packages }}"
     state: absent
-  loop: '{{ common_delete_packages }}'
   tags: [common, apt]
 
 - name: Setup UnattendedUpgrades
   ansible.builtin.lineinfile:
     path: /etc/apt/apt.conf.d/20auto-upgrades
     create: true
-    state: '{{ common_unattended_upgrades_state }}'
-    line: '{{ item }}'
-    mode: '0644'
+    state: "{{ common_unattended_upgrades_state }}"
+    line: "{{ item }}"
+    mode: "0644"
   loop:
     - APT::Periodic::Update-Package-Lists "1";
     - APT::Periodic::Unattended-Upgrade "1";
   tags: [common, apt]
-
-# - name: Enable SELinux in enforcing mode
-#   ansible.posix.selinux:
-#     policy: '{{ common_selinux_policy }}'
-#     state: '{{ common_selinux_mode }}'
-#   tags: [common, selinux]
 
 - name: Set hostnames
   ansible.builtin.include_tasks: install-hostnames.yml
@@ -129,14 +122,14 @@
 
 - name: Mount devices
   mount:
-    path: '{{ item.destination }}'
-    src: '{{ item.source }}'
-    fstype: '{{ item.filesystem }}'
-    opts: '{{ item.options }}'
+    path: "{{ item.destination }}"
+    src: "{{ item.source }}"
+    fstype: "{{ item.filesystem }}"
+    opts: "{{ item.options }}"
     state: '{{ item.state | default("mounted") }}'
     backup: true
     boot: true
-  loop: '{{ common_device_mounts }}'
+  loop: "{{ common_device_mounts }}"
   tags: [common, mounts]
 
 - name: Get stats group file
@@ -149,19 +142,19 @@
   when: __group_file.stat.exists
   ansible.builtin.lineinfile:
     path: /etc/default/grub
-    regexp: '^GRUB_CMDLINE_LINUX='
+    regexp: "^GRUB_CMDLINE_LINUX="
     line: GRUB_CMDLINE_LINUX=""
   tags: [common, sys]
   notify: Update grub
 
 - name: Setting system limits
   pam_limits:
-    domain: '{{ item.user }}'
+    domain: "{{ item.user }}"
     limit_type: '{{ item.type | default("-") }}'
-    limit_item: '{{ item.limit }}'
-    value: '{{ item.value }}'
-    comment: '{{ item.comment | default(omit) }}'
-  loop: '{{ common_limits }}'
+    limit_item: "{{ item.limit }}"
+    value: "{{ item.value }}"
+    comment: "{{ item.comment | default(omit) }}"
+  loop: "{{ common_limits }}"
   tags: [common, sys]
 
 - name: Creates backup directory
@@ -174,7 +167,7 @@
   when: common_floating_ips | length > 0
   ansible.builtin.include_tasks: shared/set-floting-ip.yml
   vars:
-    floating_ips: '{{ common_floating_ips }}'
+    floating_ips: "{{ common_floating_ips }}"
   tags: [common, ingress-ip]
 
 - name: Set network interfaces
@@ -189,7 +182,7 @@
         up ip route add {{ item.cloud_net }} via {{ item.subnet }} dev {{ item.interface }}{{ "." + item.virtual_id | string if(item.virtual_id is defined) }}
         down ip route del {{ item.cloud_net }} via {{ item.subnet }} dev {{ item.interface }}{{ "." + item.virtual_id | string if(item.virtual_id is defined) }}
         {{ "vlan-raw-device " + item.interface | string if(item.virtual_id is defined) }}
-  loop: '{{ common_network_interfaces }}'
+  loop: "{{ common_network_interfaces }}"
   notify: Restart network service
   tags: [common, network]
 
@@ -198,13 +191,13 @@
     path: /var/log/cron.log
     line: \#Cron Log file
     create: true
-    mode: '0644'
+    mode: "0644"
   tags: [common, cron]
 
 - name: Install cron jobs
   ansible.builtin.include_tasks: shared/install-cron-jobs.yml
   vars:
-    cron_jobs: '{{ common_cron_jobs }}'
+    cron_jobs: "{{ common_cron_jobs }}"
   tags: [common, cron]
 
 - name: Ensure handlers are notified now

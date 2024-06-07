@@ -15,7 +15,6 @@
     # TODO: Remove version query one none pre-release is public
     k8s_wasmedge_version: '{{ lookup("url", "https://api.github.com/repos/containerd/runwasi/releases?per_page=3") | from_json }}'
 
-    k8s_crun_wasm_query: assets[?starts_with(name, 'crun')].browser_download_url
     k8s_kata_containers_query: assets[?starts_with(name, 'kata-static')].browser_download_url
     k8s_runc_query: "assets[?ends_with(name, '{{ system_arch_map[ansible_facts.architecture] }}' )].browser_download_url"
     k8s_containerd_query: "assets[?ends_with(name, '{{ ansible_facts.system | lower }}-{{ system_arch_map[ansible_facts.architecture] }}.tar.gz' )].browser_download_url"
@@ -53,61 +52,104 @@
 
     k8s_cni_plugin_download_url_default: '{{ lookup("url", "https://api.github.com/repos/containernetworking/plugins/releases/latest") | from_json | json_query(k8s_cni_plugins_query) | first if(k8s_cni_plugins_version == "latest") else "https://github.com/containernetworking/plugins/releases/download/v" + k8s_cni_plugins_version + "/cni-plugins-" + ansible_facts.system | lower + "-" + containerd_arch_map[ansible_facts.architecture] + "-v" + k8s_cni_plugins_version + ".tgz" }}'
 
-    containerd_arch_map:
+    system_arch_map:
       x86_64: amd64
       aarch64: arm64
     k8s_hcloud_csi_version: v2.3.2
-  tasks:
-    # - debug:
-    #     var: ansible_facts
-    - debug:
-        msg: "{{ lookup('url', 'https://api.github.com/repos/containerd/runwasi/releases?per_page=3') | from_json | json_query('[*].tag_name') }}"
 
-    - name: Get urls
+    k8s_youki_version: v0.3.2
+    k8s_youki_query: "assets[?contains(name, '{{ ansible_facts.architecture }}-gnu.tar.gz' )].browser_download_url"
+    k8s_crun_wasm_download_url: >-
+      {{
+      lookup("url", "https://api.github.com/repos/hegerdes/helper-suite/releases/latest")
+      | from_json
+      | json_query(k8s_crun_wasm_query)
+      | select("search", ansible_facts.architecture)
+      | list
+      | first
+      }}
+    k8s_crun_wasm_query: "assets[?starts_with(name, 'crun')].browser_download_url"
+    k8s_wasmi_version: "{{ lookup('url', 'https://api.github.com/repos/containerd/runwasi/releases?per_page=3') | from_json | json_query('[*].tag_name') }}"
+
+  tasks:
+    - name: k8s common - wasi | Get latest releases
+      run_once: true
       ansible.builtin.uri:
-        url: "https://api.github.com/repos/containerd/runwasi/releases/tags/{{item }}"
+        url: "https://api.github.com/repos/containerd/runwasi/releases/tags/{{ item }}"
         return_content: true
       register: __k8s_wasi_download_urls
-      loop: "{{ lookup('url', 'https://api.github.com/repos/containerd/runwasi/releases?per_page=3') | from_json | json_query('[*].tag_name') }}"
+      loop: "{{ k8s_wasmi_version }}"
+
+    - debug:
+        var: __k8s_wasi_download_urls.results
 
     - name: k8s common - wasi | Get download urls
       ansible.builtin.set_fact:
-        wasi_download_urls: "{{ wasi_download_urls | combine({(item.item | split('/') | first): item.json | json_query('assets[*].browser_download_url') | select('search', ansible_facts.architecture) | first}) }}"
+        wasi_download_urls: >-
+          {{
+          wasi_download_urls
+          | default({})
+          | combine({(item.item | split("/") | first): item.json
+          | json_query("assets[*].browser_download_url")
+          | select("search", ansible_facts.architecture)})
+          }}
       loop: "{{ __k8s_wasi_download_urls.results }}"
-      vars:
-        wasi_download_urls: {}
+      loop_control:
+        label: "{{ item.item }}"
 
     - debug:
-        msg: "{{ item.key }} => {{ item.value }}"
+        var: item
       loop: "{{ wasi_download_urls | dict2items }}"
+      loop_control:
+        label: "{{ item.key }}"
+    # - debug:
+    #     msg: "{{ lookup('url', 'https://api.github.com/repos/containerd/runwasi/releases?per_page=3') | from_json | json_query('[*].tag_name') }}"
+
+    # - name: Get urls
+    #   ansible.builtin.uri:
+    #     url: "https://api.github.com/repos/containerd/runwasi/releases/tags/{{item }}"
+    #     return_content: true
+    #   register: __k8s_wasi_download_urls
+    #   loop: "{{ lookup('url', 'https://api.github.com/repos/containerd/runwasi/releases?per_page=3') | from_json | json_query('[*].tag_name') }}"
+
+    # - name: k8s common - wasi | Get download urls
+    #   ansible.builtin.set_fact:
+    #     wasi_download_urls: "{{ wasi_download_urls | combine({(item.item | split('/') | first): item.json | json_query('assets[*].browser_download_url') | select('search', ansible_facts.architecture) | first}) }}"
+    #   loop: "{{ __k8s_wasi_download_urls.results }}"
+    #   vars:
+    #     wasi_download_urls: {}
 
     # - debug:
-    #     var: k8s_wasmedge_download_url | json_query(k8s_wasmedge_query)
-    - fail:
+    #     msg: "{{ item.key }} => {{ item.value }}"
+    #   loop: "{{ wasi_download_urls | dict2items }}"
 
-    - debug:
-        msg: '{{ (item.host | split("."))[-2:] | join(".") }}'
-      loop: "{{ azure_dns_records }}"
+    # # - debug:
+    # #     var: k8s_wasmedge_download_url | json_query(k8s_wasmedge_query)
+    # - fail:
 
-    - include_role:
-        name: azure-dns
+    # - debug:
+    #     msg: '{{ (item.host | split("."))[-2:] | join(".") }}'
+    #   loop: "{{ azure_dns_records }}"
 
-    - debug:
-        var: lookup("url", "https://raw.githubusercontent.com/hetznercloud/csi-driver/" + k8s_hcloud_csi_version + "/deploy/kubernetes/hcloud-csi.yml", split_lines=False) | from_yaml_all
-    - debug:
-        msg: "K8s version {{ k8s_version }} type: {{ k8s_version | type_debug  }}"
-    - debug:
-        msg: "{{ lookup('azure.azcollection.azure_keyvault_secret', 'github-oauth-demo-client-id', vault_url=keyvault) }}"
+    # - include_role:
+    #     name: azure-dns
 
-    - name: Save kubeconf in keyvault
-      ignore_errors: true
-      azure.azcollection.azure_rm_keyvaultsecret:
-        secret_name: "test"
-        auth_source: cli
-        secret_value: "test"
-        keyvault_uri: "{{ keyvault }}"
-        tags:
-          origin: ansible
+    # - debug:
+    #     var: lookup("url", "https://raw.githubusercontent.com/hetznercloud/csi-driver/" + k8s_hcloud_csi_version + "/deploy/kubernetes/hcloud-csi.yml", split_lines=False) | from_yaml_all
+    # - debug:
+    #     msg: "K8s version {{ k8s_version }} type: {{ k8s_version | type_debug  }}"
+    # - debug:
+    #     msg: "{{ lookup('azure.azcollection.az_keyvault', 'github-oauth-demo-client-id', vault_url=keyvault) }}"
+
+    # - name: Save kubeconf in keyvault
+    #   ignore_errors: true
+    #   azure.azcollection.azure_rm_keyvaultsecret:
+    #     secret_name: "test"
+    #     auth_source: cli
+    #     secret_value: "test"
+    #     keyvault_uri: "{{ keyvault }}"
+    #     tags:
+    #       origin: ansible
 
   # - debug:
   #     msg: '{{ k8s_containerd_download_url_default }}'
