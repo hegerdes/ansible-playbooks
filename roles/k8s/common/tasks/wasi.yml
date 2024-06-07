@@ -11,14 +11,23 @@
 
 - name: k8s common - wasi | Get download urls
   ansible.builtin.set_fact:
-    wasi_download_urls: "{{ wasi_download_urls | default({}) | combine({(item.item | split('/') | first): item.json | json_query('assets[*].browser_download_url') | select('search', ansible_facts.architecture) | first}) }}"
+    wasi_download_urls: >-
+      {{
+      wasi_download_urls
+      | default({})
+      | combine({(item.item | split("/") | first): item.json
+      | json_query("assets[*].browser_download_url")
+      | select("search", ansible_facts.architecture)
+      })
+      }}
   loop: "{{ __k8s_wasi_download_urls.results }}"
   loop_control:
     label: "{{ item.item }}"
 
 - name: k8s common - wasi | Download wasi-shims
+  when: item.value | length >= 1
   ansible.builtin.unarchive:
-    src: "{{ item.value }}"
+    src: "{{ item.value | first }}"
     dest: /usr/local/bin
     remote_src: true
     exclude:
