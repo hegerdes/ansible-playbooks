@@ -60,6 +60,7 @@
 - name: Install docker-compose pip package
   when: docker_install_portainer and (not docker_init_swarm or not docker_swarm_result.docker_swarm_manager) | bool
   ansible.builtin.pip:
+    break_system_packages: true
     name: docker-compose
   tags: [docker, docker-portainer]
 
