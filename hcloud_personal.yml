@@ -2,12 +2,9 @@
 - hosts: personal
   become: true
   gather_facts: true
-  vars_files:
-    - "{{ inventory_dir }}/secrets/vault.yml"
-
   roles:
-    # - common
+    - common
     # - docker
-    # - promtail
-    # - cloudflare-dns
+    - promtail
+    - cloudflare-dns
     - docker-deploy
