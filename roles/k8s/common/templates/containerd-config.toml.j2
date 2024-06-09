@@ -41,6 +41,7 @@ version = 2
     # See: https://github.com/containers/crun/blob/main/docs/wasm-wasi-on-kubernetes.md
     pod_annotations = ["*.wasm.*", "wasm.*", "module.wasm.image/*", "*.module.wasm.image", "module.wasm.image/variant.*"]
   [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.crun.options]
+    BinaryName = "/usr/local/bin/crun"
     SystemdCgroup = true
 
   # gVisor
@@ -53,8 +54,9 @@ version = 2
 
   # youki
   [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.youki]
-    runtime_type = "io.containerd.youki.v2"
+    runtime_type = "io.containerd.runc.v2"
   [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.youki.options]
+    BinaryName = "/usr/local/bin/youki"
     SystemdCgroup = true
 
   # wasmedge

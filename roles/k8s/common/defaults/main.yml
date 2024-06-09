@@ -224,7 +224,7 @@ k8s_crun_query: >-
   }}
 
 k8s_youki_query: "assets[?contains(name, '{{ ansible_facts.architecture }}-gnu.tar.gz' )].browser_download_url"
-k8s_wasmi_version: "{{ lookup('url', 'https://api.github.com/repos/containerd/runwasi/releases?per_page=3') | from_json | json_query('[*].tag_name') }}"
+k8s_wasmi_version: "{{ lookup('url', 'https://api.github.com/repos/containerd/runwasi/releases?per_page=4') | from_json | json_query('[*].tag_name') }}"
 
 system_arch_map:
   x86_64: amd64
