@@ -6,13 +6,14 @@
     state: present
   tags: [docker, docker-install]
 
-- name: Add gVisor repository
-  ansible.builtin.apt_repository:
-    repo: 'deb [arch={{ ansible_facts.distribution | lower }}] https://storage.googleapis.com/gvisor/releases release main'
-    update_cache: true
-    state: present
-    filename: gvisor
-  tags: [docker, docker-install]
+- name: gVisor repository
+  ansible.builtin.deb822_repository:
+    name: gvisor
+    types: [deb]
+    uris: https://storage.googleapis.com/gvisor/releases
+    signed_by: "https://gvisor.dev/archive.key"
+    components: [main]
+    suites: [release]
 
 - name: Install gVisor
   ansible.builtin.apt:

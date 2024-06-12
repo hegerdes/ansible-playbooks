@@ -4,7 +4,7 @@
   gather_facts: true
   roles:
     - common
-    # - docker
+    - docker
     - promtail
     - cloudflare-dns
     - docker-deploy
