@@ -179,10 +179,13 @@
     apply:
       tags: [k8s, k8s-prepare, k8s-base, k8s-runtime]
   with_items:
-    - { file: "crun{{ '_wasm' if(k8s_crun_with_wasm) }}.yml", run: true }
+    - {
+        file: "crun{{ '_wasm' if(k8s_crun_with_wasm) }}.yml",
+        run: "{{ k8s_install_crun }}",
+      }
+    - { file: "wasi.yml", run: "{{ k8s_install_wasi }}" }
     - { file: "youki.yml", run: "{{ k8s_install_youki }}" }
     - { file: "kata_containers.yml", run: "{{ k8s_install_kata_containers }}" }
-    - { file: "wasi.yml", run: "{{ k8s_install_wasi }}" }
   loop_control:
     loop_var: task
     label: "{{ task.file }}"

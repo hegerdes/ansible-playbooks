@@ -6,6 +6,7 @@ k8s_cri: crun
 k8s_install_gvisor: true
 k8s_install_wasi: true
 k8s_install_youki: true
+k8s_install_crun: true
 k8s_install_kata_containers: false
 
 # Key value pairs passed to kubelet
