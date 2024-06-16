@@ -62,23 +62,21 @@
   tags: [k8s, k8s-prepare, k8s-base, apt]
 
 - name: k8s common | Setup UnattendedUpgrades
-  ansible.builtin.lineinfile:
+  ansible.builtin.blockinfile:
     path: /etc/apt/apt.conf.d/20auto-upgrades
     create: true
     state: "{{ k8s_unattended_upgrades_state }}"
-    line: "{{ item }}"
+    block: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
     mode: "0644"
-  loop:
-    - APT::Periodic::Update-Package-Lists "1";
-    - APT::Periodic::Unattended-Upgrade "1";
   tags: [k8s, k8s-prepare, k8s-base, apt]
 
 - name: k8s common | Remove swapfile from /etc/fstab
   ansible.posix.mount:
-    name: "{{ item }}"
+    name: swap
     fstype: swap
     state: absent
-  loop: [swap, none]
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: k8s common | Disable swap
@@ -92,7 +90,7 @@
     path: /etc/hosts
     line: "{{ item.ip }} {{ item.name }}"
     create: true
-    state: '{{ item.state | default("present")}}'
+    state: "{{ item.state | default('present') }}"
   loop: "{{ k8s_etc_hosts }}"
   loop_control:
     label: "{{ item.name }}"
@@ -101,7 +99,7 @@
 - name: k8s common | Create config dirs
   ansible.builtin.file:
     path: "{{ item.path }}"
-    mode: '{{ item.mode | default("0644") }}'
+    mode: "{{ item.mode | default('0644') }}"
     state: directory
   with_items:
     - { path: "/srv" }
@@ -161,7 +159,6 @@
         gvisor enabled: {{ k8s_install_gvisor }}
         wasmedge enabled: {{ k8s_install_wasi }}
         youki enabled: {{ k8s_install_youki }}
-        kata-containers enabled: {{ k8s_install_kata_containers }}
         crun version: {{ k8s_crun_version }}
         crun with wasm: {{ k8s_crun_with_wasm }}
         {{ "runc download url " + k8s_runc_download_url if(k8s_containerd_variant == "github") else "runc version: latest" }}
@@ -223,19 +220,25 @@
 
 - name: k8s common | Install kubelet and admin tools
   ansible.builtin.apt:
-    name:
-      - 'kubeadm{{ "=" + k8s_version + "*" if (k8s_version != "latest") }}'
-      - 'kubectl{{ "=" + k8s_version + "*" if (k8s_version != "latest") }}'
-      - 'kubelet{{ "=" + k8s_version + "*" if (k8s_version != "latest") }}'
-      - '{{ "runsc" if(k8s_install_gvisor) }}'
-      - "etcd-client"
+    name: >-
+      {{ __k8s_kube_packages + __k8s_gvisor_packages
+      if(k8s_install_gvisor)
+      else __k8s_kube_packages
+      }}
     state: present
     update_cache: true
     install_recommends: false
     allow_downgrade: true
     autoremove: true
     allow_change_held_packages: true
-  ignore_errors: "{{ ansible_check_mode }}"
+  vars:
+    __k8s_gvisor_packages:
+      - 'runsc{{ "=" + k8s_gvisor_version + "*" if (k8s_gvisor_version != "latest") }}'
+    __k8s_kube_packages:
+      - 'kubeadm{{ "=" + k8s_version + "*" if (k8s_version != "latest") }}'
+      - 'kubectl{{ "=" + k8s_version + "*" if (k8s_version != "latest") }}'
+      - 'kubelet{{ "=" + k8s_version + "*" if (k8s_version != "latest") }}'
+      - "etcd-client"
   tags: [k8s, k8s-prepare, k8s-base, apt]
 
 - name: k8s common | Include install containerd
@@ -249,10 +252,11 @@
   ansible.builtin.dpkg_selections:
     name: "{{ item }}"
     selection: hold
-  loop: "{{ __k8s_default_k8s_packages | flatten }}"
+  loop: "{{ __k8s_kube_packages | flatten }}"
   vars:
-    __k8s_default_k8s_packages:
+    __k8s_kube_packages:
       - [kubeadm, kubectl, kubelet]
+      - "{{ ['runsc'] if(k8s_install_gvisor) else [] }}"
       - "{{ ['containerd.io'] if(k8s_containerd_variant | lower == 'docker') else [] }}"
   tags: [k8s, k8s-prepare, k8s-base, apt]
 
@@ -264,11 +268,10 @@
     - /etc/containerd
     - /etc/systemd/system/docker.service.d
     - /etc/systemd/system/kubelet.service.d
-    - /usr/wasmedge/lib
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: k8s common | Copy container runtime configs
-  when: item.run | default(True)
+  when: item.run | default(true)
   ansible.builtin.template:
     src: "{{ item.src }}"
     dest: "{{ item.dst }}"
