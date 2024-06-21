@@ -8,6 +8,7 @@
         gnupg,
         cifs-utils,
         lsb-release,
+        yamllint,
         python3-debian,
         ca-certificates,
         apt-transport-https,

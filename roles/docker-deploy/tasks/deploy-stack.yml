@@ -6,6 +6,7 @@
     src: "{{ docker_deploy_src_config_files + item }}"
     dest: "{{ docker_deploy_dst_config_files + item }}"
     mode: "0644"
+    validate: yamllint %s
   loop: "{{ docker_project.compose_files }}"
   tags: [docker-deploy]
 
