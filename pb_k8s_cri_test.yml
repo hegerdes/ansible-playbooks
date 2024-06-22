@@ -1,0 +1,34 @@
+# k8s prep
+# NOTE: Desinged and tested on debian based systems
+
+- name: Node-Prepare
+  hosts: cri-test-nodes
+  remote_user: root
+  become: true
+  gather_facts: true
+  vars:
+    k8s_version: 1.30.2
+    k8s_prepull_images: false
+    # Runtimes
+    k8s_install_gvisor: true
+    k8s_install_youki: true
+    k8s_install_crun: true
+    k8s_install_wasi: false
+    # Runime versions
+    k8s_runc_version: latest
+    k8s_crun_version: latest
+    k8s_youki_version: latest
+    k8s_gvisor_version: latest
+    k8s_containerd_variant: github # can be docker or github
+    k8s_containerd_version: latest
+    k8s_cni_plugins_version: latest
+    k8s_crun_with_wasm: false # Use official crun
+  tasks:
+    - name: Copy benchmark script
+      ansible.builtin.copy:
+        src: shared/cri-bench.sh
+        dest: /srv/cri-bench.sh
+        mode: 0777
+  roles:
+    - node-exporter
+    - k8s/common
