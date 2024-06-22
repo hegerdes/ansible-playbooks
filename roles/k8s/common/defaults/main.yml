@@ -1,5 +1,5 @@
 ---
-k8s_version: 1.30.1
+k8s_version: 1.30.2
 
 # Which cri to use: runc, crun, youki or runsc, kata-containers
 k8s_cri: crun
@@ -35,6 +35,9 @@ k8s_etc_hosts: []
 #     ip: 127.0.0.1
 #     state: present|absent       # optional
 
+# Secure defaults on
+# https://kernsec.org/wiki/index.php/Kernel_Self_Protection_Project/Recommended_Settings
+# https://cos.googlesource.com/cos/overlays/board-overlays/+/refs/heads/master/project-lakitu/chromeos-base/chromeos-base/files/00-sysctl.conf
 k8s_common_sysctl_conf:
   # Allow fast tcp open option
   - { key: net.ipv4.tcp_fastopen, val: 1 }
@@ -69,12 +72,21 @@ k8s_common_sysctl_conf:
   - { key: kernel.pid_max, val: 4194304 }
   # If panic reboot after 10s. Default of 0 - no reboot
   - { key: kernel.panic, val: 10 }
+  # Enable all available Address Space Randomization (ASLR) for userspace processes.
+  - { key: kernel.randomize_va_space, val: 2 }
+  # Avoid kernel memory address exposures via dmesg kernel logs to root only.
+  - { key: kernel.dmesg_restrict, val: 1 }
+  # Keep kernel address exposures out of various /proc files.
+  - { key: kernel.kptr_restrict, val: 1 }
   # Allow more (default is 8192) inotify watch for large workloads.
   - { key: fs.inotify.max_user_watches, val: 524288 }
   # Allow more (default is 128) inotify instances for large workloads.
   - { key: fs.inotify.max_user_instances, val: 1024 }
   # Enable crash reporting for setuid programs too.
   - { key: fs.suid_dumpable, val: 2 }
+  # Disable POSIX symlink and hardlink corner cases that lead to lots of filesystem confusion
+  - { key: fs.protected_symlinks, val: 1 }
+  - { key: fs.protected_hardlinks, val: 1 }
   # Enable SYN cookies (yum!)
   # http://cr.yp.to/syncookies.html
   - { key: net.ipv4.tcp_syncookies, val: 1 }
