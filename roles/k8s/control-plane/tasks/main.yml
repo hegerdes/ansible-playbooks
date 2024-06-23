@@ -107,6 +107,7 @@
     content: "{{ item.content }}"
     dest: "{{ item.dst }}"
     mode: "0600"
+    validate: yq . %s
   with_items:
     - name: k8s cp | kubeadm-join-conf
       dst: "{{ target_data_dir | default('') }}/srv/kubeadm-join-config.yml"
@@ -163,8 +164,6 @@
       - key: node-role.kubernetes.io/control-plane
         effect: NoSchedule
       - key: node-role.kubernetes.io/master
-        effect: NoSchedule
-      - key: node.cloudprovider.kubernetes.io/uninitialized
         effect: NoSchedule
       - key: dedicated
   tags: [k8s, k8s-init, k8s-cp-init, k8s-taint]
