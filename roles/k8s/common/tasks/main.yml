@@ -10,6 +10,7 @@
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: k8s common | Set a hostname
+  when: k8s_inventory_as_hostname
   ansible.builtin.hostname:
     name: "{{ inventory_hostname }}"
   tags: [k8s, k8s-prepare, k8s-base]

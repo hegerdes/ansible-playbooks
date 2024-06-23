@@ -23,6 +23,7 @@
     k8s_containerd_version: latest
     k8s_cni_plugins_version: latest
     k8s_crun_with_wasm: false # Use official crun
+    k8s_inventory_as_hostname: false
   tasks:
     - name: Copy benchmark script
       ansible.builtin.copy:

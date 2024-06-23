@@ -16,6 +16,7 @@ k8s_crun_with_wasm: false
 k8s_crun_wasmlib_version: 0.1.0
 
 k8s_prepull_images: true
+k8s_inventory_as_hostname: true
 k8s_unattended_upgrades_state: present
 k8s_containerd_variant: github # can be docker (uses docker apt repo) or github (official github upstream release)
 k8s_containerd_version: latest # can be set for docker an github version of containerd
