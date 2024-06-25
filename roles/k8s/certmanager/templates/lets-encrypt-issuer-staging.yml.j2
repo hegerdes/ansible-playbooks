@@ -1,7 +1,7 @@
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
-  name: letsencrypt-staging-{{ ingress_class[0] }}
+  name: letsencrypt-staging-{{ ingress_class | first }}
   namespace: cert-manager
 spec:
   acme:
@@ -16,4 +16,10 @@ spec:
     solvers:
     - http01:
         ingress:
-          class: {{ ingress_class[0] }}
+          class: {{ ingress_class | first }}
+    - http01:
+        gatewayHTTPRoute:
+          parentRefs:
+            - name: {{ gateway_class | default(ingress_class) | first }}
+              namespace: {{ gateway_class | default(ingress_class) | first }}
+              kind: Gateway
