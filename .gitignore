@@ -17,3 +17,4 @@ tools/terraform/hetzner/vars.tfvars
 roles/k8s/common/files/ssh/ssh_host_*
 kube-bench-result.txt
 kunescape-scan.txt
+shared/log/

@@ -1,2 +1,0 @@
-[Service]
-ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock --exec-opt native.cgroupdriver=systemd {{ k8s_base_docker_extra_args | default("") }}

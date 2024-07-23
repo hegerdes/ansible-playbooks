@@ -4,7 +4,10 @@
   community.general.cloud_init_data_facts:
     filter: status
   register: _cloud_init_res
-  until: "_cloud_init_res.cloud_init_data_facts.status.v1.stage is defined and not _cloud_init_res.cloud_init_data_facts.status.v1.stage"
+  until: >-
+    _cloud_init_res.cloud_init_data_facts.status.v1.stage is defined
+    and not
+    _cloud_init_res.cloud_init_data_facts.status.v1.stage
   retries: 25
   delay: 10
   tags: [k8s, k8s-prepare, k8s-base]
@@ -107,7 +110,6 @@
     - { path: "/etc/containerd" }
     - { path: "/etc/apt/keyrings", mode: "0755" }
     - { path: "{{ ansible_facts.env.HOME }}/.kube" }
-    - { path: "/etc/systemd/system/docker.service.d" }
     - { path: "/etc/kubernetes/enc", mode: "0775" }
     - { path: "/etc/kubernetes/kubelet.conf.d", mode: "0744" }
     - { path: "/etc/systemd/system/kubelet.service.d", mode: "0600" }
@@ -160,6 +162,7 @@
         gvisor enabled: {{ k8s_install_gvisor }}
         wasmedge enabled: {{ k8s_install_wasi }}
         youki enabled: {{ k8s_install_youki }}
+        youki with wasm: {{ k8s_youki_with_wasm }}
         crun version: {{ k8s_crun_version }}
         crun with wasm: {{ k8s_crun_with_wasm }}
         {{ "runc download url " + k8s_runc_download_url if(k8s_containerd_variant == "github") else "runc version: latest" }}
@@ -267,7 +270,6 @@
     state: directory
   loop:
     - /etc/containerd
-    - /etc/systemd/system/docker.service.d
     - /etc/systemd/system/kubelet.service.d
   tags: [k8s, k8s-prepare, k8s-base]
 
@@ -286,8 +288,6 @@
       dst: /etc/containerd/runsc.toml.j2
     - src: crictl.yaml.j2
       dst: /etc/crictl.yaml
-    - src: 00-docker-cgroup.conf.j2
-      dst: /etc/systemd/system/docker.service.d/00-docker-cgroup.conf
     - src: cilium-networkd.conf.j2
       dst: /etc/systemd/networkd.conf
       run: "{{ k8s_cni | lower == 'cilium'}}"
