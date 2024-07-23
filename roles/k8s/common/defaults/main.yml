@@ -1,5 +1,6 @@
 ---
-k8s_version: 1.30.2
+k8s_version: 1.30.3
+k8s_snapshot_mode_disabled: true
 
 # Which cri to use: runc, crun, youki or runsc, kata-containers
 k8s_cri: crun
@@ -12,6 +13,7 @@ k8s_install_kata_containers: false
 # Key value pairs passed to kubelet
 k8s_kubelet_extra_args: {}
 
+k8s_youki_with_wasm: false
 k8s_crun_with_wasm: false
 k8s_crun_wasmlib_version: 0.1.0
 
@@ -82,7 +84,7 @@ k8s_common_sysctl_conf:
   # Allow more (default is 8192) inotify watch for large workloads.
   - { key: fs.inotify.max_user_watches, val: 524288 }
   # Allow more (default is 128) inotify instances for large workloads.
-  - { key: fs.inotify.max_user_instances, val: 1024 }
+  - { key: fs.inotify.max_user_instances, val: 4096 }
   # Enable crash reporting for setuid programs too.
   - { key: fs.suid_dumpable, val: 2 }
   # Disable POSIX symlink and hardlink corner cases that lead to lots of filesystem confusion
@@ -184,6 +186,15 @@ k8s_crun_wasm_download_url: >-
   | list
   | first
   }}
+k8s_youki_wasm_download_url: >-
+  {{
+  lookup("url", "https://api.github.com/repos/hegerdes/helper-suite/releases/latest")
+  | from_json
+  | json_query(k8s_youki_wasm_query)
+  | select('search', 'youki')
+  | list
+  | first
+  }}
 k8s_youki_download_url: >-
   {{
   lookup("url", "https://api.github.com/repos/containers/youki/releases/latest")
@@ -238,6 +249,7 @@ k8s_crun_query: >-
   + "')].browser_download_url"
   }}
 
+k8s_youki_wasm_query: "assets[?contains(name, '{{ system_arch_map[ansible_facts.architecture] }}.tar.gz' )].browser_download_url"
 k8s_youki_query: "assets[?contains(name, '{{ ansible_facts.architecture }}-gnu.tar.gz' )].browser_download_url"
 k8s_wasmi_version: "{{ lookup('url', 'https://api.github.com/repos/containerd/runwasi/releases?per_page=4') | from_json | json_query('[*].tag_name') }}"
 

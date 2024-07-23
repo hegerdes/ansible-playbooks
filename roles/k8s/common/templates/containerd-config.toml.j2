@@ -74,6 +74,10 @@ version = 2
   [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.wasmer]
   runtime_type = "io.containerd.wasmer.v1"
 
+  # Registry
+  [plugins."io.containerd.grpc.v1.cri".registry]
+    config_path = "/etc/containerd/certs.d"
+
 #root = "/var/lib/containerd"
 #state = "/run/containerd"
 #subreaper = true
