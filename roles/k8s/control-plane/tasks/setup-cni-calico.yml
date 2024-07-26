@@ -28,7 +28,7 @@
     dest: /usr/bin/kubectl-calico
     mode: "0754"
   vars:
-    __calicoctl_uri: "v3.27.3/calicoctl-linux-{{ system_arch_map[ansible_facts.architecture] }}"
+    __calicoctl_uri: "v3.28.0/calicoctl-linux-{{ system_arch_map[ansible_facts.architecture] }}"
   tags: [k8s, k8s-init, k8s-cp-init, k8s-cni, k8s-calico]
 
 - name: k8s cp - cni calico | Verify Calico

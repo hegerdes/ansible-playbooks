@@ -135,26 +135,78 @@ k8s_cilium_chart_version: "{{ null | default(omit) }}"
 # See example setup: https://docs.cilium.io/en/stable/helm-reference/
 # Kube-proxy-free: https://docs.cilium.io/en/stable/network/kubernetes/kubeproxy-free/
 k8s_cilium_helm_values:
-  k8sServiceHost: "{{ k8s_shared_api_server_endpoint }}"
-  kubeProxyReplacement: true
-  k8sServicePort: 6443
-  rollOutCiliumPods: true
-  # tunnelProtocol: "native"
-  priorityClassName: "system-node-critical"
   cluster:
     name: "{{ k8s_cluster_name }}"
-  ipam:
-    # mode: "kubernetes"
-    operator:
-      clusterPoolIPv4PodCIDRList: [10.244.0.0/16]
 
+  priorityClassName: "system-node-critical"
+  k8sServiceHost: "{{ k8s_shared_api_server_endpoint }}"
+  k8sServicePort: 6443
+  rollOutCiliumPods: true
+  kubeProxyReplacement: true
+  # MTU: 1450 # for Hetzner
+
+  operator:
+    rollOutPods: true
+    replicas: 2
+  bpf:
+    masquerade: true
+  ipam:
+    mode: "kubernetes"
+    operator:
+      clusterPoolIPv4PodCIDRList: ["{{ k8s_pod_network_cidr_ipv4 }}"]
+
+  loadBalancer:
+    algorithm: maglev
+    serviceTopology: true
+    acceleration: best-effort # disabled, best-effort or native
+    # mode: hybrid
+  bandwidthManager:
+    enabled: true
+
+  hubble:
+    enabled: true
+    metrics:
+      enabled: ["dns:query;ignoreAAAA", "drop", "tcp"]
+    relay:
+      enabled: true
+      rollOutPods: true
+    ui:
+      enabled: true
+      rollOutPods: true
+      ingress:
+        enabled: true
+        className: nginx
+        annotations:
+          cert-manager.io/cluster-issuer: letsencrypt-prod-nginx
+          nginx.ingress.kubernetes.io/auth-url: http://oauth2-proxy.oauth-proxy.svc.cluster.local/oauth2/auth
+          nginx.ingress.kubernetes.io/auth-signin: https://oauth.k8s.henrikgerdes.me/oauth2/start?rd=https://$host$request_uri
+        hosts:
+          - hubble.k8s.henrikgerdes.me
+        tls:
+          - secretName: hubble-ing-tls
+            hosts:
+              - hubble.k8s.henrikgerdes.me
+  # Needed if tailscale services are routed
+  socketLB:
+    hostNamespaceOnly: true
+
+  # # Native routung
+  # routingMode: native
+  # ipv4NativeRoutingCIDR: "{{ k8s_cloud_net }}"
+  # autoDirectNodeRoutes: false
+  # installNoConntrackIptablesRules: true
+
+  # hostFirewall:
+  #   enabled: true
+  # # BGP native routing
+  # bgp:
+  #   enabled: true
+  #   announce:
+  #     loadbalancerIP: true
   # encryption:
   #   enabled: true
   #   type: wireguard
   # # -- Configure the underlying network MTU to overwrite auto-detected MTU.
-  # MTU: 1450 # for Hetzner
-  # # Recreate agent on config map change
-  # tunnel: "vxlan"
 
 system_arch_map:
   x86_64: amd64
