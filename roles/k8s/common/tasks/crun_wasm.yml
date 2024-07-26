@@ -35,10 +35,10 @@
   ansible.builtin.lineinfile:
     path: /etc/ld.so.conf
     line: /usr/wasmedge/lib
-  register: _was_lib_link_ad
+  register: __was_lib_link_ad
 
 - name: k8s common - crun | Reload lib link config
-  when: _was_lib_link_ad.changed
+  when: __was_lib_link_ad.changed
   ansible.builtin.command:
     cmd: ldconfig
 
