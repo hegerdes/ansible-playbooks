@@ -1,8 +1,12 @@
 # Setup youki
 - name: k8s common - youki | Install youki
   ansible.builtin.unarchive:
-    src: "{{ k8s_youki_wasm_download_url if(k8s_youki_with_wasm) else
-      k8s_youki_download_url }}"
+    src: >-
+      {{ k8s_youki_wasm_download_url
+      if(k8s_youki_with_wasm)
+      else
+      k8s_youki_download_url
+      }}
     dest: /usr/local/bin
     list_files: true
     remote_src: true
@@ -17,7 +21,8 @@
 - name: k8s common - youki | Create symlink for wasm youki
   when: k8s_youki_with_wasm and __k8s_youki_download is not skipped
   ansible.builtin.file:
-    src: "/usr/local/bin/{{ __k8s_youki_download.files | first }}"
+    src: >-
+      /usr/local/bin/{{ __k8s_youki_download.files | first }}/youki-linux-{{ system_arch_map[ansible_facts.architecture] }}
     dest: /usr/local/bin/youki
     mode: 0755
     state: link
