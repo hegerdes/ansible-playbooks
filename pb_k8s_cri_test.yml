@@ -7,7 +7,7 @@
   become: true
   gather_facts: true
   vars:
-    k8s_version: 1.30.2
+    # k8s_version: 1.31.0
     k8s_prepull_images: false
     # Runtimes
     k8s_install_gvisor: true

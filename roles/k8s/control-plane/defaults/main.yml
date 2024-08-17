@@ -1,6 +1,8 @@
 ---
-k8s_version: 1.30.3
+k8s_version: 1.31.0
 k8s_dual_stack: false
+k8s_install_core_dns: true
+k8s_install_kube_proxy: true
 k8s_image_repo: registry.k8s.io
 k8s_cluster_name: "{{ inventory_dir | basename }}"
 k8s_pki_cert_path: /etc/kubernetes/pki
@@ -49,10 +51,11 @@ k8s_kubeadm_skip_phases: []
 # # Example
 # k8s_kubeadm_skip_phases:
 #   - addon/kube-proxy
-k8s_controlplane_extra_args: {}
+k8s_controlplane_extra_args: []
 # # Example
 # k8s_controlplane_extra_args:
-#   anonymous-auth: "false"
+#   - name: anonymous-auth
+#     value: "false"
 
 ######### Taints & Roles #########
 k8s_remove_no_schedule_cp_taints: false

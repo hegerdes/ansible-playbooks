@@ -7,7 +7,7 @@
   roles:
     - cloudflare-dns
 
-- name: K8s-ClusterPreb
+- name: K8s-Cluster-Preparation
   hosts: k8s
   become: true
   gather_facts: true

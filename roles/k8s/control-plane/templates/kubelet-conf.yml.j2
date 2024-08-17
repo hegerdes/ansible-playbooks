@@ -3,9 +3,12 @@ apiVersion: kubelet.config.k8s.io/v1beta1
 kind: KubeletConfiguration
 
 # See https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet/
-# featureGates:
-#  HPAScaleToZero: true
-
+featureGates:
+  # HPAScaleToZero: true
+  # KubeletInUserNamespace: true
+  # ImageVolume: true
+  # UserNamespacesSupport: true
+  EventedPLEG: true
 authentication:
   anonymous:
     enabled: false

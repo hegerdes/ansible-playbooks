@@ -1,5 +1,5 @@
 ---
-k8s_version: 1.30.3
+k8s_version: 1.31.0
 k8s_snapshot_mode_disabled: true
 
 # Which cri to use: runc, crun, youki or runsc, kata-containers
@@ -10,8 +10,12 @@ k8s_install_youki: true
 k8s_install_crun: true
 k8s_install_kata_containers: false
 
-# Key value pairs passed to kubelet
-k8s_kubelet_extra_args: {}
+# List of key value pairs passed to kubelet
+k8s_kubelet_extra_args: []
+# # Example
+# k8s_kubelet_extra_args:
+#   - name: arg1
+#     value: val1
 
 k8s_youki_with_wasm: false
 k8s_crun_with_wasm: false
