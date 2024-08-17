@@ -1,19 +1,16 @@
 # Install gvisor
 ---
-- name: Add gVisor GPG apt Key
-  ansible.builtin.apt_key:
-    url: https://gvisor.dev/archive.key
-    state: present
-  tags: [docker, docker-install]
-
 - name: gVisor repository
   ansible.builtin.deb822_repository:
     name: gvisor
     types: [deb]
     uris: https://storage.googleapis.com/gvisor/releases
-    signed_by: "https://gvisor.dev/archive.key"
+    signed_by: https://gvisor.dev/archive.key
     components: [main]
     suites: [release]
+    state: present
+    enabled: True
+  tags: [docker, docker-install]
 
 - name: Install gVisor
   ansible.builtin.apt:
