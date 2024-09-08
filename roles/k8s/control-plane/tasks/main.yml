@@ -197,13 +197,19 @@
 - name: k8s cp | Approve kubelet csr
   ansible.builtin.command: "kubectl certificate approve {{ __k8s_kubelet_csr }}"
   when: __k8s_kubelet_csr_list_res.resources | json_query(__k8s_kubelet_csr_query) | length > 0
-  register: _k8s_worker_role_set
-  changed_when: ("certificatesigningrequest.certificates.k8s.io/" + __k8s_kubelet_csr + " approved") in _k8s_worker_role_set.stdout
+  register: __k8s_worker_role_set
+  changed_when: >-
+    ("certificatesigningrequest.certificates.k8s.io/" + __k8s_kubelet_csr + " approved")
+    in __k8s_worker_role_set.stdout
   environment:
     KUBECONFIG: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
   vars:
     __k8s_kubelet_csr_query: "[?spec.username == 'system:node:{{ inventory_hostname }}' && status == `{}`]"
-    __k8s_kubelet_csr: "{{ (__k8s_kubelet_csr_list_res.resources | json_query(__k8s_kubelet_csr_query) | first).metadata.name }}"
+    __k8s_kubelet_csr: >-
+      {{ (__k8s_kubelet_csr_list_res.resources
+      | json_query(__k8s_kubelet_csr_query)
+      | first).metadata.name
+      }}
   tags: [k8s, k8s-init, k8s-cp-init, k8s-init-config]
 
 - name: k8s cp | Setup configs
