@@ -3,10 +3,8 @@ apiVersion: kubeadm.k8s.io/v1beta4
 kind: InitConfiguration
 nodeRegistration:
   kubeletExtraArgs:
-#    - name: config-dir
-#      value: /etc/kubernetes/kubelet.conf.d
-    - name: address
-      value: {{ k8s_node_ip_v4 }}
+    - name: config-dir
+      value: /etc/kubernetes/kubelet.conf.d
     - name: node-ip
       value: {{ k8s_node_ip_v4 }}{{ "," + k8s_node_ip_v6 | default(ansible_facts.default_ipv6.address) if(k8s_dual_stack) }}
     {{ k8s_kubelet_extra_args | to_nice_yaml(indent=2) | indent(width=4) }}
@@ -16,6 +14,9 @@ nodeRegistration:
 localAPIEndpoint:
   advertiseAddress: {{ k8s_node_ip_v4 }}
   bindPort: {{ k8s_kubelet_advertise_port | default(6443) | int }}
+timeouts:
+  kubeletHealthCheck: 2m
+  controlPlaneComponentHealthCheck: 4m
 skipPhases:
   {{ k8s_kubeadm_skip_phases | to_nice_yaml(indent=2) | indent(width=2) }}
 ---
@@ -34,7 +35,6 @@ networking:
   dnsDomain: "cluster.local"
 
 apiServer:
-  timeoutForControlPlane: 4m0s
   extraArgs:
     - name: profiling
       value: "false"
