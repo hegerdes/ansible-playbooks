@@ -1,5 +1,5 @@
 ---
-k8s_version: 1.31.0
+k8s_version: 1.31.1
 k8s_dual_stack: false
 k8s_install_core_dns: true
 k8s_install_kube_proxy: true
