@@ -19,7 +19,7 @@
 # Other container image snapshotter:
 # https://github.com/containerd/stargz-snapshotter/blob/main/docs/INSTALL.md
 
-# K8s config settings for systemd (runc and crun)
+# K8s config settings for systemd and various container runtimes
 version = 2
 [plugins]
 
@@ -28,6 +28,11 @@ version = 2
     default_runtime_name = "{{ k8s_cri }}"
   [plugins."io.containerd.runtime.v1.linux"]
     runtime = "{{ k8s_cri }}"
+
+  # Docs https://github.com/containerd/containerd/blob/main/docs/cri/config.md
+  [plugins."io.containerd.grpc.v1.cri"]
+    sandbox_image = "registry.k8s.io/pause:3.10"
+    enable_unprivileged_ports = true
 
   # runc
   [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
