@@ -20,8 +20,6 @@ include:
     file: .gitlab/ci/rules.yml
   - component: $CI_SERVER_HOST/hegerdes/gitlab-actions/kaniko-build@main
     inputs:
-      context: $CI_PROJECT_DIR/tests
-      dockerfile: $CI_PROJECT_DIR/tests/Dockerfile
       add_image_arch_postfix: true
 
 KANIKO:build:
