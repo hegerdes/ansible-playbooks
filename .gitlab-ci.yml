@@ -25,7 +25,8 @@ include:
 KANIKO:build:
   tags: [$RUNNER]
   variables:
-    CONTAINER_BUILD_EXTRA_ARGS: --compressed-caching=false
+    # CONTAINER_BUILD_EXTRA_ARGS: --compressed-caching=false
+    CONTAINER_BUILD_EXTRA_ARGS: --use-new-run
   parallel:
     matrix:
       - RUNNER: saas-linux-small-amd64
