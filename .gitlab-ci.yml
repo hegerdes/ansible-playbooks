@@ -24,8 +24,8 @@ include:
 
 KANIKO:build:
   tags: [$RUNNER]
-  # Multiple pushes may cause race condition. Retry twice
-  retry: 2
+  variables:
+    CONTAINER_BUILD_EXTRA_ARGS: --compressed-caching=false
   parallel:
     matrix:
       - RUNNER: saas-linux-small-amd64
