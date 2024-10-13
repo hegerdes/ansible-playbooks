@@ -14,13 +14,21 @@ variables:
 include:
   - project: hegerdes/templates
     file: /gitlab/ci/defaults.yml
-  - project: hegerdes/templates
-    file: /gitlab/ci/kaniko-build.yml
+  - project: hegerdes/gitlab-actions
+    file: .gitlab/ci/snippets.yml
+  - project: hegerdes/gitlab-actions
+    file: .gitlab/ci/rules.yml
+  - component: $CI_SERVER_HOST/hegerdes/gitlab-actions/kaniko-build@main
+    inputs:
+      context: $CI_PROJECT_DIR/tests
+      dockerfile: $CI_PROJECT_DIR/tests/Dockerfile
+      add_image_arch_postfix: true
 
-image-build-playbooks:
-  extends: .build_template
-  variables:
-    BUILD_IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
-  rules:
-    - if: $CI_COMMIT_REF_NAME
-    - if: $CI_COMMIT_TAG
+KANIKO:build:
+  tags: [$RUNNER]
+  # Multiple pushes may cause race condition. Retry twice
+  retry: 2
+  parallel:
+    matrix:
+      - RUNNER: saas-linux-small-amd64
+      - RUNNER: hegerdes-linux-arm64
