@@ -3,6 +3,7 @@ stages:
   - test
   - prebuild
   - build
+  - package
   - sec-scan
   - pages
   - distribute
@@ -21,6 +22,9 @@ include:
   - component: $CI_SERVER_HOST/hegerdes/gitlab-actions/kaniko-build@main
     inputs:
       add_image_arch_postfix: true
+  - component: gitlab.com/hegerdes/gitlab-actions/container-manifest-merge@main
+    inputs:
+      stage: package
 
 KANIKO:build:
   tags: [$RUNNER]
