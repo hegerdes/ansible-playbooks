@@ -29,7 +29,7 @@ include:
 KANIKO:build:
   tags: [$RUNNER]
   variables:
-    CONTAINER_BUILD_EXTRA_ARGS: --snapshot-mode=redo --use-new-run
+    CONTAINER_BUILD_EXTRA_ARGS: --snapshot-mode=redo --use-new-run --compressed-caching=false
     # CONTAINER_BUILD_EXTRA_ARGS: --compressed-caching=false --single-snapshot --use-new-run --snapshot-mode=redo
   parallel:
     matrix:
