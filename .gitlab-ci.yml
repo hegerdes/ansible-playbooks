@@ -29,8 +29,8 @@ include:
 KANIKO:build:
   tags: [$RUNNER]
   variables:
-    CONTAINER_BUILD_EXTRA_ARGS: --compressed-caching=false --single-snapshot
-    # CONTAINER_BUILD_EXTRA_ARGS: --compressed-caching=false --single-snapshot --use-new-run
+    CONTAINER_BUILD_EXTRA_ARGS: --snapshot-mode=redo --use-new-run
+    # CONTAINER_BUILD_EXTRA_ARGS: --compressed-caching=false --single-snapshot --use-new-run --snapshot-mode=redo
   parallel:
     matrix:
       - RUNNER: saas-linux-small-amd64

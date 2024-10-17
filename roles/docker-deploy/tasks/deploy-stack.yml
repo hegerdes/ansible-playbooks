@@ -68,6 +68,7 @@
   tags: [docker-deploy]
 
 - name: Format Docker Image-Facts
+  when: not ansible_check_mode
   ansible.builtin.set_fact:
     image_info_data: '{{ image_info_data | default([]) + [ {(item.item | string | replace(":","-") ): item.image.Config.Labels }] }}'
   loop: "{{ docker_image_pull_res.results }}"
