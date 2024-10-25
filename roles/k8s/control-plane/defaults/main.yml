@@ -150,7 +150,8 @@ k8s_cilium_helm_values:
 
   operator:
     rollOutPods: true
-    replicas: 2
+  bandwidthManager:
+    enabled: true
   bpf:
     masquerade: true
   ipam:
@@ -163,8 +164,6 @@ k8s_cilium_helm_values:
     serviceTopology: true
     acceleration: best-effort # disabled, best-effort or native
     # mode: hybrid
-  bandwidthManager:
-    enabled: true
 
   hubble:
     enabled: true
