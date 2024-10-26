@@ -16,14 +16,16 @@
     content: "{{ item.content }}"
     dest: "{{ item.dst }}"
     mode: "0600"
-    validate: yq . %s
+    validate: "{{ item.validate | default(omit) }}"
   with_items:
     - name: kubeadm-conf
       dst: "{{ target_data_dir | default('') }}/srv/kubeadm-config.yaml"
+      validate: kubeadm config validate --config %s
       content: "{{ k8s_kubeadm_conf }}"
     - name: etcd-encryption-conf
       dst: /etc/kubernetes/enc/encryption-config.yaml
       content: "{{ k8s_etcd_encryption_conf }}"
+      validate: yq . %s
     # - name: kubelet-conf
     # dst: /etc/kubernetes/kubelet.conf.d/20-kubelet.conf
     #   content: "{{ k8s_kubelet_conf }}"

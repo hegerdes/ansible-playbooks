@@ -39,15 +39,16 @@
     content: "{{ item.content }}"
     dest: "{{ item.dst }}"
     mode: "0600"
-    validate: yq . %s
+    validate: "{{ item.validate | default(omit) }}"
   with_items:
     - name: kubeadm-join-conf
       dst: '{{ target_data_dir | default("") }}/srv/kubeadm-join-config.yaml'
       content: "{{ k8s_kubeadm_join_conf }}"
-    # - name: kubelet-conf
-    # Now included in kubeadm conf
-    #   dst: /var/lib/kubelet/config.yaml
-    #   content: "{{ k8s_kubelet_conf }}"
+      validate: kubeadm config validate --config %s
+    - name: kubelet-conf
+      dst: /var/lib/kubelet/config.yaml
+      content: "{{ k8s_kubelet_conf }}"
+      validate: yq . %s
   loop_control:
     label: "{{ item.name }}"
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]

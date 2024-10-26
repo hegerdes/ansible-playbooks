@@ -35,6 +35,7 @@
         lsb-release,
         ca-certificates,
         curl,
+        pigz,
         apparmor,
         python3-kubernetes,
         apt-transport-https,
@@ -253,6 +254,14 @@
       tags: [k8s, k8s-prepare, k8s-base, apt]
   tags: [k8s, k8s-prepare, k8s-base, k8s-runtime, apt]
 
+- name: k8s common | Include install kubelet-static-credential-provider
+  when: k8s_credential_provider_enabled
+  ansible.builtin.include_tasks:
+    file: "kubelet-credential-provider.yml"
+    apply:
+      tags: [k8s, k8s-prepare, k8s-base, k8s-plugins]
+  tags: [k8s, k8s-prepare, k8s-base, k8s-plugins]
+
 - name: k8s common | Set packages to fixed versions
   ansible.builtin.dpkg_selections:
     name: "{{ item }}"
@@ -282,6 +291,8 @@
     mode: "0600"
     owner: root
     group: root
+    # validate:
+    validate: "{{ item.validate | default(omit) }}"
   with_items:
     - src: containerd-config.toml.j2
       dst: /etc/containerd/config.toml
@@ -289,10 +300,13 @@
       dst: /etc/containerd/runsc.toml.j2
     - src: crictl.yaml.j2
       dst: /etc/crictl.yaml
+      validate: yq . %s
     - src: cilium-networkd.conf.j2
       dst: /etc/systemd/networkd.conf
       run: "{{ k8s_cni | lower == 'cilium'}}"
   register: __run_conf
+  loop_control:
+    label: "{{ item.src }}"
   tags: [k8s, k8s-prepare, k8s-base, k8s-runtime]
 
 - name: k8s common | Enable containerd service
