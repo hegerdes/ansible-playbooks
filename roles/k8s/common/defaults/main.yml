@@ -1,5 +1,5 @@
 ---
-k8s_version: 1.31.1
+k8s_version: 1.31.2
 k8s_snapshot_mode_disabled: true
 
 # Which cri to use: runc, crun, youki or runsc, kata-containers
@@ -23,6 +23,8 @@ k8s_crun_wasmlib_version: 0.1.0
 
 k8s_prepull_images: true
 k8s_inventory_as_hostname: true
+k8s_credential_provider_enabled: false
+k8s_credential_provider_version: latest
 k8s_unattended_upgrades_state: present
 k8s_containerd_variant: github # can be docker (uses docker apt repo) or github (official github upstream release)
 k8s_containerd_version: latest # can be set for docker an github version of containerd
@@ -41,6 +43,12 @@ k8s_etc_hosts: []
 #   - name: k8s-hetzner-cp
 #     ip: 127.0.0.1
 #     state: present|absent       # optional
+
+# kubelet credential provider
+k8s_credential_provider_config_dest: /srv/kubelet-credential-provider-conf.yaml
+k8s_credential_provider_bin_dir: /var/lib/kubelet-plugins/
+# k8s_credential_provider_registry_password: demo
+# k8s_credential_provider_registry_username: demo
 
 # Secure defaults on
 # https://kernsec.org/wiki/index.php/Kernel_Self_Protection_Project/Recommended_Settings
@@ -63,6 +71,8 @@ k8s_common_sysctl_conf:
   - { key: net.ipv6.conf.default.forwarding, val: 1 }
   - { key: net.bridge.bridge-nf-call-iptables, val: 1 }
   - { key: net.bridge.bridge-nf-call-ip6tables, val: 1 }
+  # Allow to bind to lower ports
+  - { key: net.ipv4.ip_unprivileged_port_start, val: 0 }
   # Log martian packets un-routable source addresses to the kernel log.
   - { key: net.ipv4.conf.all.log_martians, val: 1 }
   - { key: net.ipv4.conf.default.log_martians, val: 1 }
@@ -231,6 +241,18 @@ k8s_kata_containers_download_url: >-
   | list
   | first
   }}
+k8s_credential_provider_download_url: >-
+  {{
+  lookup("url", "https://api.github.com/repos/hegerdes/kubelet-static-credential-provider/releases/latest")
+  | from_json
+  | json_query(k8s_credential_provider_query)
+  | first if(k8s_cni_plugins_version == "latest")
+  else
+  "https://github.com/hegerdes/kubelet-static-credential-provider/releases/download/v"
+  + k8s_credential_provider_version + "/static-credential-provider_"
+  + k8s_credential_provider_version + "_linux_" + containerd_arch_map[ansible_facts.architecture]
+  + "-v" + k8s_cni_plugins_version + ".tgz"
+  }}
 
 k8s_crun_wasm_query: "assets[?starts_with(name, 'crun')].browser_download_url"
 k8s_kata_containers_query: assets[?starts_with(name, "kata-static")].browser_download_url
@@ -263,7 +285,12 @@ k8s_crun_query: >-
   + system_arch_map[ansible_facts.architecture]
   + "')].browser_download_url"
   }}
-
+k8s_credential_provider_query: >-
+  {{
+  "assets[?contains(name, 'linux_"
+  + system_arch_map[ansible_facts.architecture]
+  + "')].browser_download_url"
+  }}
 k8s_youki_wasm_query: "assets[?contains(name, '{{ system_arch_map[ansible_facts.architecture] }}.tar.gz' )].browser_download_url"
 k8s_youki_query: "assets[?contains(name, '{{ ansible_facts.architecture }}-gnu.tar.gz' )].browser_download_url"
 k8s_wasmi_version: "{{ lookup('url', 'https://api.github.com/repos/containerd/runwasi/releases?per_page=4') | from_json | json_query('[*].tag_name') }}"
@@ -271,3 +298,18 @@ k8s_wasmi_version: "{{ lookup('url', 'https://api.github.com/repos/containerd/ru
 system_arch_map:
   x86_64: amd64
   aarch64: arm64
+
+k8s_credential_provider_test_input:
+  apiVersion: kubelet.config.k8s.io/v1
+  kind: CredentialProviderConfig
+  providers:
+    - name: static-credential-provider
+      # args:[--example-argument]
+      matchImages: [docker.io]
+      defaultCacheDuration: "12h"
+      apiVersion: credentialprovider.kubelet.k8s.io/v1
+      env:
+        - name: SCP_REGISTRY_USERNAME
+          value: demo
+        - name: SCP_REGISTRY_PASSWORD
+          value: demo

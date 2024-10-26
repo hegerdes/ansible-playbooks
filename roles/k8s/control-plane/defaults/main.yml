@@ -1,5 +1,5 @@
 ---
-k8s_version: 1.31.1
+k8s_version: 1.31.2
 k8s_dual_stack: false
 k8s_install_core_dns: true
 k8s_install_kube_proxy: true
@@ -24,6 +24,7 @@ k8s_service_network_cidr: >-
   if(k8s_dual_stack) else
   k8s_service_network_cidr_ipv4
   }}
+
 k8s_pod_network_cidr_ipv4: 10.244.0.0/16
 k8s_service_network_cidr_ipv4: 10.96.0.0/16
 k8s_pod_network_cidr_ipv6: 2001:db8:42:0::/56
