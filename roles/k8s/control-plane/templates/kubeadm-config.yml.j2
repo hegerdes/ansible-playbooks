@@ -2,9 +2,8 @@
 apiVersion: kubeadm.k8s.io/v1beta4
 kind: InitConfiguration
 nodeRegistration:
+  imagePullSerial: false
   kubeletExtraArgs:
-    - name: config-dir
-      value: /etc/kubernetes/kubelet.conf.d
     - name: node-ip
       value: {{ k8s_node_ip_v4 }}{{ "," + k8s_node_ip_v6 | default(ansible_facts.default_ipv6.address) if(k8s_dual_stack) }}
     {{ k8s_kubelet_extra_args | to_nice_yaml(indent=2) | indent(width=4) }}

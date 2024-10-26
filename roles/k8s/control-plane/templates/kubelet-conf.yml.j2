@@ -27,8 +27,8 @@ authorization:
 rotateCertificates: true
 serverTLSBootstrap: true
 
-address: {{ k8s_node_ip_v4 }}
-containerRuntimeEndpoint: unix:///run/containerd/containerd.sock
+address: "{{ k8s_node_ip_v4 }}"
+containerRuntimeEndpoint: "unix:///run/containerd/containerd.sock"
 clusterDomain: cluster.local
 clusterDNS: [10.96.0.10]
 

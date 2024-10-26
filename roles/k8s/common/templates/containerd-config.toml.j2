@@ -24,10 +24,8 @@ version = 2
 [plugins]
 
   # Common
-  [plugins."io.containerd.grpc.v1.cri".containerd]
+  [plugins."io.containerd.grpc.v1.cri".containerd] # change to [plugins."io.containerd.cri.v1.runtime".containerd] for containerd 2.0
     default_runtime_name = "{{ k8s_cri }}"
-  [plugins."io.containerd.runtime.v1.linux"]
-    runtime = "{{ k8s_cri }}"
 
   # Docs https://github.com/containerd/containerd/blob/main/docs/cri/config.md
   [plugins."io.containerd.grpc.v1.cri"]

@@ -3,9 +3,12 @@ apiVersion: kubelet.config.k8s.io/v1beta1
 kind: KubeletConfiguration
 
 # See https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet/
-# featureGates:
-#  HPAScaleToZero: true
-
+featureGates:
+  # HPAScaleToZero: true
+  # KubeletInUserNamespace: true
+  # ImageVolume: true
+  # UserNamespacesSupport: true
+  EventedPLEG: true
 authentication:
   anonymous:
     enabled: false
@@ -24,8 +27,8 @@ authorization:
 rotateCertificates: true
 serverTLSBootstrap: true
 
-address: {{ k8s_node_ip_v4 }}
-containerRuntimeEndpoint: unix:///run/containerd/containerd.sock
+address: "{{ k8s_node_ip_v4 }}"
+containerRuntimeEndpoint: "unix:///run/containerd/containerd.sock"
 clusterDomain: cluster.local
 clusterDNS: [10.96.0.10]
 
