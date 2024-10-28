@@ -8,6 +8,8 @@ featureGates:
   # KubeletInUserNamespace: true
   # ImageVolume: true
   # UserNamespacesSupport: true
+  # ClusterTrustBundle: true
+  # ClusterTrustBundleProjection: true
   EventedPLEG: true
 authentication:
   anonymous:
@@ -27,7 +29,6 @@ authorization:
 rotateCertificates: true
 serverTLSBootstrap: true
 
-address: "{{ k8s_node_ip_v4 }}"
 containerRuntimeEndpoint: "unix:///run/containerd/containerd.sock"
 clusterDomain: cluster.local
 clusterDNS: [10.96.0.10]

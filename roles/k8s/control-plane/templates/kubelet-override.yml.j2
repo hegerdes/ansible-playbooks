@@ -1,0 +1,5 @@
+# kubelet specific override
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+
+address: "{{ k8s_node_ip_v4 }}"
