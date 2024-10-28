@@ -129,6 +129,7 @@
     __k8s_required_kernel_modules: [br_netfilter, overlay]
     __k8s_kata_containers_kernel_modules: [vhost_vsock, vhost_net]
     __k8s_kernel_modules: "{{ __k8s_required_kernel_modules + __k8s_kata_containers_kernel_modules if(k8s_install_kata_containers) else __k8s_required_kernel_modules }}"
+  register: __k8s_modprobe
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: k8s common | Set sysctl parameters
@@ -334,4 +335,9 @@
       source <(crictl completion)
       alias k=kubectl
       complete -F __start_kubectl k
+  tags: [k8s, k8s-prepare, k8s-base]
+
+- name: k8s common | Reboot
+  when: __k8s_modprobe.changed
+  ansible.builtin.reboot:
   tags: [k8s, k8s-prepare, k8s-base]
