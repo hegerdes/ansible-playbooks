@@ -72,11 +72,36 @@
       | first
       }}
     k8s_crun_wasm_query: "assets[?starts_with(name, 'crun')].browser_download_url"
-    k8s_wasmi_version: "{{ lookup('url', 'https://api.github.com/repos/containerd/runwasi/releases?per_page=3') | from_json | json_query('[*].tag_name') }}"
-
+    k8s_wasmi_version: "{{ lookup('url', 'https://api.github.com/repos/containerd/runwasi/releases?per_page=6') | from_json | json_query('[*].tag_name') | select('match', 'containerd-shim') }}"
   tasks:
     - debug:
-        var: k8s_credential_provider_download_url
+        var: k8s_wasmi_version
+
+    - name: k8s common - wasi | Get latest releases
+      run_once: true
+      ansible.builtin.uri:
+        url: "https://api.github.com/repos/containerd/runwasi/releases/tags/{{ item }}"
+        return_content: true
+      register: __k8s_wasi_download_urls
+      loop: "{{ k8s_wasmi_version }}"
+
+    - name: k8s common - wasi | Get download urls
+      ansible.builtin.set_fact:
+        wasi_download_urls: >-
+          {{
+          wasi_download_urls
+          | default({})
+          | combine({(item.item | split("/") | first): item.json
+          | json_query("assets[*].browser_download_url")
+          | select("search", ansible_facts.architecture)
+          })
+          }}
+      loop: "{{ __k8s_wasi_download_urls.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+    - debug:
+        var: wasi_download_urls
+
     - fail:
 
     - name: k8s common - wasi | Get latest releases

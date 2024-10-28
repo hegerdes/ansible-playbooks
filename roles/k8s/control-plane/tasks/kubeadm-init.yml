@@ -2,6 +2,18 @@
 # Set up k8s with kubeadm
 - name: k8s cp - kubeadm | Init first control-plane node
   block:
+    - name: k8s common | Pre-pull images
+      ansible.builtin.command: |
+        kubeadm config images pull \
+          {{ "--kubernetes-version " + k8s_version if (k8s_version != "latest") }} \
+          {{ "--image-repository " + k8s_image_repo if (k8s_image_repo | default("") != "") }}
+      register: __k8s_pull_res
+      changed_when: >-
+        ((__k8s_pull_res.end[:-7]
+        | to_datetime) - (__k8s_pull_res.start[:-7]
+        | to_datetime)).total_seconds() > 5
+      tags: [k8s, k8s-init, k8s-cp-init]
+
     - name: k8s cp - kubeadm | Reset Kubernetes components
       ansible.builtin.command: "kubeadm reset --force"
       register: reset_cluster

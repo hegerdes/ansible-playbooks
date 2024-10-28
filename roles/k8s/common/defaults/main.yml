@@ -21,7 +21,6 @@ k8s_youki_with_wasm: false
 k8s_crun_with_wasm: false
 k8s_crun_wasmlib_version: 0.1.0
 
-k8s_prepull_images: true
 k8s_inventory_as_hostname: true
 k8s_credential_provider_enabled: false
 k8s_credential_provider_version: latest
@@ -62,8 +61,6 @@ k8s_common_sysctl_conf:
   - { key: net.ipv4.icmp_echo_ignore_broadcasts, val: 1 }
   # Wider range of short lived ports. Default of 32768 60999
   - { key: net.ipv4.ip_local_port_range, val: 10240 65535 }
-  # Source route verification. Default of 0 - off
-  - { key: net.ipv4.conf.all.rp_filter, val: 0 }
   # Forward packages between nics
   - { key: net.ipv4.conf.all.forwarding, val: 1 }
   - { key: net.ipv6.conf.all.forwarding, val: 1 }
@@ -112,18 +109,18 @@ k8s_common_sysctl_conf:
   # Disable POSIX symlink and hardlink corner cases that lead to lots of filesystem confusion
   - { key: fs.protected_symlinks, val: 1 }
   - { key: fs.protected_hardlinks, val: 1 }
-
   # Restrict FIFO special device creation behavior
   # For more info on the following settings see: https://www.kernel.org/doc/html/latest/admin-guide/sysctl/fs.html
   - { key: fs.protected_fifos, val: 1 }
   # Restrict regular files creation behavior
   - { key: fs.protected_regular, val: 2 }
-
   # # Ignore bad ICMP errors
   - { key: net.ipv4.icmp_ignore_bogus_error_responses, val: 1 }
   # Implement RFC 1337 fix
   - { key: net.ipv4.tcp_rfc1337, val: 1 }
-
+  # Enable & set usernamspace limits
+  - { key: user.max_pid_namespaces, val: 1048576 } # 2^20
+  - { key: user.max_user_namespaces, val: 1048576 } # 2^20
   # # Enables source route verification - breaks eBPF
   # - { key: net.ipv4.conf.default.rp_filter, val: 1 }
   # # Enable reverse path - breaks eBPF
@@ -293,7 +290,7 @@ k8s_credential_provider_query: >-
   }}
 k8s_youki_wasm_query: "assets[?contains(name, '{{ system_arch_map[ansible_facts.architecture] }}.tar.gz' )].browser_download_url"
 k8s_youki_query: "assets[?contains(name, '{{ ansible_facts.architecture }}-gnu.tar.gz' )].browser_download_url"
-k8s_wasmi_version: "{{ lookup('url', 'https://api.github.com/repos/containerd/runwasi/releases?per_page=4') | from_json | json_query('[*].tag_name') }}"
+k8s_wasmi_version: "{{ lookup('url', 'https://api.github.com/repos/containerd/runwasi/releases?per_page=6') | from_json | json_query('[*].tag_name') | select('match', 'containerd-shim') }}"
 
 system_arch_map:
   x86_64: amd64
