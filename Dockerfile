@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install --yes --no-install-recommends \
     /usr/share/keyrings/nodejs-archive-keyring.gpg \
     && export NODE_ARCH="arch=`dpkg --print-architecture` signed-by=/usr/share/keyrings/nodejs-archive-keyring.gpg" \
     && export OS_CODENAME=$(lsb_release -cs) \
-    && echo "deb [$NODE_ARCH] https://deb.nodesource.com/node_20.x $OS_CODENAME main" \
+    && echo "deb [$NODE_ARCH] https://deb.nodesource.com/node_22.x $OS_CODENAME main" \
     > /etc/apt/sources.list.d/nodesource.list \
     && curl -sLS https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | tee \
     /etc/apt/keyrings/microsoft.gpg > /dev/null \
@@ -36,6 +36,6 @@ ENV COMMIT_TAG=$COMMIT_TAG
 ENV ANSIBLE_CONFIG=/app/playbooks/ansible.cfg
 LABEL commit-hash=$COMMIT_HASH
 LABEL commit-tag=$COMMIT_TAG
-LABEL org.opencontainers.image.description Ansible Playbook image containing all deps needed to run and bootstrap machines
+LABEL org.opencontainers.image.description="Ansible Playbook image containing all deps needed to run and bootstrap machines"
 
 ENTRYPOINT [ "/app/playbooks/shared/ansible-entrypoint.sh" ]
