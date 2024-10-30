@@ -11,11 +11,11 @@ RUN apt-get update && apt-get install --yes --no-install-recommends \
     && mkdir -p /etc/apt/keyrings \
     && if [ "$(uname -m)" != "x86_64" ]; then \
     apt-get install --yes --no-install-recommends make gcc python3-dev libc6-dev libffi-dev; \
-    fi && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | gpg --dearmor -o \
+    fi && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o \
     /usr/share/keyrings/nodejs-archive-keyring.gpg \
     && export NODE_ARCH="arch=`dpkg --print-architecture` signed-by=/usr/share/keyrings/nodejs-archive-keyring.gpg" \
     && export OS_CODENAME=$(lsb_release -cs) \
-    && echo "deb [$NODE_ARCH] https://deb.nodesource.com/node_22.x $OS_CODENAME main" \
+    && echo "deb [$NODE_ARCH] https://deb.nodesource.com/node_22.x nodistro main" \
     > /etc/apt/sources.list.d/nodesource.list \
     && curl -sLS https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | tee \
     /etc/apt/keyrings/microsoft.gpg > /dev/null \
