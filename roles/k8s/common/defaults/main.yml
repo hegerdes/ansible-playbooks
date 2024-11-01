@@ -219,13 +219,13 @@ k8s_youki_wasm_download_url: >-
   }}
 k8s_youki_download_url: >-
   {{
-  lookup("url", "https://api.github.com/repos/containers/youki/releases/latest")
+  lookup("url", "https://api.github.com/repos/youki-dev/youki/releases/latest")
   | from_json
   | json_query(k8s_youki_query)
   | first
   if(k8s_youki_version == "latest")
   else
-  "https://github.com/containers/youki/releases/download/v"
+  "https://github.com/youki-dev/youki/releases/download/v"
   + k8s_youki_version + "/youki-" + k8s_youki_version
   + "-" + ansible_facts.architecture + "-gnu.tar.gz"
   }}
