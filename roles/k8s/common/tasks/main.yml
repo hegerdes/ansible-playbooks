@@ -36,6 +36,7 @@
         ca-certificates,
         curl,
         pigz,
+        cryptsetup,
         apparmor,
         python3-kubernetes,
         apt-transport-https,
@@ -128,7 +129,11 @@
   vars:
     __k8s_required_kernel_modules: [br_netfilter, overlay]
     __k8s_kata_containers_kernel_modules: [vhost_vsock, vhost_net]
-    __k8s_kernel_modules: "{{ __k8s_required_kernel_modules + __k8s_kata_containers_kernel_modules if(k8s_install_kata_containers) else __k8s_required_kernel_modules }}"
+    __k8s_kernel_modules: >-
+      {{
+      __k8s_required_kernel_modules + __k8s_kata_containers_kernel_modules
+      if(k8s_install_kata_containers) else __k8s_required_kernel_modules
+      }}
   register: __k8s_modprobe
   tags: [k8s, k8s-prepare, k8s-base]
 
@@ -208,18 +213,18 @@
     - name: kubernetes
       repo: "https://pkgs.k8s.io/core:/stable:/v{{ (k8s_version | split('.'))[0:2] | join('.') }}/deb/"
       key: "https://pkgs.k8s.io/core:/stable:/v{{ (k8s_version | split('.'))[0:2] | join('.') }}/deb/Release.key"
-    - name: docker
-      repo: "https://download.docker.com/linux/{{ ansible_distribution | lower }}"
-      key: "https://download.docker.com/linux/{{ ansible_facts.distribution | lower }}/gpg"
-      state: "{{ k8s_containerd_variant | lower == 'docker' }}"
-      components: [stable]
-      suites: ["{{ ansible_distribution_release | lower }}"]
     - name: gvisor
       repo: https://storage.googleapis.com/gvisor/releases
       key: "https://gvisor.dev/archive.key"
       components: [main]
       suites: [release]
       state: "{{ k8s_install_gvisor }}"
+    - name: docker
+      repo: "https://download.docker.com/linux/{{ ansible_distribution | lower }}"
+      key: "https://download.docker.com/linux/{{ ansible_facts.distribution | lower }}/gpg"
+      components: [stable]
+      suites: ["{{ ansible_distribution_release | lower }}"]
+      state: "{{ k8s_containerd_variant | lower == 'docker' }}"
   loop_control:
     label: "{{ item.name }}"
   tags: [k8s, k8s-prepare, k8s-base, k8s-runtime, apt]
