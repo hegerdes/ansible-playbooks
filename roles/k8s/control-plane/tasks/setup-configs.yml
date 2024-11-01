@@ -26,7 +26,16 @@
   run_once: true
   no_log: true
   ansible.builtin.set_fact:
-    internal_k8s_kubeconfig: "{{ __remote_k8s_kubeconf.content | b64decode | from_yaml | combine({'clusters': [(__remote_k8s_kubeconf.content | b64decode | from_yaml).clusters[0] | combine({'cluster': {'server': 'https://' + k8s_external_cp_host + ':' + k8s_external_cp_port | default('6443')}}, recursive=true)]}) if (k8s_external_cp_host | default('') != '') else __remote_k8s_kubeconf.content | b64decode | from_yaml }}"
+    internal_k8s_kubeconfig: >-
+      {{
+      __remote_k8s_kubeconf.content | b64decode | from_yaml |
+      combine(
+      {'clusters': [(__remote_k8s_kubeconf.content | b64decode | from_yaml).clusters[0] |
+      combine(
+      {'cluster': {'server': 'https://' + k8s_external_cp_host + ':' + k8s_external_cp_port | default('6443')}}, recursive=true)]})
+      if (k8s_external_cp_host | default('') != '')
+      else __remote_k8s_kubeconf.content | b64decode | from_yaml
+      }}
 
 - name: k8s cp - configs | Creating a file with kubeconf
   become: false

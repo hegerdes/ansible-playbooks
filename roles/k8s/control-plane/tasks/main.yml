@@ -69,7 +69,7 @@
       - "{{ [k8s_kata_manifest] if(k8s_install_kata_containers | default(False)) else [] }}"
   tags: [k8s, k8s-init, k8s-cp-init, k8s-cp-init-maifests]
 
-- name: k8s cp | Generate certificate key
+- name: k8s cp | Upload certificates
   delegate_to: "{{ groups.k8s_control_plane | flatten | first }}"
   ansible.builtin.command: |
     kubeadm init phase upload-certs --upload-certs \
@@ -81,6 +81,7 @@
   tags: [k8s, k8s-init, k8s-cp-init]
 
 - name: k8s cp | Get join token
+  when: groups.k8s_control_plane | length > 1
   delegate_to: "{{ groups.k8s_control_plane | flatten | first }}"
   ansible.builtin.command: |
     kubeadm token create \
@@ -94,6 +95,7 @@
   tags: [k8s, k8s-init, k8s-cp-init]
 
 - name: k8s cp | Get CA certificate hash
+  when: groups.k8s_control_plane | length > 1
   delegate_to: "{{ groups.k8s_control_plane | flatten | first }}"
   community.crypto.x509_certificate_info:
     path: "{{ k8s_pki_cert_path }}/ca.crt"
@@ -103,7 +105,14 @@
   no_log: true
   tags: [k8s, k8s-init, k8s-cp-init]
 
+- name: k8s cp | Check if kubeadm has already run
+  ansible.builtin.stat:
+    path: /etc/kubernetes/kubelet.conf
+  register: k8s_kubeadm_all_init
+  tags: [k8s, k8s-init, k8s-cp-init]
+
 - name: k8s cp | kubeadm-join config
+  when: not k8s_kubeadm_all_init.stat.exists
   ansible.builtin.copy:
     content: "{{ item.content }}"
     dest: "{{ item.dst }}"
@@ -115,12 +124,6 @@
       content: "{{ k8s_kubeadm_join_conf }}"
   loop_control:
     label: "{{ item.name }}"
-  tags: [k8s, k8s-init, k8s-cp-init]
-
-- name: k8s cp | Check if kubeadm has already run
-  ansible.builtin.stat:
-    path: /etc/kubernetes/kubelet.conf
-  register: k8s_kubeadm_all_init
   tags: [k8s, k8s-init, k8s-cp-init]
 
 - name: k8s cp | Join control-plane nodes
@@ -169,7 +172,7 @@
       - key: dedicated
   tags: [k8s, k8s-init, k8s-cp-init, k8s-taint]
 
-- name: k8s cp | Patch CoreDNS
+- name: k8s cp | Patch CoreDNS and Controlplane
   run_once: true
   kubernetes.core.k8s_json_patch:
     api_version: apps/v1
@@ -184,6 +187,13 @@
             operator: "Exists"
             effect: "NoSchedule"
     kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
+    # - api: v1
+    #   kind: Node
+    #   name: "{{ inventory_hostname }}"
+    #   when: "{{ k8s_remove_no_schedule_cp_taints }}"
+    #   patch:
+    #     - op: remove
+    #       path: /metadata/labels/node.kubernetes.io~1exclude-from-external-load-balancers
   tags: [k8s, k8s-init, k8s-cp-init, k8s-taint]
 
 - name: k8s cp | Get csr resources
