@@ -9,6 +9,7 @@ permissions:
   packages: write
   id-token: write
   security-events: write
+  attestations: write
 
 jobs:
   docker-build:
@@ -17,6 +18,7 @@ jobs:
       build-name: ${{ github.repository_owner }}/playbooks,ghcr.io/${{ github.repository_owner }}/playbooks
       build-tags: latest
       build-cache: type=gha
+      sign-with-github: true
       build-args: |
         COMMIT_HASH=${{ github.sha }}
         COMMIT_TAG=${{ github.ref_name }}
