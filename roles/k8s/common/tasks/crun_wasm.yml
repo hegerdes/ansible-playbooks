@@ -39,10 +39,8 @@
 
 - name: k8s common - crun | Reload lib link config
   when: __was_lib_link_ad.changed
-  ansible.builtin.command:
-    cmd: ldconfig
+  ansible.builtin.command: ldconfig
 
 - name: k8s common - crun | Test crun
-  ansible.builtin.command:
-    cmd: crun --version
+  ansible.builtin.command: crun --version
   changed_when: false

@@ -28,36 +28,34 @@
 
 - name: k8s common | Ensure required packages are installed
   ansible.builtin.apt:
-    name:
-      [
+    name: [
         gnupg,
-        git,
         lsb-release,
         ca-certificates,
         curl,
-        pigz,
+        pigz, # fast decompress for container images
+        isal, # even faster decompress for container images
         cryptsetup,
         apparmor,
+        apparmor-profiles-extra,
         python3-kubernetes,
         apt-transport-https,
-        jq,
-        yq,
+        jq, # json parsing and validating
+        yq, # yaml parsing and validating
         unzip,
-        wget,
         socat,
         mtr-tiny,
         logrotate,
         open-iscsi,
         ipvsadm,
         dbus,
-        libyajl2,
+        libyajl2, # Needed for youki wasm
         policycoreutils,
         selinux-basics,
         selinux-policy-default,
         auditd,
         semodule-utils,
         setools,
-        apparmor-profiles-extra,
         criu,
       ]
     state: present
