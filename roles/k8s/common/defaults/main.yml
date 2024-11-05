@@ -1,6 +1,5 @@
 ---
 k8s_version: 1.31.2
-k8s_snapshot_mode_disabled: true
 
 # Which cri to use: runc, crun, youki or runsc, kata-containers
 k8s_cri: crun
@@ -9,13 +8,7 @@ k8s_install_wasi: true
 k8s_install_youki: true
 k8s_install_crun: true
 k8s_install_kata_containers: false
-
-# List of key value pairs passed to kubelet
-k8s_kubelet_extra_args: []
-# # Example
-# k8s_kubelet_extra_args:
-#   - name: arg1
-#     value: val1
+k8s_absent_packages: [wget, vim-tiny, manpages, man-db]
 
 k8s_youki_with_wasm: false
 k8s_crun_with_wasm: false
@@ -69,7 +62,7 @@ k8s_common_sysctl_conf:
   - { key: net.bridge.bridge-nf-call-iptables, val: 1 }
   - { key: net.bridge.bridge-nf-call-ip6tables, val: 1 }
   # Allow to bind to lower ports
-  - { key: net.ipv4.ip_unprivileged_port_start, val: 0 }
+  - { key: net.ipv4.ip_unprivileged_port_start, val: 48 }
   # Log martian packets un-routable source addresses to the kernel log.
   - { key: net.ipv4.conf.all.log_martians, val: 1 }
   - { key: net.ipv4.conf.default.log_martians, val: 1 }
@@ -297,16 +290,6 @@ system_arch_map:
   aarch64: arm64
 
 k8s_credential_provider_test_input:
-  apiVersion: kubelet.config.k8s.io/v1
-  kind: CredentialProviderConfig
-  providers:
-    - name: static-credential-provider
-      # args:[--example-argument]
-      matchImages: [docker.io]
-      defaultCacheDuration: "12h"
-      apiVersion: credentialprovider.kubelet.k8s.io/v1
-      env:
-        - name: SCP_REGISTRY_USERNAME
-          value: demo
-        - name: SCP_REGISTRY_PASSWORD
-          value: demo
+  apiVersion: credentialprovider.kubelet.k8s.io/v1
+  kind: CredentialProviderRequest
+  image: your.registry.example.org/org/image:version

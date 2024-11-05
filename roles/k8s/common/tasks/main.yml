@@ -29,6 +29,7 @@
 - name: k8s common | Ensure required packages are installed
   ansible.builtin.apt:
     name: [
+        linux-image-amd64/stable-backports, # newer kernel
         gnupg,
         lsb-release,
         ca-certificates,
@@ -62,6 +63,14 @@
     update_cache: true
     install_recommends: false
     cache_valid_time: 86400
+    autoremove: true
+  tags: [k8s, k8s-prepare, k8s-base, apt]
+
+- name: k8s common | Ensure unneeded packages absent
+  when: k8s_absent_packages | length != 0
+  ansible.builtin.apt:
+    name: "{{ k8s_absent_packages }}"
+    state: absent
     autoremove: true
   tags: [k8s, k8s-prepare, k8s-base, apt]
 
@@ -277,15 +286,6 @@
       - "{{ ['runsc'] if(k8s_install_gvisor) else [] }}"
       - "{{ ['containerd.io'] if(k8s_containerd_variant | lower == 'docker') else [] }}"
   tags: [k8s, k8s-prepare, k8s-base, apt]
-
-- name: k8s common | Create conf dirs
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
-  loop:
-    - /etc/containerd
-    - /etc/systemd/system/kubelet.service.d
-  tags: [k8s, k8s-prepare, k8s-base]
 
 - name: k8s common | Copy container runtime configs
   when: item.run | default(true)

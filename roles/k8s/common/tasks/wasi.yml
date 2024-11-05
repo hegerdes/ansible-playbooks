@@ -24,7 +24,7 @@
   loop_control:
     label: "{{ item.item }}"
 
-- name: k8s common - wasi | Download wasi-shims
+- name: k8s common - wasi | Install wasi-shims
   when: item.value | length >= 1
   ansible.builtin.unarchive:
     src: "{{ item.value | first }}"
