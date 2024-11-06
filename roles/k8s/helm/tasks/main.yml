@@ -13,7 +13,7 @@
 
 - name: Install Helm
   ansible.builtin.apt:
-    name: helm
+    name: [helm, git]
     state: present
     update_cache: true
     install_recommends: false
