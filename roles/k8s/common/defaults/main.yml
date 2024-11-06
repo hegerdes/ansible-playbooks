@@ -62,7 +62,7 @@ k8s_common_sysctl_conf:
   - { key: net.bridge.bridge-nf-call-iptables, val: 1 }
   - { key: net.bridge.bridge-nf-call-ip6tables, val: 1 }
   # Allow to bind to lower ports
-  - { key: net.ipv4.ip_unprivileged_port_start, val: 48 }
+  - { key: net.ipv4.ip_unprivileged_port_start, val: 0 }
   # Log martian packets un-routable source addresses to the kernel log.
   - { key: net.ipv4.conf.all.log_martians, val: 1 }
   - { key: net.ipv4.conf.default.log_martians, val: 1 }
@@ -283,7 +283,7 @@ k8s_credential_provider_query: >-
   }}
 k8s_youki_wasm_query: "assets[?contains(name, '{{ system_arch_map[ansible_facts.architecture] }}.tar.gz' )].browser_download_url"
 k8s_youki_query: "assets[?contains(name, '{{ ansible_facts.architecture }}-gnu.tar.gz' )].browser_download_url"
-k8s_wasmi_version: "{{ lookup('url', 'https://api.github.com/repos/containerd/runwasi/releases?per_page=6') | from_json | json_query('[*].tag_name') | select('match', 'containerd-shim') }}"
+k8s_wasmi_versions: "{{ lookup('url', 'https://api.github.com/repos/containerd/runwasi/releases?per_page=6') | from_json | json_query('[*].tag_name') | select('match', 'containerd-shim') | reject('match', '^containerd-shim-wasm/') | list }}"
 
 system_arch_map:
   x86_64: amd64
