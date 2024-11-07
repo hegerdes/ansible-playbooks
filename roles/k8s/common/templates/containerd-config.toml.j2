@@ -20,79 +20,91 @@
 # https://github.com/containerd/stargz-snapshotter/blob/main/docs/INSTALL.md
 
 # K8s config settings for systemd and various container runtimes
-version = 2
+version = 3
+# root = '/var/lib/containerd'
+# # state = '/run/containerd'
+# # subreaper = true
+# # oom_score = 0
+
+# plugin_dir = ''
+# disabled_plugins = []
+# required_plugins = []
+# oom_score = 0
+
+
+
 [plugins]
 
   # Common
-  [plugins."io.containerd.grpc.v1.cri".containerd] # change to [plugins."io.containerd.cri.v1.runtime".containerd] for containerd 2.0
-    default_runtime_name = "{{ k8s_cri }}"
-
-  # Docs https://github.com/containerd/containerd/blob/main/docs/cri/config.md
-  [plugins."io.containerd.grpc.v1.cri"]
-    sandbox_image = "registry.k8s.io/pause:3.10"
+  [plugins.'io.containerd.cri.v1.runtime']
     enable_unprivileged_ports = true
+    enable_unprivileged_icmp = true
+    enable_cdi = true
+    cdi_spec_dirs = ['/etc/cdi', '/var/run/cdi']
 
-  # runc
-  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
-    runtime_type = "io.containerd.runc.v2"
-    [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
-      SystemdCgroup = true
+    [plugins.'io.containerd.cri.v1.runtime'.containerd]
+    default_runtime_name = '{{ k8s_cri }}'
 
-  # crun
-  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.crun]
-    runtime_type = "io.containerd.runc.v2"
-    # See: https://github.com/containers/crun/blob/main/docs/wasm-wasi-on-kubernetes.md
-    pod_annotations = ["*.wasm.*", "wasm.*", "module.wasm.image/*", "*.module.wasm.image", "module.wasm.image/variant.*"]
-  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.crun.options]
-    BinaryName = "/usr/local/bin/crun"
-    SystemdCgroup = true
+      # runc
+      [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.runc]
+        runtime_type = 'io.containerd.runc.v2'
+        [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.runc.options]
+          SystemdCgroup = true
 
-  # gVisor
-  # Docs: https://gvisor.dev/docs/user_guide/containerd/configuration/
-  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runsc]
-    runtime_type = "io.containerd.runsc.v1"
-  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runsc.options]
-    TypeUrl = "io.containerd.runsc.v1.options"
-    ConfigPath = "/etc/containerd/runsc.toml"
+      # crun
+      [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.crun]
+        runtime_type = 'io.containerd.runc.v2'
+        # See: https://github.com/containers/crun/blob/main/docs/wasm-wasi-on-kubernetes.md
+        pod_annotations = ['*.wasm.*', 'wasm.*', 'module.wasm.image/*', '*.module.wasm.image', 'module.wasm.image/variant.*']
+        [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.crun.options]
+          BinaryName = '/usr/local/bin/crun'
+          SystemdCgroup = true
+    # gvisor
+    # Docs: https://gvisor.dev/docs/user_guide/containerd/configuration/
+    [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.runsc]
+      runtime_type = 'io.containerd.runsc.v1'
+      [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.runsc.options]
+        TypeUrl = 'io.containerd.runsc.v1.options'
+        ConfigPath = '/etc/containerd/runsc.toml'
 
-  # youki
-  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.youki]
-    runtime_type = "io.containerd.runc.v2"
-  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.youki.options]
-    BinaryName = "/usr/local/bin/youki"
-    SystemdCgroup = true
+    # youki
+    [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.youki]
+      runtime_type = 'io.containerd.runc.v2'
+      [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.youki.options]
+        BinaryName = '/usr/local/bin/youki'
+        SystemdCgroup = true
 
-  # wasmedge
-  # Docs: https://github.com/containerd/runwasi
-  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.wasmedge]
-  runtime_type = "io.containerd.wasmedge.v1"
+    # wasmedge
+    # Docs: https://github.com/containerd/runwasi
+    [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.wasmedge]
+      runtime_type = 'io.containerd.wasmedge.v1'
 
-  # wasmtime
-  # Docs: https://github.com/containerd/runwasi
-  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.wasmtime]
-  runtime_type = "io.containerd.wasmtime.v1"
+    # wasmtime
+    # Docs: https://github.com/containerd/runwasi
+    [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.wasmtime]
+      runtime_type = 'io.containerd.wasmtime.v1'
 
-  # wasmer
-  # Docs: https://github.com/containerd/runwasi
-  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.wasmer]
-  runtime_type = "io.containerd.wasmer.v1"
+    # wasmer
+    # Docs: https://github.com/containerd/runwasi
+    [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.wasmer]
+      runtime_type = 'io.containerd.wasmer.v1'
 
-  # Registry
-  [plugins."io.containerd.grpc.v1.cri".registry]
-    config_path = "/etc/containerd/certs.d"
+    # Registry
+    [plugins.'io.containerd.cri.v1.images'.registry]
+      config_path = '/etc/containerd/certs.d'
+  [plugins.'io.containerd.cri.v1.images']
+    snapshotter = 'overlayfs'
+    disable_snapshot_annotations = false
+    max_concurrent_downloads = 4
 
-#root = "/var/lib/containerd"
-#state = "/run/containerd"
-#subreaper = true
-#oom_score = 0
 
-#[grpc]
-#  address = "/run/containerd/containerd.sock"
-#  uid = 0
-#  gid = 0
+# [debug]
+#  address = '/run/containerd/debug.sock'
+#   uid = 0
+#   gid = 0
+#   level = 'info'
+#   format = ''
 
-#[debug]
-#  address = "/run/containerd/debug.sock"
-#  uid = 0
-#  gid = 0
-#  level = "info"
+# [metrics]
+#   address = ''
+#   grpc_histogram = false

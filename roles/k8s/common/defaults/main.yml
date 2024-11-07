@@ -2,7 +2,7 @@
 k8s_version: 1.31.2
 
 # Which cri to use: runc, crun, youki or runsc, kata-containers
-k8s_cri: crun
+k8s_cri: runc
 k8s_install_gvisor: true
 k8s_install_wasi: true
 k8s_install_youki: true
@@ -15,9 +15,11 @@ k8s_crun_with_wasm: false
 k8s_crun_wasmlib_version: 0.1.0
 
 k8s_inventory_as_hostname: true
+k8s_shutdown_after_common: false
 k8s_credential_provider_enabled: false
 k8s_credential_provider_version: latest
 k8s_unattended_upgrades_state: present
+k8s_ensure_min_kernel_version: 6.10.* # Ensures it uses at least this kernel - may uses backports
 k8s_containerd_variant: github # can be docker (uses docker apt repo) or github (official github upstream release)
 k8s_containerd_version: latest # can be set for docker an github version of containerd
 k8s_cni_plugins_version: latest # only applies if k8s_containerd_variant is equal to github
@@ -46,45 +48,28 @@ k8s_credential_provider_bin_dir: /var/lib/kubelet-plugins/
 # https://kernsec.org/wiki/index.php/Kernel_Self_Protection_Project/Recommended_Settings
 # https://cos.googlesource.com/cos/overlays/board-overlays/+/refs/heads/master/project-lakitu/chromeos-base/chromeos-base/files/00-sysctl.conf
 k8s_common_sysctl_conf:
-  # Allow fast tcp open option
-  - { key: net.ipv4.tcp_fastopen, val: 1 }
-  # Forward package to real dest
+  ############ REQUIRED ############
+  # Forward package to real dest - required
   - { key: net.ipv4.ip_forward, val: 1 }
-  # Ignore ICMP broadcasts
-  - { key: net.ipv4.icmp_echo_ignore_broadcasts, val: 1 }
-  # Wider range of short lived ports. Default of 32768 60999
-  - { key: net.ipv4.ip_local_port_range, val: 10240 65535 }
-  # Forward packages between nics
-  - { key: net.ipv4.conf.all.forwarding, val: 1 }
-  - { key: net.ipv6.conf.all.forwarding, val: 1 }
-  - { key: net.ipv4.conf.default.forwarding, val: 1 }
-  - { key: net.ipv6.conf.default.forwarding, val: 1 }
-  - { key: net.bridge.bridge-nf-call-iptables, val: 1 }
-  - { key: net.bridge.bridge-nf-call-ip6tables, val: 1 }
-  # Allow to bind to lower ports
-  - { key: net.ipv4.ip_unprivileged_port_start, val: 0 }
-  # Log martian packets un-routable source addresses to the kernel log.
-  - { key: net.ipv4.conf.all.log_martians, val: 1 }
-  - { key: net.ipv4.conf.default.log_martians, val: 1 }
-  # Max queued connections for socket. Default of 4096
-  - { key: net.core.somaxconn, val: 4096 }
-  # Max remembered connection requests, awaiting an acknowledgment. Default of 128
-  - { key: net.ipv4.tcp_max_syn_backlog, val: 1024 }
-  # Enable SYN cookies (yum!)
-  # http://cr.yp.to/syncookies.html
-  - { key: net.ipv4.tcp_syncookies, val: 1 }
   # Application layer will handle memory kills
-  - { key: vm.overcommit_memory, val: 1 }
+  - { key: vm.overcommit_memory, val: 1 } # required
+  # If panic reboot after 10s. Default of 0 - no reboot
+  - { key: kernel.panic, val: 10 } # required
+  # Panic on oops
+  - { key: kernel.panic_on_oops, val: 1 } # required
+
+  ############ OPTIONAL ############
   # Likeliness of moving to swap. Containers run better without swap. Default of 60
   - { key: vm.swappiness, val: 0 }
   # Don't panic on oom
   - { key: vm.panic_on_oom, val: 0 }
-  # Panic on oops
-  - { key: kernel.panic_on_oops, val: 1 }
+
+  # Enable & set usernamspace limits
+  - { key: user.max_pid_namespaces, val: 1048576 } # 2^20
+  - { key: user.max_user_namespaces, val: 1048576 } # 2^20
+
   # Set pid_max to maximum allowable limit (2^22).
   - { key: kernel.pid_max, val: 4194304 }
-  # If panic reboot after 10s. Default of 0 - no reboot
-  - { key: kernel.panic, val: 10 }
   # Enable all available Address Space Randomization (ASLR) for userspace processes.
   - { key: kernel.randomize_va_space, val: 2 }
   # Avoid kernel memory address exposures via dmesg kernel logs to root only.
@@ -93,37 +78,63 @@ k8s_common_sysctl_conf:
   - { key: kernel.kptr_restrict, val: 1 }
     # kexec is dangerous: it enables replacement of the running kernel. | Tails-3
   - { key: kernel.kexec_load_disabled, val: 1 }
+
   # Allow more (default is 8192) inotify watch for large workloads.
   - { key: fs.inotify.max_user_watches, val: 524288 }
   # Allow more (default is 128) inotify instances for large workloads.
   - { key: fs.inotify.max_user_instances, val: 4096 }
   # Enable crash reporting for setuid programs too.
   - { key: fs.suid_dumpable, val: 2 }
-  # Disable POSIX symlink and hardlink corner cases that lead to lots of filesystem confusion
+  # Disable POSIX symlink corner cases that lead to filesystem confusion
   - { key: fs.protected_symlinks, val: 1 }
+  # Disable POSIX hardlink corner cases that lead to filesystem confusion
   - { key: fs.protected_hardlinks, val: 1 }
-  # Restrict FIFO special device creation behavior
-  # For more info on the following settings see: https://www.kernel.org/doc/html/latest/admin-guide/sysctl/fs.html
+  # Restrict FIFO special device creation behavior see: https://www.kernel.org/doc/html/latest/admin-guide/sysctl/fs.html
   - { key: fs.protected_fifos, val: 1 }
   # Restrict regular files creation behavior
   - { key: fs.protected_regular, val: 2 }
-  # # Ignore bad ICMP errors
+
+  # Allow fast tcp open option
+  - { key: net.ipv4.tcp_fastopen, val: 1 }
+  # Enable SYN cookies (yum!) http://cr.yp.to/syncookies.html
+  - { key: net.ipv4.tcp_syncookies, val: 1 }
+  # Ignore ICMP broadcasts
+  - { key: net.ipv4.icmp_echo_ignore_broadcasts, val: 1 }
+  # Wider range of short lived ports. Default of 32768 60999
+  - { key: net.ipv4.ip_local_port_range, val: 10240 65535 }
+  # Ignore bad ICMP errors
   - { key: net.ipv4.icmp_ignore_bogus_error_responses, val: 1 }
   # Implement RFC 1337 fix
   - { key: net.ipv4.tcp_rfc1337, val: 1 }
-  # Enable & set usernamspace limits
-  - { key: user.max_pid_namespaces, val: 1048576 } # 2^20
-  - { key: user.max_user_namespaces, val: 1048576 } # 2^20
-  # # Enables source route verification - breaks eBPF
-  # - { key: net.ipv4.conf.default.rp_filter, val: 1 }
-  # # Enable reverse path - breaks eBPF
-  # - { key: net.ipv4.conf.all.rp_filter, val: 1 }
+  # Max remembered connection requests, awaiting an acknowledgment. Default of 128
+  - { key: net.ipv4.tcp_max_syn_backlog, val: 1024 }
 
-  #   # Disable ICMP Redirect Acceptance
-  # - { key: net.ipv4.conf.all.accept_redirects, val: 0 }
-  # - { key: net.ipv6.conf.all.accept_redirects, val: 0 }
-  # - { key: net.ipv4.conf.default.accept_redirects, val: 0 }
-  # - { key: net.ipv6.conf.default.accept_redirects, val: 0 }
+  # Log martian packets un-routable source addresses to the kernel log.
+  - { key: net.ipv4.conf.all.log_martians, val: 1 }
+  - { key: net.ipv4.conf.default.log_martians, val: 1 }
+  # Max queued connections for socket. Default of 128
+  - { key: net.core.somaxconn, val: 2048 }
+
+  # # Forward packages between nics
+  # - { key: net.ipv4.conf.all.forwarding, val: 1 }
+  # - { key: net.ipv6.conf.all.forwarding, val: 1 }
+  # - { key: net.ipv4.conf.default.forwarding, val: 1 }
+  # - { key: net.ipv6.conf.default.forwarding, val: 1 }
+  # - { key: net.bridge.bridge-nf-call-iptables, val: 1 }
+  # - { key: net.bridge.bridge-nf-call-ip6tables, val: 1 }
+  # # Allow to bind to lower ports
+  # - { key: net.ipv4.ip_unprivileged_port_start, val: 0 }
+
+  # # # Enables source route verification - breaks eBPF
+  # # - { key: net.ipv4.conf.default.rp_filter, val: 1 }
+  # # # Enable reverse path - breaks eBPF
+  # # - { key: net.ipv4.conf.all.rp_filter, val: 1 }
+
+  # #   # Disable ICMP Redirect Acceptance
+  # # - { key: net.ipv4.conf.all.accept_redirects, val: 0 }
+  # # - { key: net.ipv6.conf.all.accept_redirects, val: 0 }
+  # # - { key: net.ipv4.conf.default.accept_redirects, val: 0 }
+  # # - { key: net.ipv6.conf.default.accept_redirects, val: 0 }
 
 k8s_system_limits:
   - user: "root"

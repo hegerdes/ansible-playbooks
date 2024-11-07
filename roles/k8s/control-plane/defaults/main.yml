@@ -143,35 +143,36 @@ k8s_cilium_helm_values:
   cluster:
     name: "{{ k8s_cluster_name }}"
 
-  priorityClassName: "system-node-critical"
   k8sServiceHost: "{{ k8s_shared_api_server_endpoint }}"
   k8sServicePort: 6443
-  rollOutCiliumPods: true
   kubeProxyReplacement: true
-  # MTU: 1450 # for Hetzner
+  rollOutCiliumPods: true
+  annotateK8sNode: true
 
+  # MTU: 1450 # for Hetzner
   operator:
     rollOutPods: true
     replicas: 1
-  bandwidthManager:
-    enabled: true
   bpf:
     masquerade: true
+
   ipam:
-    mode: "kubernetes"
+    mode: kubernetes
     operator:
       clusterPoolIPv4PodCIDRList: ["{{ k8s_pod_network_cidr_ipv4 }}"]
+
+  endpointRoutes:
+    enabled: true
 
   loadBalancer:
     algorithm: maglev
     serviceTopology: true
-    acceleration: best-effort # disabled, best-effort or native
+    # acceleration: best-effort # disabled, best-effort or native
     # mode: hybrid
 
   hubble:
     enabled: true
-    metrics:
-      enabled: ["dns:query;ignoreAAAA", "drop", "tcp"]
+    rollOutPods: true
     relay:
       enabled: true
       rollOutPods: true

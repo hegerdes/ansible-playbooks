@@ -3,7 +3,7 @@
 - name: k8s common - crun | Install official crun
   ansible.builtin.get_url:
     url: "{{ k8s_crun_download_url }}"
-    dest: /usr/local/sbin/crun
+    dest: /usr/local/bin/crun
     owner: root
     group: root
     mode: "0754"

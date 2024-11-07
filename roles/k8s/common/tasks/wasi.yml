@@ -7,7 +7,7 @@
     url: "https://api.github.com/repos/containerd/runwasi/releases/tags/{{ item }}"
     return_content: true
   register: __k8s_wasi_download_urls
-  loop: "{{ k8s_wasmi_version }}"
+  loop: "{{ k8s_wasmi_versions }}"
 
 - name: k8s common - wasi | Get download urls
   ansible.builtin.set_fact:
