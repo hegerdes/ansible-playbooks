@@ -70,7 +70,7 @@
   tags: [k8s, k8s-prepare, k8s-base, apt]
 
 - name: k8s common | Ensure latest kernel
-  when: k8s_ensure_min_kernel_version != null
+  when: k8s_ensure_min_kernel_version != "none"
   ansible.builtin.apt:
     name: "linux-image-{{ system_arch_map[ansible_facts.architecture] }}={{ k8s_ensure_min_kernel_version }}"
     default_release: "{{ ansible_distribution_release }}-backports"
@@ -90,7 +90,7 @@
   tags: [k8s, k8s-prepare, k8s-base, apt]
 
 - name: k8s common | Reboot
-  when: k8s_ensure_min_kernel_version != null and __k8s_kernel_update.changed
+  when: k8s_ensure_min_kernel_version != "none" and __k8s_kernel_update.changed
   ansible.builtin.reboot:
   tags: [k8s, k8s-prepare, k8s-base]
 
