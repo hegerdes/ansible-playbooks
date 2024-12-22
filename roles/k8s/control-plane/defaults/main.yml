@@ -1,5 +1,5 @@
 ---
-k8s_version: 1.31.3
+k8s_version: 1.32.0
 k8s_dual_stack: false
 k8s_install_core_dns: true
 k8s_install_kube_proxy: true
@@ -27,8 +27,8 @@ k8s_service_network_cidr: >-
 
 k8s_pod_network_cidr_ipv4: 10.244.0.0/16
 k8s_service_network_cidr_ipv4: 10.96.0.0/16
-k8s_pod_network_cidr_ipv6: 2001:db8:42:0::/56
-k8s_service_network_cidr_ipv6: 2001:db8:42:1::/112
+k8s_pod_network_cidr_ipv6: fd00:10:244::/48
+k8s_service_network_cidr_ipv6: fd00:20:123::/112
 
 # Kubeadm & Kubelet conf
 k8s_kubeadm_conf: '{{ lookup("template", "kubeadm-config.yml.j2") }}'
@@ -148,6 +148,9 @@ k8s_cilium_helm_values:
   kubeProxyReplacement: true
   rollOutCiliumPods: true
   annotateK8sNode: true
+
+  envoy:
+    enabled: false
 
   # MTU: 1450 # for Hetzner
   operator:

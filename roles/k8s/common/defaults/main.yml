@@ -1,5 +1,5 @@
 ---
-k8s_version: 1.31.3
+k8s_version: 1.32.0
 
 # Which cri to use: runc, crun, youki or runsc, kata-containers
 k8s_cri: runc
@@ -247,12 +247,12 @@ k8s_credential_provider_download_url: >-
   lookup("url", "https://api.github.com/repos/hegerdes/kubelet-static-credential-provider/releases/latest")
   | from_json
   | json_query(k8s_credential_provider_query)
-  | first if(k8s_cni_plugins_version == "latest")
+  | first if(k8s_credential_provider_version == "latest")
   else
   "https://github.com/hegerdes/kubelet-static-credential-provider/releases/download/v"
   + k8s_credential_provider_version + "/static-credential-provider_"
-  + k8s_credential_provider_version + "_linux_" + containerd_arch_map[ansible_facts.architecture]
-  + "-v" + k8s_cni_plugins_version + ".tgz"
+  + k8s_credential_provider_version + "_linux_" + system_arch_map[ansible_facts.architecture]
+  + "-v" + k8s_credential_provider_version + ".tgz"
   }}
 
 k8s_crun_wasm_query: "assets[?starts_with(name, 'crun')].browser_download_url"
