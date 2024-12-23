@@ -24,11 +24,8 @@
     docker_deploy_projects:
       - name: minio
         compose_files: [docker-compose-minio.yml]
-    docker_deploy_src_config_files: '{{ minio_src_filres }}'
-    docker_deploy_dst_config_files: '/srv/minio/'
+    docker_deploy_src_config_files: "{{ minio_src_filres }}"
+    docker_deploy_dst_config_files: "/srv/minio/"
   tags: [minio]
-
-
-
 # mc alias set minio http://23.88.109.204:9000 test-user mySuperSecureAdminPW
 # mc ToDo.md minio/test
