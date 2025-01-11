@@ -172,28 +172,54 @@
       - key: dedicated
   tags: [k8s, k8s-init, k8s-cp-init, k8s-taint]
 
-- name: k8s cp | Patch CoreDNS and Controlplane
-  run_once: true
-  kubernetes.core.k8s_json_patch:
-    api_version: apps/v1
-    kind: Deployment
-    namespace: kube-system
-    name: coredns
-    patch:
-      - op: add
-        path: /spec/template/spec/tolerations
-        value:
-          - key: "node.cloudprovider.kubernetes.io/uninitialized"
-            operator: "Exists"
-            effect: "NoSchedule"
+- name: Get info on nodes
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Node
+    name: "{{ inventory_hostname }}"
     kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
-    # - api: v1
-    #   kind: Node
-    #   name: "{{ inventory_hostname }}"
-    #   when: "{{ k8s_remove_no_schedule_cp_taints }}"
-    #   patch:
-    #     - op: remove
-    #       path: /metadata/labels/node.kubernetes.io~1exclude-from-external-load-balancers
+  register: __k8s_cp_node
+  tags: [k8s, k8s-init, k8s-cp-init, k8s-taint]
+
+- name: k8s cp | Patch CoreDNS and Controlplane
+  run_once: "{{ item.run_once | default(False) }}"
+  when: item.when | default(True)
+  kubernetes.core.k8s_json_patch:
+    api_version: "{{ item.api_version }}"
+    kind: "{{ item.kind }}"
+    namespace: "{{ item.namespace | default(omit) }}"
+    name: "{{ item.resource_name }}"
+    patch: "{{ item.patches }}"
+    kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
+  loop: "{{ k8s_cp_patches }}"
+  loop_control:
+    label: "{{ item.name }}"
+  vars:
+    k8s_cp_patches:
+      - name: Allow CoreDNS on uninitialized
+        api_version: apps/v1
+        kind: Deployment
+        namespace: kube-system
+        run_once: true
+        resource_name: coredns
+        patches:
+          - op: add
+            path: /spec/template/spec/tolerations
+            value:
+              - key: "node.cloudprovider.kubernetes.io/uninitialized"
+                operator: "Exists"
+                effect: "NoSchedule"
+      - name: Allow CP to be Loadbalancer target
+        api_version: v1
+        when: >-
+          {{ k8s_remove_no_schedule_cp_taints
+          and 'node.kubernetes.io/exclude-from-external-load-balancers'
+          in (__k8s_cp_node.resources | first).metadata.labels }}
+        kind: Node
+        resource_name: "{{ inventory_hostname }}"
+        patches:
+          - op: remove
+            path: /metadata/labels/node.kubernetes.io~1exclude-from-external-load-balancers
   tags: [k8s, k8s-init, k8s-cp-init, k8s-taint]
 
 - name: k8s cp | Get csr resources
