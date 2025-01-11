@@ -81,7 +81,7 @@
   tags: [k8s, k8s-prepare, k8s-base, apt]
   register: __k8s_kernel_update
 
-- name: k8s common | Ensure unneeded packages absent
+- name: k8s common | Ensure unneeded packages are absent
   when: k8s_absent_packages | length != 0
   ansible.builtin.apt:
     name: "{{ k8s_absent_packages }}"

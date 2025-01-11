@@ -180,7 +180,7 @@ k8s_cilium_helm_values:
       enabled: true
       rollOutPods: true
     ui:
-      enabled: true
+      enabled: false
       rollOutPods: true
       ingress:
         enabled: true
