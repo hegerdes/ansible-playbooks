@@ -66,8 +66,9 @@
       - "{{ [k8s_youki_manifest] if(k8s_install_youki | default(True)) else [] }}"
       - "{{ [k8s_wasmedge_manifest] if(k8s_install_wasi | default(True)) else [] }}"
       - "{{ [k8s_gVisor_manifest] if(k8s_install_gvisor | default(True)) else [] }}"
+      - "{{ [k8s_spin_manifest] if(k8s_install_spin | default(True)) else [] }}"
       - "{{ [k8s_kata_manifest] if(k8s_install_kata_containers | default(False)) else [] }}"
-  tags: [k8s, k8s-init, k8s-cp-init, k8s-cp-init-maifests]
+  tags: [k8s, k8s-init, k8s-cp-init, k8s-cp-init-manifests]
 
 - name: k8s cp | Upload certificates
   delegate_to: "{{ groups.k8s_control_plane | flatten | first }}"

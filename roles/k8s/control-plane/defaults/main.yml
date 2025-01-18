@@ -102,6 +102,10 @@ k8s_wasmedge_manifest:
   name: wasi RuntimeClass
   definition: "{{ lookup('template', role_path + '/files/k8s-runtime-class-wasi.yaml') | from_yaml_all }}"
 
+k8s_spin_manifest:
+  name: spin RuntimeClass
+  definition: "{{ lookup('template', role_path + '/files/k8s-runtime-class-spin.yaml') | from_yaml_all }}"
+
 ######### CNI #########
 # Which CNI flannel, calico or cilium
 k8s_cni: calico

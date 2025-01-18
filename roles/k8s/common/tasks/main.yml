@@ -216,6 +216,7 @@
     - { file: "{{ k8s_crun_install_task }}", run: "{{ k8s_install_crun }}" }
     - { file: "wasi.yml", run: "{{ k8s_install_wasi }}" }
     - { file: "youki.yml", run: "{{ k8s_install_youki }}" }
+    - { file: "spin.yml", run: "{{ k8s_install_spin }}" }
     # - { file: "kata_containers.yml", run: "{{ k8s_install_kata_containers }}" }
   loop_control:
     loop_var: task

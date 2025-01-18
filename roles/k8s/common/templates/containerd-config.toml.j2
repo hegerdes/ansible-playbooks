@@ -34,7 +34,6 @@ version = 3
 
 
 [plugins]
-
   # Common
   [plugins.'io.containerd.cri.v1.runtime']
     enable_unprivileged_ports = true
@@ -88,6 +87,10 @@ version = 3
     # Docs: https://github.com/containerd/runwasi
     [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.wasmer]
       runtime_type = 'io.containerd.wasmer.v1'
+
+    # spin
+    [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.spin]
+      runtime_type = "io.containerd.spin.v2"
 
     # Registry
     [plugins.'io.containerd.cri.v1.images'.registry]
