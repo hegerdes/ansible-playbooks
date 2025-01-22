@@ -32,7 +32,8 @@ serverTLSBootstrap: true
 
 containerRuntimeEndpoint: "unix:///run/containerd/containerd.sock"
 clusterDomain: cluster.local
-clusterDNS: [10.96.0.10]
+clusterDNS:
+{{ k8s_clusterDNS | to_nice_yaml(indent=2) | indent(width=2) }}
 
 maxPods: 220
 nodeStatusMaxImages: 100

@@ -29,6 +29,9 @@ k8s_pod_network_cidr_ipv4: 10.244.0.0/16
 k8s_service_network_cidr_ipv4: 10.96.0.0/16
 k8s_pod_network_cidr_ipv6: fd00:10:244::/48
 k8s_service_network_cidr_ipv6: fd00:20:123::/112
+k8s_clusterDNS: [10.96.0.10] # change for ipv6 only
+k8s_node_cidr_mask_size_ipv4: 24
+k8s_node_cidr_mask_size_ipv6: 64
 
 # Kubeadm & Kubelet conf
 k8s_kubeadm_conf: '{{ lookup("template", "kubeadm-config.yml.j2") }}'
@@ -39,6 +42,7 @@ k8s_etcd_encryption_secret: my-super-secure-k8s-etcd-secret!
 k8s_etcd_encryption_conf: '{{ lookup("template", "encryption-config.yml.j2") }}'
 
 # IPs & cert sans
+k8s_node_ip: "{{ k8s_node_ip_v4 }}"
 k8s_node_ip_v4: "{{ ansible_facts.default_ipv4.address }}"
 k8s_node_ip_v6: "{{ ansible_facts.default_ipv6.address }}"
 k8s_cert_extra_sans_ipv6: '{{ ["::1"] + ansible_facts.all_ipv6_addresses if(k8s_dual_stack) else [] }}'

@@ -1,8 +1,8 @@
 ---
 # Version of the chart to deploy
-k8s_metallb_chart_version: '{{ null | default(omit) }}'
+k8s_metallb_chart_version: "{{ null | default(omit) }}"
 k8s_metallb_install: true
 # Helm chart values
 k8s_metallb_helm_values: {}
 # Address space
-k8s_metallb_addresses: []
+k8s_metallb_addresses: [10.0.0.240-10.0.0.250]

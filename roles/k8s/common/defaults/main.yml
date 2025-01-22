@@ -53,6 +53,7 @@ k8s_common_sysctl_conf:
   ############ REQUIRED ############
   # Forward package to real dest - required
   - { key: net.ipv4.ip_forward, val: 1 }
+  - { key: net.ipv6.conf.default.forwarding, val: 1 }
   # Application layer will handle memory kills
   - { key: vm.overcommit_memory, val: 1 } # required
   # If panic reboot after 10s. Default of 0 - no reboot
@@ -121,7 +122,6 @@ k8s_common_sysctl_conf:
   # - { key: net.ipv4.conf.all.forwarding, val: 1 }
   # - { key: net.ipv6.conf.all.forwarding, val: 1 }
   # - { key: net.ipv4.conf.default.forwarding, val: 1 }
-  # - { key: net.ipv6.conf.default.forwarding, val: 1 }
   # - { key: net.bridge.bridge-nf-call-iptables, val: 1 }
   # - { key: net.bridge.bridge-nf-call-ip6tables, val: 1 }
   # # Allow to bind to lower ports
