@@ -13,7 +13,7 @@
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: k8s common | Set a hostname
-  when: k8s_inventory_as_hostname
+  when: k8s_inventory_as_hostname and inventory_hostname != "localhost"
   ansible.builtin.hostname:
     name: "{{ inventory_hostname }}"
   tags: [k8s, k8s-prepare, k8s-base]
@@ -71,15 +71,9 @@
 
 - name: k8s common | Ensure latest kernel
   when: k8s_ensure_min_kernel_version != "none"
-  ansible.builtin.apt:
-    name: "linux-image-{{ system_arch_map[ansible_facts.architecture] }}={{ k8s_ensure_min_kernel_version }}"
-    default_release: "{{ ansible_distribution_release }}-backports"
-    state: present
-    update_cache: true
-    allow_change_held_packages: true
-    install_recommends: false
+  ansible.builtin.include_tasks:
+    file: update_kernel.yaml
   tags: [k8s, k8s-prepare, k8s-base, apt]
-  register: __k8s_kernel_update
 
 - name: k8s common | Ensure unneeded packages are absent
   when: k8s_absent_packages | length != 0
@@ -88,21 +82,6 @@
     state: absent
     autoremove: true
   tags: [k8s, k8s-prepare, k8s-base, apt]
-
-- name: k8s common | Reboot
-  when:
-    - k8s_ensure_min_kernel_version != "none"
-    - __k8s_kernel_update.changed
-    - ansible_connection == "ssh"
-  ansible.builtin.reboot:
-  tags: [k8s, k8s-prepare, k8s-base]
-
-- name: k8s common | End the play on local connection
-  ansible.builtin.meta: end_host
-  when:
-    - k8s_ensure_min_kernel_version != "none"
-    - __k8s_kernel_update.changed
-    - ansible_connection == "local"
 
 - name: k8s common | Setup UnattendedUpgrades
   ansible.builtin.blockinfile:
