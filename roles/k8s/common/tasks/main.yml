@@ -46,7 +46,6 @@
         python3-kubernetes, # for ansible
         jq, # json parsing and validating
         yq, # yaml parsing and validating
-        criu, # low level cri cli - not needed for k8s >=1.31
         unzip,
         socat,
         mtr-tiny,

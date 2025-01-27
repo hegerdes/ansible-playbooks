@@ -1,0 +1,71 @@
+# k8s join
+---
+- name: k8s hcloud autoscale-conf | Get join token
+  when: k8_worker_join_token is not defined
+  run_once: true
+  ansible.builtin.command: |
+    kubeadm token create \
+    --ttl {{ k8s_autoscale_join_token_ttl }} \
+    --description "{{ ansible_date_time.date }} Token used to join autoscale nodes" \
+    --kubeconfig {{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}
+  register: __k8_worker_join_token_res
+  no_log: true
+  tags: [k8s, k8s-hcloud-autoscale, k8s-hcloud-autoscale-conf]
+
+- name: k8s hcloud autoscale-conf | Get CA certificate hash
+  when: k8_ca_sha256 is not defined
+  community.crypto.x509_certificate_info:
+    path: "{{ k8s_pki_cert_path }}/ca.crt"
+  register: __k8s_pki_ca
+  changed_when: false
+  run_once: true
+  no_log: true
+  tags: [k8s, k8s-hcloud-autoscale, k8s-hcloud-autoscale-conf]
+
+- name: k8s hcloud autoscale-conf | Setup host entries command
+  ansible.builtin.set_fact:
+    k8s_etc_host_commands: '{{ k8s_etc_host_commands | default([]) + [[''sh'', ''-c'', ''echo "'' + item.ip + '' '' + item.name + ''" >> /etc/hosts'']] }}'
+  tags: [k8s, k8s-hcloud-autoscale, k8s-hcloud-autoscale-conf]
+  loop: "{{ k8s_etc_hosts }}"
+  run_once: true
+
+- name: k8s hcloud autoscale-conf | Save autoscale-conf in keyvault
+  when: k8s_autoscale_create_az_secret
+  become: false
+  no_log: true
+  run_once: true
+  delegate_to: localhost
+  azure.azcollection.azure_rm_keyvaultsecret:
+    secret_name: "k8s-hetzner-custer-autoscale-conf"
+    secret_value: "{{ k8s_hcloud_autoscale_conf | to_json | b64encode }}"
+    keyvault_uri: "{{ keyvault }}"
+    tags:
+      origin: ansible
+      encoding: base64
+      cluster: "{{ inventory_dir | basename }}"
+  vars:
+    cluster_slug: "{{ inventory_dir | basename | replace(' ', '-') | replace('_', '-') }}"
+  tags: [k8s, k8s-hcloud-autoscale, k8s-hcloud-autoscale-conf]
+
+- name: Create a Service object from an inline definition
+  when: k8s_autoscale_create_k8s_secret
+  kubernetes.core.k8s:
+    kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
+    state: present
+    definition: "{{ item }}"
+  run_once: true
+  loop_control:
+    label: "Creating {{ item.kind }}"
+  with_items:
+    - apiVersion: v1
+      kind: Namespace
+    - apiVersion: v1
+      kind: Secret
+      metadata:
+        name: hcloud-scale-conf
+        namespace: cluster-autoscaler
+      data:
+        ssh-key: "{{ 'dummy-key' | b64encode }}"
+        cluster-config: "{{ k8s_hcloud_autoscale_conf | to_json | b64encode | b64encode }}"
+
+  tags: [k8s, k8s-hcloud-autoscale, k8s-hcloud-autoscale-conf]

@@ -1,0 +1,47 @@
+#!/bin/bash
+
+set -e -o pipefail
+
+# Check if kubeadm has already run
+if [ -f /etc/kubernetes/kubelet.conf ]; then
+  echo "kubeadm has already run"
+  exit 0
+fi
+
+K8_WORKER_JOIN_TOKEN="{{ k8_worker_join_token | default(__k8_worker_join_token_res.stdout )}}"
+K8S_SHARED_API_SERVER_ENDPOINT="{{ k8s_shared_api_server_endpoint }}"
+K8S_PKI_CA_HASH="{{ k8_ca_sha256 | default (__k8s_pki_ca["public_key_fingerprints"]["sha256"] | replace(":","")) }}"
+K8S_SHARED_API_SERVER_ENDPOINT_PORT="{{ k8s_kubelet_advertise_port | default(6443) }}"
+
+# Test reachability to shared KubeControlPlaneHost
+ping -c 2 "${K8S_SHARED_API_SERVER_ENDPOINT}"
+K8S_NODE_IP=$(ip -o -4 addr list | grep '10\.' | awk '{print $4}' | cut -d/ -f1)
+
+cat <<EOF >/srv/kubeadm-join-config.yaml
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: JoinConfiguration
+discovery:
+  tlsBootstrapToken: ${K8_WORKER_JOIN_TOKEN}
+  bootstrapToken:
+    apiServerEndpoint: ${K8S_SHARED_API_SERVER_ENDPOINT}:${K8S_SHARED_API_SERVER_ENDPOINT_PORT}
+    token: ${K8_WORKER_JOIN_TOKEN}
+    caCertHashes:
+      - sha256:${K8S_PKI_CA_HASH}
+nodeRegistration:
+  imagePullSerial: false
+  kubeletExtraArgs:
+    - name: node-ip
+      value: ${K8S_NODE_IP}
+  ignorePreflightErrors:
+    - NumCPU
+timeouts:
+  kubeletHealthCheck: 2m
+  discovery: 2m
+EOF
+
+kubeadm join -v 5 --config /srv/kubeadm-join-config.yaml
+
+systemctl daemon-reload
+systemctl enable kubelet
+
+echo "Node joined the cluster"
