@@ -261,10 +261,10 @@
       - 'runsc{{ "=" + k8s_gvisor_version + "*" if (k8s_gvisor_version != "latest") }}'
     __k8s_kube_packages:
       - 'kubeadm{{ "=" + k8s_version + "*" if (k8s_version != "latest") }}'
-      - 'kubectl{{ "=" + k8s_version + "*" if (k8s_version != "latest") }}'
       - 'kubelet{{ "=" + k8s_version + "*" if (k8s_version != "latest") }}'
-      - "cri-tools"
-      - "etcd-client"
+      # - 'kubectl{{ "=" + k8s_version + "*" if (k8s_version != "latest") }}'
+      # - "cri-tools"
+      # - "etcd-client"
   tags: [k8s, k8s-prepare, k8s-base, apt]
 
 - name: k8s common | Include install containerd
@@ -289,7 +289,7 @@
   loop: "{{ __k8s_kube_packages | flatten }}"
   vars:
     __k8s_kube_packages:
-      - [kubeadm, kubectl, kubelet]
+      - [kubeadm, kubelet]
       - "{{ ['runsc'] if(k8s_install_gvisor) else [] }}"
       - "{{ ['containerd.io'] if(k8s_containerd_variant | lower == 'docker') else [] }}"
   tags: [k8s, k8s-prepare, k8s-base, apt]
@@ -341,10 +341,11 @@
   ansible.builtin.blockinfile:
     path: "{{ ansible_facts.env.HOME }}/.bashrc"
     block: |
-      source <(kubectl completion bash)
-      source <(crictl completion)
-      alias k=kubectl
-      complete -F __start_kubectl k
+      if command -v kubectl > /dev/null; then
+        source <(kubectl completion bash)
+        alias k=kubectl
+        complete -F __start_kubectl k
+      fi
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: k8s common | Shutdown
