@@ -43,7 +43,6 @@
         apparmor,
         apparmor-profiles-extra,
         apt-transport-https,
-        python3-kubernetes, # for ansible
         jq, # json parsing and validating
         yq, # yaml parsing and validating
         unzip,
@@ -108,9 +107,9 @@
 
 - name: k8s common | Add entries to /etc/hosts
   ansible.builtin.lineinfile:
+    create: true
     path: /etc/hosts
     line: "{{ item.ip }} {{ item.name }}"
-    create: true
     state: "{{ item.state | default('present') }}"
   loop: "{{ k8s_etc_hosts }}"
   loop_control:
