@@ -16,3 +16,5 @@ netaddr
 azure-keyvault
 azure-identity
 azure-cli-core
+botocore
+boto3
