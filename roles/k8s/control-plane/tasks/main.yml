@@ -11,6 +11,18 @@
     fail_msg: "'k8s_etcd_encryption_secret' must be 32 characters long"
   tags: [k8s, k8s-init, k8s-cp-init]
 
+- name: k8s cp | Install kubectl & python k8s tools
+  ansible.builtin.apt:
+    name:
+      [
+        'kubectl{{ "=" + k8s_version + "*" if (k8s_version != "latest") }}',
+        python3-kubernetes,
+      ]
+    update_cache: true
+    install_recommends: false
+    allow_downgrade: true
+  tags: [k8s, k8s-init, k8s-cp-init]
+
 - name: k8s cp | Copy kubelet, kubeadm and etcd encryption config
   ansible.builtin.copy:
     content: "{{ item.content }}"
@@ -210,7 +222,7 @@
               - key: "node.cloudprovider.kubernetes.io/uninitialized"
                 operator: "Exists"
                 effect: "NoSchedule"
-      - name: Allow CP to be Loadbalancer target
+      - name: Allow CP to be LoadBalancer target
         api_version: v1
         when: >-
           {{ k8s_remove_no_schedule_cp_taints
