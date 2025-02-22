@@ -270,7 +270,7 @@
 #       aarch64: arm64
 
 # - debug:
-#     msg: '{{ lookup("az_keyvault", "test-secret", vault_url=keyvault ) }}'
+#     msg: '{{ lookup("azure.azcollection.azure_keyvault_secret", "test-secret", vault_url=keyvault ) }}'
 #   vars:
 #     keyvault: https://hegerdes.vault.azure.net
 

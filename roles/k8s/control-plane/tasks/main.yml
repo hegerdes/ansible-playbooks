@@ -53,6 +53,19 @@
   register: __k8s_kubeadm_conf
   tags: [k8s, k8s-init, k8s-cp-init]
 
+- name: k8s common | Pre-pull images
+  when: not __k8s_kubeadm_conf.stat.exists
+  ansible.builtin.command: |
+    kubeadm config images pull \
+      {{ "--kubernetes-version " + k8s_version if (k8s_version != "latest") }} \
+      {{ "--image-repository " + k8s_image_repo if (k8s_image_repo | default("") != "") }}
+  register: __k8s_pull_res
+  changed_when: >-
+    ((__k8s_pull_res.end[:-7]
+    | to_datetime) - (__k8s_pull_res.start[:-7]
+    | to_datetime)).total_seconds() > 5
+  tags: [k8s, k8s-init, k8s-cp-init]
+
 - name: k8s cp | Init cluster if needed
   when: groups.k8s_control_plane | flatten | first == inventory_hostname and not __k8s_kubeadm_conf.stat.exists
   ansible.builtin.include_tasks: kubeadm-init.yml
@@ -60,6 +73,7 @@
 
 - name: k8s cp | Deploying initial resource manifests
   when: groups.k8s_control_plane | flatten | first == inventory_hostname
+  run_once: true
   kubernetes.core.k8s:
     namespace: "{{ k8s_init_resources.namespace | default(omit) }}"
     kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"

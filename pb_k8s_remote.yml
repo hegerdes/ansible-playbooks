@@ -31,6 +31,7 @@
 
 - name: K8s-Deploy
   hosts: k8s_control_plane
+  serial: 1
   become: true
   gather_facts: true
   roles:
