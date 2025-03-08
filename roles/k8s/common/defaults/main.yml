@@ -1,5 +1,5 @@
 ---
-k8s_version: 1.32.1
+k8s_version: 1.32.2
 
 # Which cri to use: runc, crun, youki or runsc, kata-containers
 k8s_cri: runc
@@ -140,21 +140,10 @@ k8s_common_sysctl_conf:
 
 k8s_system_limits:
   - user: "root"
+    type: "-" # can be hard, soft or - for both (default) - optional
     limit: "nofile"
     value: 8192
-    comment: ""
-# Example
-# k8s_system_limits:
-#   - user: "*"
-#     type: "hard"    # optional
-#     limit: "nofile"
-#     value: 1048576
-#     comment: ""
-#   - user: "docker"
-#     type: "-"       # hard & soft
-#     limit: "core"
-#     value: 1048576
-#     comment: ""     # optional
+    comment: "" # optional
 
 # Set and get versions and urls
 k8s_containerd_download_url: >-
