@@ -48,6 +48,7 @@
 # - k8s/grafana-mimir
 # - k8s/metallb
 # - k8s/rancher
+
 # # Upgrade
 # - hosts: k8s
 #   become: true
@@ -62,17 +63,3 @@
 #   gather_facts: true
 #   roles:
 #     - k8s/worker-leave
-
-# - hosts: localhost
-#   become: false
-#   gather_facts: false
-#   roles:
-#     # - k8s/metallb
-#     # - k8s/hetzner
-#     # - k8s/longhorn
-#     # - k8s/certmanager
-#     # - k8s/ingress-nginx
-#     # - k8s/ingress-traefik
-#     # - k8s/monitoring
-#     - k8s/argocd
-#     # - k8s/deploy

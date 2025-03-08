@@ -42,15 +42,9 @@ ansible-playbook --become-password-file <FILE_WITH_ROOT_PW> -i <PATH_TO_INVENTOR
 ansible-vault encrypt <PATH_TO_VAULT>
 ```
 
-## Available playbooks
- * pb_k8s_remote.yml - Bootstrab a full cluster
- * pb_main.yml - Runs all of the Tasks below on the hosts configured in the inventory
- * pb_maintenance.yml - Checks for updates (and eventually performs them) on all hosts & runs the backup scripts on the host if it is present
- * pb_deploy_app.yml - Deploys one or more apps via Docker - use with the limit option
-
-## Supported Tasks
+## Supported Tasks & Roles
  * **common:** Install basic packages (like ``curl``, ``wget``, ``tar``... ) to any Debian based host
- * **kubernetes:** Lots of kubernetes tasks to bootstrab and manage a cluster
+ * **kubernetes:** Lots of kubernetes tasks to bootstrap and manage a cluster
  * **promtail:** Install a log shipper to send *authlog*, *syslog*, *daemonlog*... to a management host (hostname mgmt)
  * **node-exporter:** Install system metrics exporter that can be scraped by Prometheus (listens on port 9100)
  * **nginx:** Installs the official nginx version, deploys default config, forwards logs, can automatically install hosts and https
@@ -88,4 +82,4 @@ promtail_config_dst_path: /srv/promtail/promtail-config.yml
 
 promtail_args: '--client.external-labels=hostname={{ ansible_facts.hostname }} -config.file {{ promtail_config_dst_path }}'
 ```
-Thes values can be overwritten by setting `group_vars` and `host_vars` or `--extra-vars KEY=VALUE` on the terminal
+These values can be overwritten by setting `group_vars` and `host_vars` or `--extra-vars KEY=VALUE` on the terminal
