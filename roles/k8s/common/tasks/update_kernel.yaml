@@ -13,7 +13,7 @@
   when:
     - k8s_ensure_min_kernel_version != "none"
     - __k8s_kernel_update.changed
-    - ansible_connection == "ssh"
+    - ansible_connection | default("ssh") == "ssh"
   ansible.builtin.reboot:
   tags: [k8s, k8s-prepare, k8s-base]
 
@@ -23,12 +23,12 @@
     state: touch
   when:
     - __k8s_kernel_update.changed
-    - ansible_connection == "local"
+    - ansible_connection | default("ssh") == "local"
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: k8s common | End the play on local connection
   ansible.builtin.meta: end_host
   when:
     - __k8s_kernel_update.changed
-    - ansible_connection == "local"
+    - ansible_connection | default("ssh") == "local"
   tags: [k8s, k8s-prepare, k8s-base]
