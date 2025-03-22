@@ -17,7 +17,7 @@ nodeRegistration:
   taints: {{ k8s_taints | to_nice_yaml(indent=2) | indent(width=4) }}
 controlPlane:
   localAPIEndpoint:
-    advertiseAddress: {{ k8s_node_ip }}
+    advertiseAddress: {{ k8s_node_ip | split(",") | first }}
     bindPort: {{ k8s_kubelet_advertise_port | default(6443) | int }}
   certificateKey: {{ k8_cert_key if (k8_cert_key != "none") else __k8s_kubeadm_cert_key_res.stdout_lines | last }}
 timeouts:
