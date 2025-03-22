@@ -1,6 +1,7 @@
 ---
 # Main k8s Setup
 - name: k8s cp | Test reachability to KubeControlPlane
+  when: k8s_cp_ping_check
   ansible.builtin.command: "ping -c 5 {{ k8s_shared_api_server_endpoint }}"
   changed_when: false
   tags: [k8s, k8s-init, k8s-cp-init]

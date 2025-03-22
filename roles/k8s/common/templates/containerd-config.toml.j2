@@ -22,16 +22,17 @@
 # K8s config settings for systemd and various container runtimes
 version = 3
 # root = '/var/lib/containerd'
-# # state = '/run/containerd'
-# # subreaper = true
-# # oom_score = 0
+# state = '/run/containerd'
+# subreaper = true
+# oom_score = 0
 
 # plugin_dir = ''
 # disabled_plugins = []
 # required_plugins = []
 # oom_score = 0
 
-
+# Ansible extra containerd conf
+{{ k8s_containerd_extra_config | default('# No ansible extra containerd conf') }}
 
 [plugins]
   # Common

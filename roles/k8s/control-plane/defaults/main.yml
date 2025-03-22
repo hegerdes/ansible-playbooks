@@ -3,6 +3,7 @@ k8s_version: 1.32.3
 k8s_dual_stack: false
 k8s_install_core_dns: true
 k8s_install_kube_proxy: true
+k8s_cp_ping_check: true
 k8s_image_repo: registry.k8s.io
 k8s_cluster_name: "{{ inventory_dir | basename }}"
 k8s_pki_cert_path: /etc/kubernetes/pki

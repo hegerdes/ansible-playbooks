@@ -70,7 +70,7 @@
 - name: k8s common | Ensure latest kernel
   when: k8s_ensure_min_kernel_version != "none"
   ansible.builtin.include_tasks:
-    file: update_kernel.yaml
+    file: update_kernel.yml
   tags: [k8s, k8s-prepare, k8s-base, apt]
 
 - name: k8s common | Ensure unneeded packages are absent
@@ -273,13 +273,13 @@
       tags: [k8s, k8s-prepare, k8s-base, apt]
   tags: [k8s, k8s-prepare, k8s-base, k8s-runtime, apt]
 
-- name: k8s common | Include install kubelet-static-credential-provider
-  when: k8s_credential_provider_enabled
+- name: k8s common | Include install kubelet-credential-providers
   ansible.builtin.include_tasks:
-    file: kubelet-credential-provider.yml
+    file: kubelet-credential-provider-{{ item }}.yml
     apply:
       tags: [k8s, k8s-prepare, k8s-base, k8s-plugins]
   tags: [k8s, k8s-prepare, k8s-base, k8s-plugins]
+  loop: "{{ k8s_credential_provider }}"
 
 - name: k8s common | Set packages to fixed versions
   ansible.builtin.dpkg_selections:
@@ -307,7 +307,7 @@
       dst: /etc/containerd/config.toml
     - src: runsc.toml.j2
       dst: /etc/containerd/runsc.toml.j2
-    - src: crictl.yaml.j2
+    - src: crictl.yml.j2
       dst: /etc/crictl.yaml
       validate: yq . %s
     - src: cilium-networkd.conf.j2
