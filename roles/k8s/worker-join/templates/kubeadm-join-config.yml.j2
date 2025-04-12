@@ -18,3 +18,5 @@ nodeRegistration:
 timeouts:
   kubeletHealthCheck: 2m
   discovery: 2m
+patches:
+  directory: {{ target_data_dir | default('') }}/srv/patches

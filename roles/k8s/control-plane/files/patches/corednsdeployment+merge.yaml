@@ -1,0 +1,10 @@
+spec:
+  template:
+    spec:
+      tolerations:
+        - key: "node.kubernetes.io/uninitialized"
+          operator: "Exists"
+          effect: "NoSchedule"
+        - key: "node.cloudprovider.kubernetes.io/uninitialized"
+          operator: "Exists"
+          effect: "NoSchedule"

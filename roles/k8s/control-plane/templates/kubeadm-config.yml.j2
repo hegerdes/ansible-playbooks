@@ -18,6 +18,8 @@ timeouts:
   controlPlaneComponentHealthCheck: 4m
 skipPhases:
   {{ k8s_kubeadm_skip_phases | to_nice_yaml(indent=2) | indent(width=2) }}
+patches:
+  directory: {{ target_data_dir | default('') }}/srv/patches
 ---
 apiVersion: kubeadm.k8s.io/v1beta4
 kind: ClusterConfiguration
