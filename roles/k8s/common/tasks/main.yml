@@ -122,8 +122,9 @@
     mode: "{{ item.mode | default('0644') }}"
     state: directory
   with_items:
-    - { path: "/srv", mode: "0750" }
     - { path: "/etc/containerd" }
+    - { path: "/srv", mode: "0750" }
+    - { path: "{{ target_data_dir | default('') }}/srv/patches", mode: "0750" }
     - { path: "{{ ansible_facts.env.HOME }}/.kube", mode: "0700" }
     - { path: "/etc/kubernetes/enc", mode: "0775" }
     - { path: "/etc/kubernetes/kubelet.conf.d", mode: "0744" }
