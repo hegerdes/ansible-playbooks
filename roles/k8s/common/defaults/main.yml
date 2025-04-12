@@ -38,6 +38,9 @@ k8s_credential_provider_version:
   ecr: latest
   kscp: latest
 
+# Send extra headers to GitHub API calls
+k8s_gh_headers: {}
+
 k8s_etc_hosts: []
 # Example
 # k8s_etc_hosts:
@@ -153,7 +156,7 @@ k8s_system_limits:
 # Set and get versions and urls
 k8s_containerd_download_url: >-
   {{
-  lookup("url", "https://api.github.com/repos/containerd/containerd/releases/latest")
+  lookup("url", "https://api.github.com/repos/containerd/containerd/releases/latest", headers=k8s_gh_headers)
   | from_json
   | json_query(k8s_containerd_query)
   | first
@@ -165,7 +168,7 @@ k8s_containerd_download_url: >-
   }}
 k8s_cni_plugin_download_url: >-
   {{
-  lookup("url", "https://api.github.com/repos/containernetworking/plugins/releases/latest")
+  lookup("url", "https://api.github.com/repos/containernetworking/plugins/releases/latest", headers=k8s_gh_headers)
   | from_json
   | json_query(k8s_cni_plugins_query)
   | first
@@ -177,7 +180,7 @@ k8s_cni_plugin_download_url: >-
   }}
 k8s_runc_download_url: >-
   {{
-  lookup("url", "https://api.github.com/repos/opencontainers/runc/releases/latest")
+  lookup("url", "https://api.github.com/repos/opencontainers/runc/releases/latest", headers=k8s_gh_headers)
   | from_json
   | json_query(k8s_runc_query)
   | first
@@ -189,7 +192,7 @@ k8s_runc_download_url: >-
   }}
 k8s_crun_download_url: >-
   {{
-  lookup("url", "https://api.github.com/repos/containers/crun/releases/latest")
+  lookup("url", "https://api.github.com/repos/containers/crun/releases/latest", headers=k8s_gh_headers)
   | from_json
   | json_query(k8s_crun_query)
   | first
@@ -201,7 +204,7 @@ k8s_crun_download_url: >-
   }}
 k8s_crun_wasm_download_url: >-
   {{
-  lookup("url", "https://api.github.com/repos/hegerdes/helper-suite/releases/latest")
+  lookup("url", "https://api.github.com/repos/hegerdes/helper-suite/releases/latest", headers=k8s_gh_headers)
   | from_json
   | json_query(k8s_crun_wasm_query)
   | select("search", ansible_facts.architecture)
@@ -210,7 +213,7 @@ k8s_crun_wasm_download_url: >-
   }}
 k8s_youki_wasm_download_url: >-
   {{
-  lookup("url", "https://api.github.com/repos/hegerdes/helper-suite/releases/latest")
+  lookup("url", "https://api.github.com/repos/hegerdes/helper-suite/releases/latest", headers=k8s_gh_headers)
   | from_json
   | json_query(k8s_youki_wasm_query)
   | select('search', 'youki')
@@ -219,7 +222,7 @@ k8s_youki_wasm_download_url: >-
   }}
 k8s_youki_download_url: >-
   {{
-  lookup("url", "https://api.github.com/repos/youki-dev/youki/releases/latest")
+  lookup("url", "https://api.github.com/repos/youki-dev/youki/releases/latest", headers=k8s_gh_headers)
   | from_json
   | json_query(k8s_youki_query)
   | first
@@ -231,7 +234,7 @@ k8s_youki_download_url: >-
   }}
 k8s_spin_download_url: >-
   {{
-  lookup("url", "https://api.github.com/repos/spinkube/containerd-shim-spin/releases/latest")
+  lookup("url", "https://api.github.com/repos/spinkube/containerd-shim-spin/releases/latest", headers=k8s_gh_headers)
   | from_json
   | json_query(k8s_spin_query)
   | first
@@ -241,7 +244,7 @@ k8s_spin_download_url: >-
   }}
 k8s_kata_containers_download_url: >-
   {{
-  lookup("url", "https://api.github.com/repos/kata-containers/kata-containers/releases/latest")
+  lookup("url", "https://api.github.com/repos/kata-containers/kata-containers/releases/latest", headers=k8s_gh_headers)
   | from_json
   | json_query(k8s_kata_containers_query)
   | select("search", system_arch_map[ansible_facts.architecture])
@@ -250,7 +253,7 @@ k8s_kata_containers_download_url: >-
   }}
 k8s_credential_provider_kscp_download_url: >-
   {{
-  lookup("url", "https://api.github.com/repos/hegerdes/kubelet-static-credential-provider/releases/latest")
+  lookup("url", "https://api.github.com/repos/hegerdes/kubelet-static-credential-provider/releases/latest", headers=k8s_gh_headers)
   | from_json
   | json_query(k8s_credential_provider_kscp_query)
   | first if(k8s_credential_provider_version.kscp == "latest")
@@ -262,7 +265,7 @@ k8s_credential_provider_kscp_download_url: >-
   }}
 k8s_credential_provider_ecr_download_url: >-
   {{
-  lookup("url", "https://api.github.com/repos/hegerdes/helper-suite/releases/latest")
+  lookup("url", "https://api.github.com/repos/hegerdes/helper-suite/releases/latest", headers=k8s_gh_headers)
   | from_json
   | json_query(k8s_credential_provider_ecr_query)
   | first if(k8s_credential_provider_version.ecr == "latest")
