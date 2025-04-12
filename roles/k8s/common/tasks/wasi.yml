@@ -30,6 +30,8 @@
     src: "{{ item.value | first }}"
     dest: /usr/local/bin
     remote_src: true
+    owner: root
+    group: root
     exclude:
       - "{{ item.key }}d-v1.pem"
       - "{{ item.key }}d-v1.sig"

@@ -22,7 +22,7 @@
   when: k8s_youki_with_wasm and __k8s_youki_download is not skipped
   ansible.builtin.file:
     src: >-
-      /usr/local/bin/{{ __k8s_youki_download.files | first }}/youki-linux-{{ system_arch_map[ansible_facts.architecture] }}
+      /usr/local/bin/{{ __k8s_youki_download.files | first | replace("/", '') }}/youki-linux-{{ system_arch_map[ansible_facts.architecture] }}
     dest: /usr/local/bin/youki
     mode: 0755
     state: link
