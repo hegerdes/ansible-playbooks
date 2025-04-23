@@ -201,9 +201,9 @@
     apply:
       tags: [k8s, k8s-prepare, k8s-base, k8s-runtime]
   with_items:
-    - { file: "{{ k8s_crun_install_task }}", run: "{{ k8s_install_crun }}" }
+    - { file: "{{ k8s_crun_install_task }}", run: "{{ k8s_install_crun or k8s_cri == 'crun' }}" }
     - { file: "wasi.yml", run: "{{ k8s_install_wasi }}" }
-    - { file: "youki.yml", run: "{{ k8s_install_youki }}" }
+    - { file: "youki.yml", run: "{{ k8s_install_youki or k8s_cri == 'youki' }}" }
     - { file: "spin.yml", run: "{{ k8s_install_spin }}" }
     # - { file: "kata_containers.yml", run: "{{ k8s_install_kata_containers }}" }
   loop_control:

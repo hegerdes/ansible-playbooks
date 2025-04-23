@@ -2,7 +2,7 @@
 # Main k8s Setup
 - name: k8s cp | Test reachability to KubeControlPlane
   when: k8s_cp_ping_check
-  ansible.builtin.command: "ping -c 5 {{ k8s_shared_api_server_endpoint }}"
+  ansible.builtin.command: "ping -c 2 {{ k8s_shared_api_server_endpoint }}"
   changed_when: false
   tags: [k8s, k8s-init, k8s-cp-init]
 
@@ -188,6 +188,15 @@
   ansible.builtin.debug:
     var: __k8s_join_res
   tags: [k8s, k8s-init, k8s-cp-init]
+
+# - name: Init worker join
+#   include_role:
+#     name: k8s/worker-join
+#     apply:
+#       delegate_to: "{{ item }}"
+#   run_once: true
+#   loop: "{{ groups['k8s_worker'] }}"
+#   # when: some_condition
 
 - name: k8s cp | Remove NoSchedule taint form control-plane nodes
   when: k8s_remove_no_schedule_cp_taints
