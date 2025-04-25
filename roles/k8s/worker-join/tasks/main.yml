@@ -1,7 +1,8 @@
 # k8s join
 ---
 - name: k8s worker join | Test reachability to shared KubeControlPlaneHost
-  ansible.builtin.command: "ping -c 5 {{ k8s_shared_api_server_endpoint }}"
+  when: k8s_cp_ping_check | default(true)
+  ansible.builtin.command: "ping -c 2 {{ k8s_shared_api_server_endpoint }}"
   changed_when: false
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
@@ -30,6 +31,7 @@
     path: "{{ k8s_pki_cert_path }}/ca.crt"
   register: __k8s_pki_ca
   changed_when: false
+  run_once: true
   no_log: true
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 

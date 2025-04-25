@@ -6,6 +6,8 @@
     dest: /usr/local/bin
     list_files: true
     remote_src: true
+    owner: root
+    group: root
     mode: 0755
     exclude:
       - README.md

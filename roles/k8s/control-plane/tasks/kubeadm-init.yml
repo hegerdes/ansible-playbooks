@@ -2,18 +2,13 @@
 # Set up k8s with kubeadm
 - name: k8s cp - kubeadm | Init first control-plane node
   block:
-    - name: k8s cp - kubeadm | Reset Kubernetes components
-      ansible.builtin.command: "kubeadm reset --force"
-      register: reset_cluster
-      tags: [k8s, k8s-init, k8s-cp-init]
-
     - name: k8s cp - kubeadm | Init Kubernetes cluster
-      when: reset_cluster is succeeded
       ansible.builtin.command: |
         kubeadm init \
           --config {{ target_data_dir | default("") }}/srv/kubeadm-config.yaml \
           --upload-certs
       register: init_cluster
+      timeout: 300
       tags: [k8s, k8s-init, k8s-cp-init]
 
     - name: k8s cp - kubeadm | Enable and check kubelet service

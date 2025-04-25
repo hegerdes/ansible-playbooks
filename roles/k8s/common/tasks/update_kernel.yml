@@ -17,7 +17,7 @@
   ansible.builtin.reboot:
   tags: [k8s, k8s-prepare, k8s-base]
 
-- name: Create reboot-required file if kernel update was performed
+- name: k8s common | Create reboot-required file if kernel updated
   ansible.builtin.file:
     path: /var/run/reboot-required
     state: touch
