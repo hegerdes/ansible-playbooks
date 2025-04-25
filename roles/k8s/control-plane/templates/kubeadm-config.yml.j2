@@ -30,6 +30,9 @@ imageRepository: {{ k8s_image_repo }}
 certificatesDir: {{ k8s_pki_cert_path }}
 controlPlaneEndpoint: {{ k8s_shared_api_server_endpoint }}
 
+featureGates:
+  {{ k8s_feature_gates | to_nice_yaml(indent=2) | indent(width=2) }}
+
 networking:
   serviceSubnet: {{ k8s_service_network_cidr }}
   podSubnet: {{ k8s_pod_network_cidr }}
@@ -42,7 +45,7 @@ apiServer:
     - name: audit-log-path
       value: "-"
     - name: encryption-provider-config
-      value: /etc/kubernetes/enc/encryption-config.yaml
+      value: /etc/kubernetes/extras/encryption-config.yaml
     - name: encryption-provider-config-automatic-reload
       value: "true"
     - name: enable-admission-plugins
@@ -52,9 +55,9 @@ apiServer:
     #   value: "false"
   certSANs: {{ k8s_cert_extra_sans + [k8s_shared_api_server_endpoint] | flatten | unique }}
   extraVolumes:
-    - name: etcd-encrypt
-      hostPath: /etc/kubernetes/enc
-      mountPath: /etc/kubernetes/enc
+    - name: extra-conf
+      hostPath: /etc/kubernetes/extras
+      mountPath: /etc/kubernetes/extras
       readOnly: true
       pathType: DirectoryOrCreate
 

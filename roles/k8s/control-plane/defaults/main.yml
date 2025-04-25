@@ -1,5 +1,5 @@
 ---
-k8s_version: 1.32.4
+k8s_version: 1.33.0
 k8s_dual_stack: false
 k8s_install_core_dns: true
 k8s_install_kube_proxy: true
@@ -54,6 +54,11 @@ k8s_install_gvisor: true
 # K8s cert key for cp join. Default one is generated
 k8_cert_key: none
 
+k8s_feature_gates: {}
+# # Example
+# k8s_feature_gates:
+#   UserNamespacesSupport: true
+
 k8s_kubeadm_skip_phases: []
 # # Example
 # k8s_kubeadm_skip_phases:
@@ -63,6 +68,13 @@ k8s_controlplane_extra_args: []
 # k8s_controlplane_extra_args:
 #   - name: anonymous-auth
 #     value: "false"
+k8s_controlplane_extra_files: []
+# # Example
+# k8s_controlplane_extra_files:
+#   - name: api-auth-conf
+#     dst: /etc/kubernetes/k8s-api-auth-conf.yaml
+#     content: "hello: world"
+#     validate: yq . %s
 
 ######### Taints & Roles #########
 k8s_remove_no_schedule_cp_taints: false
