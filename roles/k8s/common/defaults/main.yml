@@ -1,5 +1,5 @@
 ---
-k8s_version: 1.32.4
+k8s_version: 1.33.0
 
 # Which cri to use: runc, crun, youki or runsc, kata-containers
 k8s_cri: runc
@@ -9,8 +9,8 @@ k8s_install_youki: true
 k8s_install_crun: true
 k8s_install_spin: true
 k8s_install_kata_containers: false
+k8s_install_stargz: false
 k8s_absent_packages: [wget, vim-tiny, manpages, man-db]
-
 k8s_youki_with_wasm: false
 k8s_crun_with_wasm: false
 k8s_crun_wasmlib_version: 0.1.0
@@ -27,6 +27,7 @@ k8s_crun_version: latest
 k8s_youki_version: latest
 k8s_gvisor_version: latest
 k8s_spin_version: latest
+k8s_stargz_version: latest
 k8s_selinux_mode: permissive # can be: disabled,enforcing,permissive
 k8s_selinux_policy: targeted
 k8s_cni: calico
@@ -275,6 +276,20 @@ k8s_credential_provider_ecr_download_url: >-
   + system_arch_map[ansible_facts.architecture]
   + ".tar.gz"
   }}
+k8s_stargz_download_url: >-
+  {{
+  lookup("url", "https://api.github.com/repos/containerd/stargz-snapshotter/releases/latest", headers=k8s_gh_headers)
+  | from_json
+  | json_query(k8s_stargz_query)
+  | first if(k8s_stargz_version == "latest")
+  else
+  "https://github.com/containerd/stargz-snapshotter/releases/download/v"
+  + k8s_stargz_version + "/stargz-snapshotter-v"
+  + k8s_stargz_version + "-linux-"
+  + system_arch_map[ansible_facts.architecture]
+  + ".tar.gz"
+
+  }}
 
 k8s_crun_wasm_query: "assets[?starts_with(name, 'crun')].browser_download_url"
 k8s_kata_containers_query: assets[?starts_with(name, "kata-static")].browser_download_url
@@ -302,6 +317,12 @@ k8s_cni_plugins_query: >-
   +"' )].browser_download_url"
   }}
 k8s_crun_query: >-
+  {{
+  "assets[?contains(name, 'linux-"
+  + system_arch_map[ansible_facts.architecture]
+  + "')].browser_download_url"
+  }}
+k8s_stargz_query: >-
   {{
   "assets[?contains(name, 'linux-"
   + system_arch_map[ansible_facts.architecture]

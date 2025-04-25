@@ -16,9 +16,6 @@
 # sudo ctr i pull docker.io/wasmedge/example-wasi:latest
 # ctr run --rm --runc-binary crun --runtime io.containerd.runc.v2 --label module.wasm.image/variant=compat-smart docker.io/wasmedge/example-wasi:latest wasm-example
 
-# Other container image snapshotter:
-# https://github.com/containerd/stargz-snapshotter/blob/main/docs/INSTALL.md
-
 # K8s config settings for systemd and various container runtimes
 version = 3
 # root = '/var/lib/containerd'
@@ -59,48 +56,64 @@ version = 3
         [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.crun.options]
           BinaryName = '/usr/local/bin/crun'
           SystemdCgroup = true
-    # gvisor
-    # Docs: https://gvisor.dev/docs/user_guide/containerd/configuration/
-    [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.runsc]
-      runtime_type = 'io.containerd.runsc.v1'
-      [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.runsc.options]
-        TypeUrl = 'io.containerd.runsc.v1.options'
-        ConfigPath = '/etc/containerd/runsc.toml'
 
-    # youki
-    [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.youki]
-      runtime_type = 'io.containerd.runc.v2'
-      [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.youki.options]
-        BinaryName = '/usr/local/bin/youki'
-        SystemdCgroup = true
+      # gvisor
+      # Docs: https://gvisor.dev/docs/user_guide/containerd/configuration/
+      [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.runsc]
+        runtime_type = 'io.containerd.runsc.v1'
+        [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.runsc.options]
+          TypeUrl = 'io.containerd.runsc.v1.options'
+          ConfigPath = '/etc/containerd/runsc.toml'
 
-    # wasmedge
-    # Docs: https://github.com/containerd/runwasi
-    [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.wasmedge]
-      runtime_type = 'io.containerd.wasmedge.v1'
+      # youki
+      [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.youki]
+        runtime_type = 'io.containerd.runc.v2'
+        [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.youki.options]
+          BinaryName = '/usr/local/bin/youki'
+          SystemdCgroup = true
 
-    # wasmtime
-    # Docs: https://github.com/containerd/runwasi
-    [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.wasmtime]
-      runtime_type = 'io.containerd.wasmtime.v1'
+      # wasmedge
+      # Docs: https://github.com/containerd/runwasi
+      [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.wasmedge]
+        runtime_type = 'io.containerd.wasmedge.v1'
 
-    # wasmer
-    # Docs: https://github.com/containerd/runwasi
-    [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.wasmer]
-      runtime_type = 'io.containerd.wasmer.v1'
+      # wasmtime
+      # Docs: https://github.com/containerd/runwasi
+      [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.wasmtime]
+        runtime_type = 'io.containerd.wasmtime.v1'
 
-    # spin
-    [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.spin]
-      runtime_type = "io.containerd.spin.v2"
+      # wasmer
+      # Docs: https://github.com/containerd/runwasi
+      [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.wasmer]
+        runtime_type = 'io.containerd.wasmer.v1'
+
+      # Spin
+      [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.spin]
+        runtime_type = "io.containerd.spin.v2"
 
     # Registry
     [plugins.'io.containerd.cri.v1.images'.registry]
       config_path = '/etc/containerd/certs.d'
   [plugins.'io.containerd.cri.v1.images']
+{% if k8s_install_stargz | default(false) %}
+    snapshotter = 'stargz'
+{% else %}
     snapshotter = 'overlayfs'
+{% endif %}
+
     disable_snapshot_annotations = false
     max_concurrent_downloads = 4
 
+
+{% if k8s_install_stargz | default(false) %}
+# Other container image snapshotter:
+# https://github.com/containerd/stargz-snapshotter/blob/main/docs/INSTALL.md
+# Use stargz snapshotter
+[proxy_plugins]
+  [proxy_plugins.stargz]
+    type = "snapshot"
+    address = "/run/containerd-stargz-grpc/containerd-stargz-grpc.sock"
+{% endif %}
 
 # [debug]
 #  address = '/run/containerd/debug.sock'
