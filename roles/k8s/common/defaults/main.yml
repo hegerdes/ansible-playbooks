@@ -7,6 +7,7 @@ k8s_install_gvisor: true
 k8s_install_wasi: true
 k8s_install_youki: true
 k8s_install_crun: true
+k8s_install_runc: true
 k8s_install_spin: true
 k8s_install_kata_containers: false
 k8s_install_stargz: false

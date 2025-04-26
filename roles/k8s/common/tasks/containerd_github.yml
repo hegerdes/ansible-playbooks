@@ -12,6 +12,7 @@
   retries: 3
 
 - name: k8s common - containerd | Install runc
+  when: k8s_install_runc or k8s_cri == 'runc'
   ansible.builtin.get_url:
     url: "{{ k8s_runc_download_url }}"
     dest: /usr/local/bin/runc
