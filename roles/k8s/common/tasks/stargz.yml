@@ -15,9 +15,11 @@
   retries: 3
 
 - name: k8s common - stargz | Copy stargz system service
-  ansible.builtin.copy:
-    src: stargz-snapshotter.service
+  ansible.builtin.get_url:
     dest: /etc/systemd/system/stargz-snapshotter.service
+    url: https://raw.githubusercontent.com/containerd/stargz-snapshotter/main/script/config/etc/systemd/system/stargz-snapshotter.service
+    mode: "0600"
+  retries: 3
 
 - name: k8s common - stargz | Enable stargz service
   ansible.builtin.systemd:
@@ -25,7 +27,6 @@
     state: started
     daemon_reload: true
     enabled: true
-  ignore_errors: "{{ ansible_check_mode }}"
 
 - name: k8s common - stargz | Check stargz
   ansible.builtin.command:

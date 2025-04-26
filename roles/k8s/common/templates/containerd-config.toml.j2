@@ -94,6 +94,7 @@ version = 3
     # Registry
     [plugins.'io.containerd.cri.v1.images'.registry]
       config_path = '/etc/containerd/certs.d'
+
   [plugins.'io.containerd.cri.v1.images']
 {% if k8s_install_stargz | default(false) %}
     snapshotter = 'stargz'
