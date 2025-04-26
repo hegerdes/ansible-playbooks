@@ -34,4 +34,4 @@ KANIKO:build:
   parallel:
     matrix:
       - RUNNER: saas-linux-small-amd64
-      - RUNNER: hegerdes-linux-arm64
+      - RUNNER: saas-linux-small-arm64
