@@ -1,3 +1,8 @@
+{% if k8s_cri_runtime == 'containerd' %}
 runtime-endpoint: unix:///var/run/containerd/containerd.sock
 image-endpoint: unix:///var/run/containerd/containerd.sock
+{% else %}
+runtime-endpoint: unix:///var/run/crio/crio.sock
+image-endpoint: unix:///var/run/crio/crio.sock
+{% endif %}
 timeout: 10

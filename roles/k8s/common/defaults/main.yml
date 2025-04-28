@@ -3,6 +3,7 @@ k8s_version: 1.33.0
 
 # Which cri to use: runc, crun, youki or runsc, kata-containers
 k8s_cri: runc
+k8s_cri_runtime: containerd # can be containerd or crio
 k8s_install_gvisor: true
 k8s_install_wasi: true
 k8s_install_youki: true
@@ -24,6 +25,7 @@ k8s_containerd_variant: github # can be docker (uses docker apt repo) or github 
 k8s_containerd_version: latest # can be set for docker an github version of containerd
 k8s_cni_plugins_version: latest # only applies if k8s_containerd_variant is equal to github
 k8s_runc_version: latest # only applies if k8s_containerd_variant is equal to github
+k8s_crio_version: latest
 k8s_crun_version: latest
 k8s_youki_version: latest
 k8s_gvisor_version: latest
@@ -31,7 +33,7 @@ k8s_spin_version: latest
 k8s_stargz_version: latest
 k8s_selinux_mode: permissive # can be: disabled,enforcing,permissive
 k8s_selinux_policy: targeted
-k8s_cni: calico
+k8s_cni: cilium
 k8s_credential_provider: []
 # k8s_credential_provider:
 #   - ecr

@@ -30,7 +30,11 @@ authorization:
 rotateCertificates: true
 serverTLSBootstrap: true
 
+{% if k8s_cri_runtime == 'containerd' %}
 containerRuntimeEndpoint: "unix:///run/containerd/containerd.sock"
+{% else %}
+containerRuntimeEndpoint: "unix:///var/run/crio/crio.sock"
+{% endif %}
 clusterDomain: cluster.local
 clusterDNS:
 {{ k8s_clusterDNS | to_nice_yaml(indent=2) | indent(width=2) }}
