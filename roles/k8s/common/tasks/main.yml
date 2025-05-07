@@ -42,6 +42,7 @@
         apparmor,
         apparmor-profiles-extra,
         apt-transport-https,
+        python3-debian,
         jq, # json parsing and validating
         yq, # yaml parsing and validating
         unzip,
@@ -79,6 +80,7 @@
     name: "{{ k8s_absent_packages }}"
     state: absent
     autoremove: true
+    purge: true
   tags: [k8s, k8s-prepare, k8s-base, apt]
 
 - name: k8s common | Setup UnattendedUpgrades
