@@ -36,7 +36,6 @@
         gnupg,
         lsb-release,
         ca-certificates,
-        curl,
         pigz, # fast decompress for container images
         isal, # even faster decompress for container images
         cryptsetup, # support LUKS disk encryption
