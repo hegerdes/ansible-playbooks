@@ -81,6 +81,8 @@
     state: absent
     autoremove: true
     purge: true
+  environment:
+    SUDO_FORCE_REMOVE: "yes"
   tags: [k8s, k8s-prepare, k8s-base, apt]
 
 - name: k8s common | Setup UnattendedUpgrades
