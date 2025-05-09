@@ -30,8 +30,6 @@ imageRepository: {{ k8s_image_repo }}
 certificatesDir: {{ k8s_pki_cert_path }}
 controlPlaneEndpoint: {{ k8s_shared_api_server_endpoint }}
 
-featureGates:
-  {{ k8s_feature_gates | to_nice_yaml(indent=2) | indent(width=2) }}
 
 networking:
   serviceSubnet: {{ k8s_service_network_cidr }}
