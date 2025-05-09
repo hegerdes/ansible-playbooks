@@ -10,8 +10,8 @@ fi
 
 K8_WORKER_JOIN_TOKEN="{{ k8_worker_join_token | default(__k8_worker_join_token_res.stdout )}}"
 K8S_SHARED_API_SERVER_ENDPOINT="{{ k8s_shared_api_server_endpoint }}"
-K8S_PKI_CA_HASH="{{ k8_ca_sha256 | default (__k8s_pki_ca["public_key_fingerprints"]["sha256"] | replace(":","")) }}"
 K8S_SHARED_API_SERVER_ENDPOINT_PORT="{{ k8s_kubelet_advertise_port | default(6443) }}"
+K8S_PKI_CA_HASH="{{ k8_ca_sha256 | default (__k8s_pki_ca["public_key_fingerprints"]["sha256"] | replace(":","")) }}"
 
 # Test reachability to shared KubeControlPlaneHost
 ping -c 2 "${K8S_SHARED_API_SERVER_ENDPOINT}"

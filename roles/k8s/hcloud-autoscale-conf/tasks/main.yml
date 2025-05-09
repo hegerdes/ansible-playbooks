@@ -66,6 +66,12 @@
         namespace: cluster-autoscaler
       data:
         ssh-key: "{{ 'dummy-key' | b64encode }}"
-        cluster-config: "{{ k8s_hcloud_autoscale_conf | to_json | b64encode | b64encode }}"
-
+        cluster-config: >-
+          {{
+          __k8s_hcloud_autoscale_conf | b64encode
+          if(k8s_hcloud_autoscale_conf_double_base64_encode) else
+          __k8s_hcloud_autoscale_conf
+          }}
+  vars:
+    __k8s_hcloud_autoscale_conf: "{{ k8s_hcloud_autoscale_conf | to_json | b64encode }}"
   tags: [k8s, k8s-hcloud-autoscale, k8s-hcloud-autoscale-conf]
