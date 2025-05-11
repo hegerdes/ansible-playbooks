@@ -181,17 +181,15 @@
         k8s version: {{ k8s_version if (k8s_version != "latest") else "latest" }}
         containerd version: {{ k8s_containerd_version }}
         container runtime: {{ k8s_cri }}
+        containerd download url {{ k8s_containerd_download_url }}
+        cni plugin download url {{ k8s_cni_plugin_download_url }}
         gvisor enabled: {{ k8s_install_gvisor }}
         wasmedge enabled: {{ k8s_install_wasi }}
         youki enabled: {{ k8s_install_youki }}
         youki with wasm: {{ k8s_youki_with_wasm }}
         crun version: {{ k8s_crun_version }}
         crun with wasm: {{ k8s_crun_with_wasm }}
-        {{ "runc download url " + k8s_runc_download_url if(k8s_containerd_variant == "github") else "runc version: latest" }}
-      {% if(k8s_containerd_variant == "github") %}
-        containerd download url {{ k8s_containerd_download_url }}
-        cni plugin download url {{ k8s_cni_plugin_download_url }}
-      {% endif %}
+        runc version: {{ k8s_runc_version }}
   run_once: true
   tags: [k8s, k8s-prepare, k8s-base]
 
@@ -202,8 +200,9 @@
     apply:
       tags: [k8s, k8s-prepare, k8s-base, k8s-runtime]
   with_items:
+    - { file: "runc.yml", run: "{{ k8s_install_runc or k8s_cri == 'runc' }}" }
     - {
-        file: "{{ k8s_crun_install_task }}",
+        file: "crun{{ '_wasm' if(k8s_crun_with_wasm) }}.yml",
         run: "{{ k8s_install_crun or k8s_cri == 'crun' }}",
       }
     - {
@@ -217,11 +216,9 @@
   loop_control:
     loop_var: task
     label: "{{ task.file }}"
-  vars:
-    k8s_crun_install_task: "crun{{ '_wasm' if(k8s_crun_with_wasm) }}.yml"
   tags: [k8s, k8s-prepare, k8s-base, k8s-runtime]
 
-- name: k8s common | Add Docker/K8s/gVisor repository
+- name: k8s common | K8s/gVisor/crio repository
   ansible.builtin.deb822_repository:
     name: "{{ item.name }}"
     types: [deb]
@@ -241,20 +238,15 @@
       components: [main]
       suites: [release]
       state: "{{ k8s_install_gvisor }}"
-    - name: docker
-      repo: "https://download.docker.com/linux/{{ ansible_distribution | lower }}"
-      key: "https://download.docker.com/linux/{{ ansible_facts.distribution | lower }}/gpg"
-      components: [stable]
-      suites: ["{{ ansible_distribution_release | lower }}"]
-      state: "{{ k8s_containerd_variant | lower == 'docker' and k8s_cri_runtime == 'containerd' }}"
     - name: crio
-      repo: "https://download.opensuse.org/repositories/isv:/cri-o:/stable:/{{ (__k8s_crio_version | split('.'))[0:2] | join('.') }}/deb/"
-      key: "https://download.opensuse.org/repositories/isv:/cri-o:/stable:/{{ (__k8s_crio_version | split('.'))[0:2] | join('.') }}/deb/Release.key"
+      repo: "https://download.opensuse.org/repositories/isv:/cri-o:/stable:/{{ __k8s_crio_version }}/deb/"
+      key: "https://download.opensuse.org/repositories/isv:/cri-o:/stable:/{{ __k8s_crio_version }}/deb/Release.key"
       state: "{{ k8s_cri_runtime == 'crio' }}"
   loop_control:
     label: "{{ item.name }}"
   vars:
-    __k8s_crio_version: "{{ k8s_crio_version if k8s_crio_version != 'latest' else __k8s_crio_gh_version }}"
+    __k8s_crio_version: "{{ (__k8s_crio_version | split('.'))[0:2] | join('.') }}"
+    __k8s_crio_version_tmp: "{{ k8s_crio_version if k8s_crio_version != 'latest' else __k8s_crio_gh_version }}"
     __k8s_crio_gh_version: "{{ (lookup('url', 'https://api.github.com/repos/cri-o/cri-o/releases/latest') | from_json).tag_name }}"
   tags: [k8s, k8s-prepare, k8s-base, k8s-runtime, apt]
 
@@ -284,11 +276,9 @@
 
 - name: k8s common | Include install CRI
   ansible.builtin.include_tasks:
-    file: "{{ __k8s_containerd_task_file if k8s_cri_runtime == 'containerd' else 'crio.yml' }}"
+    file: "{{ 'containerd.yml' if k8s_cri_runtime == 'containerd' else 'crio.yml' }}"
     apply:
       tags: [k8s, k8s-prepare, k8s-base, k8s-runtime, apt]
-  vars:
-    __k8s_containerd_task_file: "containerd_{{ k8s_containerd_variant | lower }}.yml"
   tags: [k8s, k8s-prepare, k8s-base, k8s-runtime, apt]
 
 - name: k8s common | Include install kubelet-credential-providers
@@ -308,7 +298,7 @@
     __k8s_kube_packages:
       - [kubeadm, kubelet]
       - "{{ ['runsc'] if(k8s_install_gvisor) else [] }}"
-      - "{{ ['containerd.io'] if(k8s_containerd_variant | lower == 'docker') else [] }}"
+      - "{{ ['cri-o'] if(k8s_cri_runtime == 'crio') else [] }}"
   tags: [k8s, k8s-prepare, k8s-base, apt]
 
 - name: k8s common | Copy container runtime configs

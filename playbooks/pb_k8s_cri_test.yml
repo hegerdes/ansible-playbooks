@@ -18,7 +18,6 @@
     k8s_crun_version: latest
     k8s_youki_version: latest
     k8s_gvisor_version: latest
-    k8s_containerd_variant: github # can be docker or github
     k8s_containerd_version: latest
     k8s_cni_plugins_version: latest
     k8s_crun_with_wasm: false # Use official crun

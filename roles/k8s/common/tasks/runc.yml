@@ -1,0 +1,13 @@
+---
+# Setup runc
+- name: k8s common - runc | Install runc
+  ansible.builtin.get_url:
+    url: "{{ k8s_runc_download_url }}"
+    dest: /usr/local/bin/runc
+    mode: "0755"
+  retries: 3
+
+- name: k8s common - runc | Test runc
+  ansible.builtin.command:
+    cmd: runc --version
+  changed_when: false
