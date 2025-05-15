@@ -245,7 +245,7 @@
   loop_control:
     label: "{{ item.name }}"
   vars:
-    __k8s_crio_version: "{{ (__k8s_crio_version | split('.'))[0:2] | join('.') }}"
+    __k8s_crio_version: "{{ (__k8s_crio_version_tmp | split('.'))[0:2] | join('.') }}"
     __k8s_crio_version_tmp: "{{ k8s_crio_version if k8s_crio_version != 'latest' else __k8s_crio_gh_version }}"
     __k8s_crio_gh_version: "{{ (lookup('url', 'https://api.github.com/repos/cri-o/cri-o/releases/latest') | from_json).tag_name }}"
   tags: [k8s, k8s-prepare, k8s-base, k8s-runtime, apt]
