@@ -1,0 +1,30 @@
+apiVersion: audit.k8s.io/v1
+kind: Policy
+
+# Don’t log the initial RequestReceived stage to cut down on volume
+omitStages:
+  - RequestReceived
+
+# The rules are evaluated in order; the first matching rule applies.
+rules:
+  # Log request+response bodies for any mutating action
+  - level: RequestResponse
+    verbs: ["create", "update", "patch", "delete"]
+    # userGroups: [oidc:]
+
+  # Log metadata only for all other resource requests
+  - level: Metadata
+
+  # Ensure you capture metadata on non-resource URL access (discovery, healthz, etc.)
+  - level: Metadata
+    nonResourceURLs:
+      - "/healthz*"
+      - "/version"
+      - "/metrics"
+      - "/openapi*"
+
+  # (Optional) If you have custom API groups you care about, you can add them here
+  # - level: RequestResponse
+  #   resources:
+  #     - group: "myorg.example.com"
+  #       resources: ["widgets","gadgets"]

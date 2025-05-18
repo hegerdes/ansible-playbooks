@@ -1,6 +1,7 @@
 spec:
   template:
     spec:
+      hostUsers: false
       tolerations:
         - key: "node.kubernetes.io/uninitialized"
           operator: "Exists"

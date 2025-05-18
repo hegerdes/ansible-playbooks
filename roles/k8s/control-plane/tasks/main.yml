@@ -24,7 +24,7 @@
     allow_downgrade: true
   tags: [k8s, k8s-init, k8s-cp-init]
 
-- name: k8s cp | Copy kubelet, kubeadm, etcd encryption and patches
+- name: k8s cp | Copy kubelet, kubeadm, audit, etcd encryption conf and patches
   ansible.builtin.copy:
     content: "{{ item.content | default(omit) }}"
     dest: "{{ item.dst }}"
@@ -37,6 +37,10 @@
       - name: etcd-encryption-conf
         dst: /etc/kubernetes/extras/encryption-config.yaml
         content: "{{ k8s_etcd_encryption_conf }}"
+        validate: yq . %s
+      - name: audit-conf
+        dst: /etc/kubernetes/extras/audit-policy.yaml
+        src: audit-policy.yaml
         validate: yq . %s
       - name: kubeadm-conf
         dst: "{{ target_data_dir | default('') }}/srv/kubeadm-config.yaml"

@@ -37,11 +37,21 @@ networking:
   dnsDomain: "cluster.local"
 
 apiServer:
+  extraEnvs:
+    {{ k8s_controlplane_extra_envs | to_nice_yaml(indent=2) | indent(width=4) }}
   extraArgs:
     - name: profiling
       value: "false"
     - name: audit-log-path
-      value: "-"
+      value: /var/log/kube-apiserver/audit.log
+    - name: audit-log-maxage
+      value: "30" # days to retain
+    - name: audit-log-maxbackup
+      value: "10" # rotated files to keep
+    - name: audit-log-maxsize
+      value: "100" # megabytes per file
+    - name: audit-policy-file
+      value: /etc/kubernetes/extras/audit-policy.yaml
     - name: encryption-provider-config
       value: /etc/kubernetes/extras/encryption-config.yaml
     - name: encryption-provider-config-automatic-reload
@@ -57,6 +67,10 @@ apiServer:
       hostPath: /etc/kubernetes/extras
       mountPath: /etc/kubernetes/extras
       readOnly: true
+      pathType: DirectoryOrCreate
+    - name: audit-log
+      hostPath: /var/log/kube-apiserver/
+      mountPath: /var/log/kube-apiserver/
       pathType: DirectoryOrCreate
 
 controllerManager:
