@@ -131,6 +131,7 @@
     - { path: "{{ target_data_dir | default('') }}/srv/patches", mode: "0750" }
     - { path: "{{ ansible_facts.env.HOME }}/.kube", mode: "0700" }
     - { path: "/etc/kubernetes/extras", mode: "0775" }
+    - { path: "/var/log/kube-apiserver", mode: "0600" }
     - { path: "/etc/kubernetes/kubelet.conf.d", mode: "0744" }
     - { path: "/etc/systemd/system/kubelet.service.d", mode: "0600" }
     - { path: "/opt/cni/bin", mode: "0755" }

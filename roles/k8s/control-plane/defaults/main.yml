@@ -1,5 +1,5 @@
 ---
-k8s_version: 1.33.0
+k8s_version: 1.33.1
 k8s_dual_stack: false
 k8s_install_core_dns: true
 k8s_install_kube_proxy: true
@@ -68,6 +68,11 @@ k8s_controlplane_extra_args: []
 # k8s_controlplane_extra_args:
 #   - name: anonymous-auth
 #     value: "false"
+k8s_controlplane_extra_envs: []
+# # Example
+# k8s_controlplane_extra_envs:
+#   - name: hello
+#     value: world
 k8s_controlplane_extra_files: []
 # # Example
 # k8s_controlplane_extra_files:
