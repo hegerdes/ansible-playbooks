@@ -100,10 +100,9 @@ version = 3
     snapshotter = 'stargz'
 {% else %}
     snapshotter = 'overlayfs'
-{% endif %}
-
+    use_local_image_pull = true
     disable_snapshot_annotations = false
-    max_concurrent_downloads = 4
+{% endif %}
 
 
 {% if k8s_install_stargz | default(false) %}
