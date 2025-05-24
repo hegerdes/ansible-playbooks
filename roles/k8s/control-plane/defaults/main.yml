@@ -46,6 +46,7 @@ k8s_etcd_encryption_conf: '{{ lookup("template", "encryption-config.yml.j2") }}'
 k8s_node_ip: "{{ k8s_node_ip_v4 }}"
 k8s_node_ip_v4: "{{ ansible_facts.default_ipv4.address }}"
 k8s_node_ip_v6: "{{ ansible_facts.default_ipv6.address }}"
+k8s_advertise_address: '{{ k8s_node_ip | split(",") | first }}'
 k8s_cert_extra_sans_ipv6: '{{ ["::1"] + ansible_facts.all_ipv6_addresses if(k8s_dual_stack) else [] }}'
 k8s_cert_extra_sans: '{{ ["127.0.0.1", "localhost"] + ansible_facts.all_ipv4_addresses + k8s_cert_extra_sans_ipv6 }}'
 k8s_install_k9s: true
@@ -67,6 +68,11 @@ k8s_controlplane_extra_args: []
 # # Example
 # k8s_controlplane_extra_args:
 #   - name: anonymous-auth
+#     value: "false"
+k8s_controller_extra_args: []
+# # Example
+# k8s_controller_extra_args:
+#   - name: allocate-node-cidrs
 #     value: "false"
 k8s_controlplane_extra_envs: []
 # # Example

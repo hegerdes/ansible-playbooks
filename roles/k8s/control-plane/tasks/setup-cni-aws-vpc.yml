@@ -1,0 +1,24 @@
+---
+# Main k8s CNI - aws-vpc
+- name: k8s cp - cni aws-vpc | Add aws-vpc helm chart repo
+  kubernetes.core.helm_repository:
+    name: eks
+    repo_url: https://aws.github.io/eks-charts
+  tags: [k8s, k8s-init, k8s-cp-init, k8s-cni, k8s-aws-vpc]
+
+- name: k8s cp - cni aws-vpc | Install aws-vpc
+  kubernetes.core.helm:
+    name: aws-vpc-cni
+    chart_ref: eks/aws-vpc-cni
+    chart_version: "{{ k8s_cilium_chart_version }}"
+    release_namespace: kube-system
+    update_repo_cache: true
+    create_namespace: true
+    state: present
+    atomic: true
+    wait: true
+    timeout: 2m
+    values: "{{ k8s_aws_vpc_values | default({}) }}"
+    kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
+  run_once: true
+  tags: [k8s, k8s-init, k8s-cp-init, k8s-cni, k8s-aws-vpc]

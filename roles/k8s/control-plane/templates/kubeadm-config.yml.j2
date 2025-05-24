@@ -11,7 +11,7 @@ nodeRegistration:
     - NumCPU
   taints: {{ k8s_taints | to_nice_yaml(indent=2) | indent(width=4) }}
 localAPIEndpoint:
-  advertiseAddress: {{ k8s_node_ip | split(",") | first }}
+  advertiseAddress: {{ k8s_advertise_address }}
   bindPort: {{ k8s_kubelet_advertise_port | default(6443) | int }}
 timeouts:
   kubeletHealthCheck: 2m
@@ -75,6 +75,7 @@ apiServer:
 
 controllerManager:
   extraArgs:
+    {{ k8s_controller_extra_args | to_nice_yaml(indent=2) | indent(width=4) }}
     - name: profiling
       value: "false"
 {% if k8s_dual_stack %}
@@ -92,7 +93,6 @@ controllerManager:
       value: "{{ k8s_node_cidr_mask_size_ipv6 }}"
 {% endif %}
 {% endif %}
-
 
 scheduler:
   extraArgs:
