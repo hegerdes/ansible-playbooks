@@ -58,7 +58,9 @@ apiServer:
       value: "true"
     - name: enable-admission-plugins
       value: NodeRestriction
+{% if k8s_controlplane_extra_args | length > 0 %}
     {{ k8s_controlplane_extra_args | to_nice_yaml(indent=2) | indent(width=4) }}
+{% endif %}
     # - name anonymous-auth
     #   value: "false"
   certSANs: {{ k8s_cert_extra_sans + [k8s_shared_api_server_endpoint] | flatten | unique }}
@@ -75,7 +77,6 @@ apiServer:
 
 controllerManager:
   extraArgs:
-    {{ k8s_controller_extra_args | to_nice_yaml(indent=2) | indent(width=4) }}
     - name: profiling
       value: "false"
 {% if k8s_dual_stack %}
@@ -92,6 +93,9 @@ controllerManager:
     - name: node-cidr-mask-size-ipv6
       value: "{{ k8s_node_cidr_mask_size_ipv6 }}"
 {% endif %}
+{% endif %}
+{% if k8s_controller_extra_args | length > 0 %}
+    {{ k8s_controller_extra_args | to_nice_yaml(indent=2) | indent(width=4) }}
 {% endif %}
 
 scheduler:
