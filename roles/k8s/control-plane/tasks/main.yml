@@ -6,11 +6,14 @@
   changed_when: false
   tags: [k8s, k8s-init, k8s-cp-init]
 
-- name: k8s cp | Assert that k8s_etcd_encryption_secret has the right length
-  ansible.builtin.assert:
-    that: [k8s_etcd_encryption_secret | length == 32]
-    fail_msg: "'k8s_etcd_encryption_secret' must be 32 characters long"
-  tags: [k8s, k8s-init, k8s-cp-init]
+- name: k8s cp | Install Helm
+  when: k8s_kubeconfig | default('/etc/kubernetes/admin.conf') != '/etc/kubernetes/admin.conf'
+  ansible.builtin.include_role:
+    name: k8s/helm
+    public: true
+    apply:
+      tags: [k8s, k8s-init, k8s-cp-init, k8s-helm]
+  tags: [k8s, k8s-init, k8s-cp-init, k8s-helm]
 
 - name: k8s cp | Install kubectl & python k8s tools
   ansible.builtin.apt:
@@ -107,6 +110,20 @@
       - "{{ [k8s_kata_manifest] if(k8s_install_kata_containers | default(False)) else [] }}"
   tags: [k8s, k8s-init, k8s-cp-init, k8s-cp-init-manifests]
 
+- name: k8s cp | Deploying initial Helm-Charts
+  ansible.builtin.include_role:
+    name: k8s/deploy
+    tasks_from: helm-deploy
+    public: true
+    apply:
+      tags: [k8s, k8s-init, k8s-cp-init, k8s-cp-init-manifests, k8s-helm]
+  tags: [k8s, k8s-init, k8s-cp-init, k8s-cp-init-manifests, k8s-helm]
+  loop: "{{ k8s_init_helm_apps }}"
+  loop_control:
+    label: "{{ item.chart_name }}"
+  vars:
+    k8s_helm_app: "{{ item }}"
+
 - name: k8s cp | Upload certificates
   delegate_to: "{{ groups.k8s_control_plane | flatten | first }}"
   ansible.builtin.command: |
@@ -155,7 +172,7 @@
     content: "{{ item.content }}"
     dest: "{{ item.dst }}"
     mode: "0600"
-    validate: yq . %s
+    validate: kubeadm config validate --config %s
   with_items:
     - name: k8s cp | kubeadm-join-conf
       dst: "{{ target_data_dir | default('') }}/srv/kubeadm-join-config.yml"
@@ -297,14 +314,6 @@
     apply:
       tags: [k8s, k8s-init, k8s-cp-init, k8s-k9s]
   tags: [k8s, k8s-init, k8s-cp-init, k8s-k9s]
-
-- name: k8s cp | Install Helm
-  ansible.builtin.include_role:
-    name: k8s/helm
-    public: true
-    apply:
-      tags: [k8s, k8s-init, k8s-cp-init, k8s-helm]
-  tags: [k8s, k8s-init, k8s-cp-init, k8s-helm]
 
 - name: k8s cp | Setup CNI
   ansible.builtin.include_tasks:

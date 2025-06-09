@@ -17,3 +17,6 @@ resources:
               secret: {{ k8s_etcd_encryption_secret | b64encode }}
       - identity: {} # this fallback allows reading unencrypted secrets;
                      # for example, during initial migration
+
+# Internal check
+# {{ ('Right secret length' if k8s_etcd_encryption_secret | length == 32) | mandatory('"k8s_etcd_encryption_secret" must be 32 characters long') }}
