@@ -7,7 +7,7 @@
   tags: [k8s, k8s-init, k8s-cp-init]
 
 - name: k8s cp | Install Helm
-  when: k8s_kubeconfig | default('/etc/kubernetes/admin.conf') != '/etc/kubernetes/admin.conf'
+  when: k8s_kubeconfig | default('/etc/kubernetes/admin.conf') == '/etc/kubernetes/admin.conf'
   ansible.builtin.include_role:
     name: k8s/helm
     public: true
@@ -52,10 +52,6 @@
       - name: patches
         dst: "{{ target_data_dir | default('') }}/srv"
         src: patches
-      # - name: kubelet-override-conf
-      #   dst: /etc/kubernetes/kubelet.conf.d/10-kubelet-ip.conf
-      #   content: "{{ k8s_kubelet_override_conf }}"
-      #   validate: yq . %s
   loop_control:
     label: "{{ item.name }}"
   tags: [k8s, k8s-init, k8s-cp-init]
