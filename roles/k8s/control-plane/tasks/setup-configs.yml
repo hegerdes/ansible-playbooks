@@ -7,14 +7,6 @@
     remote_src: true
     mode: "0600"
 
-- name: k8s cp - configs | Create kube conf dir
-  become: false
-  run_once: true
-  delegate_to: localhost
-  ansible.builtin.file:
-    path: "~/.kube"
-    state: directory
-
 - name: k8s cp - configs | Get kubeconfig - remote
   run_once: true
   no_log: true
