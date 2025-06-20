@@ -5,9 +5,7 @@
     src: "{{ k8s_containerd_download_url }}"
     dest: /usr/local
     remote_src: true
-    exclude:
-      - bin/containerd-stress
-      - bin/ctr
+    exclude: [bin/containerd-stress, bin/ctr]
     creates: /usr/local/bin/containerd
   retries: 3
 

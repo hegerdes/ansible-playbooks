@@ -5,7 +5,6 @@
     name: 'cri-o{{ "=" + k8s_crio_version + "*" if (k8s_crio_version != "latest") }}'
     state: present
     update_cache: true
-    cache_valid_time: 86400 # equal to 24h
     install_recommends: false
     allow_downgrade: true
     autoremove: true
@@ -16,3 +15,4 @@
   ansible.builtin.command:
     cmd: crio --version
   changed_when: false
+  ignore_errors: "{{ ansible_check_mode }}"
