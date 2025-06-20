@@ -1,5 +1,5 @@
 ---
-k8s_version: 1.33.1
+k8s_version: 1.33.2
 
 # Which cri to use: runc, crun, youki or runsc, kata-containers
 k8s_cri: runc
@@ -245,6 +245,16 @@ k8s_spin_download_url: >-
   else "https://github.com/spinkube/containerd-shim-spin/releases/download/v"
   + k8s_spin_version + "containerd-shim-spin-v2-linux-" + ansible_facts.architecture + ".tar.gz"
   }}
+k8s_crio_version_short: >-
+  {{
+  (k8s_crio_version if k8s_crio_version != 'latest'
+  else k8s_crio_gh_version
+  | split('.'))[0:2]
+  | join('.')
+  }}
+k8s_crio_gh_version: >-
+  {{ (lookup('url', 'https://api.github.com/repos/cri-o/cri-o/releases/latest', headers=k8s_gh_headers)
+  | from_json).tag_name }}
 k8s_kata_containers_download_url: >-
   {{
   lookup("url", "https://api.github.com/repos/kata-containers/kata-containers/releases/latest", headers=k8s_gh_headers)
@@ -290,7 +300,6 @@ k8s_stargz_download_url: >-
   + k8s_stargz_version + "-linux-"
   + system_arch_map[ansible_facts.architecture]
   + ".tar.gz"
-
   }}
 
 k8s_crun_wasm_query: "assets[?starts_with(name, 'crun')].browser_download_url"

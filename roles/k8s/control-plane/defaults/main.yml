@@ -1,5 +1,5 @@
 ---
-k8s_version: 1.33.1
+k8s_version: 1.33.2
 k8s_dual_stack: false
 k8s_install_core_dns: true
 k8s_install_kube_proxy: true
@@ -50,7 +50,6 @@ k8s_advertise_address: '{{ k8s_node_ip | split(",") | first }}'
 k8s_cert_extra_sans_ipv6: '{{ ["::1"] + ansible_facts.all_ipv6_addresses if(k8s_dual_stack) else [] }}'
 k8s_cert_extra_sans: '{{ ["127.0.0.1", "localhost"] + ansible_facts.all_ipv4_addresses + k8s_cert_extra_sans_ipv6 }}'
 k8s_install_k9s: true
-k8s_install_gvisor: true
 
 # K8s cert key for cp join. Default one is generated
 k8_cert_key: none

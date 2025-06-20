@@ -73,7 +73,24 @@
       }}
     k8s_crun_wasm_query: "assets[?starts_with(name, 'crun')].browser_download_url"
     k8s_wasmi_version: "{{ lookup('url', 'https://api.github.com/repos/containerd/runwasi/releases?per_page=6') | from_json | json_query('[*].tag_name') | select('match', 'containerd-shim') }}"
+
+    aws_vpc_ipv6_cidr: "{{ (((lookup('pipe', 'aws ec2 describe-vpcs') | from_json).Vpcs | first).Ipv6CidrBlockAssociationSet | first).Ipv6CidrBlock }}"
+
   tasks:
+    - debug:
+        msg: |
+          {{ aws_vpc_ipv6_cidr | ansible.utils.ipsubnet(64, 6) }}
+          {{ aws_vpc_ipv6_cidr | ansible.utils.ipsubnet(64, 7) | ansible.utils.ipsubnet(112,0) }}
+          {{ aws_vpc_ipv6_cidr | ansible.utils.ipsubnet(64, 7) | ansible.utils.ipsubnet(112,0) | ansible.utils.ipmath(10) }}
+          {{ "2a05:d014:1d51:9206::/64" | ansible.utils.ipsubnet(96) }}
+          {{ "2a05:d014:1d51:9206::/64" | ansible.utils.ipsubnet(112) }}
+        # Example output
+        # 2a05:d014:1d51:9206::/64
+        # 2a05:d014:1d51:9207::/112
+        # 2a05:d014:1d51:9207::a
+        # 4294967296
+        # 281474976710656
+    - fail:
     - debug:
         var: k8s_wasmi_version
 
