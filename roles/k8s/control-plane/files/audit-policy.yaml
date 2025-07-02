@@ -7,6 +7,64 @@ omitStages:
 
 # The rules are evaluated in order; the first matching rule applies.
 rules:
+  # The following requests were manually identified as high-volume and low-risk,so drop them.
+  - level: None
+    users: ["system:kube-proxy"]
+    verbs: ["watch", "get"]
+    resources:
+      - group: "" # core
+        resources: ["endpoints", "services", "services/status"]
+  - level: None
+    userGroups: ["system:nodes"]
+    verbs: ["get", "watch"]
+    resources:
+      - group: "" # core
+        resources: ["nodes", "nodes/status"]
+  - level: None
+    users:
+      - system:kube-controller-manager
+      - system:kube-scheduler
+      - system:serviceaccount:kube-system:endpoint-controller
+    verbs: ["get", "update", "watch"]
+    namespaces: ["kube-system"]
+    resources:
+      - group: "" # core
+        resources: ["endpoints"]
+  - level: None
+    users: ["system:apiserver"]
+    verbs: ["get", "watch"]
+    resources:
+      - group: "" # core
+        resources: ["namespaces", "namespaces/status", "namespaces/finalize"]
+  # Don't log HPA fetching metrics.
+  - level: None
+    users:
+      - system:kube-controller-manager
+    verbs: ["get", "list"]
+    resources:
+      - group: "metrics.k8s.io"
+  # Don't log these read-only URLs.
+  - level: None
+    nonResourceURLs:
+      - /healthz*
+      - /version
+      - /swagger*
+      - "/metrics"
+      - "/openapi*"
+  # Don't log events requests.
+  - level: None
+    resources:
+      - group: "" # core
+        resources: ["events"]
+  # Secrets, TokenRequest and TokenReviews can contain sensitive & binary data,
+  # so only log at the Metadata level.
+  - level: Metadata
+    resources:
+      - group: "" # core
+        resources: ["secrets", "serviceaccounts/token"]
+      - group: authentication.k8s.io
+        resources: ["tokenreviews"]
+
   # Log request+response bodies for any mutating action
   - level: RequestResponse
     verbs: ["create", "update", "patch", "delete"]
@@ -14,14 +72,6 @@ rules:
 
   # Log metadata only for all other resource requests
   - level: Metadata
-
-  # Ensure you capture metadata on non-resource URL access (discovery, healthz, etc.)
-  - level: Metadata
-    nonResourceURLs:
-      - "/healthz*"
-      - "/version"
-      - "/metrics"
-      - "/openapi*"
 
   # (Optional) If you have custom API groups you care about, you can add them here
   # - level: RequestResponse
