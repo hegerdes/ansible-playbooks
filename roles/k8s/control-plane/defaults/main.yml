@@ -41,6 +41,10 @@ k8s_kubelet_override_conf: '{{ lookup("template", "kubelet-override.yml.j2") }}'
 k8s_kubeadm_join_conf: '{{ lookup("template", "kubeadm-join-config.yml.j2") }}'
 k8s_etcd_encryption_secret: my-super-secure-k8s-etcd-secret!
 k8s_etcd_encryption_conf: '{{ lookup("template", "encryption-config.yml.j2") }}'
+k8s_admission_config: '{{ lookup("template", "admission-control-config.yml.j2") }}'
+k8s_admission_extra_plugins: [NodeRestriction]
+k8s_admission_plugin_config:
+  - '{{ lookup("file", "pod-security-admission.yaml") | from_yaml }}'
 
 # IPs & cert sans
 k8s_node_ip: "{{ k8s_node_ip_v4 }}"

@@ -1,0 +1,30 @@
+name: PodSecurity # Enable the built-in Pod Security admission plugin
+configuration:
+  apiVersion: pod-security.admission.config.k8s.io/v1
+  kind: PodSecurityConfiguration
+
+  # --------------------------------------------------------------------
+  # 1. Cluster-wide defaults
+  # --------------------------------------------------------------------
+  defaults:
+    # Reject any pod that violates the baseline profile
+    enforce: "baseline"
+    enforce-version: "latest"
+
+    # Log (audit) and warn on anything that would break the stricter
+    # restricted profile so you can spot future hardening issues early
+    audit: "restricted"
+    audit-version: "latest"
+    warn: "restricted"
+    warn-version: "latest"
+
+  # --------------------------------------------------------------------
+  # 2. Exemptions for critical system components
+  # --------------------------------------------------------------------
+  exemptions:
+    usernames: [] # (add human break-glass accounts if required)
+    runtimeClasses: [] # (e.g. kata-containers, gvisor, etc.)
+    namespaces:
+      - kube-system # Core control-plane add-ons
+      - kube-public # Cluster-info ConfigMap & bootstrap helpers
+      - kube-node-lease # Node heart-beat leases

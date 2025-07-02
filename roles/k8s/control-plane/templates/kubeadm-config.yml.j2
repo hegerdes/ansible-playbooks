@@ -56,8 +56,12 @@ apiServer:
       value: /etc/kubernetes/extras/encryption-config.yaml
     - name: encryption-provider-config-automatic-reload
       value: "true"
+{% if k8s_admission_extra_plugins | length > 0 %}
     - name: enable-admission-plugins
-      value: NodeRestriction
+      value: {{ k8s_admission_extra_plugins | join(',') }}
+    - name: admission-control-config-file
+      value: /etc/kubernetes/extras/admission-control-config.yaml
+{% endif %}
 {% if k8s_controlplane_extra_args | length > 0 %}
     {{ k8s_controlplane_extra_args | to_nice_yaml(indent=2) | indent(width=4) }}
 {% endif %}
