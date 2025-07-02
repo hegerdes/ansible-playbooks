@@ -27,6 +27,8 @@
     k8s_etc_host_commands: '{{ k8s_etc_host_commands | default([]) + [[''sh'', ''-c'', ''echo "'' + item.ip + '' '' + item.name + ''" >> /etc/hosts'']] }}'
   tags: [k8s, k8s-hcloud-autoscale, k8s-hcloud-autoscale-conf]
   loop: "{{ k8s_etc_hosts }}"
+  loop_control:
+    label: "{{ item.name }} -> {{ item.ip }}"
   run_once: true
 
 - name: k8s hcloud autoscale-conf | Save autoscale-conf in keyvault
@@ -37,7 +39,12 @@
   delegate_to: localhost
   azure.azcollection.azure_rm_keyvaultsecret:
     secret_name: "k8s-hetzner-custer-autoscale-conf"
-    secret_value: "{{ k8s_hcloud_autoscale_conf | to_json | b64encode }}"
+    secret_value: >-
+      {{
+      __k8s_hcloud_autoscale_conf | b64encode | b64encode
+      if(k8s_hcloud_autoscale_conf_double_base64_encode) else
+      __k8s_hcloud_autoscale_conf
+      }}
     keyvault_uri: "{{ keyvault }}"
     tags:
       origin: ansible
@@ -45,9 +52,10 @@
       cluster: "{{ inventory_dir | basename }}"
   vars:
     cluster_slug: "{{ inventory_dir | basename | replace(' ', '-') | replace('_', '-') }}"
+    __k8s_hcloud_autoscale_conf: "{{ k8s_hcloud_autoscale_conf | to_json }}"
   tags: [k8s, k8s-hcloud-autoscale, k8s-hcloud-autoscale-conf]
 
-- name: Create a Service object from an inline definition
+- name: Create Secret object from conf
   when: k8s_autoscale_create_k8s_secret
   kubernetes.core.k8s:
     kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
