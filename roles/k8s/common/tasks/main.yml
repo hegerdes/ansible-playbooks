@@ -19,7 +19,7 @@
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: k8s common | Add Debian Backports apt repo
-  when: ansible_facts.distribution == "Debian"
+  when: ansible_facts.distribution == "Debian" and ansible_distribution_release != "trixie"
   ansible.builtin.deb822_repository:
     name: "{{ ansible_distribution_release }}-backports"
     types: deb
@@ -68,11 +68,22 @@
     cache_valid_time: "{{ 0 if(__k8s_apt_backports.changed) else 86400 }}"
   tags: [k8s, k8s-prepare, k8s-base, apt]
 
-- name: k8s common | Ensure latest kernel
+- name: Gather package facts
   when: k8s_ensure_min_kernel_version != "none"
+  package_facts:
+    manager: auto
+  tags: [k8s, k8s-prepare, k8s-base, apt]
+
+- name: k8s common | Ensure latest kernel
+  when: k8s_ensure_min_kernel_version != "none" and not __k8s_meets_kernel_version_requirements
   ansible.builtin.include_tasks:
     file: update_kernel.yml
   tags: [k8s, k8s-prepare, k8s-base, apt]
+  vars:
+    __k8s_system_kernel_package_extra: "{{ 'cloud-' if(ansible_facts.architecture == 'x86_64') else '' }}"
+    __k8s_system_kernel_package: "linux-image-{{__k8s_system_kernel_package_extra}}{{ system_arch_map[ansible_facts.architecture] }}"
+    __kernel_version_pattern: "{{ k8s_ensure_min_kernel_version | regex_replace('\\.', '\\\\.') | regex_replace('\\*', '.*') }}"
+    __k8s_meets_kernel_version_requirements: "{{ (ansible_facts.packages[__k8s_system_kernel_package] | first).version is match(__kernel_version_pattern) }}"
 
 - name: k8s common | Ensure unneeded packages are absent
   when: k8s_absent_packages | length != 0
