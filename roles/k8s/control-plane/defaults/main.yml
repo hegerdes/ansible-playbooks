@@ -1,5 +1,5 @@
 ---
-k8s_version: 1.33.4
+k8s_version: 1.34.0
 k8s_dual_stack: false
 k8s_install_core_dns: true
 k8s_install_kube_proxy: true
@@ -205,6 +205,15 @@ k8s_cilium_helm_values:
   operator:
     rollOutPods: true
     replicas: 1
+    tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+      - key: node-role.kubernetes.io/master #deprecated
+        operator: Exists
+      - key: node.kubernetes.io/not-ready
+        operator: Exists
+      - key: node.cloudprovider.kubernetes.io/uninitialized
+        operator: Exists
   # bpf:
   #   masquerade: true # needs tp be off when using hostnat
 
