@@ -1,5 +1,5 @@
 ---
-k8s_version: 1.33.4
+k8s_version: 1.34.0
 
 # Which cri to use: runc, crun, youki or runsc, kata-containers
 k8s_cri: runc
