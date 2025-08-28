@@ -63,6 +63,11 @@ k8s_feature_gates: {}
 # k8s_feature_gates:
 #   UserNamespacesSupport: true
 
+k8s_feature_gates_args_string: >-
+  {%- for k, v in k8s_feature_gates.items() -%}
+  {{ k }}={{ v | lower }}{% if not loop.last %},{% endif %}
+  {%- endfor -%}
+
 k8s_kubeadm_skip_phases: []
 # # Example
 # k8s_kubeadm_skip_phases:
@@ -89,6 +94,21 @@ k8s_controlplane_extra_files: []
 #     dst: /etc/kubernetes/k8s-api-auth-conf.yaml
 #     content: "hello: world"
 #     validate: yq . %s
+
+k8s_patches: []
+# # Example
+# k8s_patches:
+#   - name: Allow CP to be LoadBalancer target
+#     api_version: v1
+#     when: >-
+#       {{ k8s_remove_no_schedule_cp_taints
+#       and 'node.kubernetes.io/exclude-from-external-load-balancers'
+#       in (__k8s_cp_node.resources | first).metadata.labels }}
+#     kind: Node
+#     resource_name: "{{ inventory_hostname }}"
+#     patches:
+#       - op: remove
+#         path: /metadata/labels/node.kubernetes.io~1exclude-from-external-load-balancers
 
 ######### Taints & Roles #########
 k8s_remove_no_schedule_cp_taints: false

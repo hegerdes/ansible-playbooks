@@ -56,6 +56,10 @@ apiServer:
       value: /etc/kubernetes/extras/encryption-config.yaml
     - name: encryption-provider-config-automatic-reload
       value: "true"
+{% if k8s_feature_gates | length > 0 %}
+    - name: feature-gates
+      value: {{ k8s_feature_gates_args_string }}
+{% endif %}
 {% if k8s_admission_extra_plugins | length > 0 %}
     - name: enable-admission-plugins
       value: {{ k8s_admission_extra_plugins | join(',') }}

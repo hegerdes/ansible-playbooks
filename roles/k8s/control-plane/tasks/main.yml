@@ -261,18 +261,7 @@
   loop_control:
     label: "{{ item.name }}"
   vars:
-    k8s_cp_patches:
-      - name: Allow CP to be LoadBalancer target
-        api_version: v1
-        when: >-
-          {{ k8s_remove_no_schedule_cp_taints
-          and 'node.kubernetes.io/exclude-from-external-load-balancers'
-          in (__k8s_cp_node.resources | first).metadata.labels }}
-        kind: Node
-        resource_name: "{{ inventory_hostname }}"
-        patches:
-          - op: remove
-            path: /metadata/labels/node.kubernetes.io~1exclude-from-external-load-balancers
+    k8s_cp_patches: "{{ k8s_patches }}"
   tags: [k8s, k8s-init, k8s-cp-init, k8s-taint]
 
 - name: k8s cp | Get csr resources
