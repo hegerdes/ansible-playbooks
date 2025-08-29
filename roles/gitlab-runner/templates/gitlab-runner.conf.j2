@@ -8,7 +8,7 @@ shutdown_timeout = 0
 
 [[runners]]
   name = "{{ gitlab_runner_name }}"
-  url = "https://gitlab.com"
+  url = "https://{{ gitlab_runner_gitlab_domain }}"
   id = 49613998
   token = "{{ gitlab_runner_token }}"
   token_obtained_at = 2025-01-01T00:00:00Z

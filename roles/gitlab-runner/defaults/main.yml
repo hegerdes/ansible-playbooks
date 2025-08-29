@@ -1,8 +1,9 @@
 ---
-# Docker edition
-# Choice: ce|ee
+docker_edition: ce # Choice: ce|ee
 gitlab_runner_name: generic-runner
 gitlab_runner_token: CHANGE_ME
+gitlab_runner_gitlab_domain: gitlab.com
+
 gitlab_runner_executor: docker
 gitlab_runner_concurrency: 2
 
@@ -20,10 +21,10 @@ gitlab_runner_rootless_user: gitlab-runner
 # Docker daemon options as a dict
 gitlab_runner_docker_daemon_options: {}
 
-# Docker regesties
+# Docker registries
 gitlab_runner_docker_registries: []
 # Example
-# docker_regesties:
-#   - regestry: https://index.docker.io/v1/
+# docker_registries:
+#   - registry: https://index.docker.io/v1/
 #     username: MyUser
-#     password: MySuperSecurPW
+#     password: MySuperSecurePW

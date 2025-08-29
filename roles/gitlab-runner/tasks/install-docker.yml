@@ -39,6 +39,7 @@
   ansible.builtin.apt:
     state: present
     install_recommends: false
+    update_cache: true
     name:
       - "containerd.io"
       - "docker-{{ docker_edition }}"
@@ -77,7 +78,7 @@
     groups: [docker]
     append: true
     state: present
-  with_items: "{{ docker_gitlab_runner_docker_users }}"
+  with_items: "{{ gitlab_runner_docker_users }}"
   tags: [gitlab-runner, gitlab-runner-docker-install]
 
 - name: Log into Docker registries

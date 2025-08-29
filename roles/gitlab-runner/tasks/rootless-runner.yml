@@ -8,14 +8,20 @@
   register: __glab_runner_user
   tags: [gitlab-runner, gitlab-runner-rootless]
 
-- name: Write gitlab-runner-conf file
+- name: Write gitlab-runner-conf and systemd conf file
   ansible.builtin.template:
-    src: gitlab-runner.conf.j2
-    dest: "/home/{{ gitlab_runner_rootless_user }}/gitlab-runner-config.toml"
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
     owner: "{{ gitlab_runner_rootless_user }}"
     group: "{{ gitlab_runner_rootless_user }}"
     mode: "0640"
-  register: __glab_runner_conf
+  loop_control:
+    label: "Copy {{ item.src }} to {{ item.dest }}"
+  loop:
+    - src: gitlab-runner.conf.j2
+      dest: "/home/{{ gitlab_runner_rootless_user }}/gitlab-runner-config.toml"
+    - src: gitlab-runner.service.j2
+      dest: "/home/{{ gitlab_runner_rootless_user }}/.config/systemd/user/gitlab-runner.service"
   tags: [gitlab-runner, gitlab-runner-rootless]
 
 - name: Write gitlab-runner-env file
@@ -25,6 +31,19 @@
     mode: "0640"
   tags: [gitlab-runner, gitlab-runner-rootless]
 
+- name: Ensure user mapping permissions
+  ansible.builtin.lineinfile:
+    path: "{{ item.file }}"
+    line: "{{ item.line }}"
+    create: true
+  loop_control:
+    label: "Setting mapping to {{ item.file }}"
+  loop:
+    - file: /etc/subuid
+      line: "{{ gitlab_runner_rootless_user }}:100000:65536"
+    - file: /etc/subgid
+      line: "{{ gitlab_runner_rootless_user }}:100000:65536"
+
 - name: Start rootless docker
   become: true
   become_user: "{{ gitlab_runner_rootless_user }}"
@@ -32,28 +51,36 @@
   args:
     chdir: "/home/{{ gitlab_runner_rootless_user }}"
     creates: "/run/user/{{ __glab_runner_user.uid }}/docker.sock"
-  tags: [gitlab-runner, gitlab-runner-rootless]
-
-# - name: Enable and start gitlab-runner service
-#   become: true
-#   become_user: "{{ gitlab_runner_rootless_user }}"
-#   # environment:
-#   #   XDG_RUNTIME_DIR: "/run/user/{{ demo_user_info.ansible_facts.getent_passwd.demo.1 }}"
-#   shell: |
-#     systemctl --user daemon-reload
-#     systemctl --user enable gitlab-runner
-#     systemctl --user start gitlab-runner
-# tags: [gitlab-runner, gitlab-runner-rootless]
-
-- name: Enable and start gitlab-runner service
-  ansible.builtin.systemd_service:
-    name: gitlab-runner
-    enabled: true
-    state: started
-    scope: user
   environment:
     XDG_RUNTIME_DIR: "/run/user/{{ __glab_runner_user.uid }}"
   tags: [gitlab-runner, gitlab-runner-rootless]
+
+- name: Ensure docker host env is set
+  ansible.builtin.lineinfile:
+    path: "/home/{{ gitlab_runner_rootless_user }}/.bashrc"
+    line: "export DOCKER_HOST=unix:///run/user/{{ __glab_runner_user.uid }}/docker.sock"
+    create: true
+
+- name: Enable and start gitlab-runner service
+  become: true
+  become_user: "{{ gitlab_runner_rootless_user }}"
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ __glab_runner_user.uid }}"
+  shell: |
+    systemctl --user daemon-reload
+    systemctl --user enable gitlab-runner
+    systemctl --user start gitlab-runner
+  tags: [gitlab-runner, gitlab-runner-rootless]
+
+# - name: Enable and start gitlab-runner service
+#   ansible.builtin.systemd_service:
+#     name: gitlab-runner
+#     enabled: true
+#     state: started
+#     scope: user
+#   environment:
+#     XDG_RUNTIME_DIR: "/run/user/{{ __glab_runner_user.uid }}"
+#   tags: [gitlab-runner, gitlab-runner-rootless]
 
 - name: Log into Docker registries
   community.docker.docker_login:

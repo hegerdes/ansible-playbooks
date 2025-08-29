@@ -22,11 +22,14 @@
 
 - name: Install gitlab-runner
   ansible.builtin.apt:
+    update_cache: true
+    install_recommends: false
     state: present
     name: [gitlab-runner]
   tags: [gitlab-runner, gitlab-runner-install]
 
 - name: Write gitlab-conf file
+  when: not gitlab_runner_runner_rootless
   ansible.builtin.template:
     src: gitlab-runner.conf.j2
     dest: /etc/gitlab-runner/config.toml
@@ -39,7 +42,7 @@
 - name: Ensure gitlab-runner root is started and enabled at boot
   ansible.builtin.service:
     name: gitlab-runner
-    state: "'stopped' if gitlab_runner_runner_rootless else 'started'"
+    state: "{{ 'stopped' if gitlab_runner_runner_rootless else 'started' }}"
     enabled: "{{ not gitlab_runner_runner_rootless }}"
   tags: [gitlab-runner, gitlab-runner-install]
 
