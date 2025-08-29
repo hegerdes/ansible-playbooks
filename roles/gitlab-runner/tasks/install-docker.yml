@@ -42,9 +42,9 @@
     update_cache: true
     name:
       - "containerd.io"
-      - "docker-{{ docker_edition }}"
-      - "docker-{{ docker_edition }}-cli"
-      - "docker-{{ docker_edition }}-rootless-extras"
+      - "docker-{{ gitlab_runner_docker_edition }}"
+      - "docker-{{ gitlab_runner_docker_edition }}-cli"
+      - "docker-{{ gitlab_runner_docker_edition }}-rootless-extras"
       - "docker-compose-plugin"
       - "docker-buildx-plugin"
       - "python3-setuptools"
@@ -91,6 +91,13 @@
   loop: "{{ gitlab_runner_docker_registries }}"
   loop_control:
     label: '{{ item.registry | default("https://index.docker.io/v1/") }}'
+  tags: [gitlab-runner, gitlab-runner-docker-install]
+
+- name: Ensure containerd root is started and enabled at boot
+  ansible.builtin.service:
+    name: containerd
+    state: "{{ 'stopped' if gitlab_runner_docker_rootless else 'started' }}"
+    enabled: "{{ not gitlab_runner_docker_rootless }}"
   tags: [gitlab-runner, gitlab-runner-docker-install]
 
 - name: Ensure Docker root is started and enabled at boot

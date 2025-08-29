@@ -1,5 +1,4 @@
 ---
-docker_edition: ce # Choice: ce|ee
 gitlab_runner_name: generic-runner
 gitlab_runner_token: CHANGE_ME
 gitlab_runner_gitlab_domain: gitlab.com
@@ -9,7 +8,7 @@ gitlab_runner_concurrency: 2
 
 gitlab_runner_install_docker: true
 gitlab_runner_install_runner: true
-gitlab_runner_docker_edition: ce
+gitlab_runner_docker_edition: ce # Choice: ce|ee
 
 gitlab_runner_docker_rootless: false
 gitlab_runner_runner_rootless: false

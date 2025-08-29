@@ -61,26 +61,23 @@
     line: "export DOCKER_HOST=unix:///run/user/{{ __glab_runner_user.uid }}/docker.sock"
     create: true
 
+- name: Enable systemd lingering for the app user
+  become: true
+  ansible.builtin.command: loginctl enable-linger {{ gitlab_runner_rootless_user }}
+  args:
+    creates: "/var/lib/systemd/linger/{{ gitlab_runner_rootless_user }}"
+
 - name: Enable and start gitlab-runner service
   become: true
   become_user: "{{ gitlab_runner_rootless_user }}"
+  ansible.builtin.systemd_service:
+    name: gitlab-runner
+    enabled: true
+    state: started
+    scope: user
   environment:
     XDG_RUNTIME_DIR: "/run/user/{{ __glab_runner_user.uid }}"
-  shell: |
-    systemctl --user daemon-reload
-    systemctl --user enable gitlab-runner
-    systemctl --user start gitlab-runner
   tags: [gitlab-runner, gitlab-runner-rootless]
-
-# - name: Enable and start gitlab-runner service
-#   ansible.builtin.systemd_service:
-#     name: gitlab-runner
-#     enabled: true
-#     state: started
-#     scope: user
-#   environment:
-#     XDG_RUNTIME_DIR: "/run/user/{{ __glab_runner_user.uid }}"
-#   tags: [gitlab-runner, gitlab-runner-rootless]
 
 - name: Log into Docker registries
   community.docker.docker_login:
