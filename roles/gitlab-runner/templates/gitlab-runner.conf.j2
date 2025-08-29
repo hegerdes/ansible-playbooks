@@ -1,0 +1,28 @@
+# gitlab-runner config.toml
+concurrent = {{ gitlab_runner_concurrency }}
+check_interval = 0
+shutdown_timeout = 0
+
+[session_server]
+  session_timeout = 1800
+
+[[runners]]
+  name = "{{ gitlab_runner_name }}"
+  url = "https://gitlab.com"
+  id = 49613998
+  token = "{{ gitlab_runner_token }}"
+  token_obtained_at = 2025-01-01T00:00:00Z
+  token_expires_at = 0001-01-01T00:00:00Z
+  executor = "{{ gitlab_runner_executor }}"
+{% if gitlab_runner_executor == "docker" %}
+  [runners.docker]
+    image = "debian"
+    privileged = true
+    allowed_privileged_images = ["moby/buildkit:*" ]
+    disable_entrypoint_overwrite = false
+    oom_kill_disable = false
+    disable_cache = false
+    volumes = ["/cache"]
+    shm_size = 0
+    network_mtu = 0
+{% endif %}

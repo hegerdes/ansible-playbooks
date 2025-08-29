@@ -1,0 +1,52 @@
+# Install Docker
+---
+- name: Install needed packages
+  ansible.builtin.apt:
+    name: [curl, gnupg, lsb-release, apt-transport-https]
+    state: present
+    update_cache: true
+    install_recommends: true
+  tags: [gitlab-runner, gitlab-runner-install]
+
+- name: Add gitlab-runner repository
+  ansible.builtin.deb822_repository:
+    name: gitlab-runner
+    types: [deb]
+    uris: "https://packages.gitlab.com/runner/gitlab-runner/{{ ansible_distribution | lower }}/"
+    signed_by: https://packages.gitlab.com/runner/gitlab-runner/gpgkey
+    suites: ["{{ ansible_distribution_release | lower }}"]
+    components: [main]
+    state: present
+    enabled: true
+  tags: [gitlab-runner, gitlab-runner-install]
+
+- name: Install gitlab-runner
+  ansible.builtin.apt:
+    state: present
+    name: [gitlab-runner]
+  tags: [gitlab-runner, gitlab-runner-install]
+
+- name: Write gitlab-conf file
+  ansible.builtin.template:
+    src: gitlab-runner.conf.j2
+    dest: /etc/gitlab-runner/config.toml
+    owner: root
+    group: root
+    mode: "0640"
+  register: __glab_runner_conf
+  tags: [gitlab-runner, gitlab-runner-install]
+
+- name: Ensure gitlab-runner root is started and enabled at boot
+  ansible.builtin.service:
+    name: gitlab-runner
+    state: "'stopped' if gitlab_runner_runner_rootless else 'started'"
+    enabled: "{{ not gitlab_runner_runner_rootless }}"
+  tags: [gitlab-runner, gitlab-runner-install]
+
+- name: Ensure gitlab-runner root restarted on conf change
+  when: not gitlab_runner_runner_rootless and __glab_runner_conf.changed
+  ansible.builtin.service:
+    name: gitlab-runner
+    state: restarted
+    enabled: true
+  tags: [gitlab-runner, gitlab-runner-install]

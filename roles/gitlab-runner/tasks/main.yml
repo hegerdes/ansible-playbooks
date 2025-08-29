@@ -1,0 +1,15 @@
+---
+- name: Include docker install task
+  when: gitlab_runner_install_docker
+  ansible.builtin.include_tasks:
+    file: install-docker.yml
+
+- name: Include gitlab-runner install task
+  when: gitlab_runner_install_runner
+  ansible.builtin.include_tasks:
+    file: install-gitlab-runner.yml
+
+- name: Include gitlab-runner install task
+  when: gitlab_runner_docker_rootless and gitlab_runner_runner_rootless
+  ansible.builtin.include_tasks:
+    file: rootless-runner.yml

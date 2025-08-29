@@ -1,0 +1,29 @@
+---
+# Docker edition
+# Choice: ce|ee
+gitlab_runner_name: generic-runner
+gitlab_runner_token: CHANGE_ME
+gitlab_runner_executor: docker
+gitlab_runner_concurrency: 2
+
+gitlab_runner_install_docker: true
+gitlab_runner_install_runner: true
+gitlab_runner_docker_edition: ce
+
+gitlab_runner_docker_rootless: false
+gitlab_runner_runner_rootless: false
+
+# A list of users who will be added to the docker group.
+gitlab_runner_docker_users: []
+gitlab_runner_rootless_user: gitlab-runner
+
+# Docker daemon options as a dict
+gitlab_runner_docker_daemon_options: {}
+
+# Docker regesties
+gitlab_runner_docker_registries: []
+# Example
+# docker_regesties:
+#   - regestry: https://index.docker.io/v1/
+#     username: MyUser
+#     password: MySuperSecurPW
