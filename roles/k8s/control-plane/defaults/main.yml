@@ -129,6 +129,13 @@ k8s_init_resources_manifests: []
 #     state: present          # optional
 #     wait: true              # optional
 
+# Kubernetes structured authentication conf.
+# Docs: https://kubernetes.io/docs/reference/access-authn-authz/authentication/#openid-connect-tokens
+k8s_controlplane_auth_n_conf: '{{ lookup("file", "authentication-conf.yaml") | from_yaml }}'
+# Kubernetes structured authorization conf.
+# Docs: https://kubernetes.io/docs/reference/access-authn-authz/authorization/
+k8s_controlplane_auth_z_conf: '{{ lookup("file", "authorization-conf.yaml") | from_yaml }}'
+
 k8s_init_helm_apps: []
 # k8s_init_helm_apps:
 #   - chart_name: demo-app

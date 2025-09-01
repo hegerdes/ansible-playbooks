@@ -1,0 +1,13 @@
+# Docs: https://kubernetes.io/docs/reference/access-authn-authz/authentication/#openid-connect-tokens
+apiVersion: apiserver.config.k8s.io/v1beta1
+kind: AuthenticationConfiguration
+anonymous:
+  enabled: true
+  conditions:
+    # kubeadm also needs to read the discovery info:
+    - path: /api/v1/namespaces/kube-public/configmaps/cluster-info
+    # for status checks:
+    - path: /healthz
+    - path: /readyz
+    - path: /livez
+jwt: []

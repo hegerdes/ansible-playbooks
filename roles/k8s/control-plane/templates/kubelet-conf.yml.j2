@@ -40,7 +40,7 @@ clusterDNS:
 {{ k8s_clusterDNS | to_nice_yaml(indent=2) | indent(width=2) }}
 
 maxPods: 220
-nodeStatusMaxImages: 100
+nodeStatusMaxImages: -1
 maxParallelImagePulls: 8
 serializeImagePulls: false
 protectKernelDefaults: true
@@ -48,6 +48,12 @@ staticPodPath: /etc/kubernetes/manifests
 cgroupDriver: systemd
 failSwapOn: true
 readOnlyPort: 0
+imageMinimumGCAge: 5m
+imageMaximumGCAge: 1h
+volumeStatsAggPeriod: 5m
+enableProfilingHandler: false
+enableDebugFlagsHandler: false
+failCgroupV1: true
 
 logging:
   flushFrequency: 0

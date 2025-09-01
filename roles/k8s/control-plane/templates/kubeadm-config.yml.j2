@@ -52,10 +52,16 @@ apiServer:
       value: "100" # megabytes per file
     - name: audit-policy-file
       value: /etc/kubernetes/extras/audit-policy.yaml
+    - name: authorization-config
+      value: /etc/kubernetes/extras/authorization-conf.yaml
+    - name: authentication-config
+      value: /etc/kubernetes/extras/authentication-conf.yaml
     - name: encryption-provider-config
       value: /etc/kubernetes/extras/encryption-config.yaml
     - name: encryption-provider-config-automatic-reload
       value: "true"
+    - name: tls-min-version
+      value: VersionTLS13
 {% if k8s_feature_gates | length > 0 %}
     - name: feature-gates
       value: {{ k8s_feature_gates_args_string }}
@@ -69,8 +75,6 @@ apiServer:
 {% if k8s_controlplane_extra_args | length > 0 %}
     {{ k8s_controlplane_extra_args | to_nice_yaml(indent=2) | indent(width=4) }}
 {% endif %}
-    # - name anonymous-auth
-    #   value: "false"
   certSANs: {{ k8s_cert_extra_sans + [k8s_shared_api_server_endpoint] | flatten | unique }}
   extraVolumes:
     - name: extra-conf
