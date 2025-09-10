@@ -91,6 +91,8 @@
         labels:
           node-role.kubernetes.io/worker: "worker"
           node-arch.kubernetes.io/arch: "{{ ansible_facts.architecture }}"
+          node-os.kubernetes.io/os: "{{ ansible_facts.ansible_distribution }}"
+          node-os.kubernetes.io/os-version: "{{ ansible_facts.ansible_distribution_version }}"
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
 - name: k8s worker join | Get csr resources
