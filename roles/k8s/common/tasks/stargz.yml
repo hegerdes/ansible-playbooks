@@ -11,7 +11,6 @@
       - stargz-store-helper
       - ctr-remote
     creates: /usr/local/bin/containerd-stargz-grpc
-  register: __k8s_stargz_download
   retries: 3
 
 - name: k8s common - stargz | Copy stargz system service

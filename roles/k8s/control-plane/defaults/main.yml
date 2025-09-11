@@ -284,12 +284,6 @@ k8s_cilium_helm_values:
   socketLB:
     hostNamespaceOnly: true
 
-  # # Native routung
-  # routingMode: native
-  # ipv4NativeRoutingCIDR: "{{ k8s_cloud_net }}"
-  # autoDirectNodeRoutes: false
-  # installNoConntrackIptablesRules: true
-
   # hostFirewall:
   #   enabled: true
   # # BGP native routing
@@ -301,6 +295,23 @@ k8s_cilium_helm_values:
   #   enabled: true
   #   type: wireguard
   # # -- Configure the underlying network MTU to overwrite auto-detected MTU.
+
+# # For IPv6 set
+#   autoDirectNodeRoutes: true
+#   routingMode: native
+#   ipv6NativeRoutingCIDR: 2a01:4f8:c013:9817::/64
+#   ipv4:
+#     enabled: false
+#   ipv6:
+#     enabled: true
+
+#   ipam:
+#     mode: kubernetes
+#     operator:
+#       clusterPoolIPv4PodCIDRList: ["{{ k8s_pod_network_cidr_ipv4 }}"]
+#       clusterPoolIPv6PodCIDRList:
+#         - 2a01:4f8:c013:9817::/96
+# installNoConntrackIptablesRules: true
 
 system_arch_map:
   x86_64: amd64

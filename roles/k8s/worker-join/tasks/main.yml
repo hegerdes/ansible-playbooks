@@ -38,11 +38,12 @@
 - name: k8s worker join | Copy kubelet, kubeadm config
   when: not __k8s_kubeadm_worker_ca.stat.exists
   ansible.builtin.copy:
-    content: "{{ item.content }}"
+    src: "{{ item.src | default(omit) }}"
+    content: "{{ item.content | default(omit) }}"
     dest: "{{ item.dst }}"
     mode: "0600"
     validate: "{{ item.validate | default(omit) }}"
-  with_items: "{{ __k8s_worker_cp_files + k8s_extra_files }}"
+  with_items: "{{ __k8s_worker_cp_files + k8s_worker_extra_files }}"
   loop_control:
     label: "{{ item.name }}"
   vars:

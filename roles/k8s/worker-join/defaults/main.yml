@@ -10,9 +10,9 @@ k8s_node_ip: "{{ k8s_node_ip_v4 }}"
 k8s_node_ip_v4: "{{ ansible_facts.default_ipv4.address }}"
 k8s_node_ip_v6: "{{ ansible_facts.default_ipv6.address }}"
 
-k8s_extra_files: []
+k8s_worker_extra_files: []
 # Example
-# k8s_extra_files:
+# k8s_worker_extra_files:
 #   - name: kubelet-override-conf
 #     dst: /etc/kubernetes/kubelet.conf.d/10-kubelet-ip.conf
 #     content: "{{ k8s_kubelet_override_conf }}"

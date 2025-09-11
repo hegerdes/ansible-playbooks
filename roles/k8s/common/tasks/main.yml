@@ -144,6 +144,7 @@
     - { path: "/etc/kubernetes/extras", mode: "0775" }
     - { path: "/var/log/kube-apiserver", mode: "0600" }
     - { path: "/etc/kubernetes/kubelet.conf.d", mode: "0744" }
+    - { path: "/etc/otel-collector" }
     - { path: "/etc/systemd/system/kubelet.service.d", mode: "0600" }
     - { path: "/opt/cni/bin", mode: "0755" }
     - { path: "/var/lib/kubelet" }
@@ -203,6 +204,7 @@
         crun version: {{ k8s_crun_version }}
         crun with wasm: {{ k8s_crun_with_wasm }}
         runc version: {{ k8s_runc_version }}
+        stargz enabled: {{ k8s_install_stargz }}
   run_once: true
   tags: [k8s, k8s-prepare, k8s-base]
 
