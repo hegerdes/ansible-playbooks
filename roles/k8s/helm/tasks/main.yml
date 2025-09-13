@@ -5,10 +5,10 @@
   ansible.builtin.deb822_repository:
     name: helm
     types: [deb]
-    uris: https://baltocdn.com/helm/stable/debian/
-    signed_by: "https://baltocdn.com/helm/signing.asc"
+    uris: https://packages.buildkite.com/helm-linux/helm-debian/any/
+    signed_by: "https://packages.buildkite.com/helm-linux/helm-debian/gpgkey"
     components: [main]
-    suites: [all]
+    suites: [any]
   tags: [k8s, k8s-init, k8s-helm]
 
 - name: Install Helm
