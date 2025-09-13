@@ -171,7 +171,6 @@
     value: "{{ item.val }}"
     state: '{{ item.state | default("present") }}'
     sysctl_set: true
-    reload: "{{ ansible_loop.last }}"
   with_items: "{{ k8s_common_sysctl_conf }}"
   loop_control:
     label: "{{ item.key }}={{ item.val }}"
@@ -242,7 +241,7 @@
     components: "{{ item.components | default(omit) }}"
     suites: "{{ item.suites | default(['/']) }}"
     state: present
-    enabled: "{{ item.state | default(True) }}"
+    enabled: "{{ item.state | default(true) }}"
   with_items:
     - name: kubernetes
       repo: "https://pkgs.k8s.io/core:/stable:/v{{ (k8s_version | split('.'))[0:2] | join('.') }}/deb/"
