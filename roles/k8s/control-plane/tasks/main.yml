@@ -32,7 +32,7 @@
     content: "{{ item.content | default(omit) }}"
     src: "{{ item.src | default(omit) }}"
     dest: "{{ item.dst }}"
-    mode: "0600"
+    mode: "{{ item.mode | default('0600') }}"
     validate: "{{ item.validate | default(omit) }}"
   with_items: "{{ __k8s_cp_conf_defaults + k8s_controlplane_extra_files }}"
   vars:
@@ -66,7 +66,7 @@
         src: patches
   loop_control:
     label: "{{ item.name }}"
-  tags: [k8s, k8s-init, k8s-cp-init]
+  tags: [k8s, k8s-init, k8s-cp-init, k8s-copy]
 
 - name: k8s cp | Check if kubeadm has already run
   when: groups.k8s_control_plane | flatten | first == inventory_hostname
@@ -95,29 +95,17 @@
 
 - name: k8s cp | Deploying initial resource manifests
   when: groups.k8s_control_plane | flatten | first == inventory_hostname
-  run_once: true
+  run_once: "{{ k8s_init_resources.run_once | default(true) }}"
   kubernetes.core.k8s:
     namespace: "{{ k8s_init_resources.namespace | default(omit) }}"
     kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
     state: "{{ k8s_init_resources.state | default('present') }}"
     definition: "{{ k8s_init_resources.definition }}"
     wait: "{{ k8s_init_resources.wait | default(true) }}"
-  loop: "{{ k8s_runtime_classes_manifests + k8s_init_resources_manifests | flatten }}"
+  loop: "{{ k8s_default_manifests + k8s_init_resources_manifests | flatten }}"
   loop_control:
     loop_var: k8s_init_resources
     label: "{{ k8s_init_resources.name }}"
-  vars:
-    k8s_runtime_classes_manifests:
-      - name: Runtime-Manifests
-        definition: "{{ __k8s_runtime_classes_tmp | flatten }}"
-    __k8s_runtime_classes_tmp:
-      - "{{ [k8s_runc_manifest.definition] }}"
-      - "{{ [k8s_crun_manifest.definition] }}"
-      - "{{ [k8s_youki_manifest.definition] if(k8s_install_youki | default(True)) else [] }}"
-      - "{{ [k8s_wasmedge_manifest.definition] if(k8s_install_wasi | default(True)) else [] }}"
-      - "{{ [k8s_gVisor_manifest.definition] if(k8s_install_gvisor | default(True)) else [] }}"
-      - "{{ [k8s_spin_manifest.definition] if(k8s_install_spin | default(True)) else [] }}"
-      - "{{ [k8s_kata_manifest.definition] if(k8s_install_kata_containers | default(False)) else [] }}"
   tags: [k8s, k8s-init, k8s-cp-init, k8s-cp-init-manifests]
 
 - name: k8s cp | Deploying initial Helm-Charts
@@ -256,8 +244,8 @@
   tags: [k8s, k8s-init, k8s-cp-init, k8s-taint]
 
 - name: k8s cp | Patch Controlplane
-  run_once: "{{ item.run_once | default(False) }}"
-  when: item.when | default(True)
+  run_once: "{{ item.run_once | default(false) }}"
+  when: item.when | default(true)
   kubernetes.core.k8s_json_patch:
     api_version: "{{ item.api_version }}"
     kind: "{{ item.kind }}"

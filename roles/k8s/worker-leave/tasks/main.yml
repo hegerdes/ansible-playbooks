@@ -1,10 +1,10 @@
 # k8s leave
 ---
-- name: Get aktive nodes
-  ansible.builtin.command: kubectl get nodes -o name
-  register: k8_aktive_nodes
-  run_once: true
+- name: Get active nodes
   delegate_to: "{{ groups.k8s_control_plane | flatten | first }}"
+  ansible.builtin.command: kubectl get nodes -o name
+  register: k8_active_nodes
+  run_once: true
   tags: [k8s, k8s-leave]
   check_mode: false
   changed_when: false
@@ -12,7 +12,7 @@
 - name: Show operations to be performed
   ansible.builtin.debug:
     msg: |
-      {% if ("node/" + inventory_hostname) in k8_aktive_nodes.stdout_lines %}
+      {% if ("node/" + inventory_hostname) in k8_active_nodes.stdout_lines %}
       Will remove the node {{ inventory_hostname }}
       {% else %}
       The node {{ inventory_hostname }} is not in the cluster - skipping it
@@ -20,7 +20,8 @@
   tags: [k8s, k8s-leave]
 
 - name: Drain the node
-  when: '("node/" + inventory_hostname) in k8_aktive_nodes.stdout_lines'
+  delegate_to: "{{ groups.k8s_control_plane | flatten | first }}"
+  when: '("node/" + inventory_hostname) in k8_active_nodes.stdout_lines'
   kubernetes.core.k8s_drain:
     kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
     state: drain
@@ -29,19 +30,18 @@
       ignore_daemonsets: true
       delete_emptydir_data: true
       force: "{{ k8s_froce_drain | default(true) }}"
-  delegate_to: "{{ groups.k8s_control_plane | flatten | first }}"
   tags: [k8s, k8s-leave]
 
 - name: Delete the node
-  when: '("node/" + inventory_hostname) in k8_aktive_nodes.stdout_lines'
+  delegate_to: "{{ groups.k8s_control_plane | flatten | first }}"
+  when: '("node/" + inventory_hostname) in k8_active_nodes.stdout_lines'
   ansible.builtin.command: "kubectl delete node {{ inventory_hostname }}"
   register: k8_delete_res
   changed_when: true
-  delegate_to: "{{ groups.k8s_control_plane | flatten | first }}"
   tags: [k8s, k8s-leave]
 
 - name: Reset the node
-  when: '("node/" + inventory_hostname) in k8_aktive_nodes.stdout_lines'
+  when: '("node/" + inventory_hostname) in k8_active_nodes.stdout_lines'
   ansible.builtin.command: kubeadm reset --force
   changed_when: true
   tags: [k8s, k8s-leave]

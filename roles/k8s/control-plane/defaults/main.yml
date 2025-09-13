@@ -35,9 +35,10 @@ k8s_node_cidr_mask_size_ipv4: 24
 k8s_node_cidr_mask_size_ipv6: 64
 
 # Kubeadm & Kubelet conf
-k8s_kubeadm_conf: '{{ lookup("template", "kubeadm-config.yml.j2") }}'
+k8s_kubelet_extra_conf: {}
 k8s_kubelet_conf: '{{ lookup("template", "kubelet-conf.yml.j2") }}'
 k8s_kubelet_override_conf: '{{ lookup("template", "kubelet-override.yml.j2") }}'
+k8s_kubeadm_conf: '{{ lookup("template", "kubeadm-config.yml.j2") }}'
 k8s_kubeadm_join_conf: '{{ lookup("template", "kubeadm-join-config.yml.j2") }}'
 k8s_etcd_encryption_secret: my-super-secure-k8s-etcd-secret!
 k8s_etcd_encryption_conf: '{{ lookup("template", "encryption-config.yml.j2") }}'
@@ -149,6 +150,33 @@ k8s_init_helm_apps: []
 #     # repo_pw: null
 #     chart_values:
 #       my_key: my_val
+
+k8s_default_manifests:
+  - name: node-labels
+    run_once: false
+    definition:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: "{{ inventory_hostname }}"
+        labels:
+          node-role.kubernetes.io/control-plane: "control-plane"
+          node-os.kubernetes.io/arch: "{{ ansible_facts.architecture }}"
+          node-os.kubernetes.io/os: "{{ ansible_distribution }}"
+          node-os.kubernetes.io/os-version: "{{ ansible_distribution_version }}"
+          node.kubernetes.io/image-id: "{{ image_id | default('unknown') | quote }}"
+          node.kubernetes.io/provider-id: "{{ id | default('unknown') | quote }}"
+  - name: runtime-manifests
+    definition: "{{ k8s_runtime_classes_all | flatten }}"
+
+k8s_runtime_classes_all:
+  - "{{ [k8s_runc_manifest.definition] }}"
+  - "{{ [k8s_crun_manifest.definition] }}"
+  - "{{ [k8s_youki_manifest.definition] if(k8s_install_youki | default(true)) else [] }}"
+  - "{{ [k8s_wasmedge_manifest.definition] if(k8s_install_wasi | default(true)) else [] }}"
+  - "{{ [k8s_gVisor_manifest.definition] if(k8s_install_gvisor | default(true)) else [] }}"
+  - "{{ [k8s_spin_manifest.definition] if(k8s_install_spin | default(true)) else [] }}"
+  - "{{ [k8s_kata_manifest.definition] if(k8s_install_kata_containers | default(false)) else [] }}"
 
 k8s_gVisor_manifest:
   name: gVisor RuntimeClass

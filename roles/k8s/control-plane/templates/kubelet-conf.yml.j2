@@ -54,9 +54,12 @@ volumeStatsAggPeriod: 5m
 enableProfilingHandler: false
 enableDebugFlagsHandler: false
 failCgroupV1: true
+seccompDefault: true
 
 logging:
   flushFrequency: 0
   options:
     json:
       infoBufferSize: "0"
+
+{{ k8s_kubelet_extra_conf | to_nice_yaml(indent=2) }}

@@ -10,7 +10,7 @@
   ansible.builtin.stat:
     path: /etc/kubernetes/kubelet.conf
   register: __k8s_kubeadm_worker_ca
-  tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
+  tags: [k8s, k8s-init, k8s-join, k8s-worker-join, k8s-copy]
 
 - name: k8s worker join | Get join token
   when: not __k8s_kubeadm_worker_ca.stat.exists
@@ -36,12 +36,12 @@
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
 - name: k8s worker join | Copy kubelet, kubeadm config
-  when: not __k8s_kubeadm_worker_ca.stat.exists
+  when: item.when | default(true)
   ansible.builtin.copy:
     src: "{{ item.src | default(omit) }}"
     content: "{{ item.content | default(omit) }}"
     dest: "{{ item.dst }}"
-    mode: "0600"
+    mode: "{{ item.mode | default('0600') }}"
     validate: "{{ item.validate | default(omit) }}"
   with_items: "{{ __k8s_worker_cp_files + k8s_worker_extra_files }}"
   loop_control:
@@ -50,9 +50,10 @@
     __k8s_worker_cp_files:
       - name: kubeadm-join-conf
         dst: '{{ target_data_dir | default("") }}/srv/kubeadm-join-config.yaml'
-        content: "{{ k8s_kubeadm_join_conf }}"
+        content: "{{ k8s_kubeadm_join_conf if(not __k8s_kubeadm_worker_ca.stat.exists) else '' }}"
         validate: kubeadm config validate --config %s
-  tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
+        when: "{{ not __k8s_kubeadm_worker_ca.stat.exists }}"
+  tags: [k8s, k8s-init, k8s-join, k8s-worker-join, k8s-copy]
 
 - name: k8s worker join | Join worker nodes
   when: not __k8s_kubeadm_worker_ca.stat.exists
@@ -91,9 +92,11 @@
         name: "{{ inventory_hostname }}"
         labels:
           node-role.kubernetes.io/worker: "worker"
-          node-arch.kubernetes.io/arch: "{{ ansible_facts.architecture }}"
-          node-os.kubernetes.io/os: "{{ ansible_facts.ansible_distribution }}"
-          node-os.kubernetes.io/os-version: "{{ ansible_facts.ansible_distribution_version }}"
+          node-os.kubernetes.io/arch: "{{ ansible_facts.architecture }}"
+          node-os.kubernetes.io/os: "{{ ansible_distribution }}"
+          node-os.kubernetes.io/os-version: "{{ ansible_distribution_version }}"
+          node.kubernetes.io/image-id: "{{ image_id | quote }}"
+          node.kubernetes.io/provider-id: "{{ id | quote }}"
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
 - name: k8s worker join | Get csr resources
