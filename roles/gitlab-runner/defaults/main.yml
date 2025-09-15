@@ -20,6 +20,11 @@ gitlab_runner_rootless_user: gitlab-runner
 # Docker daemon options as a dict
 gitlab_runner_docker_daemon_options: {}
 
+gitlab_runner_cache: none
+gitlab_runner_cache_endpoint: s3.eu-central-1.amazonaws.com
+# gitlab_runner_cache_s3_key_id: CHANGE_ME
+# gitlab_runner_cache_s3_key_secret: CHANGE_ME
+
 # Docker registries
 gitlab_runner_docker_registries: []
 # Example

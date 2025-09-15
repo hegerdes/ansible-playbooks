@@ -1,3 +1,4 @@
+---
 - name: Ensue user is created
   ansible.builtin.user:
     name: "{{ gitlab_runner_rootless_user }}"
@@ -7,6 +8,19 @@
     state: present
   register: __glab_runner_user
   tags: [gitlab-runner, gitlab-runner-rootless]
+
+- name: Ensure user directories exist
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    group: "{{ gitlab_runner_rootless_user }}"
+    owner: "{{ gitlab_runner_rootless_user }}"
+    state: "{{ item.state | default('directory') }}"
+    mode: "{{ item.mode | default('0744') }}"
+    recurse: true
+  tags: [gitlab-runner, gitlab-runner-rootless]
+  loop:
+    - path: /home/{{ gitlab_runner_rootless_user }}/.config/systemd/user
+    - path: /home/{{ gitlab_runner_rootless_user }}
 
 - name: Write gitlab-runner-conf and systemd conf file
   ansible.builtin.template:
@@ -35,6 +49,9 @@
   ansible.builtin.lineinfile:
     path: "{{ item.file }}"
     line: "{{ item.line }}"
+    owner: root
+    group: root
+    mode: "0644"
     create: true
   loop_control:
     label: "Setting mapping to {{ item.file }}"
@@ -43,29 +60,33 @@
       line: "{{ gitlab_runner_rootless_user }}:100000:65536"
     - file: /etc/subgid
       line: "{{ gitlab_runner_rootless_user }}:100000:65536"
-
-- name: Start rootless docker
-  become: true
-  become_user: "{{ gitlab_runner_rootless_user }}"
-  ansible.builtin.shell: dockerd-rootless-setuptool.sh install
-  args:
-    chdir: "/home/{{ gitlab_runner_rootless_user }}"
-    creates: "/run/user/{{ __glab_runner_user.uid }}/docker.sock"
-  environment:
-    XDG_RUNTIME_DIR: "/run/user/{{ __glab_runner_user.uid }}"
   tags: [gitlab-runner, gitlab-runner-rootless]
 
 - name: Ensure docker host env is set
   ansible.builtin.lineinfile:
     path: "/home/{{ gitlab_runner_rootless_user }}/.bashrc"
     line: "export DOCKER_HOST=unix:///run/user/{{ __glab_runner_user.uid }}/docker.sock"
+    mode: "0700"
     create: true
+  tags: [gitlab-runner, gitlab-runner-rootless]
 
 - name: Enable systemd lingering for the app user
   become: true
   ansible.builtin.command: loginctl enable-linger {{ gitlab_runner_rootless_user }}
   args:
     creates: "/var/lib/systemd/linger/{{ gitlab_runner_rootless_user }}"
+  tags: [gitlab-runner, gitlab-runner-rootless]
+
+- name: Start rootless docker
+  become: true
+  become_user: "{{ gitlab_runner_rootless_user }}"
+  ansible.builtin.command: dockerd-rootless-setuptool.sh install
+  args:
+    chdir: "/home/{{ gitlab_runner_rootless_user }}"
+    creates: "/run/user/{{ __glab_runner_user.uid }}/docker.sock"
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ __glab_runner_user.uid }}"
+  tags: [gitlab-runner, gitlab-runner-rootless]
 
 - name: Enable and start gitlab-runner service
   become: true

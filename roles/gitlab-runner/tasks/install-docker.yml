@@ -2,22 +2,21 @@
 ---
 - name: Install needed packages
   ansible.builtin.apt:
-    name: [
-        curl,
-        gnupg,
-        cifs-utils,
-        lsb-release,
-        yamllint,
-        python3-debian,
-        ca-certificates,
-        apt-transport-https,
-        apparmor,
-        systemd-container,
-        uidmap, # needed for rootless
-        slirp4netns, # needed for rootless
-        dbus-user-session, # needed for rootless
-        fuse-overlayfs, # needed for rootless
-      ]
+    name:
+      - curl
+      - gnupg
+      - cifs-utils
+      - lsb-release
+      - yamllint
+      - python3-debian
+      - ca-certificates
+      - apt-transport-https
+      - apparmor
+      - systemd-container
+      - uidmap # needed for rootless
+      - slirp4netns # needed for rootless
+      - dbus-user-session # needed for rootless
+      - fuse-overlayfs # needed for rootless
     state: present
     update_cache: true
     install_recommends: true
@@ -66,7 +65,7 @@
   ansible.builtin.copy:
     content: "{{ gitlab_runner_docker_daemon_options | to_nice_json }}"
     dest: /etc/docker/daemon.json
-    mode: 0644
+    mode: "0644"
     validate: dockerd --validate --config-file=%s
   when: gitlab_runner_docker_daemon_options.keys() | length > 0 and not gitlab_runner_docker_rootless
   notify: Restart Docker

@@ -2,10 +2,22 @@
 concurrent = {{ gitlab_runner_concurrency }}
 check_interval = 0
 shutdown_timeout = 0
-
 [session_server]
   session_timeout = 1800
-
+{% if gitlab_runner_cache != "none" %}
+  [runners.cache]
+    Type = "{{ gitlab_runner_cache }}"
+    Path = ""
+    Shared = true
+  {% if gitlab_runner_cache | lower == "s3" %}
+    [runners.cache.s3]
+      ServerAddress = "{{ gitlab_runner_cache_endpoint }}"
+      AccessKey = "{{ gitlab_runner_cache_s3_key_id }}"
+      SecretKey = "{{ gitlab_runner_cache_s3_key_secret }}"
+      BucketName = "gitlab-runner"
+      Insecure = false
+  {% endif %}
+{% endif %}
 [[runners]]
   name = "{{ gitlab_runner_name }}"
   url = "https://{{ gitlab_runner_gitlab_domain }}"
