@@ -26,10 +26,8 @@
     dest: "/usr/wasmedge/lib/{{ item }}"
     state: link
   loop:
-    [
-      'libwasmedge.so.{{ k8s_crun_wasmlib_version | split(".") | first }}',
-      "libwasmedge.so",
-    ]
+    - 'libwasmedge.so.{{ k8s_crun_wasmlib_version | split(".") | first }}'
+    - "libwasmedge.so"
 
 - name: k8s common - crun | Add wasm libs to server lib store
   ansible.builtin.lineinfile:

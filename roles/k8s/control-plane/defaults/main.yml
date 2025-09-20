@@ -1,12 +1,13 @@
 ---
 k8s_version: 1.34.1
 k8s_dual_stack: false
+k8s_cp_ping_check: true
 k8s_install_core_dns: true
 k8s_install_kube_proxy: true
-k8s_cp_ping_check: true
 k8s_image_repo: registry.k8s.io
 k8s_cluster_name: "{{ inventory_dir | basename }}"
 k8s_pki_cert_path: /etc/kubernetes/pki
+k8s_kubeconfig: "/etc/kubernetes/admin.conf"
 k8s_shared_api_server_endpoint: "{{ ansible_facts.default_ipv4.address }}"
 k8s_init_verbose: "{{ lookup('env', 'CI') | default('false', true) | bool == false }}"
 
@@ -43,7 +44,7 @@ k8s_kubeadm_join_conf: '{{ lookup("template", "kubeadm-join-config.yml.j2") }}'
 k8s_etcd_encryption_secret: my-super-secure-k8s-etcd-secret!
 k8s_etcd_encryption_conf: '{{ lookup("template", "encryption-config.yml.j2") }}'
 k8s_admission_config: '{{ lookup("template", "admission-control-config.yml.j2") }}'
-k8s_admission_extra_plugins: [NodeRestriction]
+k8s_admission_extra_plugins: [NodeRestriction, DenyServiceExternalIPs]
 k8s_admission_plugin_config:
   - '{{ lookup("file", "pod-security-admission.yaml") | from_yaml }}'
 
@@ -74,15 +75,23 @@ k8s_kubeadm_skip_phases: []
 # k8s_kubeadm_skip_phases:
 #   - addon/kube-proxy
 k8s_controlplane_extra_args: []
+# # Docs: https://kubernetes.io/docs/reference/command-line-tools-reference/kube-apiserver/
 # # Example
 # k8s_controlplane_extra_args:
 #   - name: anonymous-auth
 #     value: "false"
 k8s_controller_extra_args: []
+# # Docs: https://kubernetes.io/docs/reference/command-line-tools-reference/kube-controller-manager/
 # # Example
 # k8s_controller_extra_args:
 #   - name: allocate-node-cidrs
 #     value: "false"
+k8s_scheduler_extra_args: []
+# # Docs: https://kubernetes.io/docs/reference/command-line-tools-reference/kube-scheduler/
+# # Example
+# k8s_controller_extra_args:
+#   - name: log-flush-frequency
+#     value: "5s"
 k8s_controlplane_extra_envs: []
 # # Example
 # k8s_controlplane_extra_envs:
@@ -208,7 +217,7 @@ k8s_spin_manifest:
 
 ######### CNI #########
 # Which CNI flannel, calico or cilium
-k8s_cni: calico
+k8s_cni: cilium
 
 # Calico helm chart setup
 k8s_calico_ip_pools_ipv4:

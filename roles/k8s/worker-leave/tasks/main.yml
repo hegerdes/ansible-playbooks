@@ -23,7 +23,7 @@
   delegate_to: "{{ groups.k8s_control_plane | flatten | first }}"
   when: '("node/" + inventory_hostname) in k8_active_nodes.stdout_lines'
   kubernetes.core.k8s_drain:
-    kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
+    kubeconfig: "{{ k8s_kubeconfig }}"
     state: drain
     name: "{{ inventory_hostname }}"
     delete_options:

@@ -19,6 +19,6 @@
     wait: true
     timeout: 2m
     values: "{{ k8s_aws_vpc_values | default({}) }}"
-    kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
+    kubeconfig: "{{ k8s_kubeconfig }}"
   run_once: true
   tags: [k8s, k8s-init, k8s-cp-init, k8s-cni, k8s-aws-vpc]

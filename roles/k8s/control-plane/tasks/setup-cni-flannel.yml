@@ -11,7 +11,7 @@
 
 - name: k8s cp - cni flannel | Apply flannel-cri manifest to the cluster
   kubernetes.core.k8s:
-    kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
+    kubeconfig: "{{ k8s_kubeconfig }}"
     definition: "{{ _k8s_intanal_cni_flannel_definition.content }}"
     state: present
   run_once: true

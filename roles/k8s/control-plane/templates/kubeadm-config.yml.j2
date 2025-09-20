@@ -6,7 +6,9 @@ nodeRegistration:
   kubeletExtraArgs:
     - name: node-ip
       value: {{ k8s_node_ip }}
+{% if k8s_kubelet_extra_args | length > 0 %}
     {{ k8s_kubelet_extra_args | to_nice_yaml(indent=2) | indent(width=4) }}
+{% endif %}
   ignorePreflightErrors:
     - NumCPU
   taints: {{ k8s_taints | to_nice_yaml(indent=2) | indent(width=4) }}
@@ -62,15 +64,15 @@ apiServer:
       value: "true"
     - name: tls-min-version
       value: VersionTLS13
-{% if k8s_feature_gates | length > 0 %}
-    - name: feature-gates
-      value: {{ k8s_feature_gates_args_string }}
-{% endif %}
+    - name: admission-control-config-file
+      value: /etc/kubernetes/extras/admission-control-config.yaml
 {% if k8s_admission_extra_plugins | length > 0 %}
     - name: enable-admission-plugins
       value: {{ k8s_admission_extra_plugins | join(',') }}
-    - name: admission-control-config-file
-      value: /etc/kubernetes/extras/admission-control-config.yaml
+{% endif %}
+{% if k8s_feature_gates | length > 0 %}
+    - name: feature-gates
+      value: {{ k8s_feature_gates_args_string }}
 {% endif %}
 {% if k8s_controlplane_extra_args | length > 0 %}
     {{ k8s_controlplane_extra_args | to_nice_yaml(indent=2) | indent(width=4) }}
@@ -91,6 +93,8 @@ controllerManager:
   extraArgs:
     - name: profiling
       value: "false"
+    - name: tls-min-version
+      value: VersionTLS13
 {% if k8s_dual_stack %}
     - name: node-cidr-mask-size-ipv4
       value: "{{ k8s_node_cidr_mask_size_ipv4 }}"
@@ -106,6 +110,10 @@ controllerManager:
       value: "{{ k8s_node_cidr_mask_size_ipv6 }}"
 {% endif %}
 {% endif %}
+{% if k8s_feature_gates | length > 0 %}
+    - name: feature-gates
+      value: {{ k8s_feature_gates_args_string }}
+{% endif %}
 {% if k8s_controller_extra_args | length > 0 %}
     {{ k8s_controller_extra_args | to_nice_yaml(indent=2) | indent(width=4) }}
 {% endif %}
@@ -114,6 +122,15 @@ scheduler:
   extraArgs:
     - name: profiling
       value: "false"
+    - name: tls-min-version
+      value: VersionTLS13
+{% if k8s_feature_gates | length > 0 %}
+    - name: feature-gates
+      value: {{ k8s_feature_gates_args_string }}
+{% endif %}
+{% if k8s_scheduler_extra_args | length > 0 %}
+    {{ k8s_scheduler_extra_args | to_nice_yaml(indent=2) | indent(width=4) }}
+{% endif %}
 
 proxy:
   disabled: {{ not (k8s_install_kube_proxy | default(true)) }}

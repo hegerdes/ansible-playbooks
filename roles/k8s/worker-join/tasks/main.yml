@@ -2,7 +2,7 @@
 ---
 - name: k8s worker join | Test reachability to shared KubeControlPlaneHost
   when: k8s_cp_ping_check | default(true)
-  ansible.builtin.command: "ping -c 2 {{ k8s_shared_api_server_endpoint }}"
+  ansible.builtin.command: "ping -c 1 {{ k8s_shared_api_server_endpoint }}"
   changed_when: false
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
@@ -82,7 +82,7 @@
 - name: k8s worker join | Set node role and arch label
   delegate_to: "{{ groups.k8s_control_plane | flatten | first }}"
   kubernetes.core.k8s:
-    kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
+    kubeconfig: "{{ k8s_kubeconfig }}"
     state: present
     wait: true
     definition:
@@ -103,7 +103,7 @@
   delegate_to: "{{ groups.k8s_control_plane | flatten | first }}"
   run_once: true
   kubernetes.core.k8s_info:
-    kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
+    kubeconfig: "{{ k8s_kubeconfig }}"
     api_version: certificates.k8s.io/v1
     kind: certificatesigningrequests
   register: __k8s_kubelet_csr_list_res
@@ -116,7 +116,7 @@
   register: __k8s_worker_role_set
   changed_when: ("certificatesigningrequest.certificates.k8s.io/" + __k8s_kubelet_csr + " approved") in __k8s_worker_role_set.stdout
   environment:
-    KUBECONFIG: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
+    KUBECONFIG: "{{ k8s_kubeconfig }}"
   vars:
     __k8s_kubelet_csr_query: "[?spec.username == 'system:node:{{ inventory_hostname }}' && status == `{}`]"
     __k8s_kubelet_csr: "{{ (__k8s_kubelet_csr_list_res.resources | json_query(__k8s_kubelet_csr_query) | first).metadata.name }}"

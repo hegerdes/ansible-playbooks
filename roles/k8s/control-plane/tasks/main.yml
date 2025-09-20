@@ -2,12 +2,12 @@
 # Main k8s Setup
 - name: k8s cp | Test reachability to KubeControlPlane
   when: k8s_cp_ping_check | default(true)
-  ansible.builtin.command: "ping -c 2 {{ k8s_shared_api_server_endpoint }}"
+  ansible.builtin.command: "ping -c 1 {{ k8s_shared_api_server_endpoint }}"
   changed_when: false
   tags: [k8s, k8s-init, k8s-cp-init]
 
 - name: k8s cp | Install Helm
-  when: k8s_kubeconfig | default('/etc/kubernetes/admin.conf') == '/etc/kubernetes/admin.conf'
+  when: k8s_kubeconfig == '/etc/kubernetes/admin.conf'
   ansible.builtin.include_role:
     name: k8s/helm
     public: true
@@ -18,10 +18,8 @@
 - name: k8s cp | Install kubectl & python k8s tools
   ansible.builtin.apt:
     name:
-      [
-        'kubectl{{ "=" + k8s_version + "*" if (k8s_version != "latest") }}',
-        python3-kubernetes,
-      ]
+      - 'kubectl{{ "=" + k8s_version + "*" if (k8s_version != "latest") }}'
+      - python3-kubernetes
     update_cache: true
     install_recommends: false
     allow_downgrade: true
@@ -34,7 +32,7 @@
     dest: "{{ item.dst }}"
     mode: "{{ item.mode | default('0600') }}"
     validate: "{{ item.validate | default(omit) }}"
-  with_items: "{{ __k8s_cp_conf_defaults + k8s_controlplane_extra_files }}"
+  loop: "{{ __k8s_cp_conf_defaults + k8s_controlplane_extra_files }}"
   vars:
     __k8s_cp_conf_defaults:
       - name: etcd-encryption-conf
@@ -68,19 +66,13 @@
     label: "{{ item.name }}"
   tags: [k8s, k8s-init, k8s-cp-init, k8s-copy]
 
-- name: k8s cp | Check if kubeadm has already run
-  when: groups.k8s_control_plane | flatten | first == inventory_hostname
-  ansible.builtin.stat:
-    path: /etc/kubernetes/admin.conf
-  register: __k8s_kubeadm_conf
-  tags: [k8s, k8s-init, k8s-cp-init]
-
 - name: k8s common | Pre-pull images
-  when: not __k8s_kubeadm_conf.stat.exists
   ansible.builtin.command: |
     kubeadm config images pull \
       {{ "--kubernetes-version " + k8s_version if (k8s_version != "latest") }} \
       {{ "--image-repository " + k8s_image_repo if (k8s_image_repo | default("") != "") }}
+  args:
+    creates: /etc/kubernetes/kubelet.conf
   register: __k8s_pull_res
   changed_when: >-
     ((__k8s_pull_res.end[:-7]
@@ -89,7 +81,7 @@
   tags: [k8s, k8s-init, k8s-cp-init]
 
 - name: k8s cp | Init cluster if needed
-  when: groups.k8s_control_plane | flatten | first == inventory_hostname and not __k8s_kubeadm_conf.stat.exists
+  when: groups.k8s_control_plane | flatten | first == inventory_hostname
   ansible.builtin.include_tasks: kubeadm-init.yml
   tags: [k8s, k8s-init, k8s-cp-init]
 
@@ -98,7 +90,7 @@
   run_once: "{{ k8s_init_resources.run_once | default(true) }}"
   kubernetes.core.k8s:
     namespace: "{{ k8s_init_resources.namespace | default(omit) }}"
-    kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
+    kubeconfig: "{{ k8s_kubeconfig }}"
     state: "{{ k8s_init_resources.state | default('present') }}"
     definition: "{{ k8s_init_resources.definition }}"
     wait: "{{ k8s_init_resources.wait | default(true) }}"
@@ -171,7 +163,7 @@
     dest: "{{ item.dst }}"
     mode: "0600"
     validate: kubeadm config validate --config %s
-  with_items:
+  loop:
     - name: k8s cp | kubeadm-join-conf
       dst: "{{ target_data_dir | default('') }}/srv/kubeadm-join-config.yml"
       content: "{{ k8s_kubeadm_join_conf }}"
@@ -210,20 +202,11 @@
     var: __k8s_join_res
   tags: [k8s, k8s-init, k8s-cp-init]
 
-# - name: Init worker join
-#   include_role:
-#     name: k8s/worker-join
-#     apply:
-#       delegate_to: "{{ item }}"
-#   run_once: true
-#   loop: "{{ groups['k8s_worker'] }}"
-#   # when: some_condition
-
 - name: k8s cp | Remove NoSchedule taint form control-plane nodes
   when: k8s_remove_no_schedule_cp_taints
   delegate_to: "{{ groups.k8s_control_plane | flatten | first }}"
   kubernetes.core.k8s_taint:
-    kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
+    kubeconfig: "{{ k8s_kubeconfig }}"
     state: absent
     name: "{{ ansible_facts.hostname }}"
     taints:
@@ -239,7 +222,7 @@
     api_version: v1
     kind: Node
     name: "{{ inventory_hostname }}"
-    kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
+    kubeconfig: "{{ k8s_kubeconfig }}"
   register: __k8s_cp_node
   tags: [k8s, k8s-init, k8s-cp-init, k8s-taint]
 
@@ -252,7 +235,7 @@
     namespace: "{{ item.namespace | default(omit) }}"
     name: "{{ item.resource_name }}"
     patch: "{{ item.patches }}"
-    kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
+    kubeconfig: "{{ k8s_kubeconfig }}"
   loop: "{{ k8s_cp_patches }}"
   loop_control:
     label: "{{ item.name }}"
@@ -263,7 +246,7 @@
 - name: k8s cp | Get csr resources
   run_once: true
   kubernetes.core.k8s_info:
-    kubeconfig: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
+    kubeconfig: "{{ k8s_kubeconfig }}"
     api_version: certificates.k8s.io/v1
     kind: certificatesigningrequests
   register: __k8s_kubelet_csr_list_res
@@ -277,7 +260,7 @@
     ("certificatesigningrequest.certificates.k8s.io/" + __k8s_kubelet_csr + " approved")
     in __k8s_worker_role_set.stdout
   environment:
-    KUBECONFIG: "{{ k8s_kubeconfig | default('/etc/kubernetes/admin.conf') }}"
+    KUBECONFIG: "{{ k8s_kubeconfig }}"
   vars:
     __k8s_kubelet_csr_query: "[?spec.username == 'system:node:{{ inventory_hostname }}' && status == `{}`]"
     __k8s_kubelet_csr: >-
