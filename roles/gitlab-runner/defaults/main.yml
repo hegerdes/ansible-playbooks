@@ -1,5 +1,5 @@
 ---
-gitlab_runner_name: generic-runner
+gitlab_runner_name: "{{ inventory_hostname }}"
 gitlab_runner_token: CHANGE_ME
 gitlab_runner_gitlab_domain: gitlab.com
 
@@ -10,20 +10,21 @@ gitlab_runner_install_docker: true
 gitlab_runner_install_runner: true
 gitlab_runner_docker_edition: ce # Choice: ce|ee
 
-gitlab_runner_docker_rootless: false
-gitlab_runner_runner_rootless: false
+gitlab_runner_cron_cleanup: true
+gitlab_runner_docker_rootless: true
+gitlab_runner_runner_rootless: true
 
 # A list of users who will be added to the docker group.
 gitlab_runner_docker_users: []
 gitlab_runner_rootless_user: gitlab-runner
 
-# Docker daemon options as a dict
-gitlab_runner_docker_daemon_options: {}
-
 gitlab_runner_cache: none
 gitlab_runner_cache_endpoint: s3.eu-central-1.amazonaws.com
 # gitlab_runner_cache_s3_key_id: CHANGE_ME
 # gitlab_runner_cache_s3_key_secret: CHANGE_ME
+
+# Docker daemon options as a dict
+gitlab_runner_docker_daemon_options: {}
 
 # Docker registries
 gitlab_runner_docker_registries: []

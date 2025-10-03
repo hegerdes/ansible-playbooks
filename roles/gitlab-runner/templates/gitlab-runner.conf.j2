@@ -1,9 +1,19 @@
 # gitlab-runner config.toml
+# {{ 'The runner-token was set' if gitlab_runner_token != 'CHANGE_ME' else __gitlab_runner_token_err | mandatory('gitlab_runner_token must be set') }}
 concurrent = {{ gitlab_runner_concurrency }}
 check_interval = 0
 shutdown_timeout = 0
 [session_server]
   session_timeout = 1800
+[[runners]]
+  name = "{{ gitlab_runner_name }}"
+  url = "https://{{ gitlab_runner_gitlab_domain }}"
+  id = 49613998
+  token = "{{ gitlab_runner_token }}"
+  token_obtained_at = 2025-01-01T00:00:00Z
+  token_expires_at = 0001-01-01T00:00:00Z
+  executor = "{{ gitlab_runner_executor }}"
+  environment = ["FF_USE_FASTZIP=1"]
 {% if gitlab_runner_cache != "none" %}
   [runners.cache]
     Type = "{{ gitlab_runner_cache }}"
@@ -18,23 +28,17 @@ shutdown_timeout = 0
       Insecure = false
   {% endif %}
 {% endif %}
-[[runners]]
-  name = "{{ gitlab_runner_name }}"
-  url = "https://{{ gitlab_runner_gitlab_domain }}"
-  id = 49613998
-  token = "{{ gitlab_runner_token }}"
-  token_obtained_at = 2025-01-01T00:00:00Z
-  token_expires_at = 0001-01-01T00:00:00Z
-  executor = "{{ gitlab_runner_executor }}"
 {% if gitlab_runner_executor == "docker" %}
   [runners.docker]
     image = "debian"
-    privileged = true
-    allowed_privileged_images = ["moby/buildkit:*" ]
+    pull_policy = ["always", "if-not-present"] # available: always, if-not-present, never
+    allowed_pull_policies = ["always", "if-not-present"]
+    allowed_privileged_images = ["moby/buildkit:*", "docker:dind" ]
     disable_entrypoint_overwrite = false
+    privileged = true
     oom_kill_disable = false
     disable_cache = false
-    volumes = ["/cache"]
+    volumes = ["/cache", "/certs/client", "/runner/services/docker"]
     shm_size = 0
     network_mtu = 0
 {% endif %}
