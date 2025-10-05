@@ -28,7 +28,7 @@
 - name: Download and unzip traefik
   when: traefik_check_result.stdout == "" or traefik_force_reinstall
   ansible.builtin.unarchive:
-    src: '{{ traefik_url.stdout }}'
+    src: "{{ traefik_url.stdout }}"
     dest: /tmp
     remote_src: true
   tags: [ingress, traefik]
@@ -39,7 +39,7 @@
     path: /tmp/traefik
     owner: traefik
     group: adm
-    mode: '0750'
+    mode: "0750"
 
 - name: Install traefik
   when: traefik_check_result.stdout == "" or traefik_force_reinstall
@@ -59,7 +59,7 @@
     dest: /etc/systemd/system/traefik.service
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
   notify: Restart traefik
   tags: [ingress, traefik]
 
@@ -76,15 +76,15 @@
     state: directory
     owner: traefik
     group: adm
-    mode: '0644'
+    mode: "0644"
   tags: [ingress, traefik]
 
 - name: Copy Traefik default config
   ansible.builtin.copy:
-    src:  traefik
+    src: traefik
     dest: /srv/traefik
     owner: traefik
     group: adm
-    mode: '0666'
+    mode: "0666"
   notify: Restart traefik
   tags: [ingress, traefik]
