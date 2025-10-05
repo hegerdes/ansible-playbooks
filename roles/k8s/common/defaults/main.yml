@@ -17,10 +17,10 @@ k8s_youki_with_wasm: false
 k8s_crun_with_wasm: false
 k8s_crun_wasmlib_version: 0.1.0
 
+# Version info
 k8s_inventory_as_hostname: true
 k8s_shutdown_after_common: false
 k8s_unattended_upgrades_state: present
-k8s_ensure_min_kernel_version: none # Ensures it uses at least this kernel. Can be 6.10.* - may uses backports
 k8s_containerd_version: latest
 k8s_cni_plugins_version: latest
 k8s_runc_version: latest
@@ -30,16 +30,20 @@ k8s_youki_version: latest
 k8s_gvisor_version: latest
 k8s_spin_version: latest
 k8s_stargz_version: latest
-k8s_selinux_mode: permissive # can be: disabled,enforcing,permissive
+k8s_selinux_mode: disabled # can be: disabled,enforcing,permissive
 k8s_selinux_policy: targeted
 k8s_cni: cilium
-k8s_credential_provider: []
-# k8s_credential_provider:
-#   - ecr
-#   - kscp
+k8s_credential_provider: [] # supported are [ecr, kscp]
 k8s_credential_provider_version:
   ecr: latest
   kscp: latest
+
+# Ensures it uses at least this kernel. May uses backports
+# k8s_ensure_min_kernel_version: "{{ k8s_ensure_min_kernel_version_map[ansible_facts.lsb.codename] }}"
+k8s_ensure_min_kernel_version: none
+k8s_ensure_min_kernel_version_map:
+  trixie: 6.16.*
+  bookworm: 6.12.*
 
 # Send extra headers to GitHub API calls
 k8s_gh_headers: {}
@@ -81,6 +85,11 @@ k8s_common_sysctl_conf:
   # Enable & set usernamspace limits
   - { key: user.max_pid_namespaces, val: 1048576 } # 2^20
   - { key: user.max_user_namespaces, val: 1048576 } # 2^20
+
+  # Enable bbr congestion control
+  # https://www.cyberciti.biz/cloud-computing/increase-your-linux-server-internet-speed-with-tcp-bbr-congestion-control/
+  - { key: net.core.default_qdisc, val: fq } # 2^20
+  - { key: net.ipv4.tcp_congestion_control, val: bbr } # default is: "reno cubic"
 
   # Set pid_max to maximum allowable limit (2^22).
   - { key: kernel.pid_max, val: 4194304 }

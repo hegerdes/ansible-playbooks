@@ -19,7 +19,7 @@
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: k8s common | Add Debian Backports apt repo
-  when: ansible_facts.distribution == "Debian" and ansible_distribution_release != "trixie"
+  when: ansible_facts.distribution == "Debian"
   ansible.builtin.deb822_repository:
     name: "{{ ansible_distribution_release }}-backports"
     types: deb
