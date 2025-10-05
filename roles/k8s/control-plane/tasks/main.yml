@@ -74,16 +74,34 @@
   args:
     creates: /etc/kubernetes/kubelet.conf
   register: __k8s_pull_res
-  changed_when: >-
-    ((__k8s_pull_res.end[:-7]
-    | to_datetime) - (__k8s_pull_res.start[:-7]
-    | to_datetime)).total_seconds() > 5
+  changed_when: false
   tags: [k8s, k8s-init, k8s-cp-init]
 
-- name: k8s cp | Init cluster if needed
+- name: k8s cp - kubeadm | Init first control-plane node
   when: groups.k8s_control_plane | flatten | first == inventory_hostname
-  ansible.builtin.include_tasks: kubeadm-init.yml
-  tags: [k8s, k8s-init, k8s-cp-init]
+  block:
+    - name: k8s cp - kubeadm | Init Kubernetes cluster
+      ansible.builtin.command: |
+        kubeadm init \
+          --config {{ target_data_dir | default("") }}/srv/kubeadm-config.yaml \
+          --upload-certs
+      args:
+        creates: /etc/kubernetes/kubelet.conf
+      register: __k8s_init_cluster
+      timeout: 300
+      tags: [k8s, k8s-init, k8s-cp-init]
+  rescue:
+    - name: k8s cp - kubeadm | Cleanup - Reset Kubernetes component
+      ansible.builtin.command: "kubeadm reset --force"
+      changed_when: true
+      register: reset_cluster
+      tags: [k8s, k8s-init, k8s-cp-init]
+  always:
+    - name: k8s cp - kubeadm | Debug - Kubeadm init res
+      when: k8s_init_verbose
+      ansible.builtin.debug:
+        var: __k8s_init_cluster
+      tags: [k8s, k8s-init, k8s-cp-init]
 
 - name: k8s cp | Deploying initial resource manifests
   when: groups.k8s_control_plane | flatten | first == inventory_hostname
@@ -101,6 +119,7 @@
   tags: [k8s, k8s-init, k8s-cp-init, k8s-cp-init-manifests]
 
 - name: k8s cp | Deploying initial Helm-Charts
+  run_once: true
   ansible.builtin.include_role:
     name: k8s/deploy
     tasks_from: helm-deploy
@@ -114,6 +133,12 @@
   vars:
     k8s_helm_app: "{{ item }}"
 
+- name: k8s cp | Check if kubeadm has already run
+  ansible.builtin.stat:
+    path: /etc/kubernetes/kubelet.conf
+  register: k8s_kubeadm_all_init
+  tags: [k8s, k8s-init, k8s-cp-init]
+
 - name: k8s cp | Upload certificates
   delegate_to: "{{ groups.k8s_control_plane | flatten | first }}"
   ansible.builtin.command: |
@@ -126,7 +151,7 @@
   tags: [k8s, k8s-init, k8s-cp-init]
 
 - name: k8s cp | Get join token
-  when: groups.k8s_control_plane | length > 1
+  when: groups.k8s_control_plane | length > 1 and not k8s_kubeadm_all_init.stat.exists
   delegate_to: "{{ groups.k8s_control_plane | flatten | first }}"
   ansible.builtin.command: |
     kubeadm token create \
@@ -135,7 +160,6 @@
     --kubeconfig {{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}
   register: __k8_cp_join_token_res
   changed_when: false
-  run_once: true
   no_log: true
   tags: [k8s, k8s-init, k8s-cp-init]
 
@@ -150,23 +174,13 @@
   no_log: true
   tags: [k8s, k8s-init, k8s-cp-init]
 
-- name: k8s cp | Check if kubeadm has already run
-  ansible.builtin.stat:
-    path: /etc/kubernetes/kubelet.conf
-  register: k8s_kubeadm_all_init
-  tags: [k8s, k8s-init, k8s-cp-init]
-
 - name: k8s cp | kubeadm-join config
-  when: not k8s_kubeadm_all_init.stat.exists
+  when: groups.k8s_control_plane | length > 1 and not k8s_kubeadm_all_init.stat.exists
   ansible.builtin.copy:
-    content: "{{ item.content }}"
-    dest: "{{ item.dst }}"
+    content: "{{ k8s_kubeadm_join_conf }}"
+    dest: "{{ target_data_dir | default('') }}/srv/kubeadm-join-config.yml"
     mode: "0600"
     validate: kubeadm config validate --config %s
-  loop:
-    - name: k8s cp | kubeadm-join-conf
-      dst: "{{ target_data_dir | default('') }}/srv/kubeadm-join-config.yml"
-      content: "{{ k8s_kubeadm_join_conf }}"
   loop_control:
     label: "{{ item.name }}"
   tags: [k8s, k8s-init, k8s-cp-init]
