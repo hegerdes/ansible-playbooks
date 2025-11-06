@@ -28,6 +28,9 @@ version = 3
 # required_plugins = []
 # oom_score = 0
 
+# Mount conf.d configs
+imports = ['/etc/containerd/conf.d/*.toml']
+
 # Ansible extra containerd conf
 {{ k8s_containerd_extra_config | default('# No ansible extra containerd conf') }}
 

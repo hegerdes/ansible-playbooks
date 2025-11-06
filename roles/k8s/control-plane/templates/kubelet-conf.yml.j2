@@ -62,4 +62,6 @@ logging:
     json:
       infoBufferSize: "0"
 
-{{ k8s_kubelet_extra_conf | to_nice_yaml(indent=2) }}
+{% if k8s_kubelet_extra_conf | length > 0 %}
+  {{ k8s_kubelet_extra_conf | to_nice_yaml(indent=2) }}
+{% endif %}

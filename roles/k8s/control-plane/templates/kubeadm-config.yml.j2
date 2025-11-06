@@ -5,7 +5,7 @@ nodeRegistration:
   imagePullSerial: false
   kubeletExtraArgs:
     - name: node-ip
-      value: {{ k8s_node_ip }}
+      value: {{ k8s_node_ip | quote }}
 {% if k8s_kubelet_extra_args | length > 0 %}
     {{ k8s_kubelet_extra_args | to_nice_yaml(indent=2) | indent(width=4) }}
 {% endif %}
@@ -34,8 +34,8 @@ controlPlaneEndpoint: {{ k8s_shared_api_server_endpoint }}
 
 
 networking:
-  serviceSubnet: {{ k8s_service_network_cidr }}
-  podSubnet: {{ k8s_pod_network_cidr }}
+  serviceSubnet: {{ k8s_service_network_cidr | quote }}
+  podSubnet: {{ k8s_pod_network_cidr | quote }}
   dnsDomain: "cluster.local"
 
 apiServer:

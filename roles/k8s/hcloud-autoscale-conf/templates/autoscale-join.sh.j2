@@ -14,8 +14,11 @@ K8S_SHARED_API_SERVER_ENDPOINT_PORT="{{ k8s_kubelet_advertise_port | default(644
 K8S_PKI_CA_HASH="{{ k8_ca_sha256 | default (__k8s_pki_ca["public_key_fingerprints"]["sha256"] | replace(":","")) }}"
 
 # Test reachability to shared KubeControlPlaneHost
-ping -c 2 "${K8S_SHARED_API_SERVER_ENDPOINT}"
+ping -c 1 "${K8S_SHARED_API_SERVER_ENDPOINT}"
 K8S_NODE_IP=$(ip -o -4 addr list | grep '10\.' | awk '{print $4}' | cut -d/ -f1)
+
+# Ensure ip forwarding is enabled
+sysctl -w net.ipv4.ip_forward=1
 
 cat <<EOF >/srv/kubeadm-join-config.yaml
 apiVersion: kubeadm.k8s.io/v1beta4
