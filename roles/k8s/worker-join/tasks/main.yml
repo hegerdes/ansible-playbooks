@@ -22,6 +22,7 @@
     --kubeconfig {{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}
   register: __k8_worker_join_token_res
   changed_when: false
+  no_log: true
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
 - name: k8s worker join | Get CA certificate hash
@@ -85,7 +86,14 @@
     kubeconfig: "{{ k8s_kubeconfig }}"
     state: present
     wait: true
-    definition:
+    definition: >-
+      {{
+        k8s_worker_node_definition | combine(k8s_worker_node_cidr)
+        if(k8s_worker_node_cidr_combine) else
+        k8s_worker_node_definition
+      }}
+  vars:
+    k8s_worker_node_definition:
       apiVersion: v1
       kind: Node
       metadata:
@@ -97,6 +105,15 @@
           node-os.kubernetes.io/os-version: "{{ ansible_distribution_version }}"
           node.kubernetes.io/image-id: "{{ image_id | quote }}"
           node.kubernetes.io/provider-id: "{{ id | quote }}"
+    k8s_worker_node_cidr:
+      spec:
+        podCIDR: "{{ k8s_node_pod_cidr }}"
+        podCIDRs: ["{{ k8s_node_pod_cidr }}"]
+    k8s_worker_node_cidr_combine: >-
+      {{ k8s_pod_network_cidr is ansible.utils.ipv6
+      and k8s_node_ip | ansible.utils.ipaddr('public')
+      and k8s_native_ipv6_with_distinct_ip_pools
+      }}
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
 - name: k8s worker join | Get csr resources

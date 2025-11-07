@@ -4,6 +4,7 @@ k8s_dual_stack: false
 k8s_cp_ping_check: true
 k8s_install_core_dns: true
 k8s_install_kube_proxy: true
+k8s_native_ipv6_with_distinct_ip_pools: false
 k8s_image_repo: registry.k8s.io
 k8s_cluster_name: "{{ inventory_dir | basename }}"
 k8s_pki_cert_path: /etc/kubernetes/pki
@@ -31,6 +32,7 @@ k8s_pod_network_cidr_ipv4: 10.244.0.0/16
 k8s_service_network_cidr_ipv4: 10.96.0.0/16
 k8s_pod_network_cidr_ipv6: fd00:10:244::/48
 k8s_service_network_cidr_ipv6: fd00:20:123::/112
+k8s_node_pod_cidr: "{{ k8s_node_ip | ansible.utils.ipmath(2 | pow(56)) | ansible.utils.ipmath(-1) }}/{{ k8s_node_cidr_mask_size_ipv6 }}"
 k8s_clusterDNS: [10.96.0.10] # change for ipv6 only
 k8s_node_cidr_mask_size_ipv4: 24
 k8s_node_cidr_mask_size_ipv6: 64
@@ -70,33 +72,39 @@ k8s_feature_gates_args_string: >-
   {{ k }}={{ v | lower }}{% if not loop.last %},{% endif %}
   {%- endfor -%}
 
+# Docs https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init-phase/
 k8s_kubeadm_skip_phases: []
 # # Example
 # k8s_kubeadm_skip_phases:
 #   - addon/kube-proxy
+
+# Docs: https://kubernetes.io/docs/reference/command-line-tools-reference/kube-apiserver/
 k8s_controlplane_extra_args: []
-# # Docs: https://kubernetes.io/docs/reference/command-line-tools-reference/kube-apiserver/
 # # Example
 # k8s_controlplane_extra_args:
 #   - name: anonymous-auth
 #     value: "false"
-k8s_controller_extra_args: []
-# # Docs: https://kubernetes.io/docs/reference/command-line-tools-reference/kube-controller-manager/
-# # Example
-# k8s_controller_extra_args:
-#   - name: allocate-node-cidrs
-#     value: "false"
+
+# Docs: https://kubernetes.io/docs/reference/command-line-tools-reference/kube-controller-manager/
+k8s_controller_extra_args:
+  - name: allocate-node-cidrs
+    value: "{{ 'false' if k8s_native_ipv6_with_distinct_ip_pools else 'true' }}"
+  - name: controllers
+    value: "{{ k8s_controlplane_kube_controllers }}"
+
+# Docs: https://kubernetes.io/docs/reference/command-line-tools-reference/kube-scheduler/
 k8s_scheduler_extra_args: []
-# # Docs: https://kubernetes.io/docs/reference/command-line-tools-reference/kube-scheduler/
 # # Example
 # k8s_controller_extra_args:
 #   - name: log-flush-frequency
 #     value: "5s"
+
 k8s_controlplane_extra_envs: []
 # # Example
 # k8s_controlplane_extra_envs:
 #   - name: hello
 #     value: world
+
 k8s_controlplane_extra_files: []
 # # Example
 # k8s_controlplane_extra_files:
@@ -105,20 +113,45 @@ k8s_controlplane_extra_files: []
 #     content: "hello: world"
 #     validate: yq . %s
 
-k8s_patches: []
-# # Example
-# k8s_patches:
-#   - name: Allow CP to be LoadBalancer target
-#     api_version: v1
-#     when: >-
-#       {{ k8s_remove_no_schedule_cp_taints
-#       and 'node.kubernetes.io/exclude-from-external-load-balancers'
-#       in (__k8s_cp_node.resources | first).metadata.labels }}
-#     kind: Node
-#     resource_name: "{{ inventory_hostname }}"
-#     patches:
-#       - op: remove
-#         path: /metadata/labels/node.kubernetes.io~1exclude-from-external-load-balancers
+# Apply kube patches
+k8s_patches:
+  - name: Allow CP to be LoadBalancer target
+    api_version: v1
+    when: >-
+      {{ k8s_remove_no_schedule_cp_taints
+      and 'node.kubernetes.io/exclude-from-external-load-balancers'
+      in (__k8s_cp_node.resources | first).metadata.labels }}
+    kind: Node
+    resource_name: "{{ inventory_hostname }}"
+    patches:
+      - op: remove
+        path: /metadata/labels/node.kubernetes.io~1exclude-from-external-load-balancers
+  - name: Set nodes podCIDR
+    api_version: v1
+    when: >-
+      {{ k8s_pod_network_cidr is ansible.utils.ipv6
+      and k8s_node_ip | ansible.utils.ipaddr('public')
+      and k8s_native_ipv6_with_distinct_ip_pools
+      }}
+    kind: Node
+    resource_name: "{{ inventory_hostname }}"
+    patches:
+      - op: add
+        path: /spec/podCIDR
+        value: "{{ k8s_node_pod_cidr }}"
+      - op: add
+        path: /spec/podCIDRs
+        value:
+          - "{{ k8s_node_pod_cidr }}"
+  - name: Set CoreDNS Conf
+    api_version: v1
+    kind: ConfigMap
+    resource_name: coredns
+    namespace: kube-system
+    patches:
+      - op: replace
+        path: /data/Corefile
+        value: "{{ k8s_coredns_conf }}"
 
 ######### Taints & Roles #########
 k8s_remove_no_schedule_cp_taints: false
@@ -139,6 +172,74 @@ k8s_init_resources_manifests: []
 #     state: present          # optional
 #     wait: true              # optional
 
+# Trace conf - not used by default
+k8s_controlplane_trace_conf:
+  apiVersion: apiserver.config.k8s.io/v1beta1
+  kind: TracingConfiguration
+  endpoint: localhost:4317
+  samplingRatePerMillion: 100
+
+k8s_controlplane_kube_controllers: "{{ k8s_controlplane_all_kube_controllers | difference(k8s_controlplane_disabled_kube_controllers) | join(',') }}"
+
+k8s_controlplane_all_kube_controllers:
+  - bootstrap-signer-controller
+  - certificatesigningrequest-approving-controller
+  - certificatesigningrequest-cleaner-controller
+  - certificatesigningrequest-signing-controller
+  - cloud-node-lifecycle-controller
+  - clusterrole-aggregation-controller
+  - cronjob-controller
+  - daemonset-controller
+  - deployment-controller
+  - device-taint-eviction-controller
+  - disruption-controller
+  - endpoints-controller
+  - endpointslice-controller
+  - endpointslice-mirroring-controller
+  - ephemeral-volume-controller
+  - garbage-collector-controller
+  - horizontal-pod-autoscaler-controller
+  - job-controller
+  - kube-apiserver-serving-clustertrustbundle-publisher-controller
+  - legacy-serviceaccount-token-cleaner-controller
+  - namespace-controller
+  - node-ipam-controller
+  - node-lifecycle-controller
+  - node-route-controller
+  - persistentvolume-attach-detach-controller
+  - persistentvolume-binder-controller
+  - persistentvolume-expander-controller
+  - persistentvolume-protection-controller
+  - persistentvolumeclaim-protection-controller
+  - pod-garbage-collector-controller
+  - podcertificaterequest-cleaner-controller
+  - replicaset-controller
+  - replicationcontroller-controller
+  - resourceclaim-controller
+  - resourcequota-controller
+  - root-ca-certificate-publisher-controller
+  - selinux-warning-controller
+  - service-cidr-controller
+  - service-lb-controller
+  - serviceaccount-controller
+  - serviceaccount-token-controller
+  - statefulset-controller
+  - storage-version-migrator-controller
+  - storageversion-garbage-collector-controller
+  - taint-eviction-controller
+  - token-cleaner-controller
+  - ttl-after-finished-controller
+  - ttl-controller
+  - validatingadmissionpolicy-status-controller
+  - volumeattributesclass-protection-controller
+
+k8s_controlplane_disabled_kube_controllers:
+  - selinux-warning-controller
+  - token-cleaner-controller
+  - legacy-serviceaccount-token-cleaner-controller
+  - replicationcontroller-controller
+  - token-cleaner-controller
+  - "{{ 'node-ipam-controller' if k8s_native_ipv6_with_distinct_ip_pools }}"
 # Kubernetes structured authentication conf.
 # Docs: https://kubernetes.io/docs/reference/access-authn-authz/authentication/#openid-connect-tokens
 k8s_controlplane_auth_n_conf: '{{ lookup("file", "authentication-conf.yaml") | from_yaml }}'
@@ -215,6 +316,37 @@ k8s_spin_manifest:
   name: spin RuntimeClass
   definition: "{{ lookup('template', role_path + '/files/k8s-runtime-class-spin.yaml') | from_yaml_all }}"
 
+######### CoreDNS #########
+k8s_coredns_upstreams: tls://1.1.1.1 tls://[2606:4700:4700::1111]:853 tls://1.0.0.1 tls://[2606:4700:4700::1001]:853
+k8s_coredns_conf: |-
+  .:53 {
+      errors
+      health {
+          lameduck 10s
+      }
+      ready
+      log . {
+          class error
+      }
+      kubernetes cluster.local in-addr.arpa ip6.arpa {
+          pods insecure
+          fallthrough in-addr.arpa ip6.arpa
+          ttl 30
+      }
+      prometheus :9153
+      forward . {{ k8s_coredns_upstreams }} {
+          health_check 5s
+          max_concurrent 1000
+      }
+      cache {
+          disable success cluster.local
+          disable denial cluster.local
+      }
+      loop
+      reload
+      loadbalance
+  }
+
 ######### CNI #########
 # Which CNI flannel, calico or cilium
 k8s_cni: cilium
@@ -269,22 +401,8 @@ k8s_cilium_helm_values:
   operator:
     rollOutPods: true
     replicas: 1
-    tolerations:
-      - key: node-role.kubernetes.io/control-plane
-        operator: Exists
-      - key: node-role.kubernetes.io/master #deprecated
-        operator: Exists
-      - key: node.kubernetes.io/not-ready
-        operator: Exists
-      - key: node.cloudprovider.kubernetes.io/uninitialized
-        operator: Exists
   # bpf:
   #   masquerade: true # needs tp be off when using hostnat
-
-  ipam:
-    mode: kubernetes
-    operator:
-      clusterPoolIPv4PodCIDRList: ["{{ k8s_pod_network_cidr_ipv4 }}"]
 
   endpointRoutes:
     enabled: true
@@ -333,22 +451,20 @@ k8s_cilium_helm_values:
   #   type: wireguard
   # # -- Configure the underlying network MTU to overwrite auto-detected MTU.
 
-# # For IPv6 set
-#   autoDirectNodeRoutes: true
-#   routingMode: native
-#   ipv6NativeRoutingCIDR: 2a01:4f8:c013:9817::/64
-#   ipv4:
-#     enabled: false
-#   ipv6:
-#     enabled: true
+  ipam:
+    mode: kubernetes
+    operator:
+      clusterPoolIPv4PodCIDRList: ["{{ k8sx_pod_network_cidr_ipv4 }}"]
+      # clusterPoolIPv6PodCIDRList: ["{{ k8s_pod_network_cidr_ipv6 }}"]
 
-#   ipam:
-#     mode: kubernetes
-#     operator:
-#       clusterPoolIPv4PodCIDRList: ["{{ k8s_pod_network_cidr_ipv4 }}"]
-#       clusterPoolIPv6PodCIDRList:
-#         - 2a01:4f8:c013:9817::/96
-# installNoConntrackIptablesRules: true
+  # # For IPv6 set
+  # autoDirectNodeRoutes: true
+  # enableIPv6Masquerade: false
+  # routingMode: native
+  # ipv4:
+  #   enabled: false
+  # ipv6:
+  #   enabled: true
 
 system_arch_map:
   x86_64: amd64
