@@ -47,6 +47,7 @@
   run_once: true
   delegate_to: localhost
   ignore_errors: true
+  when: k8s_save_admin_kubeconf_to_azure
   azure.azcollection.azure_rm_keyvaultsecret:
     secret_name: "{{ item.name }}"
     secret_value: "{{ item.content }}"

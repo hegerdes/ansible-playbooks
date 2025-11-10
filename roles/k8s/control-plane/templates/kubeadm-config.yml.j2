@@ -32,7 +32,6 @@ imageRepository: {{ k8s_image_repo }}
 certificatesDir: {{ k8s_pki_cert_path }}
 controlPlaneEndpoint: {{ k8s_shared_api_server_endpoint }}
 
-
 networking:
   serviceSubnet: {{ k8s_service_network_cidr | quote }}
   podSubnet: {{ k8s_pod_network_cidr | quote }}
@@ -77,7 +76,7 @@ apiServer:
 {% if k8s_controlplane_extra_args | length > 0 %}
     {{ k8s_controlplane_extra_args | to_nice_yaml(indent=2) | indent(width=4) }}
 {% endif %}
-  certSANs: {{ k8s_cert_extra_sans + [k8s_shared_api_server_endpoint] | flatten | unique }}
+  certSANs: {{ (k8s_cert_extra_sans + [k8s_shared_api_server_endpoint]) | flatten | unique }}
   extraVolumes:
     - name: extra-conf
       hostPath: /etc/kubernetes/extras
