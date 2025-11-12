@@ -1,5 +1,5 @@
 ---
-k8s_version: 1.34.1
+k8s_version: 1.34.2
 k8s_dual_stack: false
 k8s_cp_ping_check: true
 k8s_install_core_dns: true

@@ -7,8 +7,8 @@ k8s_autoscale_create_az_secret: false
 k8s_pki_cert_path: /etc/kubernetes/pki
 
 # VM images to use
-k8s_hcloud_autoscale_img_arm64: name=k8s-v1.34.1-debian-13-arm64
-k8s_hcloud_autoscale_img_amd64: name=k8s-v1.34.1-debian-13-amd64
+k8s_hcloud_autoscale_img_arm64: name=k8s-v1.34.2-debian-13-arm64
+k8s_hcloud_autoscale_img_amd64: name=k8s-v1.34.2-debian-13-amd64
 k8s_hcloud_autoscale_conf_double_base64_encode: true
 
 k8s_autoscale_user_data:
