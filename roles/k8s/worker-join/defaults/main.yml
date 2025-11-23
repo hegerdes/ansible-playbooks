@@ -1,17 +1,31 @@
 ---
 k8s_init_verbose: '{{ lookup("env", "CI") | default("false", true) | bool == false }}'
+k8s_native_ipv6_with_distinct_ip_pools: false
+k8s_cp_ping_check: true
+k8s_dual_stack: false
+
+# Service & Pod CIDR
+k8s_node_pod_cidr: "0.0.0.0/0"
+
+# Kubelet & kubeadm setup
 k8s_pki_cert_path: /etc/kubernetes/pki
 k8s_kubeconfig: "/etc/kubernetes/admin.conf"
-k8s_native_ipv6_with_distinct_ip_pools: false
-
-k8s_kubelet_conf: '{{ lookup("template", "kubelet-conf.yml.j2") }}'
 k8s_kubeadm_join_conf: '{{ lookup("template", "kubeadm-join-config.yml.j2") }}'
+k8s_kubelet_conf: '{{ lookup("template", "kubelet-conf.yml.j2") }}'
 k8s_kubelet_override_conf: '{{ lookup("template", "kubelet-override.yml.j2") }}'
+k8s_kubelet_extra_conf: {}
 
+# IPs
 k8s_node_ip: "{{ k8s_node_ip_v4 }}"
 k8s_node_ip_v4: "{{ ansible_facts.default_ipv4.address }}"
 k8s_node_ip_v6: "{{ ansible_facts.default_ipv6.address }}"
-k8s_node_pod_cidr: "{{ k8s_node_ip | ansible.utils.ipmath(2 | pow(56)) | ansible.utils.ipmath(-1) }}/{{ k8s_node_cidr_mask_size_ipv6 }}"
+
+k8s_taints: []
+# # Example
+# k8s_taints:
+# See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#taint-v1-core
+#   - key: node-role.kubernetes.io/control-plane
+#     effect: NoSchedule
 
 k8s_worker_extra_files: []
 # Example
@@ -20,10 +34,3 @@ k8s_worker_extra_files: []
 #     dst: /etc/kubernetes/kubelet.conf.d/10-kubelet-ip.conf
 #     content: "{{ k8s_kubelet_override_conf }}"
 #     validate: yq . %s
-
-k8s_taints: []
-# # Example
-# k8s_taints:
-# See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#taint-v1-core
-#   - key: node-role.kubernetes.io/control-plane
-#     effect: NoSchedule

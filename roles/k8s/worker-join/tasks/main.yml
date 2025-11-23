@@ -80,7 +80,7 @@
     enabled: true
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
-- name: k8s worker join | Set node role and arch label
+- name: k8s worker join | Set node role, arch and CIDRs if needed
   delegate_to: "{{ groups.k8s_control_plane | flatten | first }}"
   kubernetes.core.k8s:
     kubeconfig: "{{ k8s_kubeconfig }}"
@@ -110,7 +110,7 @@
         podCIDR: "{{ k8s_node_pod_cidr }}"
         podCIDRs: ["{{ k8s_node_pod_cidr }}"]
     k8s_worker_node_cidr_combine: >-
-      {{ k8s_pod_network_cidr is ansible.utils.ipv6
+      {{ k8s_pod_network_cidr | default("127.0.0.1") is ansible.utils.ipv6
       and k8s_node_ip | ansible.utils.ipaddr('public')
       and k8s_native_ipv6_with_distinct_ip_pools
       }}

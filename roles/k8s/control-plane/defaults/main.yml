@@ -32,7 +32,18 @@ k8s_pod_network_cidr_ipv4: 10.244.0.0/16
 k8s_service_network_cidr_ipv4: 10.96.0.0/16
 k8s_pod_network_cidr_ipv6: fd00:10:244::/48
 k8s_service_network_cidr_ipv6: fd00:20:123::/112
-k8s_node_pod_cidr: "{{ k8s_node_ip | ansible.utils.ipmath(2 | pow(56)) | ansible.utils.ipmath(-1) }}/{{ k8s_node_cidr_mask_size_ipv6 }}"
+k8s_node_pod_cidr: >-
+  {{
+  k8s_node_ip
+  | ansible.utils.ipmath(2 | pow(56))
+  | ansible.utils.ipmath(-1)
+  if(k8s_native_ipv6_with_distinct_ip_pools) else
+  "0.0.0.0"
+  }}/
+  {{
+  k8s_node_cidr_mask_size_ipv6
+  }}
+
 k8s_clusterDNS: [10.96.0.10] # change for ipv6 only
 k8s_node_cidr_mask_size_ipv4: 24
 k8s_node_cidr_mask_size_ipv6: 64
@@ -127,6 +138,15 @@ k8s_patches:
     patches:
       - op: remove
         path: /metadata/labels/node.kubernetes.io~1exclude-from-external-load-balancers
+  - name: Set CoreDNS Conf
+    api_version: v1
+    kind: ConfigMap
+    resource_name: coredns
+    namespace: kube-system
+    patches:
+      - op: replace
+        path: /data/Corefile
+        value: "{{ k8s_coredns_conf }}"
   - name: Set nodes podCIDR
     api_version: v1
     when: >-
@@ -144,15 +164,6 @@ k8s_patches:
         path: /spec/podCIDRs
         value:
           - "{{ k8s_node_pod_cidr }}"
-  - name: Set CoreDNS Conf
-    api_version: v1
-    kind: ConfigMap
-    resource_name: coredns
-    namespace: kube-system
-    patches:
-      - op: replace
-        path: /data/Corefile
-        value: "{{ k8s_coredns_conf }}"
 
 ######### Taints & Roles #########
 k8s_remove_no_schedule_cp_taints: false
@@ -395,15 +406,27 @@ k8s_cilium_helm_values:
   rollOutCiliumPods: true
   annotateK8sNode: true
 
+  l7Proxy: true
+  gatewayAPI:
+    enabled: true
+    enableProxyProtocol: true
+    externalTrafficPolicy: Local
   envoy:
-    enabled: false
-
+    enabled: true
+    rollOutPods: true
+    # debug:
+    #   admin:
+    #     enabled: true
+    #     port: 9901
+    prometheus:
+      serviceMonitor:
+        enabled: true
   # MTU: 1450 # for Hetzner
   operator:
     rollOutPods: true
     replicas: 1
-  # bpf:
-  #   masquerade: true # needs tp be off when using hostnat
+  bpf:
+    masquerade: true # needs tp be off when using hostnat
 
   endpointRoutes:
     enabled: true
@@ -450,12 +473,11 @@ k8s_cilium_helm_values:
   # encryption:
   #   enabled: true
   #   type: wireguard
-  # # -- Configure the underlying network MTU to overwrite auto-detected MTU.
 
   ipam:
     mode: kubernetes
     operator:
-      clusterPoolIPv4PodCIDRList: ["{{ k8sx_pod_network_cidr_ipv4 }}"]
+      clusterPoolIPv4PodCIDRList: ["{{ k8s_pod_network_cidr_ipv4 }}"]
       # clusterPoolIPv6PodCIDRList: ["{{ k8s_pod_network_cidr_ipv6 }}"]
 
   # # For IPv6 set
