@@ -32,7 +32,7 @@ k8s_spin_version: latest
 k8s_stargz_version: latest
 k8s_selinux_mode: disabled # can be: disabled,enforcing,permissive
 k8s_selinux_policy: targeted
-k8s_cni: cilium
+k8s_cni: cilium # can be: cilium, calico or flannel
 k8s_credential_provider: [] # supported are [ecr, kscp]
 k8s_credential_provider_version:
   ecr: latest

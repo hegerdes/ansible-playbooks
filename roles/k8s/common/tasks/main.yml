@@ -149,6 +149,7 @@
     - { path: "/opt/cni/bin", mode: "0755" }
     - { path: "/var/lib/kubelet" }
     - { path: "/usr/wasmedge/lib" }
+    - { path: "{{ k8s_credential_provider_bin_dir }}" }
   tags: [k8s, k8s-prepare, k8s-base]
 
 - name: k8s common | Ensure kernel modules are enabled
@@ -171,6 +172,7 @@
     value: "{{ item.val }}"
     state: '{{ item.state | default("present") }}'
     sysctl_set: true
+    sysctl_file: /etc/sysctl.d/60-k8s.conf
   with_items: "{{ k8s_common_sysctl_conf }}"
   loop_control:
     label: "{{ item.key }}={{ item.val }}"

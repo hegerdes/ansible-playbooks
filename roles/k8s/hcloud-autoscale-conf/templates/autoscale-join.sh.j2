@@ -2,6 +2,9 @@
 
 set -e -o pipefail
 
+# Ensure ip forwarding is enabled
+sysctl -w net.ipv4.ip_forward=1
+
 # Check if kubeadm has already run
 if [ -f /etc/kubernetes/kubelet.conf ]; then
   echo "kubeadm has already run"
@@ -16,9 +19,6 @@ K8S_PKI_CA_HASH="{{ k8_ca_sha256 | default (__k8s_pki_ca["public_key_fingerprint
 # Test reachability to shared KubeControlPlaneHost
 ping -c 1 "${K8S_SHARED_API_SERVER_ENDPOINT}"
 K8S_NODE_IP=$(ip -o -4 addr list | grep '10\.' | awk '{print $4}' | cut -d/ -f1)
-
-# Ensure ip forwarding is enabled
-sysctl -w net.ipv4.ip_forward=1
 
 cat <<EOF >/srv/kubeadm-join-config.yaml
 apiVersion: kubeadm.k8s.io/v1beta4

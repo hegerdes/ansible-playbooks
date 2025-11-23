@@ -14,11 +14,11 @@ k8s_hcloud_autoscale_conf_double_base64_encode: true
 k8s_autoscale_user_data:
   #cloud-config
   write_files:
-    - content: "{{ lookup('template', 'autoscale-join.sh.j2') }}"
-      path: /srv/join-cluster.sh
+    - path: /srv/join-cluster.sh
+      content: "{{ lookup('template', 'autoscale-join.sh.j2') }}"
       owner: root:root
       permissions: "0700"
-  runcmd: "{{ k8s_etc_host_commands + ['/srv/join-cluster.sh']}}"
+  runcmd: "{{ k8s_etc_host_commands + ['/srv/join-cluster.sh'] }}"
 
 k8s_hcloud_autoscale_conf:
   imagesForArch:
