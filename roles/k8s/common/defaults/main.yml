@@ -42,7 +42,7 @@ k8s_credential_provider_version:
 # k8s_ensure_min_kernel_version: "{{ k8s_ensure_min_kernel_version_map[ansible_facts.lsb.codename] }}"
 k8s_ensure_min_kernel_version: none
 k8s_ensure_min_kernel_version_map:
-  trixie: 6.16.*
+  trixie: 6.17.*
   bookworm: 6.12.*
 
 # Send extra headers to GitHub API calls
