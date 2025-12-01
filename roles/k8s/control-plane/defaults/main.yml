@@ -39,10 +39,7 @@ k8s_node_pod_cidr: >-
   | ansible.utils.ipmath(-1)
   if(k8s_native_ipv6_with_distinct_ip_pools) else
   "0.0.0.0"
-  }}/
-  {{
-  k8s_node_cidr_mask_size_ipv6
-  }}
+  }}/{{ k8s_node_cidr_mask_size_ipv6 }}
 
 k8s_clusterDNS: [10.96.0.10] # change for ipv6 only
 k8s_node_cidr_mask_size_ipv4: 24
@@ -426,8 +423,6 @@ k8s_cilium_helm_values:
   operator:
     rollOutPods: true
     replicas: 1
-  bpf:
-    masquerade: true # needs tp be off when using hostnat
 
   endpointRoutes:
     enabled: true
@@ -489,6 +484,8 @@ k8s_cilium_helm_values:
   #   enabled: false
   # ipv6:
   #   enabled: true
+  # bpf:
+  #   masquerade: true # needs tp be off when using hostnat
 
 system_arch_map:
   x86_64: amd64

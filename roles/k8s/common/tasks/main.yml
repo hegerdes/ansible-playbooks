@@ -280,9 +280,6 @@
     __k8s_kube_packages:
       - 'kubeadm{{ "=" + k8s_version + "*" if (k8s_version != "latest") }}'
       - 'kubelet{{ "=" + k8s_version + "*" if (k8s_version != "latest") }}'
-      # - 'kubectl{{ "=" + k8s_version + "*" if (k8s_version != "latest") }}'
-      # - "cri-tools"
-      # - "etcd-client"
   tags: [k8s, k8s-prepare, k8s-base, k8s-runtime, apt]
 
 - name: k8s common | Include install CRI
@@ -317,19 +314,25 @@
   ansible.builtin.template:
     src: "{{ item.src }}"
     dest: "{{ item.dst }}"
-    mode: "0600"
+    mode: "{{ item.mode | default('0600') }}"
     owner: root
     group: root
     validate: "{{ item.validate | default(omit) }}"
   with_items:
+    - src: crictl.yml.j2
+      dst: /etc/crictl.yaml
+      mode: "0644"
+      validate: yq . %s
+    - src: resolve.conf.j2
+      dst: /etc/resolve.conf
+      mode: "0644"
+      run: "{{ k8s_set_resolve_conf }}"
+    - src: runsc.toml.j2
+      dst: /etc/containerd/runsc.toml.j2
+      run: k8s_install_gvisor
     - src: containerd-config.toml.j2
       dst: /etc/containerd/config.toml
       run: "{{ k8s_cri_runtime == 'containerd' }}"
-    - src: runsc.toml.j2
-      dst: /etc/containerd/runsc.toml.j2
-    - src: crictl.yml.j2
-      dst: /etc/crictl.yaml
-      validate: yq . %s
     - src: cilium-networkd.conf.j2
       dst: /etc/systemd/networkd.conf
       run: "{{ k8s_cni | lower == 'cilium'}}"

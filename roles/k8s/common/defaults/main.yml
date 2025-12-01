@@ -55,6 +55,19 @@ k8s_etc_hosts: []
 #     ip: 127.0.0.1
 #     state: present|absent       # optional
 
+# If ansible should manage /etc/resolve.conf
+k8s_set_resolve_conf: false
+
+k8s_resolve_conf_ipv4: |
+  nameserver 1.1.1.1
+  nameserver 1.0.0.1
+
+k8s_resolve_conf_ipv6: |
+  nameserver 2606:4700:4700::1111
+  nameserver 2606:4700:4700::1001
+
+k8s_resolve_conf_extra: ""
+
 # kubelet credential provider
 k8s_credential_provider_config_dest: /srv/kubelet-credential-provider-conf.yaml
 k8s_credential_provider_bin_dir: /var/lib/kubelet-plugins/

@@ -1,0 +1,24 @@
+# /etc/resolv.conf
+
+
+{% if ansible_facts.default_ipv6.address | default("::1") | ansible.utils.ipaddr('public') %}
+{{ k8s_resolve_conf_ipv6 }}
+{% endif %}
+
+{% if ansible_facts.default_ipv4.address | default("127.0.0.1") | ansible.utils.ipaddr('public') %}
+{{ k8s_resolve_conf_ipv4 }}
+{% endif %}
+
+{{ k8s_resolve_conf_extra }}
+
+# Example
+# # IPv4
+# nameserver 1.1.1.1
+# nameserver 8.8.8.8
+
+# # IPv6
+# nameserver 2606:4700:4700::1111
+# nameserver 2606:4700:4700::1001
+
+# # Set DNS search domain(s), if applicable - replace example.com with your domain
+# search example.com
