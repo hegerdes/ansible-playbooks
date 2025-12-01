@@ -329,7 +329,7 @@
       run: "{{ k8s_set_resolve_conf }}"
     - src: runsc.toml.j2
       dst: /etc/containerd/runsc.toml.j2
-      run: k8s_install_gvisor
+      run: "{{ k8s_install_gvisor }}"
     - src: containerd-config.toml.j2
       dst: /etc/containerd/config.toml
       run: "{{ k8s_cri_runtime == 'containerd' }}"

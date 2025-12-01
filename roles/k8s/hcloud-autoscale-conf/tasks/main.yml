@@ -26,7 +26,7 @@
   ansible.builtin.set_fact:
     k8s_etc_host_commands: '{{ k8s_etc_host_commands | default([]) + [[''sh'', ''-c'', ''echo "'' + item.ip + '' '' + item.name + ''" >> /etc/hosts'']] }}'
   tags: [k8s, k8s-hcloud-autoscale, k8s-hcloud-autoscale-conf]
-  loop: "{{ k8s_etc_hosts }}"
+  loop: "{{ k8s_etc_hosts | default([]) }}"
   loop_control:
     label: "{{ item.name }} -> {{ item.ip }}"
   run_once: true

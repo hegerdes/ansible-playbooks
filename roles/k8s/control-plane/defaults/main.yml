@@ -250,6 +250,7 @@ k8s_controlplane_disabled_kube_controllers:
   - replicationcontroller-controller
   - token-cleaner-controller
   - "{{ 'node-ipam-controller' if k8s_native_ipv6_with_distinct_ip_pools }}"
+
 # Kubernetes structured authentication conf.
 # Docs: https://kubernetes.io/docs/reference/access-authn-authz/authentication/#openid-connect-tokens
 k8s_controlplane_auth_n_conf: '{{ lookup("file", "authentication-conf.yaml") | from_yaml }}'
