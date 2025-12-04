@@ -26,7 +26,7 @@
 - name: Add Debian Backports apt repo
   ignore_errors: true
   ansible.builtin.apt_repository:
-    repo: "deb http://deb.debian.org/debian {{ ansible_distribution_release }}-backports main"
+    repo: "deb http://deb.debian.org/debian {{ ansible_facts['distribution_release'] }}-backports main"
     state: present
     filename: debian-backports
   tags: [common, apt]

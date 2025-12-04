@@ -10,7 +10,6 @@
     record: "{{ item.host }}"
     ttl: "{{ item.ttl | default(600) }}"
     api_token: "{{ cloudflare_token }}"
-    account_email: "{{ cloudflare_email }}"
     proxied: "{{ item.proxied | default(false) }}"
     state: '{{ item.state | default("present") }}'
   loop: "{{ cloudflare_dns_records }}"

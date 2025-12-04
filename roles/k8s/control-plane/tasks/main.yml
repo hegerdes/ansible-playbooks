@@ -156,7 +156,7 @@
   ansible.builtin.command: |
     kubeadm token create \
     --ttl 15m \
-    --description "{{ ansible_date_time.date }} Token used to join node {{ ansible_hostname }}" \
+    --description "{{ ansible_facts.date_time.date }} Token used to join node {{ ansible_hostname }}" \
     --kubeconfig {{ k8s_kubeconfig | default("/etc/kubernetes/admin.conf") }}
   register: __k8_cp_join_token_res
   changed_when: false
@@ -271,7 +271,7 @@
   when: __k8s_kubelet_csr_list_res.resources | json_query(__k8s_kubelet_csr_query) | length > 0
   register: __k8s_worker_role_set
   changed_when: >-
-    ("certificatesigningrequest.certificates.k8s.io/" + __k8s_kubelet_csr + " approved")
+    ("certificatesigningrequest.certificates.k8s.io/" + item.metadata.name + " approved")
     in __k8s_worker_role_set.stdout
   loop: "{{ __k8s_kubelet_csr }}"
   loop_control:

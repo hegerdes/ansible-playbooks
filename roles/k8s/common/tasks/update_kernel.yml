@@ -1,7 +1,7 @@
 - name: k8s common | Install latest kernel
   ansible.builtin.apt:
     name: "linux-image-{{ system_arch_map[ansible_facts.architecture] }}={{ k8s_ensure_min_kernel_version }}"
-    default_release: "{{ ansible_distribution_release }}-backports"
+    default_release: "{{ ansible_facts['distribution_release'] }}-backports"
     state: present
     update_cache: true
     allow_change_held_packages: true

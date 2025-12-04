@@ -189,7 +189,7 @@ k8s_controlplane_trace_conf:
   endpoint: localhost:4317
   samplingRatePerMillion: 100
 
-k8s_controlplane_kube_controllers: "{{ k8s_controlplane_all_kube_controllers | difference(k8s_controlplane_disabled_kube_controllers) | join(',') }}"
+k8s_controlplane_kube_controllers: "{{ k8s_controlplane_all_kube_controllers | difference(k8s_controlplane_disabled_kube_controllers) | sort | join(',') }}"
 
 k8s_controlplane_all_kube_controllers:
   - bootstrap-signer-controller
@@ -283,10 +283,10 @@ k8s_default_manifests:
         labels:
           node-role.kubernetes.io/control-plane: "control-plane"
           node-os.kubernetes.io/arch: "{{ ansible_facts.architecture }}"
-          node-os.kubernetes.io/os: "{{ ansible_distribution }}"
-          node-os.kubernetes.io/os-version: "{{ ansible_distribution_version }}"
-          node.kubernetes.io/image-id: "{{ image_id | default('unknown') | quote }}"
-          node.kubernetes.io/provider-id: "{{ id | default('unknown') | quote }}"
+          node-os.kubernetes.io/os: "{{ ansible_facts.distribution }}"
+          node-os.kubernetes.io/os-version: "{{ ansible_facts.distribution_version }}"
+          node.kubernetes.io/image-id: "{{ hcloud_image_id | default('unknown') | quote }}"
+          node.kubernetes.io/provider-id: "{{ hcloud_id | default('unknown') | quote }}"
   - name: runtime-manifests
     definition: "{{ k8s_runtime_classes_all | flatten }}"
 

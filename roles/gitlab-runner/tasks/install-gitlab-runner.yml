@@ -14,7 +14,7 @@
     types: [deb]
     uris: "https://packages.gitlab.com/runner/gitlab-runner/{{ ansible_distribution | lower }}/"
     signed_by: https://packages.gitlab.com/runner/gitlab-runner/gpgkey
-    suites: ["{{ ansible_distribution_release | lower }}"]
+    suites: ["{{ ansible_facts['distribution_release'] | lower }}"]
     components: [main]
     state: present
     enabled: true
