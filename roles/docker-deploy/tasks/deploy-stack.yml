@@ -70,7 +70,7 @@
 - name: Format Docker Image-Facts
   when: not ansible_check_mode
   ansible.builtin.set_fact:
-    image_info_data: '{{ image_info_data | default([]) + [ {(item.item | string | replace(":","-") ): item.image.Config.Labels }] }}'
+    image_info_data: '{{ image_info_data | default([]) + [ {(item.item | string | replace(":","-") ): item.image.Config.Labels | default({}) }] }}'
   loop: "{{ docker_image_pull_res.results }}"
   # loop: '{{ docker_image_pulled_res.results }}'
   loop_control:

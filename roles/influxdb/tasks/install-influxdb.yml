@@ -1,4 +1,3 @@
-
 ---
 - name: Add influx GPG apt Key
   ansible.builtin.apt_key:
@@ -8,7 +7,7 @@
 
 - name: Add influx repository
   ansible.builtin.apt_repository:
-    repo: deb https://repos.influxdata.com/{{ ansible_distribution | lower }} {{ ansible_facts.lsb.codename }} stable
+    repo: deb https://repos.influxdata.com/{{ ansible_facts.distribution | lower }} {{ ansible_facts.lsb.codename }} stable
     update_cache: true
     state: present
     filename: influx
@@ -23,9 +22,9 @@
 
 - name: Set Influx conf location
   ansible.builtin.lineinfile:
-     path: /etc/environment
-     line: INFLUXD_CONFIG_PATH=/etc/influxdb2
-     create: true
+    path: /etc/environment
+    line: INFLUXD_CONFIG_PATH=/etc/influxdb2
+    create: true
   notify: Reboot
   tags: [influxdb]
 
@@ -33,7 +32,7 @@
   ansible.builtin.template:
     src: influxdb.toml.j2
     dest: /etc/influxdb2/influx.toml
-    mode: '0644'
+    mode: "0644"
   notify: Reload
   tags: [influxdb]
 
@@ -43,9 +42,9 @@
 
 - name: Install Influxdb
   ansible.builtin.apt:
-    name: '{{ item }}'
+    name: "{{ item }}"
     state: latest
-  loop: ['influxdb2', 'influxdb2-cli']
+  loop: ["influxdb2", "influxdb2-cli"]
   tags: [influxdb]
 
 - name: Ensure service is started
@@ -61,7 +60,7 @@
   tags: [influxdb]
 
 - name: Run Influx init
-  ansible.builtin.command: 'influx setup --org {{ influx_organization }} --bucket {{ influx_root_bucket }} --username {{ influx_root_user }} --password {{ influx_root_pw }} --host http://{{ influx_listen_addr }} --force'
+  ansible.builtin.command: "influx setup --org {{ influx_organization }} --bucket {{ influx_root_bucket }} --username {{ influx_root_user }} --password {{ influx_root_pw }} --host http://{{ influx_listen_addr }} --force"
   register: influx_setup_res
   ignore_errors: true
   tags: [influxdb]

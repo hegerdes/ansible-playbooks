@@ -9,18 +9,19 @@
 
 - name: Download and unzip promtail
   unarchive:
-    src: '{{ lookup("url", "https://api.github.com/repos/grafana/loki/releases/latest") | from_json | json_query(query) | select("search", promtail_arch_map[ansible_facts.architecture]) | list | first }}'
+    src: '{{ lookup("url", "https://api.github.com/repos/grafana/loki/releases/latest") | from_json | json_query(__promtail_query) | select("search", promtail_arch_map[ansible_facts.architecture]) | list | first }}'
     dest: /usr/local/bin/
     remote_src: true
+    list_files: true
     creates: /usr/local/bin/promtail-linux-{{ promtail_arch_map[ansible_facts.architecture] }}'
   vars:
-    query: assets[?starts_with(name, 'promtail-linux')].browser_download_url
+    __promtail_query: assets[?starts_with(name, 'promtail-linux')].browser_download_url
   tags: [promtail, monitoring]
   notify: Restart promtail
 
 - name: Install promtail
   ansible.builtin.file:
-    src: '/usr/local/bin/promtail-linux-{{ promtail_arch_map[ansible_facts.architecture] }}'
+    src: "/usr/local/bin/promtail-linux-{{ promtail_arch_map[ansible_facts.architecture] }}"
     dest: /usr/local/bin/promtail
     mode: 0755
     state: link
@@ -49,23 +50,23 @@
     dest: /etc/systemd/system/promtail.service
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
   notify: Restart promtail
   tags: [promtail, monitoring]
 
 - name: Ensue config folder exists
   ansible.builtin.file:
-    path: '{{ promtail_config_dst_path | dirname }}'
+    path: "{{ promtail_config_dst_path | dirname }}"
     state: directory
   tags: [promtail, monitoring]
 
 - name: Copy Promtail config
   ansible.builtin.template:
-    src: '{{ promtail_config_src_path }}'
-    dest: '{{ promtail_config_dst_path }}'
+    src: "{{ promtail_config_src_path }}"
+    dest: "{{ promtail_config_dst_path }}"
     owner: root
     group: root
-    mode: '0666'
+    mode: "0666"
   notify: Restart promtail
   tags: [promtail, monitoring]
 

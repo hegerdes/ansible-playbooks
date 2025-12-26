@@ -12,7 +12,7 @@
   ansible.builtin.deb822_repository:
     name: gitlab-runner
     types: [deb]
-    uris: "https://packages.gitlab.com/runner/gitlab-runner/{{ ansible_distribution | lower }}/"
+    uris: "https://packages.gitlab.com/runner/gitlab-runner/{{ ansible_facts.distribution | lower }}/"
     signed_by: https://packages.gitlab.com/runner/gitlab-runner/gpgkey
     suites: ["{{ ansible_facts['distribution_release'] | lower }}"]
     components: [main]
