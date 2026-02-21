@@ -1,0 +1,64 @@
+---
+# Setup kata containers
+
+- name: k8s common - kata-containers | Download kata-containers
+  ansible.builtin.unarchive:
+    # src: https://github.com/kata-containers/kata-containers/releases/download/3.27.0/kata-static-3.27.0-amd64.tar.zst
+    src: "{{ k8s_kata_containers_download_url }}"
+    dest: /opt/kata/
+    list_files: true
+    keep_newer: true
+    extra_opts: ["--strip-components=3", "--show-stored-names"]
+    exclude: "{{ k8s_kata_containers_exclude_base }}"
+    remote_src: true
+    creates: /usr/local/bin/containerd-shim-kata-v2
+  register: __k8s_kata_container_res
+  retries: 3
+  vars:
+    k8s_kata_containers_exclude_base:
+      - opt/kata/share/kata-containers/kata-ubuntu-noble-nvidia-gpu-590.48.01.image
+      - opt/kata/share/kata-containers/kata-ubuntu-noble-nvidia-gpu-590.48.01.initrd
+      - opt/kata/share/kata-containers/kata-ubuntu-noble-nvidia-gpu-confidential-590.48.01.image
+      - opt/kata/share/kata-containers/kata-ubuntu-noble-nvidia-gpu-confidential-590.48.01.initrd
+      - opt/kata/share/kata-containers/vmlinux-6.18.12-181-nvidia-gpu
+      - opt/kata/share/kata-containers/vmlinuz-6.12.47-181-dragonball-experimental
+      - opt/kata/share/kata-containers/vmlinux-6.12.47-181-dragonball-experimental
+      - opt/kata/share/qemu-system-x86_64-snp-experimental
+      - opt/kata/share/qemu-system-x86_64-tdx-experimental
+      - opt/kata/bin/qemu-system-x86_64-snp-experimental
+      - opt/kata/bin/qemu-system-x86_64-tdx-experimental
+      - opt/kata/versions.yaml
+
+- name: k8s common - kata-containers | Create symlink to binaries
+  when: item.when | default(true)
+  ansible.builtin.file:
+    src: "/opt/kata/bin/{{ item.binary }}"
+    dest: "/usr/local/bin/{{ item.binary }}"
+    state: link
+  loop:
+    - binary: qemu-system-x86_64
+    - binary: kata-monitor
+    - binary: jailer
+    - binary: kata-runtime
+    - binary: containerd-shim-kata-v2
+    - binary: cloud-hypervisor
+    - binary: firecracker
+      when: "{{ k8s_kata_containers_use_packaged_firecracker }}"
+
+- name: k8s common - kata-containers | Add manager script
+  ansible.builtin.copy:
+    content: >-
+      {{
+      lookup("ansible.builtin.url",
+      "https://raw.githubusercontent.com/kata-containers/kata-containers/refs/heads/main/utils/kata-manager.sh",
+      split_lines=false)
+      }}
+    dest: /usr/local/bin/kata-manager
+    mode: "0744"
+    owner: root
+    group: root
+
+- name: k8s common - kata-containers | Test kata-containers
+  ansible.builtin.command:
+    cmd: kata-runtime check
+  changed_when: false

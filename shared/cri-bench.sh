@@ -2,7 +2,10 @@
 # set -e -o pipefail
 REPETITIONS=1000
 SLEEP_TIME=120s
-RUNTIMES=("crun" "runc" "runsc" "youki")
+RUNTIMES=("crun" "runc" "runsc" "youki" "io.containerd.kata.v2")
+# kata-manager -S fc
+# service amazon-ssm-agent stop
+
 # CRI_EXTRA_ARGS="--memory 4mb"
 
 # Make sure tools are installed

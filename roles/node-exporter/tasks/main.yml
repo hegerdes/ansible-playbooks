@@ -9,7 +9,7 @@
 
 - name: Download and un-tar node-exporter
   when: node_exporter_check_result.stdout == ""
-  unarchive:
+  ansible.builtin.unarchive:
     src: '{{ lookup("url", "https://api.github.com/repos/prometheus/node_exporter/releases/latest") | from_json | json_query(query) | select("search", node_exporter_arch_map[ansible_facts.architecture]) | list | first }}'
     dest: /tmp
     remote_src: true

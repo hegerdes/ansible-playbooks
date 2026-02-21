@@ -1,0 +1,83 @@
+---
+# Setup firecracker containers
+- name: k8s common - firecracker | Download firecracker
+  ansible.builtin.unarchive:
+    # src: https://github.com/firecracker-microvm/firecracker/releases/download/v1.14.1/firecracker-v1.14.1-x86_64.tgz
+    src: "{{ k8s_firecracker_download_url }}"
+    dest: /opt/firecracker/
+    list_files: true
+    keep_newer: true
+    extra_opts: ["--strip-components=1", "--show-stored-names"]
+    exclude:
+      - NOTICE
+      - LICENSE
+      - SHA256SUMS
+      - THIRD-PARTY
+      - "*.debug"
+    remote_src: true
+    creates: /usr/local/bin/firecracker
+  register: __k8s_firecracker_res
+  retries: 3
+
+- name: k8s common - firecracker | Create symlink to binaries
+  ansible.builtin.file:
+    src: "/opt/firecracker/{{ item.src }}"
+    dest: "/usr/local/bin/{{ item.dst }}"
+    state: link
+  loop:
+    - src: "firecracker-v{{ __firecracker_version }}-{{ ansible_facts.architecture }}"
+      dst: firecracker
+  vars:
+    __firecracker_version: "{{ k8s_firecracker_download_url | regex_search('v([0-9.]+)') | regex_replace('^v', '') }}"
+
+- name: k8s common - firecracker | Test firecracker
+  ansible.builtin.command:
+    cmd: firecracker --version
+  changed_when: false
+
+- name: k8s common - firecracker | Create devmapper data dir
+  ansible.builtin.script:
+    cmd: devmapper-pool.sh
+    creates: "{{ k8s_firecracker_devmapper_data_dir }}/data"
+  environment:
+    DATA_DIR: "{{ k8s_firecracker_devmapper_data_dir }}"
+
+- name: k8s common - firecracker | Copy devmapper service setup
+  ansible.builtin.copy:
+    content: "{{ item.content }}"
+    dest: "{{ item.dst }}"
+    mode: "{{ item.mode }}"
+    owner: root
+    group: root
+  with_items:
+    - content: "{{ lookup('template', 'init-devmapper-pool.sh.j2') }}"
+      dst: /etc/containerd/init-devmapper-pool.sh
+      mode: "0744"
+    - content: |
+        #!/bin/bash
+        KATA_CONF_FILE=/etc/kata-containers/configuration-fc.toml /usr/local/bin/containerd-shim-kata-v2 $@
+      dst: /usr/local/bin/containerd-shim-kata-fc-v2
+      mode: "0744"
+    - content: |
+        [Unit]
+        Description=Devmapper reload script
+
+        [Service]
+        ExecStart=/etc/containerd/init-devmapper-pool.sh
+
+        [Install]
+        WantedBy=multi-user.target
+      dst: /etc/systemd/system/devmapper-reload.service
+      mode: "0644"
+
+- name: k8s common - firecracker | Enable devmapper service
+  ansible.builtin.systemd:
+    name: devmapper-reload.service
+    state: started
+    daemon_reload: true
+    enabled: true
+
+- name: k8s common - firecracker | Verify devmapper service status
+  ansible.builtin.service:
+    name: devmapper-reload.service
+    state: started

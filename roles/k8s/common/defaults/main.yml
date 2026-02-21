@@ -12,11 +12,12 @@ k8s_install_runc: true
 k8s_install_spin: true
 k8s_install_kata_containers: false
 k8s_install_stargz: false
+k8s_install_firecracker: false
 k8s_absent_packages: [wget, vim-tiny, manpages, man-db]
 k8s_youki_with_wasm: false
 k8s_crun_with_wasm: false
 k8s_crun_wasmlib_version: 0.1.0
-
+k8s_kata_containers_use_packaged_firecracker: "{{ not k8s_install_firecracker }}"
 # Version info
 k8s_inventory_as_hostname: true
 k8s_shutdown_after_common: false
@@ -30,10 +31,13 @@ k8s_youki_version: latest
 k8s_gvisor_version: latest
 k8s_spin_version: latest
 k8s_stargz_version: latest
+k8s_firecracker_version: latest
+k8s_kata_containers_version: latest
 k8s_selinux_mode: disabled # can be: disabled,enforcing,permissive
 k8s_selinux_policy: targeted
 k8s_cni: cilium # can be: cilium, calico or flannel
 k8s_credential_provider: [] # supported are [ecr, kscp]
+k8s_firecracker_devmapper_data_dir: /var/devmapper
 k8s_credential_provider_version:
   ecr: latest
   kscp: latest
@@ -283,8 +287,12 @@ k8s_kata_containers_download_url: >-
   | from_json
   | json_query(k8s_kata_containers_query)
   | select("search", system_arch_map[ansible_facts.architecture])
-  | list
-  | first
+  | first if(k8s_kata_containers_version == "latest")
+  else
+  "https://github.com/kata-containers/kata-containers/releases/download/"
+  + k8s_kata_containers_version + "/kata-static-"
+  + k8s_kata_containers_version + "-" + system_arch_map[ansible_facts.architecture]
+  + ".tar.zst"
   }}
 k8s_credential_provider_kscp_download_url: >-
   {{
@@ -324,8 +332,23 @@ k8s_stargz_download_url: >-
   + ".tar.gz"
   }}
 
-k8s_crun_wasm_query: "assets[?starts_with(name, 'crun')].browser_download_url"
-k8s_kata_containers_query: assets[?starts_with(name, "kata-static")].browser_download_url
+k8s_firecracker_download_url: >-
+  {{
+  lookup("url", "https://api.github.com/repos/firecracker-microvm/firecracker/releases/latest", headers=k8s_gh_headers)
+  | from_json
+  | json_query(k8s_firecracker_query)
+  | first if(k8s_firecracker_version == "latest")
+  else
+  "https://github.com/firecracker-microvm/firecracker/releases/download/v"
+  + k8s_firecracker_version + "/firecracker-v"
+  + k8s_firecracker_version + "-"
+  + ansible_facts.architecture
+  + ".tgz"
+  }}
+
+k8s_crun_wasm_query: assets[?starts_with(name, 'crun')].browser_download_url
+k8s_kata_containers_query: assets[?contains(name, 'kata-static')].browser_download_url
+k8s_firecracker_query: "assets[?contains(name, '{{ ansible_facts.architecture }}.tgz')].browser_download_url"
 k8s_runc_query: >-
   {{
   "assets[?ends_with(name,'"

@@ -149,6 +149,8 @@
     - { path: "/opt/cni/bin", mode: "0755" }
     - { path: "/var/lib/kubelet" }
     - { path: "/usr/wasmedge/lib" }
+    - { path: "/opt/kata/" }
+    - { path: "/opt/firecracker/" }
     - { path: "{{ k8s_credential_provider_bin_dir }}" }
   tags: [k8s, k8s-prepare, k8s-base]
 
@@ -228,7 +230,10 @@
       run: "{{ k8s_install_spin }}"
     - file: "stargz.yml"
       run: "{{ k8s_install_stargz }}"
-    # - file: "kata_containers.yml", run: "{{ k8s_install_kata_containers }}"
+    - file: "kata_containers.yml"
+      run: "{{ k8s_install_kata_containers }}"
+    - file: "firecracker.yml"
+      run: "{{ k8s_install_firecracker }}"
   loop_control:
     loop_var: task
     label: "{{ task.file }}"

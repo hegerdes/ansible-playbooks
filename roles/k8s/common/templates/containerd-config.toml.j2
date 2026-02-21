@@ -51,6 +51,7 @@ imports = ['/etc/containerd/conf.d/*.toml']
         [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.runc.options]
           SystemdCgroup = true
 
+      {% if k8s_install_crun | default(false) %}
       # crun
       [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.crun]
         runtime_type = 'io.containerd.runc.v2'
@@ -59,7 +60,9 @@ imports = ['/etc/containerd/conf.d/*.toml']
         [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.crun.options]
           BinaryName = '/usr/local/bin/crun'
           SystemdCgroup = true
+      {% endif %}
 
+      {% if k8s_install_gvisor | default(false) %}
       # gvisor
       # Docs: https://gvisor.dev/docs/user_guide/containerd/configuration/
       [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.runsc]
@@ -67,14 +70,30 @@ imports = ['/etc/containerd/conf.d/*.toml']
         [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.runsc.options]
           TypeUrl = 'io.containerd.runsc.v1.options'
           ConfigPath = '/etc/containerd/runsc.toml'
+      {% endif %}
 
+      {% if k8s_install_youki | default(false) %}
       # youki
       [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.youki]
         runtime_type = 'io.containerd.runc.v2'
         [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.youki.options]
           BinaryName = '/usr/local/bin/youki'
           SystemdCgroup = true
+      {% endif %}
 
+      {% if k8s_install_kata_containers | default(false) %}
+      # kata containers
+      [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.kata]
+        runtime_type = "io.containerd.kata.v2"
+      {% endif %}
+
+      {% if k8s_install_firecracker | default(false) %}
+      # kata containers
+        [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.kata-fc]
+          runtime_type = "io.containerd.kata-fc.v2"
+      {% endif %}
+
+      {% if k8s_install_wasi | default(false) %}
       # wasmedge
       # Docs: https://github.com/containerd/runwasi
       [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.wasmedge]
@@ -89,14 +108,26 @@ imports = ['/etc/containerd/conf.d/*.toml']
       # Docs: https://github.com/containerd/runwasi
       [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.wasmer]
         runtime_type = 'io.containerd.wasmer.v1'
+      {% endif %}
 
+      {% if k8s_install_spin | default(false) %}
       # Spin
       [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.spin]
         runtime_type = "io.containerd.spin.v2"
+      {% endif %}
 
     # Registry
     [plugins.'io.containerd.cri.v1.images'.registry]
       config_path = '/etc/containerd/certs.d'
+
+    {% if k8s_install_firecracker | default(false) %}
+    # Devmapper for firecracker
+    [plugins."io.containerd.snapshotter.v1.devmapper"]
+      pool_name = "devpool"
+      root_path = "{{ k8s_firecracker_devmapper_data_dir }}"
+      base_image_size = "10GB"
+      discard_blocks = true
+    {% endif %}
 
   [plugins.'io.containerd.cri.v1.images']
 {% if k8s_install_stargz | default(false) %}
