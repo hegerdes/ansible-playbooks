@@ -49,6 +49,7 @@
         socat,
         mtr-tiny,
         logrotate,
+        isc-dhcp-client,
         fuse,
         open-iscsi,
         ipvsadm,
