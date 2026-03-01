@@ -1,5 +1,5 @@
 ---
-k8s_version: 1.35.0
+k8s_version: 1.35.1
 k8s_dual_stack: false
 k8s_cp_ping_check: true
 k8s_install_core_dns: true
@@ -250,6 +250,9 @@ k8s_controlplane_disabled_kube_controllers:
   - replicationcontroller-controller
   - token-cleaner-controller
   - "{{ 'node-ipam-controller' if k8s_native_ipv6_with_distinct_ip_pools }}"
+
+  - endpoints-controller
+  - endpointslice-mirroring-controller
 
 # Kubernetes structured authentication conf.
 # Docs: https://kubernetes.io/docs/reference/access-authn-authz/authentication/#openid-connect-tokens

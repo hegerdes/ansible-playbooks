@@ -1,5 +1,5 @@
 ---
-k8s_version: 1.35.0
+k8s_version: 1.35.1
 
 # Which cri to use: runc, crun, youki or runsc, kata-containers
 k8s_cri: runc
@@ -46,7 +46,7 @@ k8s_credential_provider_version:
 # k8s_ensure_min_kernel_version: "{{ k8s_ensure_min_kernel_version_map[ansible_facts.lsb.codename] }}"
 k8s_ensure_min_kernel_version: none
 k8s_ensure_min_kernel_version_map:
-  trixie: 6.17.*
+  trixie: 6.18.*
   bookworm: 6.12.*
 
 # Send extra headers to GitHub API calls
