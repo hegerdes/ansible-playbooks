@@ -3,7 +3,6 @@
 
 - name: k8s common - kata-containers | Download kata-containers
   ansible.builtin.unarchive:
-    # src: https://github.com/kata-containers/kata-containers/releases/download/3.27.0/kata-static-3.27.0-amd64.tar.zst
     src: "{{ k8s_kata_containers_download_url }}"
     dest: /opt/kata/
     list_files: true
@@ -45,18 +44,47 @@
     - binary: firecracker
       when: "{{ k8s_kata_containers_use_packaged_firecracker }}"
 
-- name: k8s common - kata-containers | Add manager script
+- name: k8s common - kata-containers | Add manager, fc-shim
   ansible.builtin.copy:
-    content: >-
-      {{
-      lookup("ansible.builtin.url",
-      "https://raw.githubusercontent.com/kata-containers/kata-containers/refs/heads/main/utils/kata-manager.sh",
-      split_lines=false)
-      }}
-    dest: /usr/local/bin/kata-manager
-    mode: "0744"
+    content: "{{ item.content }}"
+    dest: "{{ item.dst }}"
+    mode: "{{ item.mode }}"
     owner: root
     group: root
+  with_items:
+    - content: >-
+        {{
+        lookup("ansible.builtin.url",
+        "https://raw.githubusercontent.com/kata-containers/kata-containers/refs/heads/main/utils/kata-manager.sh",
+        split_lines=false)
+        }}
+      dst: /usr/local/bin/kata-manager
+      mode: "0744"
+    - content: |
+        #!/bin/bash
+        # Specify the configuration file and pass all arguments to the shim binary
+        KATA_CONF_FILE=/opt/kata/share/defaults/kata-containers/configuration-fc.toml /usr/local/bin/containerd-shim-kata-v2 $@
+      dst: /usr/local/bin/containerd-shim-kata-fc-v2
+      mode: "0744"
+    - content: |
+        #!/bin/bash
+        # Specify the configuration file and pass all arguments to the shim binary
+        KATA_CONF_FILE=/opt/kata/share/defaults/kata-containers/configuration-clh.toml /usr/local/bin/containerd-shim-kata-v2 $@
+      dst: /usr/local/bin/containerd-shim-kata-clh-v2
+      mode: "0744"
+    - content: |
+        #!/bin/bash
+        # Specify the configuration file and pass all arguments to the shim binary
+        KATA_CONF_FILE=/opt/kata/share/defaults/kata-containers/configuration-qemu.toml /usr/local/bin/containerd-shim-kata-v2 $@
+      dst: /usr/local/bin/containerd-shim-kata-qemu-v2
+      mode: "0744"
+
+- name: k8s common - kata-containers | Ensure kata runtime conf's exist
+  ansible.builtin.command:
+    cmd: "kata-manager -S {{ item }}"
+    creates: /etc/kata-containers/configuration-{{ item }}.toml
+  changed_when: false
+  loop: [clh, fc, qemu]
 
 - name: k8s common - kata-containers | Test kata-containers
   ansible.builtin.command:

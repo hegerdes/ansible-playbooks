@@ -85,12 +85,31 @@ imports = ['/etc/containerd/conf.d/*.toml']
       # kata containers
       [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.kata]
         runtime_type = "io.containerd.kata.v2"
-      {% endif %}
+        privileged_without_host_devices = true
+        pod_annotations = ["io.katacontainers.*"]
+        container_annotations = ["io.katacontainers.*"]
+        # Annotations: https://github.com/kata-containers/kata-containers/blob/main/docs/how-to/how-to-set-sandbox-config-kata.md
 
-      {% if k8s_install_firecracker | default(false) %}
-      # kata containers
-        [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.kata-fc]
-          runtime_type = "io.containerd.kata-fc.v2"
+      # kata containers qemu shim alias
+      [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.kata-qemu]
+        runtime_type = "io.containerd.kata-qemu.v2"
+        privileged_without_host_devices = true
+        pod_annotations = ["io.katacontainers.*"]
+        container_annotations = ["io.katacontainers.*"]
+
+      # kata containers firecracker shim alias
+      [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.kata-fc]
+        runtime_type = "io.containerd.kata-fc.v2"
+        privileged_without_host_devices = true
+        pod_annotations = ["io.katacontainers.*"]
+        container_annotations = ["io.katacontainers.*"]
+
+      # kata containers cloud-hypervisor shim alias
+      [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.kata-clh]
+        runtime_type = "io.containerd.kata-clh.v2"
+        privileged_without_host_devices = true
+        pod_annotations = ["io.katacontainers.*"]
+        container_annotations = ["io.katacontainers.*"]
       {% endif %}
 
       {% if k8s_install_wasi | default(false) %}
