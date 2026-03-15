@@ -18,6 +18,7 @@ k8s_youki_with_wasm: false
 k8s_crun_with_wasm: false
 k8s_crun_wasmlib_version: 0.1.0
 k8s_kata_containers_use_packaged_firecracker: "{{ not k8s_install_firecracker }}"
+
 # Version info
 k8s_inventory_as_hostname: true
 k8s_shutdown_after_common: false
@@ -38,6 +39,7 @@ k8s_selinux_policy: targeted
 k8s_cni: cilium # can be: cilium, calico or flannel
 k8s_credential_provider: [] # supported are [ecr, kscp]
 k8s_firecracker_devmapper_data_dir: /var/devmapper
+k8s_kata_containers_use_rust_rs: false
 k8s_credential_provider_version:
   ecr: latest
   kscp: latest

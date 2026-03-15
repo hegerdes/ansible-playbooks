@@ -31,17 +31,22 @@
 - name: k8s common - kata-containers | Create symlink to binaries
   when: item.when | default(true)
   ansible.builtin.file:
-    src: "/opt/kata/bin/{{ item.binary }}"
-    dest: "/usr/local/bin/{{ item.binary }}"
+    src: "{{ item.binary }}"
+    dest: "/usr/local/bin/{{ item.binary | split('/') | last }}"
     state: link
+    owner: root
   loop:
-    - binary: qemu-system-x86_64
-    - binary: kata-monitor
-    - binary: jailer
-    - binary: kata-runtime
-    - binary: containerd-shim-kata-v2
-    - binary: cloud-hypervisor
-    - binary: firecracker
+    - binary: /opt/kata/bin/qemu-system-x86_64
+    - binary: /opt/kata/bin/kata-monitor
+    - binary: /opt/kata/bin/jailer
+    - binary: /opt/kata/bin/kata-runtime
+    - binary: /opt/kata/bin/cloud-hypervisor
+    - binary: >-
+        {{ '/opt/kata/runtime-rs/bin'
+        if k8s_kata_containers_use_rust_rs
+        else '/opt/kata/bin'
+        }}/containerd-shim-kata-v2
+    - binary: /opt/kata/bin/firecracker
       when: "{{ k8s_kata_containers_use_packaged_firecracker }}"
 
 - name: k8s common - kata-containers | Add manager, fc-shim
