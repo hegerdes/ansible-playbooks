@@ -54,7 +54,7 @@ imports = ['/etc/containerd/conf.d/*.toml']
       {% if k8s_install_crun | default(false) %}
       # crun
       [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.crun]
-        runtime_type = 'io.containerd.runc.v2'
+        runtime_type = 'io.containerd.crun.v2'
         # See: https://github.com/containers/crun/blob/main/docs/wasm-wasi-on-kubernetes.md
         pod_annotations = ['*.wasm.*', 'wasm.*', 'module.wasm.image/*', '*.module.wasm.image', 'module.wasm.image/variant.*']
         [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.crun.options]

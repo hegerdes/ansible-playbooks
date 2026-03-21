@@ -2,7 +2,6 @@
 # Setup firecracker containers
 - name: k8s common - firecracker | Download firecracker
   ansible.builtin.unarchive:
-    # src: https://github.com/firecracker-microvm/firecracker/releases/download/v1.14.1/firecracker-v1.14.1-x86_64.tgz
     src: "{{ k8s_firecracker_download_url }}"
     dest: /opt/firecracker/
     list_files: true
@@ -15,7 +14,7 @@
       - THIRD-PARTY
       - "*.debug"
     remote_src: true
-    creates: /usr/local/bin/firecracker
+    creates: /opt/firecracker/firecracker
   register: __k8s_firecracker_res
   retries: 3
 
@@ -24,6 +23,8 @@
     src: "/opt/firecracker/{{ item.src }}"
     dest: "/usr/local/bin/{{ item.dst }}"
     state: link
+  loop_control:
+    label: "{{ item.dst }}"
   loop:
     - src: "firecracker-v{{ __firecracker_version }}-{{ ansible_facts.architecture }}"
       dst: firecracker
@@ -49,13 +50,16 @@
     mode: "{{ item.mode }}"
     owner: root
     group: root
+  loop_control:
+    label: "{{ item.dst }}"
   with_items:
     - content: "{{ lookup('template', 'init-devmapper-pool.sh.j2') }}"
       dst: /etc/containerd/init-devmapper-pool.sh
       mode: "0744"
     - content: |
         #!/bin/bash
-        KATA_CONF_FILE=/etc/kata-containers/configuration-fc.toml /usr/local/bin/containerd-shim-kata-v2 $@
+        # Specify the configuration file and pass all arguments to the shim binary
+        KATA_CONF_FILE=/opt/kata/share/defaults/kata-containers/configuration-fc.toml /usr/local/bin/containerd-shim-kata-v2 $@
       dst: /usr/local/bin/containerd-shim-kata-fc-v2
       mode: "0744"
     - content: |
@@ -63,6 +67,7 @@
         Description=Devmapper reload script
 
         [Service]
+        Type=oneshot
         ExecStart=/etc/containerd/init-devmapper-pool.sh
 
         [Install]

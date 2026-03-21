@@ -16,6 +16,11 @@ LENGTH_IN_SECTORS=$(bc <<< "${DATA_SIZE}/${SECTOR_SIZE}")
 DATA_BLOCK_SIZE=128
 LOW_WATER_MARK=32768
 
-# Create a thin-pool device
-dmsetup create "${POOL_NAME}" \
-    --table "0 ${LENGTH_IN_SECTORS} thin-pool ${META_DEV} ${DATA_DEV} ${DATA_BLOCK_SIZE} ${LOW_WATER_MARK}"
+if dmsetup info -c ${POOL_NAME} >/dev/null 2>&1; then
+    echo "${POOL_NAME} already exists"
+else
+    # Create a thin-pool device
+    echo "${POOL_NAME} does not exist. Creating"
+    dmsetup create "${POOL_NAME}" \
+        --table "0 ${LENGTH_IN_SECTORS} thin-pool ${META_DEV} ${DATA_DEV} ${DATA_BLOCK_SIZE} ${LOW_WATER_MARK}"
+fi

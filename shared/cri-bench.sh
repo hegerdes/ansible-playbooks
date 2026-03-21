@@ -2,11 +2,18 @@
 # set -e -o pipefail
 REPETITIONS=1000
 SLEEP_TIME=120s
-RUNTIMES=("crun" "runc" "runsc" "youki" "io.containerd.kata.v2")
-# kata-manager -S fc
-# service amazon-ssm-agent stop
-
+RUNTIMES=("crun" "runc" "runsc" "youki" "io.containerd.kata.v2" "io.containerd.kata-clh.v2" "io.containerd.kata-fc.v2")
 # CRI_EXTRA_ARGS="--memory 4mb"
+
+# Stop amazon-ssm-agent if running
+if systemctl is-active --quiet amazon-ssm-agent.service; then
+  sudo systemctl stop amazon-ssm-agent.service
+  echo "Stopped amazon-ssm-agent"
+fi
+if systemctl is-active --quiet polkit.service; then
+  sudo systemctl stop polkit.service
+  echo "Stopped polkit"
+fi
 
 # Make sure tools are installed
 apt-get install -qq -y bc jq curl time lsb-release >/dev/null
@@ -31,6 +38,16 @@ fi
 nerdctl pull --quiet busybox >/dev/null
 # ctr i pull docker.io/library/busybox:latest >/dev/null
 # ctr run $CRI_EXTRA_ARGS --rm --runc-binary crun --runtime io.containerd.runc.v2 docker.io/library/busybox:latest true
+# kata-manager -S fc
+
+
+# Tests
+for rt in "${RUNTIMES[@]}"; do
+    cmd="nerdctl run $CRI_EXTRA_ARGS --network=none --rm --runtime $rt busybox true"
+    echo "Running: $cmd"
+    time $cmd
+done
+
 
 echo -e "System info:\n$(uname -a)\n$(lsb_release -a)"
 echo "Errors:" >error.log

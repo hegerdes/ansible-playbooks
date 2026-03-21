@@ -48,14 +48,18 @@
         }}/containerd-shim-kata-v2
     - binary: /opt/kata/bin/firecracker
       when: "{{ k8s_kata_containers_use_packaged_firecracker }}"
+  loop_control:
+    label: "{{ item.binary }}"
 
-- name: k8s common - kata-containers | Add manager, fc-shim
+- name: k8s common - kata-containers | Add manager and shim alias
   ansible.builtin.copy:
     content: "{{ item.content }}"
     dest: "{{ item.dst }}"
     mode: "{{ item.mode }}"
     owner: root
     group: root
+  loop_control:
+    label: "{{ item.dst }}"
   with_items:
     - content: >-
         {{

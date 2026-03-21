@@ -1,6 +1,8 @@
 #!/bin/bash
 set -ex
 
+# Source https://github.com/containerd/containerd/blob/af7f63f434454efaf8de0fe51c15c54628170786/docs/snapshotters/devmapper.md
+
 DEFAULT_DATA_DIR=/var/devmapper
 DATA_DIR=${DATA_DIR-$DEFAULT_DATA_DIR}
 POOL_NAME=devpool
@@ -8,7 +10,7 @@ POOL_NAME=devpool
 mkdir -p ${DATA_DIR}
 
 if ! command -v bc > /dev/null; then
-    apt-get install -y bc
+    apt-get install -y bc dmsetup
 fi
 
 if [[ -f "${DATA_DIR}/data" && -f "${DATA_DIR}/meta" ]]; then
@@ -23,6 +25,7 @@ else
     # Create metadata file
     touch "${DATA_DIR}/meta"
     truncate -s 10G "${DATA_DIR}/meta"
+fi
 
     # Allocate loop devices
     DATA_DEV=$(losetup --find --show "${DATA_DIR}/data")
@@ -36,7 +39,13 @@ else
     DATA_BLOCK_SIZE=128
     LOW_WATER_MARK=32768
 
+
+
+if dmsetup info -c devpool >/dev/null 2>&1; then
+    echo "devpool already exists"
+else
     # Create a thin-pool device
+    echo "devpool does not exist. Creating"
     dmsetup create "${POOL_NAME}" \
         --table "0 ${LENGTH_IN_SECTORS} thin-pool ${META_DEV} ${DATA_DEV} ${DATA_BLOCK_SIZE} ${LOW_WATER_MARK}"
 fi
