@@ -69,7 +69,7 @@
     cache_valid_time: "{{ 0 if(__k8s_apt_backports.changed) else 86400 }}"
   tags: [k8s, k8s-prepare, k8s-base, apt]
 
-- name: Gather package facts
+- name: k8s common | Gather package facts
   when: k8s_ensure_min_kernel_version != "none"
   package_facts:
     manager: auto
@@ -145,6 +145,7 @@
     - { path: "/etc/kubernetes/extras", mode: "0775" }
     - { path: "/var/log/kube-apiserver", mode: "0600" }
     - { path: "/etc/kubernetes/kubelet.conf.d", mode: "0744" }
+    - { path: "/etc/kata-containers/runtime-rs" }
     - { path: "/etc/otel-collector" }
     - { path: "/etc/systemd/system/kubelet.service.d", mode: "0600" }
     - { path: "/opt/cni/bin", mode: "0755" }
