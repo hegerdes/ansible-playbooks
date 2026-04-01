@@ -1,0 +1,25 @@
+---
+# Setup urunc containers - wip
+- name: k8s common - urunc-containers | Download urunc
+  ansible.builtin.get_url:
+    url: "{{ item }}"
+    dest: /usr/local/bin/{{ "containerd-shim-urunc-v2" if "containerd" in item else "urunc" }}
+    mode: "0744"
+    owner: root
+    group: root
+  retries: 3
+  loop: "{{ k8s_urunc_download_urls }}"
+
+- name: k8s common - urunc-containers | Copy urunc conf
+  ansible.builtin.copy:
+    content: "{{ item.content }}"
+    dest: "{{ item.dst }}"
+    mode: "{{ item.mode }}"
+    owner: root
+    group: root
+  loop_control:
+    label: "{{ item.dst }}"
+  with_items:
+    - content: "{{ lookup('template', 'urunc.toml.j2') }}"
+      dst: /etc/urunc/config.toml
+      mode: "0644"

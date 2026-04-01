@@ -1,0 +1,21 @@
+[log]
+level = "info"
+syslog = false
+
+[monitors.qemu]
+default_memory_mb = 512
+default_vcpus = 2
+path = "/usr/bin/qemu-system-x86_64"
+
+[monitors.firecracker]
+default_memory_mb = 256
+default_vcpus = 1
+path = "/usr/local/bin/firecracker"
+
+# [monitors.hvt]
+# default_memory_mb = 256
+# default_vcpus = 1
+
+# [monitors.spt]
+# default_memory_mb = 256
+# default_vcpus = 1

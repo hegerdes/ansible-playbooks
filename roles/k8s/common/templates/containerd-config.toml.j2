@@ -54,7 +54,7 @@ imports = ['/etc/containerd/conf.d/*.toml']
       {% if k8s_install_crun | default(false) %}
       # crun
       [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.crun]
-        runtime_type = 'io.containerd.crun.v2'
+        runtime_type = 'io.containerd.runc.v2'
         # See: https://github.com/containers/crun/blob/main/docs/wasm-wasi-on-kubernetes.md
         pod_annotations = ['*.wasm.*', 'wasm.*', 'module.wasm.image/*', '*.module.wasm.image', 'module.wasm.image/variant.*']
         [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.crun.options]
@@ -81,6 +81,16 @@ imports = ['/etc/containerd/conf.d/*.toml']
           SystemdCgroup = true
       {% endif %}
 
+      {% if k8s_install_urunc | default(false) %}
+      # urunc
+      # Docs https://urunc.io/installation/
+      [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.urunc]
+        runtime_type = 'io.containerd.urunc.v2'
+        container_annotations = ["com.urunc.unikernel.*"]
+        pod_annotations = ["com.urunc.unikernel.*"]
+        snapshotter = "devmapper"
+      {% endif %}
+
       {% if k8s_install_kata_containers | default(false) %}
       # kata containers
       [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.kata]
@@ -89,6 +99,8 @@ imports = ['/etc/containerd/conf.d/*.toml']
         pod_annotations = ["io.katacontainers.*"]
         container_annotations = ["io.katacontainers.*"]
         # Annotations: https://github.com/kata-containers/kata-containers/blob/main/docs/how-to/how-to-set-sandbox-config-kata.md
+        [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.kata.options]
+          ConfigPath = "/opt/kata/share/defaults/kata-containers/configuration.toml"
 
       # kata containers qemu shim alias
       [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.kata-qemu]
@@ -96,6 +108,8 @@ imports = ['/etc/containerd/conf.d/*.toml']
         privileged_without_host_devices = true
         pod_annotations = ["io.katacontainers.*"]
         container_annotations = ["io.katacontainers.*"]
+        [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.kata-qemu.options]
+          ConfigPath = "/opt/kata/share/defaults/kata-containers/runtime-rs/configuration-qemu-runtime-rs.toml"
 
       # kata containers firecracker shim alias
       [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.kata-fc]
@@ -103,6 +117,8 @@ imports = ['/etc/containerd/conf.d/*.toml']
         privileged_without_host_devices = true
         pod_annotations = ["io.katacontainers.*"]
         container_annotations = ["io.katacontainers.*"]
+        [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.kata-fc.options]
+          ConfigPath = "/opt/kata/share/defaults/kata-containers/runtime-rs/configuration-rs-fc.toml"
 
       # kata containers cloud-hypervisor shim alias
       [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.kata-clh]
@@ -110,6 +126,8 @@ imports = ['/etc/containerd/conf.d/*.toml']
         privileged_without_host_devices = true
         pod_annotations = ["io.katacontainers.*"]
         container_annotations = ["io.katacontainers.*"]
+        [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.kata-clh.options]
+          ConfigPath = "/opt/kata/share/defaults/kata-containers/runtime-rs/configuration-cloud-hypervisor.toml"
       {% endif %}
 
       {% if k8s_install_wasi | default(false) %}
@@ -143,7 +161,7 @@ imports = ['/etc/containerd/conf.d/*.toml']
     # Devmapper for firecracker
     [plugins."io.containerd.snapshotter.v1.devmapper"]
       pool_name = "devpool"
-      root_path = "{{ k8s_firecracker_devmapper_data_dir }}"
+      root_path = "{{ k8s_devmapper_data_dir }}"
       base_image_size = "10GB"
       discard_blocks = true
     {% endif %}
