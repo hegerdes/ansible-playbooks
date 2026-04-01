@@ -150,6 +150,7 @@
     - { path: "/etc/systemd/system/kubelet.service.d", mode: "0600" }
     - { path: "/opt/cni/bin", mode: "0755" }
     - { path: "/var/lib/kubelet" }
+    - { path: "/etc/urunc/" }
     - { path: "/usr/wasmedge/lib" }
     - { path: "/opt/kata/" }
     - { path: "/opt/firecracker/" }
@@ -232,6 +233,10 @@
       run: "{{ k8s_install_spin }}"
     - file: "stargz.yml"
       run: "{{ k8s_install_stargz }}"
+    - file: "urunc.yml"
+      run: "{{ k8s_install_urunc }}"
+    - file: "devmapper.yml"
+      run: "{{ k8s_install_kata_containers or k8s_install_firecracker or k8s_install_urunc }}"
     - file: "kata_containers.yml"
       run: "{{ k8s_install_kata_containers }}"
     - file: "firecracker.yml"

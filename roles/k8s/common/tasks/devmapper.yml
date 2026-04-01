@@ -1,0 +1,44 @@
+- name: k8s common - devmapper | Create devmapper data dir
+  ansible.builtin.script:
+    cmd: devmapper-pool.sh
+    creates: "{{ k8s_devmapper_data_dir }}/data"
+  environment:
+    DATA_DIR: "{{ k8s_devmapper_data_dir }}"
+
+- name: k8s common - devmapper | Copy devmapper service setup
+  ansible.builtin.copy:
+    content: "{{ item.content }}"
+    dest: "{{ item.dst }}"
+    mode: "{{ item.mode }}"
+    owner: root
+    group: root
+  loop_control:
+    label: "{{ item.dst }}"
+  with_items:
+    - content: "{{ lookup('template', 'init-devmapper-pool.sh.j2') }}"
+      dst: /etc/containerd/init-devmapper-pool.sh
+      mode: "0744"
+    - content: |
+        [Unit]
+        Description=Devmapper reload script
+
+        [Service]
+        Type=oneshot
+        ExecStart=/etc/containerd/init-devmapper-pool.sh
+
+        [Install]
+        WantedBy=multi-user.target
+      dst: /etc/systemd/system/devmapper-reload.service
+      mode: "0644"
+
+- name: k8s common - devmapper | Enable devmapper service
+  ansible.builtin.systemd:
+    name: devmapper-reload.service
+    state: started
+    daemon_reload: true
+    enabled: true
+
+- name: k8s common - devmapper | Verify devmapper service status
+  ansible.builtin.service:
+    name: devmapper-reload.service
+    state: started
