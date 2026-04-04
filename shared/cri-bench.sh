@@ -5,7 +5,14 @@ SLEEP_TIME=120s
 RUNTIMES=("crun" "runc" "runsc" "youki" "io.containerd.kata.v2" "io.containerd.kata-clh.v2" "io.containerd.kata-fc.v2")
 # CRI_EXTRA_ARGS="--memory 4mb"
 
+##### NOTES #####
+# ctr i pull docker.io/library/busybox:latest >/dev/null
+# ctr run $CRI_EXTRA_ARGS --rm --runc-binary crun --runtime io.containerd.runc.v2 docker.io/library/busybox:latest true
+# kata-manager -S fc
+##### NOTES #####
+
 # Stop amazon-ssm-agent if running
+echo "Stopping unneeded services..."
 if systemctl is-active --quiet amazon-ssm-agent.service; then
   sudo systemctl stop amazon-ssm-agent.service
   echo "Stopped amazon-ssm-agent"
@@ -14,8 +21,13 @@ if systemctl is-active --quiet polkit.service; then
   sudo systemctl stop polkit.service
   echo "Stopped polkit"
 fi
+if systemctl is-active --quiet kubelet.service; then
+  sudo systemctl stop kubelet.service
+  echo "Stopped kubelet"
+fi
 
 # Make sure tools are installed
+echo "Ensure all tools are installed..."
 apt-get install -qq -y bc jq curl time lsb-release >/dev/null
 
 # Tool setup
@@ -36,9 +48,6 @@ if ! command -v nerdctl >/dev/null 2>&1; then
     nerdctl --version
 fi
 nerdctl pull --quiet busybox >/dev/null
-# ctr i pull docker.io/library/busybox:latest >/dev/null
-# ctr run $CRI_EXTRA_ARGS --rm --runc-binary crun --runtime io.containerd.runc.v2 docker.io/library/busybox:latest true
-# kata-manager -S fc
 
 
 # Tests
@@ -77,7 +86,6 @@ for rt in "${RUNTIMES[@]}"; do
                 max=$result
             fi
         fi
-        # sleep 1s
     done
     echo "The benchmark for ${rt} took $SECONDS seconds"
     mean=$(echo "scale=2; $total / $REPETITIONS" | bc)

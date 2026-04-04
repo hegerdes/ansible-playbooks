@@ -128,6 +128,15 @@ imports = ['/etc/containerd/conf.d/*.toml']
         container_annotations = ["io.katacontainers.*"]
         [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.kata-clh.options]
           ConfigPath = "/opt/kata/share/defaults/kata-containers/runtime-rs/configuration-cloud-hypervisor.toml"
+
+      # kata containers draonball-hypervisor shim alias
+      [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.kata-db]
+        runtime_type = "io.containerd.kata-db.v2"
+        privileged_without_host_devices = true
+        pod_annotations = ["io.katacontainers.*"]
+        container_annotations = ["io.katacontainers.*"]
+        [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.kata-db.options]
+          ConfigPath = "/opt/kata/share/defaults/kata-containers/runtime-rs/configuration-dragonball.toml"
       {% endif %}
 
       {% if k8s_install_wasi | default(false) %}
@@ -157,7 +166,7 @@ imports = ['/etc/containerd/conf.d/*.toml']
     [plugins.'io.containerd.cri.v1.images'.registry]
       config_path = '/etc/containerd/certs.d'
 
-    {% if k8s_install_firecracker | default(false) %}
+    {% if k8s_install_kata_containers or k8s_install_firecracker or k8s_install_urunc %}
     # Devmapper for firecracker
     [plugins."io.containerd.snapshotter.v1.devmapper"]
       pool_name = "devpool"

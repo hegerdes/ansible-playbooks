@@ -40,11 +40,7 @@
     - binary: /opt/kata/bin/jailer
     - binary: /opt/kata/bin/kata-runtime
     - binary: /opt/kata/bin/cloud-hypervisor
-    - binary: >-
-        {{ '/opt/kata/runtime-rs/bin'
-        if k8s_kata_containers_use_rust_rs
-        else '/opt/kata/bin'
-        }}/containerd-shim-kata-v2
+    - binary: /opt/kata/runtime-rs/bin/containerd-shim-kata-v2
     - binary: /opt/kata/bin/firecracker
       when: "{{ k8s_kata_containers_use_packaged_firecracker }}"
     - binary: /opt/kata/share/defaults/kata-containers/runtime-rs/configuration.toml
@@ -64,23 +60,13 @@
   vars:
     __kata_runtime_conf:
       fc: >-
-        /opt/kata/share/defaults/kata-containers/
-        {{ "runtime-rs/configuration-rs-fc.toml"
-        if k8s_kata_containers_use_rust_rs
-        else "configuration-fc.toml"
-        }}
+        /opt/kata/share/defaults/kata-containers/runtime-rs/configuration-rs-fc.toml
       qemu: >-
-        /opt/kata/share/defaults/kata-containers/
-        {{ "runtime-rs/configuration-qemu-runtime-rs.toml"
-        if k8s_kata_containers_use_rust_rs
-        else "configuration-qemu.toml"
-        }}
+        /opt/kata/share/defaults/kata-containers/runtime-rs/configuration-qemu-runtime-rs.toml
       clh: >-
-        /opt/kata/share/defaults/kata-containers/
-        {{ "runtime-rs/configuration-cloud-hypervisor.toml"
-        if k8s_kata_containers_use_rust_rs
-        else "configuration-clh.toml"
-        }}
+        /opt/kata/share/defaults/kata-containers/runtime-rs/configuration-cloud-hypervisor.toml
+      db: >-
+        /opt/kata/share/defaults/kata-containers/runtime-rs/configuration-dragonball.toml
   with_items:
     - content: >-
         {{
@@ -107,6 +93,12 @@
         # Specify the configuration file and pass all arguments to the shim binary
         KATA_CONF_FILE={{ __kata_runtime_conf.qemu | regex_replace("\s","") }} /usr/local/bin/containerd-shim-kata-v2 $@
       dst: /usr/local/bin/containerd-shim-kata-qemu-v2
+      mode: "0744"
+    - content: |
+        #!/bin/bash
+        # Specify the configuration file and pass all arguments to the shim binary
+        KATA_CONF_FILE={{ __kata_runtime_conf.db | regex_replace("\s","") }} /usr/local/bin/containerd-shim-kata-v2 $@
+      dst: /usr/local/bin/containerd-shim-kata-db-v2
       mode: "0744"
 
 - name: k8s common - kata-containers | Ensure kata runtime conf's exist

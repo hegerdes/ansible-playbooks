@@ -30,8 +30,10 @@
         WantedBy=multi-user.target
       dst: /etc/systemd/system/devmapper-reload.service
       mode: "0644"
+  register: __k8s_devmepper_conf
 
 - name: k8s common - devmapper | Enable devmapper service
+  when: __k8s_devmepper_conf.changed
   ansible.builtin.systemd:
     name: devmapper-reload.service
     state: started
@@ -39,6 +41,7 @@
     enabled: true
 
 - name: k8s common - devmapper | Verify devmapper service status
+  when: __k8s_devmepper_conf.changed
   ansible.builtin.service:
     name: devmapper-reload.service
     state: started
