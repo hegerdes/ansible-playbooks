@@ -18,3 +18,5 @@ azure-identity
 azure-cli-core
 botocore
 boto3
+azure-mgmt-core
+msal
