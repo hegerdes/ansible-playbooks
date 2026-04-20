@@ -256,10 +256,10 @@ k8s_controlplane_disabled_kube_controllers:
 
 # Kubernetes structured authentication conf.
 # Docs: https://kubernetes.io/docs/reference/access-authn-authz/authentication/#openid-connect-tokens
-k8s_controlplane_auth_n_conf: '{{ lookup("file", "authentication-conf.yaml") | from_yaml }}'
+k8s_controlplane_auth_n_conf: '{{ lookup("file", "authentication-conf.yaml") | from_yaml | to_nice_yaml }}'
 # Kubernetes structured authorization conf.
 # Docs: https://kubernetes.io/docs/reference/access-authn-authz/authorization/
-k8s_controlplane_auth_z_conf: '{{ lookup("file", "authorization-conf.yaml") | from_yaml }}'
+k8s_controlplane_auth_z_conf: '{{ lookup("file", "authorization-conf.yaml") | from_yaml | to_nice_yaml }}'
 
 k8s_init_helm_apps: []
 # k8s_init_helm_apps:
@@ -446,19 +446,6 @@ k8s_cilium_helm_values:
     ui:
       enabled: false
       rollOutPods: true
-      ingress:
-        enabled: true
-        className: nginx
-        annotations:
-          cert-manager.io/cluster-issuer: letsencrypt-prod-nginx
-          nginx.ingress.kubernetes.io/auth-url: http://oauth2-proxy.oauth-proxy.svc.cluster.local/oauth2/auth
-          nginx.ingress.kubernetes.io/auth-signin: https://oauth.k8s.henrikgerdes.me/oauth2/start?rd=https://$host$request_uri
-        hosts:
-          - hubble.k8s.henrikgerdes.me
-        tls:
-          - secretName: hubble-ing-tls
-            hosts:
-              - hubble.k8s.henrikgerdes.me
   # Needed if tailscale services are routed
   socketLB:
     hostNamespaceOnly: true
