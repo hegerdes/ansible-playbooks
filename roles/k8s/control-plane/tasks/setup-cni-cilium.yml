@@ -1,15 +1,10 @@
 ---
 # Main k8s CNI - Cilium
-- name: k8s cp - cni cilium | Add Cilium helm chart repo
-  kubernetes.core.helm_repository:
-    name: cilium
-    repo_url: https://helm.cilium.io/
-  tags: [k8s, k8s-init, k8s-cp-init, k8s-cni, k8s-cilium]
 
 - name: k8s cp - cni cilium | Install Cilium
   kubernetes.core.helm:
     name: cilium
-    chart_ref: cilium/cilium
+    chart_ref: oci://quay.io/cilium/charts/cilium
     chart_version: "{{ k8s_cilium_chart_version }}"
     release_namespace: kube-system
     update_repo_cache: true
