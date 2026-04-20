@@ -1,5 +1,5 @@
 ---
-k8s_version: 1.35.3
+k8s_version: 1.35.4
 
 # Which cri to use: runc, crun, youki or runsc, kata-containers
 k8s_cri: runc
@@ -423,7 +423,6 @@ k8s_urunc_download_urls: >-
 k8s_urunc_download_urls_version:
   - "https://github.com/urunc-dev/urunc/releases/download/{{ k8s_urunc_version }}/containerd-shim-urunc-v2_static_{{ system_arch_map[ansible_facts.architecture] }}"
   - "https://github.com/urunc-dev/urunc/releases/download/{{ k8s_urunc_version }}/urunc_static_{{ system_arch_map[ansible_facts.architecture] }}"
-
 
 system_arch_map:
   x86_64: amd64
