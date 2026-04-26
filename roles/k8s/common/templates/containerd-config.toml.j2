@@ -103,7 +103,7 @@ imports = ['/etc/containerd/conf.d/*.toml']
           ConfigPath = "/opt/kata/share/defaults/kata-containers/configuration.toml"
 
       # kata containers qemu shim alias
-      [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.kata-qemu]
+      [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.kata-qemu]
         runtime_type = "io.containerd.kata-qemu.v2"
         privileged_without_host_devices = true
         pod_annotations = ["io.katacontainers.*"]
@@ -112,7 +112,7 @@ imports = ['/etc/containerd/conf.d/*.toml']
           ConfigPath = "/opt/kata/share/defaults/kata-containers/runtime-rs/configuration-qemu-runtime-rs.toml"
 
       # kata containers firecracker shim alias
-      [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.kata-fc]
+      [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.kata-fc]
         runtime_type = "io.containerd.kata-fc.v2"
         privileged_without_host_devices = true
         pod_annotations = ["io.katacontainers.*"]
@@ -121,7 +121,7 @@ imports = ['/etc/containerd/conf.d/*.toml']
           ConfigPath = "/opt/kata/share/defaults/kata-containers/runtime-rs/configuration-rs-fc.toml"
 
       # kata containers cloud-hypervisor shim alias
-      [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.kata-clh]
+      [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.kata-clh]
         runtime_type = "io.containerd.kata-clh.v2"
         privileged_without_host_devices = true
         pod_annotations = ["io.katacontainers.*"]
@@ -129,8 +129,8 @@ imports = ['/etc/containerd/conf.d/*.toml']
         [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.kata-clh.options]
           ConfigPath = "/opt/kata/share/defaults/kata-containers/runtime-rs/configuration-cloud-hypervisor.toml"
 
-      # kata containers draonball-hypervisor shim alias
-      [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.kata-db]
+      # kata containers dragonball-hypervisor shim alias
+      [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.kata-db]
         runtime_type = "io.containerd.kata-db.v2"
         privileged_without_host_devices = true
         pod_annotations = ["io.katacontainers.*"]
