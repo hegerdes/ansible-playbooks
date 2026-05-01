@@ -101,6 +101,12 @@
       dst: /usr/local/bin/containerd-shim-kata-db-v2
       mode: "0744"
 
+- name: k8s common - kata-containers | Fix configs
+  ansible.builtin.lineinfile:
+    path: /opt/kata/share/defaults/kata-containers/runtime-rs/configuration-rs-fc.toml
+    state: absent
+    regexp: "^cdh_api_timeout"
+
 - name: k8s common - kata-containers | Ensure kata runtime conf's exist
   ansible.builtin.command:
     cmd: "kata-manager -S {{ item }}"
