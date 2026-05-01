@@ -1,8 +1,8 @@
 ---
-# Setup docker containerd
+# Setup cri-o
 - name: k8s common - cri-o | Install cri-o
   ansible.builtin.apt:
-    name: 'cri-o{{ "=" + k8s_crio_version + "*" if (k8s_crio_version != "latest") }}'
+    name: "cri-o{{ \"=\" + k8s_crio_version + \"*\" if (k8s_crio_version != \"latest\") }}"
     state: present
     update_cache: true
     install_recommends: false

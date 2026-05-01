@@ -227,7 +227,7 @@
   with_items:
     - file: "runc.yml"
       run: "{{ k8s_install_runc or k8s_cri == 'runc' }}"
-    - file: "crun{{ '_wasm' if(k8s_crun_wasm or k8s_crun_krun) }}.yml"
+    - file: "crun{{ '_custom' if(k8s_crun_wasm or k8s_crun_krun) }}.yml"
       run: "{{ k8s_install_crun or k8s_cri == 'crun' }}"
     - file: "youki.yml"
       run: "{{ k8s_install_youki or k8s_cri == 'youki' }}"
