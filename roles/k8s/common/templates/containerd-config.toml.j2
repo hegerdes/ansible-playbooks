@@ -51,14 +51,26 @@ imports = ['/etc/containerd/conf.d/*.toml']
         [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.runc.options]
           SystemdCgroup = true
 
-      {% if k8s_install_crun | default(false) %}
+      {% if k8s_install_crun %}
       # crun
       [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.crun]
         runtime_type = 'io.containerd.runc.v2'
+        {% if k8s_crun_wasm %}
         # See: https://github.com/containers/crun/blob/main/docs/wasm-wasi-on-kubernetes.md
         pod_annotations = ['*.wasm.*', 'wasm.*', 'module.wasm.image/*', '*.module.wasm.image', 'module.wasm.image/variant.*']
+        {% endif %}
         [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.crun.options]
           BinaryName = '/usr/local/bin/crun'
+          SystemdCgroup = true
+      {% endif %}
+
+      {% if k8s_install_crun and k8s_crun_krun %}
+      # crun - krun
+      [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.krun]
+        runtime_type = 'io.containerd.runc.v2'
+        pod_annotations = ['krun.*', 'run.oci.*', 'org.criu.*', 'io.kubernetes.cri.container-type']
+        [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.krun.options]
+          BinaryName = '/usr/local/bin/krun'
           SystemdCgroup = true
       {% endif %}
 

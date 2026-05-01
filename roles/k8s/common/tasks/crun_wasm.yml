@@ -1,14 +1,28 @@
 ---
-# Setup wasm crun
+# Setup custom crun
 - name: k8s common - crun | Download crun
   ansible.builtin.unarchive:
     src: "{{ k8s_crun_wasm_download_url }}"
     dest: /tmp
     remote_src: true
     creates: /tmp/crun
+    list_files: true
+  register: __k8s_crun_extended_archive
   retries: 3
 
-- name: k8s common - crun | Copy crun wasm files
+- name: k8s common - crun | Download krun libs
+  when: k8s_crun_krun
+  ansible.builtin.unarchive:
+    src: "{{ k8s_linkrunfw_download_url }}"
+    dest: /usr/crun/lib/
+    remote_src: true
+    list_files: true
+    extra_opts: ["--strip-components=1", "--show-stored-names"]
+    creates: /usr/crun/lib/libkrunfw.so
+  retries: 3
+
+- name: k8s common - crun | Copy crun files
+  when: __k8s_crun_extended_archive.changed and item.run | default(true)
   ansible.builtin.copy:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
@@ -17,26 +31,50 @@
   with_items:
     - src: /tmp/crun
       dest: /usr/local/bin/crun
-    - src: "/tmp/wasmlibs/libwasmedge.so.{{ k8s_crun_wasmlib_version }}"
-      dest: "/usr/wasmedge/lib/libwasmedge.so.{{ k8s_crun_wasmlib_version }}"
+    - src: /tmp/{{ __k8s_crun_wasmlib_path }}
+      dest: "/usr/crun/lib/{{ __k8s_crun_wasmlib_path | basename }}"
+      run: "{{ k8s_crun_wasm }}"
+    - src: /tmp/{{ __k8s_crun_krunlib_path }}
+      dest: "/usr/crun/lib/{{ __k8s_crun_krunlib_path | basename }}"
+      run: "{{ k8s_crun_krun }}"
+  vars:
+    __k8s_crun_wasmlib_path: "{{ __k8s_crun_extended_archive.files | select('match', '^wasmlibs/libwasmedge\\.so\\.\\d+\\.\\d+\\.\\d+$') | list | first }}"
+    __k8s_crun_krunlib_path: "{{ __k8s_crun_extended_archive.files | select('match', '^krunlibs/libkrun\\.so\\.\\d+\\.\\d+\\.\\d+$') | list | first }}"
 
-- name: k8s common - crun | Create symlink to wasm lib
+- name: k8s common - crun | Create symlink to shared libs and bins
+  when: __k8s_crun_extended_archive.changed and item.run | default(true)
   ansible.builtin.file:
-    src: "/usr/wasmedge/lib/libwasmedge.so.{{ k8s_crun_wasmlib_version }}"
-    dest: "/usr/wasmedge/lib/{{ item }}"
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
     state: link
   loop:
-    - 'libwasmedge.so.{{ k8s_crun_wasmlib_version | split(".") | first }}'
-    - "libwasmedge.so"
+    - src: "/usr/crun/lib/{{ __k8s_crun_wasmlib_path }}"
+      dest: "/usr/crun/lib/{{ __k8s_crun_wasmlib_path | split(\".\") | first }}"
+      run: "{{ k8s_crun_wasm }}"
+    - src: "/usr/crun/lib/{{ __k8s_crun_wasmlib_path }}"
+      dest: "/usr/crun/lib/libwasmedge.so"
+      run: "{{ k8s_crun_wasm }}"
+    - src: "/usr/crun/lib/{{ __k8s_crun_krunlib_path }}"
+      dest: "/usr/crun/lib/{{ __k8s_crun_krunlib_path | split(\".\") | first }}"
+      run: "{{ k8s_crun_krun }}"
+    - src: "/usr/crun/lib/{{ __k8s_crun_krunlib_path }}"
+      dest: "/usr/crun/lib/libkrun.so"
+      run: "{{ k8s_crun_krun }}"
+    - src: "/usr/local/bin/crun"
+      dest: "/usr/local/bin/krun"
+      run: "{{ k8s_crun_krun }}"
+  vars:
+    __k8s_crun_wasmlib_path: "{{ __k8s_crun_extended_archive.files | select('match', '^wasmlibs/libwasmedge\\.so\\.\\d+\\.\\d+\\.\\d+$') | list | first | basename }}"
+    __k8s_crun_krunlib_path: "{{ __k8s_crun_extended_archive.files | select('match', '^krunlibs/libkrun\\.so\\.\\d+\\.\\d+\\.\\d+$') | list | first | basename }}"
 
-- name: k8s common - crun | Add wasm libs to server lib store
+- name: k8s common - crun | Add libs to server lib store
   ansible.builtin.lineinfile:
     path: /etc/ld.so.conf
-    line: /usr/wasmedge/lib
-  register: __was_lib_link_ad
+    line: /usr/crun/lib
+  register: __k8s_crun_lib_link
 
 - name: k8s common - crun | Reload lib link config
-  when: __was_lib_link_ad.changed
+  when: __k8s_crun_lib_link.changed
   ansible.builtin.command: ldconfig
 
 - name: k8s common - crun | Test crun
