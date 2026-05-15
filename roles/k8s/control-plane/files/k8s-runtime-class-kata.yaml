@@ -3,3 +3,10 @@ kind: RuntimeClass
 metadata:
   name: kata
 handler: kata
+scheduling:
+  nodeSelector:
+    node.kubernetes.io/kvm-enabled: true
+overhead:
+  podFixed:
+    memory: "128Mi"
+    cpu: "250m"
