@@ -7,7 +7,6 @@
     chart_ref: oci://quay.io/cilium/charts/cilium
     chart_version: "{{ k8s_cilium_chart_version }}"
     release_namespace: kube-system
-    update_repo_cache: true
     create_namespace: true
     state: present
     atomic: true
