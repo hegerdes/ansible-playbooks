@@ -54,6 +54,22 @@ k8s_ensure_min_kernel_version_map:
   trixie: 7.0.*
   bookworm: 6.12.*
 
+k8s_disabled_kernel_modules:
+  # Wi-Fi / wireless device capabilities
+  - cfg80211 # Common wireless (Wi-Fi) configuration stack
+  - rfkill # Radio kill switch framework for Wi-Fi/Bluetooth
+  # Input devices
+  - joydev # Joystick/game controller input support
+  # Optical media
+  - sr_mod # SCSI CD/DVD drive support
+  - cdrom # CD-ROM device support
+  # QEMU / firmware interface
+  - qemu_fw_cfg # QEMU firmware configuration interface
+  # EFI / boot-time persistent storage
+  - efi_pstore # Store kernel logs/panic data in EFI pstore
+  # Misc / binary format support
+  - binfmt_misc # Support for executing alternate binary formats
+
 # Send extra headers to GitHub API calls
 k8s_gh_headers: {}
 
@@ -184,6 +200,10 @@ k8s_system_limits:
     limit: "nofile"
     value: 8192
     comment: "" # optional
+
+# Containerd prometheus address and debug sock
+k8s_containerd_metrics_address_tcp: none
+k8s_containerd_debug: false
 
 # Set and get versions and urls
 k8s_containerd_download_url: >-

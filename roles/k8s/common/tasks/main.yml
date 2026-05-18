@@ -79,6 +79,20 @@
     manager: auto
   tags: [k8s, k8s-prepare, k8s-base, apt]
 
+- name: k8s common | Disable unneeded kernel modules
+  ansible.builtin.copy:
+    content: "{{ k8s_disabled_kernel_modules_str }}"
+    dest: /etc/modprobe.d/disabled-modules.conf
+    mode: "0644"
+    owner: root
+    group: root
+  vars:
+    k8s_disabled_kernel_modules_str: |
+      {% for module in k8s_disabled_kernel_modules %}
+      blacklist {{ module }}
+      {% endfor %}
+  tags: [k8s, k8s-prepare, k8s-base, k8s-kernel]
+
 - name: k8s common | Ensure latest kernel
   when: k8s_ensure_min_kernel_version != "none" and not __k8s_meets_kernel_version_requirements
   ansible.builtin.include_tasks:
@@ -179,7 +193,7 @@
   ansible.posix.sysctl:
     name: "{{ item.key }}"
     value: "{{ item.val }}"
-    state: "{{ item.state | default(\"present\") }}"
+    state: '{{ item.state | default("present") }}'
     sysctl_set: true
     sysctl_file: /etc/sysctl.d/60-k8s.conf
   with_items: "{{ k8s_common_sysctl_conf }}"
@@ -191,7 +205,7 @@
 - name: k8s common | Setting system limits
   pam_limits:
     domain: "{{ item.user }}"
-    limit_type: "{{ item.type | default(\"-\") }}"
+    limit_type: '{{ item.type | default("-") }}'
     limit_item: "{{ item.limit }}"
     value: "{{ item.value }}"
     comment: "{{ item.comment | default(omit) }}"
@@ -313,7 +327,6 @@
     - http://ftp.de.debian.org/debian/pool/main/libn/libnet/libnet9_1.3+dfsg-3+b1_{{ system_arch_map[ansible_facts.architecture] }}.deb
     - http://ftp.de.debian.org/debian/pool/main/c/criu/criu_4.2-3_{{ system_arch_map[ansible_facts.architecture] }}.deb
   tags: [k8s, k8s-prepare, k8s-base, k8s-runtime, apt]
-
 
 - name: k8s common | Include install CRI
   ansible.builtin.include_tasks:
