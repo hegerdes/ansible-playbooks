@@ -57,8 +57,12 @@ for rt in "${RUNTIMES[@]}"; do
     time $cmd
 done
 
-
+# System info
 echo -e "System info:\n$(uname -a)\n$(lsb_release -a)"
+if command -v containerd >/dev/null 2>&1; then
+containerd --version
+fi
+
 echo "Errors:" >error.log
 echo "Will run ${RUNTIMES[*]} for $REPETITIONS times"
 echo "-----------------------------------"
