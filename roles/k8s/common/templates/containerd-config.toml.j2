@@ -207,13 +207,22 @@ imports = ['/etc/containerd/conf.d/*.toml']
     address = "/run/containerd-stargz-grpc/containerd-stargz-grpc.sock"
 {% endif %}
 
-# [debug]
-#  address = '/run/containerd/debug.sock'
-#   uid = 0
-#   gid = 0
-#   level = 'info'
-#   format = ''
 
-# [metrics]
-#   address = ''
-#   grpc_histogram = false
+{% if k8s_containerd_debug | default(false) %}
+
+[debug]
+ address = '/run/containerd/debug.sock'
+  uid = 0
+  gid = 0
+  level = 'info'
+
+{% endif %}
+
+
+{% if k8s_containerd_metrics_address_tcp != "none" %}
+
+[metrics]
+  address = "{{ k8s_containerd_metrics_address_tcp }}"
+  grpc_histogram = false
+
+{% endif %}
