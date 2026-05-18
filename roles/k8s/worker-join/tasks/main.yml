@@ -32,7 +32,6 @@
     path: "{{ k8s_pki_cert_path }}/ca.crt"
   register: __k8s_pki_ca
   changed_when: false
-  run_once: true
   no_log: true
   tags: [k8s, k8s-init, k8s-join, k8s-worker-join]
 
