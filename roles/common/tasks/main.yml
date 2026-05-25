@@ -24,18 +24,14 @@
   tags: [common, ssh]
 
 - name: Add Debian Backports apt repo
-  ignore_errors: true
-  ansible.builtin.apt_repository:
-    repo: "deb http://deb.debian.org/debian {{ ansible_facts['distribution_release'] }}-backports main"
+  when: ansible_facts.distribution == "Debian"
+  ansible.builtin.deb822_repository:
+    name: "{{ ansible_facts['distribution_release'] }}-backports"
+    types: deb
     state: present
-    filename: debian-backports
-  tags: [common, apt]
-
-- name: Install aptitude using apt
-  ansible.builtin.apt:
-    name: aptitude
-    state: latest
-    update_cache: true
+    uris: http://deb.debian.org/debian
+    suites: "{{ ansible_facts['distribution_release'] }}-backports"
+    components: [main]
   tags: [common, apt]
 
 - name: Install required system packages
@@ -51,10 +47,12 @@
       - "ca-certificates"
       - "wget"
       - "curl"
+      - "aptitude"
       - "tar"
       - "jq"
       - "gzip"
       - "pigz"
+      - "isal"
       - "pass"
       - "rsync"
       - "gnupg"
@@ -62,6 +60,7 @@
       - "openssl"
       - "apparmor"
       - "libffi-dev"
+      - "logrotate"
       - "lsb-release"
       - "python3-pip"
       - "policycoreutils"
@@ -120,6 +119,27 @@
     state: absent
   tags: [common, swap]
 
+- name: Ensure kernel modules are enabled
+  community.general.modprobe:
+    name: "{{ item }}"
+    state: present
+    persistent: present
+  loop: "{{ common_kernel_modules }}"
+  tags: [common, kernel]
+
+- name: Set sysctl parameters
+  ansible.posix.sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.val }}"
+    state: '{{ item.state | default("present") }}'
+    sysctl_set: true
+    sysctl_file: /etc/sysctl.d/60-ansible.conf
+  with_items: "{{ common_sysctl_conf }}"
+  loop_control:
+    label: "{{ item.key }}={{ item.val }}"
+    extended: true
+  tags: [common, kernel]
+
 - name: Mount devices
   mount:
     path: "{{ item.destination }}"
@@ -137,15 +157,6 @@
     path: /etc/default/grub
   register: __group_file
   tags: [common, sys]
-
-- name: Ensue cgroup memory support
-  when: __group_file.stat.exists
-  ansible.builtin.lineinfile:
-    path: /etc/default/grub
-    regexp: "^GRUB_CMDLINE_LINUX="
-    line: GRUB_CMDLINE_LINUX=""
-  tags: [common, sys]
-  notify: Update grub
 
 - name: Setting system limits
   pam_limits:

@@ -14,7 +14,7 @@ common_floating_ips: []
 common_ssh_key_repo: '{{lookup("env", "SSH_KEY_REPO") | default("none", true)}}'
 common_ssh_key_repo_branch: main
 common_unattended_upgrades_state: present
-common_selinux_mode: permissive             # can be: disabled,enforcing,permissive
+common_selinux_mode: permissive # can be: disabled,enforcing,permissive
 common_selinux_policy: targeted
 # List of key_paths
 common_ssh_keys: []
@@ -28,6 +28,12 @@ common_default_network_device: ens10
 #     key_options: ''               # optional
 # List if lines present in sshd_config
 sshd_options: []
+
+common_kernel_modules: []
+# Example
+# common_kernel_modules: [br_netfilter]
+
+common_sysctl_conf: []
 
 # Mounts
 common_device_mounts: []
