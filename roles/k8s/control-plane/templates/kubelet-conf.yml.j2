@@ -5,12 +5,8 @@ kind: KubeletConfiguration
 # See https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/
 featureGates:
   {{ k8s_feature_gates | default({}) | to_nice_yaml(indent=2) | indent(width=2) }}
-  # HPAScaleToZero: true
-  # KubeletInUserNamespace: true
   # ClusterTrustBundle: true
   # ClusterTrustBundleProjection: true
-  # ImageVolume: true
-  # EventedPLEG: true
 
 authentication:
   anonymous:
@@ -20,6 +16,7 @@ authentication:
     enabled: true
   x509:
     clientCAFile: "{{ k8s_pki_cert_path }}/ca.crt"
+
 authorization:
   mode: Webhook
   webhook:
@@ -49,6 +46,11 @@ staticPodPath: /etc/kubernetes/manifests
 cgroupDriver: systemd
 failSwapOn: true
 readOnlyPort: 0
+enableServer: true
+fileCheckFrequency: 30s
+httpCheckFrequency: 30s
+volumeStatsAggPeriod: 5m
+tlsMinVersion: VersionTLS13
 imageMinimumGCAge: 5m
 imageMaximumGCAge: 1h
 volumeStatsAggPeriod: 5m
@@ -56,6 +58,16 @@ enableProfilingHandler: false
 enableDebugFlagsHandler: false
 failCgroupV1: true
 seccompDefault: true
+
+# System
+systemReserved:
+  cpu: 100m
+  memory: 100Mi
+
+# Kubelet & CRI
+kubeReserved
+  cpu: 100m
+  memory: 100Mi
 
 logging:
   flushFrequency: 0
