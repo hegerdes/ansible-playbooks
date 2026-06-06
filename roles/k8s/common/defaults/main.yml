@@ -11,10 +11,11 @@ k8s_install_crun: true
 k8s_install_runc: true
 k8s_install_spin: true
 k8s_install_urunc: false
-k8s_install_criu: false
 k8s_install_kata_containers: false
 k8s_install_stargz: false
 k8s_install_firecracker: false
+k8s_install_criu: false # used unstable packages
+k8s_extra_packages: []
 k8s_absent_packages: [wget, vim-tiny, manpages, man-db]
 k8s_youki_with_wasm: false
 k8s_crun_wasm: false

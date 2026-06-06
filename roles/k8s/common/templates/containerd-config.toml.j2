@@ -79,6 +79,7 @@ imports = ['/etc/containerd/conf.d/*.toml']
       # Docs: https://gvisor.dev/docs/user_guide/containerd/configuration/
       [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.runsc]
         runtime_type = 'io.containerd.runsc.v1'
+        pod_annotations = [ "dev.gvisor.*" ]
         [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.runsc.options]
           TypeUrl = 'io.containerd.runsc.v1.options'
           ConfigPath = '/etc/containerd/runsc.toml'

@@ -3,11 +3,11 @@
 - name: k8s common | Wait for cloud init to finish
   community.general.cloud_init_data_facts:
     filter: status
-  register: _cloud_init_res
+  register: __k8s_cloud_init_res
   until: >-
-    _cloud_init_res.cloud_init_data_facts.status.v1.stage is defined
+    __k8s_cloud_init_res.cloud_init_data_facts.status.v1.stage is defined
     and not
-    _cloud_init_res.cloud_init_data_facts.status.v1.stage
+    __k8s_cloud_init_res.cloud_init_data_facts.status.v1.stage
   retries: 25
   delay: 10
   tags: [k8s, k8s-prepare, k8s-base]
@@ -32,7 +32,7 @@
 
 - name: k8s common | Ensure required packages are installed
   ansible.builtin.apt:
-    name: "{{ k8s_base_packages }}"
+    name: "{{ k8s_base_packages + k8s_extra_packages }}"
     state: present
     update_cache: true
     install_recommends: false
@@ -40,37 +40,34 @@
     cache_valid_time: "{{ 0 if(__k8s_apt_backports.changed) else 86400 }}"
   vars:
     k8s_base_packages:
-      [
-        gnupg,
-        lsb-release,
-        ca-certificates,
-        pigz, # fast decompress for container images
-        isal, # even faster decompress for container images
-        cryptsetup, # support LUKS disk encryption
-        apparmor,
-        apparmor-profiles-extra,
-        apt-transport-https,
-        python3-debian,
-        jq, # json parsing and validating
-        yq, # yaml parsing and validating
-        unzip,
-        socat,
-        mtr-tiny,
-        logrotate,
-        isc-dhcp-client,
-        fuse,
-        open-iscsi,
-        ipvsadm,
-        auditd,
-        dbus,
-        libyajl2,
-      ]
-      # Needed for youki wasm
-      # policycoreutils,
-      # selinux-basics,
-      # selinux-policy-default,
-      # semodule-utils,
-      # setools,
+      - gnupg
+      - lsb-release
+      - ca-certificates
+      - pigz # fast decompress for container images
+      - isal # even faster decompress for container images
+      - cryptsetup # support LUKS disk encryption
+      - apparmor
+      - python3-debian
+      - jq # json parsing and validating
+      - yq # yaml parsing and validating
+      - unzip
+      - socat
+      - mtr-tiny
+      - logrotate
+      - isc-dhcp-client
+      - fuse
+      - erofs-utils
+      - open-iscsi
+      - ipvsadm
+      - auditd
+      - dbus
+      - libjson-c5
+      - "{{ 'crun' if k8s_install_criu }}"
+      # - policycoreutils
+      # - selinux-basics
+      # - selinux-policy-default
+      # - semodule-utils
+      # - setools
   tags: [k8s, k8s-prepare, k8s-base, apt]
 
 - name: k8s common | Gather package facts
@@ -312,24 +309,28 @@
       - 'kubelet{{ "=" + k8s_version + "*" if (k8s_version != "latest") }}'
   tags: [k8s, k8s-prepare, k8s-base, k8s-runtime, apt]
 
-- name: k8s common | Install criu
-  when: k8s_install_criu
-  ansible.builtin.apt:
-    # https://packages.debian.org/de/forky/criu
-    # https://packages.debian.org/forky/libnet9 - dependency
-    deb: "{{ item }}"
-    state: present
-    update_cache: true
-    install_recommends: false
-    allow_downgrade: true
-    autoremove: true
-  loop:
-    - http://ftp.de.debian.org/debian/pool/main/libn/libnet/libnet9_1.3+dfsg-3+b1_{{ system_arch_map[ansible_facts.architecture] }}.deb
-    - http://ftp.de.debian.org/debian/pool/main/libn/libnl3/libnl-3-200_3.12.0-2+b1_{{ system_arch_map[ansible_facts.architecture] }}.deb
-    - http://ftp.de.debian.org/debian/pool/main/libn/libnl3/libnl-genl-3-200_3.12.0-2+b1_{{ system_arch_map[ansible_facts.architecture] }}.deb
-    - http://ftp.de.debian.org/debian/pool/main/c/criu/libcompel1_4.2-4_{{ system_arch_map[ansible_facts.architecture] }}.deb
-    - http://ftp.de.debian.org/debian/pool/main/c/criu/criu_4.2-4_{{ system_arch_map[ansible_facts.architecture] }}.deb
-  tags: [k8s, k8s-prepare, k8s-base, k8s-runtime, apt]
+# # This is currently hacky as fuck since debian trixie does not have the required versions yet
+# - name: k8s common | Install criu
+#   when: k8s_install_criu
+#   ansible.builtin.apt:
+#     # https://packages.debian.org/de/forky/criu
+#     # https://packages.debian.org/forky/libnet9 - dependency
+#     # https://packages.debian.org/forky/libnl-3-200 - dependency
+#     # https://packages.debian.org/forky/libnl-genl-3-200 - dependency
+#     # https://packages.debian.org/forky/libcompel1 - dependency
+#     deb: "{{ item }}"
+#     state: present
+#     update_cache: true
+#     install_recommends: false
+#     allow_downgrade: true
+#     autoremove: true
+#   loop:
+#     - http://ftp.de.debian.org/debian/pool/main/libn/libnet/libnet9_1.3+dfsg-3+b1_{{ system_arch_map[ansible_facts.architecture] }}.deb
+#     - http://ftp.de.debian.org/debian/pool/main/libn/libnl3/libnl-3-200_3.12.0-2+b1_{{ system_arch_map[ansible_facts.architecture] }}.deb
+#     - http://ftp.de.debian.org/debian/pool/main/libn/libnl3/libnl-genl-3-200_3.12.0-2+b1_{{ system_arch_map[ansible_facts.architecture] }}.deb
+#     - http://ftp.de.debian.org/debian/pool/main/c/criu/libcompel1_4.2-4_{{ system_arch_map[ansible_facts.architecture] }}.deb
+#     - http://ftp.de.debian.org/debian/pool/main/c/criu/criu_4.2-4_{{ system_arch_map[ansible_facts.architecture] }}.deb
+#   tags: [k8s, k8s-prepare, k8s-base, k8s-runtime, apt]
 
 - name: k8s common | Include install CRI
   ansible.builtin.include_tasks:
