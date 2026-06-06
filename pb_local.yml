@@ -20,10 +20,11 @@
     k8s_crun_krun: true
     k8s_install_wasi: false
     # k8s_kata_containers_download_url:
-    k8s_ensure_min_kernel_version: 6.19.*
+    k8s_ensure_min_kernel_version: 7.0.*
     k8s_install_spin: false
     k8s_inventory_as_hostname: false
-    ansible_ssh_private_key_file: ~/.ssh/aws-cri-bench
+    # ansible_ssh_private_key_file: ~/.ssh/aws-cri-bench
+    ansible_ssh_private_key_file: "{{ inventory_dir }}/web-key"
     k8s_absent_packages: []
     k8s_unattended_upgrades_state: absent
 
@@ -63,11 +64,11 @@
     k8s_install_gvisor: false
     k8s_version: 1.29.3
 
-    k8s_wasmedge_download_url: "{{ lookup(\"url\", \"https://api.github.com/repos/containerd/runwasi/releases/tags/\" + k8s_wasmedge_version) | from_json }}"
-    k8s_wasmtime_download_url: "{{ lookup(\"url\", \"https://api.github.com/repos/containerd/runwasi/releases/tags/\" + k8s_wasmedge_version) | from_json |
-      json_query(k8s_wasmtime_query) | first }}"
+    k8s_wasmedge_download_url: '{{ lookup("url", "https://api.github.com/repos/containerd/runwasi/releases/tags/" + k8s_wasmedge_version) | from_json }}'
+    k8s_wasmtime_download_url: '{{ lookup("url", "https://api.github.com/repos/containerd/runwasi/releases/tags/" + k8s_wasmedge_version) | from_json |
+      json_query(k8s_wasmtime_query) | first }}'
     # TODO: Remove version query one none pre-release is public
-    k8s_wasmedge_version: "{{ lookup(\"url\", \"https://api.github.com/repos/containerd/runwasi/releases?per_page=3\") | from_json }}"
+    k8s_wasmedge_version: '{{ lookup("url", "https://api.github.com/repos/containerd/runwasi/releases?per_page=3") | from_json }}'
 
     k8s_kata_containers_query: assets[?starts_with(name, 'kata-static')].browser_download_url
     k8s_runc_query: "assets[?ends_with(name, '{{ system_arch_map[ansible_facts.architecture] }}' )].browser_download_url"
@@ -90,26 +91,26 @@
     # k8s_runc_version: 1.17
     # k8s_cni_plugins_version: 1.2.0
 
-    k8s_containerd_download_url_default: "{{ lookup(\"url\", \"https://api.github.com/repos/containerd/containerd/releases/latest\") | from_json |
-      json_query(k8s_containerd_query) | first if(k8s_containerd_version == \"latest\") else \"https://github.com/containerd/containerd/releases/download/v\" +
-      k8s_containerd_version + \"/containerd-\" + k8s_containerd_version + \"-\" + ansible_facts.system | lower + \"-\" +
-      containerd_arch_map[ansible_facts.architecture] + \".tar.gz\" }}"
+    k8s_containerd_download_url_default: '{{ lookup("url", "https://api.github.com/repos/containerd/containerd/releases/latest") | from_json |
+      json_query(k8s_containerd_query) | first if(k8s_containerd_version == "latest") else "https://github.com/containerd/containerd/releases/download/v" +
+      k8s_containerd_version + "/containerd-" + k8s_containerd_version + "-" + ansible_facts.system | lower + "-" +
+      containerd_arch_map[ansible_facts.architecture] + ".tar.gz" }}'
 
-    k8s_runc_download_url_default: "{{ lookup(\"url\", \"https://api.github.com/repos/opencontainers/runc/releases/latest\") | from_json |
-      json_query(k8s_runc_query) | first if(k8s_runc_version == \"latest\") else \"https://github.com/opencontainers/runc/releases/download/v\" +
-      k8s_runc_version + \"/runc.\" + containerd_arch_map[ansible_facts.architecture] }}"
+    k8s_runc_download_url_default: '{{ lookup("url", "https://api.github.com/repos/opencontainers/runc/releases/latest") | from_json |
+      json_query(k8s_runc_query) | first if(k8s_runc_version == "latest") else "https://github.com/opencontainers/runc/releases/download/v" +
+      k8s_runc_version + "/runc." + containerd_arch_map[ansible_facts.architecture] }}'
 
-    k8s_cni_plugin_download_url_default: "{{ lookup(\"url\", \"https://api.github.com/repos/containernetworking/plugins/releases/latest\") | from_json |
-      json_query(k8s_cni_plugins_query) | first if(k8s_cni_plugins_version == \"latest\") else
-      \"https://github.com/containernetworking/plugins/releases/download/v\" + k8s_cni_plugins_version + \"/cni-plugins-\" + ansible_facts.system | lower +
-      \"-\" + containerd_arch_map[ansible_facts.architecture] + \"-v\" + k8s_cni_plugins_version + \".tgz\" }}"
+    k8s_cni_plugin_download_url_default: '{{ lookup("url", "https://api.github.com/repos/containernetworking/plugins/releases/latest") | from_json |
+      json_query(k8s_cni_plugins_query) | first if(k8s_cni_plugins_version == "latest") else
+      "https://github.com/containernetworking/plugins/releases/download/v" + k8s_cni_plugins_version + "/cni-plugins-" + ansible_facts.system | lower +
+      "-" + containerd_arch_map[ansible_facts.architecture] + "-v" + k8s_cni_plugins_version + ".tgz" }}'
     k8s_credential_provider_version: "0.1.0"
     k8s_credential_provider_query: "assets[?contains(name, 'linux_{{ system_arch_map[ansible_facts.architecture] }}')].browser_download_url"
-    k8s_credential_provider_download_url: "{{ lookup(\"url\", \"https://api.github.com/repos/hegerdes/kubelet-static-credential-provider/releases/latest\") |
-      from_json | json_query(k8s_credential_provider_query) | first if(k8s_cni_plugins_version == \"latest\") else
-      \"https://github.com/hegerdes/kubelet-static-credential-provider/releases/download/v\" + k8s_credential_provider_version +
-      \"/static-credential-provider_\" + k8s_credential_provider_version + \"_linux_\"+ containerd_arch_map[ansible_facts.architecture] + \"-v\" +
-      k8s_cni_plugins_version + \".tgz\" }}"
+    k8s_credential_provider_download_url: '{{ lookup("url", "https://api.github.com/repos/hegerdes/kubelet-static-credential-provider/releases/latest") |
+      from_json | json_query(k8s_credential_provider_query) | first if(k8s_cni_plugins_version == "latest") else
+      "https://github.com/hegerdes/kubelet-static-credential-provider/releases/download/v" + k8s_credential_provider_version +
+      "/static-credential-provider_" + k8s_credential_provider_version + "_linux_"+ containerd_arch_map[ansible_facts.architecture] + "-v" +
+      k8s_cni_plugins_version + ".tgz" }}'
 
     system_arch_map:
       x86_64: amd64
