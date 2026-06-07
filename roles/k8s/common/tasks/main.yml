@@ -32,7 +32,7 @@
 
 - name: k8s common | Ensure required packages are installed
   ansible.builtin.apt:
-    name: "{{ k8s_base_packages + k8s_extra_packages }}"
+    name: "{{ k8s_base_packages + k8s_extra_packages | unique }}"
     state: present
     update_cache: true
     install_recommends: false
@@ -62,7 +62,7 @@
       - auditd
       - dbus
       - libjson-c5
-      - "{{ 'crun' if k8s_install_criu }}"
+      - "{{ 'crun' if k8s_install_criu else 'jq' }}"
       # - policycoreutils
       # - selinux-basics
       # - selinux-policy-default
