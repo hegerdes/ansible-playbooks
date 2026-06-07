@@ -4,7 +4,6 @@
 This role performs basic operation that should be done on every managed host. Including
  * Installing:
     * software-properties-common
-    * apt-transport-https
     * ca-certificates
     * wget
     * curl

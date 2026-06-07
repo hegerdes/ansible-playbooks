@@ -10,7 +10,6 @@
       - yamllint
       - python3-debian
       - ca-certificates
-      - apt-transport-https
       - apparmor
       - systemd-container
       - uidmap # needed for rootless

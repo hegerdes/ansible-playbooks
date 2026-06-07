@@ -43,7 +43,6 @@
   vars:
     common_packages:
       - "software-properties-common"
-      - "apt-transport-https"
       - "ca-certificates"
       - "wget"
       - "curl"

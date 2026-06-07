@@ -2,7 +2,7 @@
 ---
 - name: Install needed packages
   ansible.builtin.apt:
-    name: [curl, gnupg, lsb-release, apt-transport-https]
+    name: [curl, gnupg, lsb-release]
     state: present
     update_cache: true
     install_recommends: true

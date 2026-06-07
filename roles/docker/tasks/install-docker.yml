@@ -2,17 +2,7 @@
 ---
 - name: Install needed packages
   ansible.builtin.apt:
-    name:
-      [
-        curl,
-        gnupg,
-        cifs-utils,
-        lsb-release,
-        yamllint,
-        python3-debian,
-        ca-certificates,
-        apt-transport-https,
-      ]
+    name: [curl, gnupg, cifs-utils, lsb-release, yamllint, python3-debian, ca-certificates]
     state: present
     update_cache: true
     install_recommends: true

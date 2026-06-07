@@ -7,7 +7,7 @@ COPY requirements.txt /app/requirements.txt
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN apt-get update && apt-get install --yes --no-install-recommends \
     curl nano gpg ssh-client jq net-tools ca-certificates iputils-ping \
-    iproute2 rsync apt-transport-https lsb-release gnupg python3 python3-pip \
+    iproute2 rsync lsb-release gnupg python3 python3-pip \
     && mkdir -p /etc/apt/keyrings \
     && if [ "$(uname -m)" != "x86_64" ]; then \
     apt-get install --yes --no-install-recommends make gcc python3-dev libc6-dev libffi-dev; \
