@@ -71,6 +71,9 @@ k8s_disabled_kernel_modules:
   # Misc / binary format support
   - binfmt_misc # Support for executing alternate binary formats
 
+# Skip install of these cni plugins
+k8s_cni_plugins_exclude: [static, host-local, dhcp, vrf, sbr, host-device]
+
 # Send extra headers to GitHub API calls
 k8s_gh_headers: {}
 
@@ -139,6 +142,8 @@ k8s_common_sysctl_conf:
   # Keep kernel address exposures out of various /proc files.
   - {key: kernel.kptr_restrict, val: 1} # kexec is dangerous: it enables replacement of the running kernel. | Tails-3
   - {key: kernel.kexec_load_disabled, val: 1}
+  # Set kernel core dump path
+  - {key: kernel.core_pattern, val: /root/%e-%p-%u-%g-%s-%t.core}
 
   # Allow more (default is 8192) inotify watch for large workloads.
   - {key: fs.inotify.max_user_watches, val: 524288}
