@@ -181,8 +181,9 @@
   vars:
     k8s_kernel_modules:
       - [br_netfilter, overlay]
-      - "{{ ['vhost_vsock', 'vhost_net'] if(k8s_install_kata_containers) else [] }}"
+      - "{{ ['vhost_vsock', 'vhost_net'] if(__k8s_virt_support) else [] }}"
       - "{{ ['fuse'] if(k8s_install_stargz) else [] }}"
+    __k8s_virt_support: "{{ k8s_install_kata_containers or k8s_install_firecracker or k8s_crun_krun }}"
   register: __k8s_modprobe
   tags: [k8s, k8s-prepare, k8s-base]
 
