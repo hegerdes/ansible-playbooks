@@ -4,6 +4,7 @@
   ansible.builtin.unarchive:
     src: "{{ k8s_containerd_download_url }}"
     dest: /usr/local
+    list_files: true
     remote_src: true
     exclude: [bin/containerd-stress]
     creates: /usr/local/bin/containerd
@@ -19,6 +20,7 @@
     creates: /opt/cni/bin/bridge
     exclude: "{{ ['README.md', 'LICENSE'] + k8s_cni_plugins_exclude }}"
     remote_src: true
+    list_files: true
   retries: 3
   register: __k8s_cni_archive
 
