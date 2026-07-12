@@ -53,7 +53,6 @@ volumeStatsAggPeriod: 5m
 tlsMinVersion: VersionTLS13
 imageMinimumGCAge: 5m
 imageMaximumGCAge: 1h
-volumeStatsAggPeriod: 5m
 enableProfilingHandler: false
 enableDebugFlagsHandler: false
 failCgroupV1: true
@@ -65,7 +64,7 @@ systemReserved:
   memory: 100Mi
 
 # Kubelet & CRI
-kubeReserved
+kubeReserved:
   cpu: 100m
   memory: 100Mi
 
