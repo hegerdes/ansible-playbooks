@@ -20,3 +20,4 @@ botocore
 boto3
 azure-mgmt-core
 msal
+azure-storage-file-share
