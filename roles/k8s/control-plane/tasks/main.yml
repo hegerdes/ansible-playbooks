@@ -112,6 +112,7 @@
     state: "{{ k8s_init_resources.state | default('present') }}"
     definition: "{{ k8s_init_resources.definition }}"
     wait: "{{ k8s_init_resources.wait | default(true) }}"
+  retries: 5
   loop: "{{ k8s_default_manifests + k8s_init_resources_manifests | flatten }}"
   loop_control:
     loop_var: k8s_init_resources
@@ -302,14 +303,4 @@
   ansible.builtin.include_tasks:
     file: "setup-cni-{{ k8s_cni | lower }}.yml"
   run_once: true
-  tags:
-    [
-      k8s,
-      k8s-init,
-      k8s-cp-init,
-      k8s-cni,
-      k8s-flannel,
-      k8s-calico,
-      k8s-cilium,
-      k8s-aws-vpc,
-    ]
+  tags: [k8s, k8s-init, k8s-cp-init, k8s-cni, k8s-flannel, k8s-calico, k8s-cilium, k8s-aws-vpc]

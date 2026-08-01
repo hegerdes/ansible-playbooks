@@ -7,7 +7,7 @@
   become: true
   gather_facts: true
   vars:
-    k8s_version: 1.36.2
+    k8s_version: 1.36.3
     k8s_ensure_min_kernel_version: 7.0.*
     k8s_containerd_metrics_address_tcp: 0.0.0.0:1234
 
