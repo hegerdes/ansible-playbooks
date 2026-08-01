@@ -21,3 +21,6 @@ boto3
 azure-mgmt-core
 msal
 azure-storage-file-share
+azure-mgmt-hybridcompute
+azure-mgmt-cognitiveservices
+azure-mgmt-databricks

@@ -1,5 +1,5 @@
+from __future__ import absolute_import, division, print_function
 
-from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 DOCUMENTATION = """
@@ -54,13 +54,20 @@ RETURN = """
 
 from ansible.plugins.lookup import LookupBase
 from ansible.utils.display import Display
-from azure.identity import ManagedIdentityCredential, VisualStudioCodeCredential, AzureCliCredential, ChainedTokenCredential
+from azure.identity import (
+    ManagedIdentityCredential,
+    VisualStudioCodeCredential,
+    AzureCliCredential,
+    ChainedTokenCredential,
+)
 from azure.keyvault.secrets import SecretClient
 from azure.keyvault.keys import KeyClient
 from jwcrypto.jwk import JWK
 
 import json
+
 display = Display()
+
 
 class LookupModule(LookupBase):
     def run(self, terms, variables=None, **kwargs):
@@ -70,11 +77,9 @@ class LookupModule(LookupBase):
         vsCredential = VisualStudioCodeCredential()
         azCreds = ChainedTokenCredential(azCredential, miCredential, vsCredential)
 
-
         # First of all populate options,
         # this will already take into account env vars and ini config
         self.set_options(var_options=variables, direct=kwargs)
-
 
         vault_url = kwargs.pop('vault_url', None)
         keyvaultType = kwargs.pop('vault_object', 'secret')
@@ -89,13 +94,17 @@ class LookupModule(LookupBase):
         for term in terms:
             display.debug('Getting secret: %s' % term)
             if keyvaultType == 'secret':
-                    ret.append(azSecClient.get_secret(term).value)
+                ret.append(azSecClient.get_secret(term).value)
             elif keyvaultType == 'key':
-                    az_key = azKeyClient.get_key(term).key
-                    az_jwk = JWK.from_json(json.dumps(az_key._to_generated_model().serialize()))
-                    ret.append(az_jwk.export_to_pem(private_key=keyvaultPvtKey).decode('utf-8'))
+                az_key = azKeyClient.get_key(term).key
+                az_jwk = JWK.from_json(
+                    json.dumps(az_key._to_generated_model().serialize())
+                )
+                ret.append(
+                    az_jwk.export_to_pem(private_key=keyvaultPvtKey).decode('utf-8')
+                )
             else:
-                    raise NotImplemented('Unsupported KeyVault Type')
+                raise NotImplemented('Unsupported KeyVault Type')
             # match keyvaultType:
             #     case "secret":
             #         ret.append(azSecClient.get_secret(term).value)
