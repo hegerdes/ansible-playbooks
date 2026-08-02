@@ -9,7 +9,7 @@
 
 - name: Download and unzip promtail
   unarchive:
-    src: '{{ lookup("url", "https://api.github.com/repos/grafana/loki/releases/latest") | from_json | json_query(__promtail_query) | select("search", promtail_arch_map[ansible_facts.architecture]) | list | first }}'
+    src: '{{ lookup("url", "https://api.github.com/repos/grafana/loki/releases/tags/v3.6.8") | from_json | json_query(__promtail_query) | select("search", promtail_arch_map[ansible_facts.architecture]) | list | first }}'
     dest: /usr/local/bin/
     remote_src: true
     list_files: true
