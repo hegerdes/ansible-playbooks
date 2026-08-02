@@ -1,5 +1,15 @@
 # Deploy playbook
 
+- name: K8s-Cluster-Preparation
+  hosts: k8s
+  become: true
+  gather_facts: true
+  tasks:
+    - name: Setting facts so that they will be persisted in the fact cache
+      ansible.builtin.set_fact:
+        __ssh_extra_args: "{{ __ssh_extra_args }}"
+        cacheable: yes
+
 - name: DNS
   hosts: k8s
   become: false
