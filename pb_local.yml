@@ -20,7 +20,7 @@
     k8s_crun_krun: true
     k8s_install_wasi: false
     # k8s_kata_containers_download_url:
-    k8s_ensure_min_kernel_version: 7.0.*
+    k8s_ensure_min_kernel_version: 7.1.*
     k8s_install_spin: false
     k8s_inventory_as_hostname: false
     # ansible_ssh_private_key_file: ~/.ssh/aws-cri-bench
@@ -62,7 +62,6 @@
     k8s_init_resources_manifests: []
     k8s_init_default_resources: []
     k8s_install_gvisor: false
-    k8s_version: 1.29.3
 
     k8s_wasmedge_download_url: '{{ lookup("url", "https://api.github.com/repos/containerd/runwasi/releases/tags/" + k8s_wasmedge_version) | from_json }}'
     k8s_wasmtime_download_url: '{{ lookup("url", "https://api.github.com/repos/containerd/runwasi/releases/tags/" + k8s_wasmedge_version) | from_json |
@@ -127,8 +126,16 @@
       select('match', 'containerd-shim') }}"
 
     aws_vpc_ipv6_cidr: "{{ (((lookup('pipe', 'aws ec2 describe-vpcs') | from_json).Vpcs | first).Ipv6CidrBlockAssociationSet | first).Ipv6CidrBlock }}"
+    k8s_gh_headers: {}
 
   tasks:
+    - debug:
+        msg: |
+          {{
+          lookup("url", "https://api.github.com/repos/kubernetes/kubernetes/releases/latest", headers=k8s_gh_headers)
+          | from_json | json_query("name") | replace("v","")
+          }}
+
     - debug:
         msg: |
           {{ aws_vpc_ipv6_cidr | ansible.utils.ipsubnet(64, 6) }}

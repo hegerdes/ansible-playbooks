@@ -1,5 +1,11 @@
 ---
-k8s_version: 1.36.3
+# Defaults to latest version. Override for idempotence
+# Version number only, no "v" prefix
+k8s_version: >-
+  {{
+    lookup("url", "https://api.github.com/repos/kubernetes/kubernetes/releases/latest", headers=k8s_gh_headers)
+    | from_json | json_query("name") | replace("v","")
+  }}
 
 # Which cri to use: runc, crun, youki or runsc, kata-containers
 k8s_cri: runc

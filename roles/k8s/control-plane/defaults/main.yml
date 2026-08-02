@@ -1,5 +1,11 @@
 ---
-k8s_version: 1.36.3
+# Defaults to latest version. Override for idempotence
+# Version number only, no "v" prefix
+k8s_version: >-
+  {{
+    lookup("url", "https://api.github.com/repos/kubernetes/kubernetes/releases/latest", headers=k8s_gh_headers)
+    | from_json | json_query("name") | replace("v","")
+  }}
 k8s_dual_stack: false
 k8s_cp_ping_check: true
 k8s_install_core_dns: true
@@ -162,6 +168,9 @@ k8s_patches:
         path: /spec/podCIDRs
         value:
           - "{{ k8s_node_pod_cidr }}"
+
+# Send extra headers to GitHub API calls
+k8s_gh_headers: {}
 
 ######### Taints & Roles #########
 k8s_remove_no_schedule_cp_taints: false
