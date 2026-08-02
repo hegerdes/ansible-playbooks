@@ -20,7 +20,7 @@
     k8s_crun_krun: true
     k8s_install_wasi: false
     # k8s_kata_containers_download_url:
-    k8s_ensure_min_kernel_version: 7.1.*
+    k8s_ensure_min_kernel_version: "{{ k8s_ensure_min_kernel_version_map[ansible_facts.lsb.codename] }}"
     k8s_install_spin: false
     k8s_inventory_as_hostname: false
     # ansible_ssh_private_key_file: ~/.ssh/aws-cri-bench
