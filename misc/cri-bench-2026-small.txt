@@ -1,0 +1,78 @@
+root@debian-8gb-fsn1-1:~# /srv/cri-bench.sh
+Stopping unneeded services...
+Ensure all tools are installed...
+Installing nerdctl!
+nerdctl version 2.2.2
+Running: nerdctl run  --network=none --rm --runtime crun busybox true
+
+real    0m0.276s
+user    0m0.058s
+sys     0m0.028s
+Running: nerdctl run  --network=none --rm --runtime runc busybox true
+
+real    0m0.231s
+user    0m0.045s
+sys     0m0.022s
+Running: nerdctl run  --network=none --rm --runtime runsc busybox true
+
+real    0m0.371s
+user    0m0.046s
+sys     0m0.027s
+Running: nerdctl run  --network=none --rm --runtime youki busybox true
+
+real    0m0.229s
+user    0m0.025s
+sys     0m0.046s
+System info:
+Linux debian-8gb-fsn1-1 6.12.86+deb13-cloud-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.12.86-1 (2026-05-08) x86_64 GNU/Linux
+Distributor ID: Debian
+Description:    Debian GNU/Linux 13 (trixie)
+Release:        13
+Codename:       trixie
+Will run crun runc runsc youki for 1000 times
+-----------------------------------
+Running: nerdctl run  --network=none --rm --runtime crun busybox true
+crun version 1.27.1
+commit: 3ec076b3b6714ec2f1a10533cf18d5605a6de637
+rundir: /run/user/0/crun
+spec: 1.0.0
++SYSTEMD +SELINUX +APPARMOR +CAP +SECCOMP +EBPF +CRIU +YAJL
+The benchmark for crun took 192 seconds
+Err: 8
+Mean: .17
+Min: 0.16
+Max: 0.24
+-----------------------------------
+Running: nerdctl run  --network=none --rm --runtime runc busybox true
+runc version 1.4.2
+commit: v1.4.2-0-gc241c0bb
+spec: 1.3.0
+go: go1.25.8
+libseccomp: 2.6.0
+The benchmark for runc took 241 seconds
+Err: 21
+Mean: .22
+Min: 0.21
+Max: 0.28
+-----------------------------------
+Running: nerdctl run  --network=none --rm --runtime runsc busybox true
+runsc version release-20260511.0
+spec: 1.2.1
+The benchmark for runsc took 377 seconds
+Err: 213
+Mean: .28
+Min: 0.32
+Max: 0.48
+-----------------------------------
+Running: nerdctl run  --network=none --rm --runtime youki busybox true
+youki version: 0.6.0
+commit: 0.6.0-32bdb58331e35d3b1f4d86250127c52960aa158d
+spec: 1.1.0
+rustc: 1.92.0
+The benchmark for youki took 246 seconds
+Err: 15
+Mean: .23
+Min: 0.20
+Max: 0.29
+-----------------------------------
+All done!

@@ -1,0 +1,56 @@
+System info:
+Linux 168.119.165.86 6.1.0-21-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.1.90-1 (2024-05-03) x86_64 GNU/Linux
+Distributor ID:	Debian
+Description:	Debian GNU/Linux 12 (bookworm)
+Release:	12
+Codename:	bookworm
+Will run crun runc runsc youki for 1000 times
+-----------------------------------
+Running: nerdctl run  --network=none --rm --runtime crun busybox true
+crun version 1.15
+commit: e6eacaf4034e84185fd8780ac9262bbf57082278
+rundir: /run/user/0/crun
+spec: 1.0.0
++SYSTEMD +SELINUX +APPARMOR +CAP +SECCOMP +EBPF +CRIU +YAJL
+The benchmark for crun took 306 seconds
+Err: 0
+Mean: .28
+Min: 0.13
+Max: 0.41
+-----------------------------------
+Running: nerdctl run  --network=none --rm --runtime runc busybox true
+runc version 1.1.13
+commit: v1.1.13-0-g58aa9203-dirty
+spec: 1.0.2-dev
+go: go1.21.11
+libseccomp: 2.5.5
+The benchmark for runc took 362 seconds
+Err: 1
+Mean: .34
+Min: 0.16
+Max: 0.44
+-----------------------------------
+Running: nerdctl run  --network=none --rm --runtime runsc busybox true
+runsc version release-20240617.0
+spec: 1.1.0-rc.1
+The benchmark for runsc took 642 seconds
+Err: 0
+Mean: .62
+Min: 0.44
+Max: 1.64
+-----------------------------------
+Running: nerdctl run  --network=none --rm --runtime youki busybox true
+youki version 0.3.3
+commit: 0.3.3-0-c03edea
+The benchmark for youki took 354 seconds
+Err: 36
+Mean: .32
+Min: 0.16
+Max: 0.46
+-----------------------------------
+All done!
+
+nerdctl run --network=none --memory 160kb --rm --runtime crun busybox true # min 160kb
+nerdctl run --network=none --memory 8mb --rm --runtime runc busybox true # min 8mb
+nerdctl run --network=none --memory 32mb --rm --runtime runsc busybox true # min 32mb
+nerdctl run --network=none --memory 2mb --rm --runtime youki busybox true # min 2mb
