@@ -50,7 +50,6 @@
       - "tar"
       - "jq"
       - "gzip"
-      - "pigz"
       - "isal"
       - "pass"
       - "rsync"
