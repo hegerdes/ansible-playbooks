@@ -43,7 +43,6 @@
       - gnupg
       - lsb-release
       - ca-certificates
-      - pigz # fast decompress for container images
       - isal # even faster decompress for container images
       - cryptsetup # support LUKS disk encryption
       - apparmor
