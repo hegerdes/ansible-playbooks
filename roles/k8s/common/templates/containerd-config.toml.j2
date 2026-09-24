@@ -211,7 +211,7 @@ imports = ['/etc/containerd/conf.d/*.toml']
 
 {% if k8s_containerd_debug | default(false) %}
 
-[debug]
+[plugins."io.containerd.server.v1.debug"]
  address = '/run/containerd/debug.sock'
   uid = 0
   gid = 0
@@ -222,7 +222,7 @@ imports = ['/etc/containerd/conf.d/*.toml']
 
 {% if k8s_containerd_metrics_address_tcp != "none" %}
 
-[metrics]
+[plugins."io.containerd.server.v1.metrics"]
   address = "{{ k8s_containerd_metrics_address_tcp }}"
   grpc_histogram = false
 
