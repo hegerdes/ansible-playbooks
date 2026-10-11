@@ -48,10 +48,10 @@
   loop: "{{ compose_files_stack | list }}"
   tags: [docker-deploy]
 
-- name: Extracting Docker images...
+- name: Extracting Docker images
   when: item.content is defined
   ansible.builtin.set_fact:
-    deploy_compose_conetent_img: '{{ deploy_compose_conetent_img | default([]) + item.content | b64decode | from_yaml | json_query("services") | default({}) | dict2items | map(attribute="value.image") }}'
+    deploy_compose_content_img: '{{ deploy_compose_content_img | default([]) + item.content | b64decode | from_yaml | json_query("services") | default({}) | dict2items | map(attribute="value.image") }}'
   loop: "{{ deploy_compose_conetent.results | default([]) }}"
   loop_control:
     label: "{{ item.source }}"
@@ -63,7 +63,7 @@
     tag: '{{ item.split(":")[1] | default("latest") if(item | regex_findall(":") | length <= 1) else item.split(":")[2] }}'
     source: pull
     force_source: true
-  loop: "{{ deploy_compose_conetent_img | default([]) | unique }}"
+  loop: "{{ deploy_compose_content_img | default([]) | unique }}"
   register: docker_image_pull_res
   tags: [docker-deploy]
 
@@ -108,7 +108,7 @@
 - name: Cleaning up facts
   ansible.builtin.set_fact:
     compose_files_stack: []
-    deploy_compose_conetent_img: []
+    deploy_compose_content_img: []
   tags: [docker-deploy]
 
 - name: Ensure handlers are notified now
