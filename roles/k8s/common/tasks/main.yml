@@ -58,6 +58,7 @@
       - erofs-utils
       - open-iscsi
       - ipvsadm
+      - uidmap
       - auditd
       - dbus
       - libjson-c5
