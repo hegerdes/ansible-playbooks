@@ -1,18 +1,19 @@
+---
 - name: Post update log to GitLab
   when: gitlab_conf.content is defined
-  uri:
-    url: '{{ gitlab_conf.url }}'
+  ansible.builtin.uri:
+    url: "{{ gitlab_conf.url }}"
     method: POST
     body_format: json
     headers:
-      PRIVATE-TOKEN: '{{ gitlab_conf.token }}'
+      PRIVATE-TOKEN: "{{ gitlab_conf.token }}"
       Content-Type: application/json
     body:
-      branch: '{{ gitlab_conf.branch }}'
-      author_email: '{{ gitlab_conf.email }}'
-      author_name: '{{ gitlab_conf.name }}'
-      content: '{{ gitlab_conf.content | to_nice_json }}'
-      commit_message: '{{ gitlab_conf.commit_message }}'
+      branch: "{{ gitlab_conf.branch }}"
+      author_email: "{{ gitlab_conf.email }}"
+      author_name: "{{ gitlab_conf.name }}"
+      content: "{{ gitlab_conf.content | to_nice_json }}"
+      commit_message: "{{ gitlab_conf.commit_message }}"
     status_code: 201
-  ignore_errors: true
+  failed_when: false
   register: main_reop_logs_res

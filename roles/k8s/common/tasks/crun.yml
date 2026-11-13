@@ -1,6 +1,6 @@
 ---
 # Setup crun
-- name: k8s common - crun | Install official crun
+- name: K8s common - crun | Install official crun
   ansible.builtin.get_url:
     url: "{{ k8s_crun_download_url }}"
     dest: /usr/local/bin/crun
@@ -8,7 +8,7 @@
     group: root
     mode: "0754"
 
-- name: k8s common - crun | Test crun
+- name: K8s common - crun | Test crun
   ansible.builtin.command:
     cmd: crun --version
   changed_when: false

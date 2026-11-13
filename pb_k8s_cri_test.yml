@@ -21,6 +21,9 @@
     k8s_install_crun: true
     k8s_install_wasi: false
     k8s_install_spin: false
+    k8s_install_kata_containers: true
+    k8s_install_firecracker: true
+    k8s_crun_krun: true
     # Runtime versions
     k8s_runc_version: latest
     k8s_crun_version: latest

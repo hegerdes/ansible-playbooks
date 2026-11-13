@@ -1,7 +1,7 @@
 # Role common main
 ---
 - name: Set timezone
-  timezone:
+  community.general.timezone:
     hwclock: UTC
     name: "{{ common_time_zone }}"
   tags: [common, time]
@@ -10,7 +10,10 @@
   when: hostvars[item].ansible_facts[common_default_network_device] is defined
   run_once: true
   ansible.builtin.set_fact:
-    all_hostkeys: "{{ all_hostkeys | default([]) + [hostvars[item].ansible_facts[common_default_network_device].ipv4.address + ' ssh-rsa ' + hostvars[item].ansible_facts.ssh_host_key_rsa_public] + [hostvars[item].ansible_facts[common_default_network_device].ipv4.address + ' ssh-ed25519 ' + hostvars[item].ansible_facts.ssh_host_key_ed25519_public] + [hostvars[item].ansible_facts[common_default_network_device].ipv4.address + ' ecdsa-sha2-nistp256 ' + hostvars[item].ansible_facts.ssh_host_key_ecdsa_public] }}"
+    all_hostkeys: "{{ all_hostkeys | default([]) + [hostvars[item].ansible_facts[common_default_network_device].ipv4.address + ' ssh-rsa ' + hostvars[item].ansible_facts.ssh_host_key_rsa_public]
+      + [hostvars[item].ansible_facts[common_default_network_device].ipv4.address + ' ssh-ed25519 ' + hostvars[item].ansible_facts.ssh_host_key_ed25519_public] +
+      [hostvars[item].ansible_facts[common_default_network_device].ipv4.address + ' ecdsa-sha2-nistp256 ' + hostvars[item].ansible_facts.ssh_host_key_ecdsa_public]
+      }}"
   with_items: "{{ groups.all }}"
   tags: [common, hostnames]
 
@@ -113,7 +116,7 @@
 - name: Remove swap in /etc/fstab
   ansible.builtin.lineinfile:
     path: /etc/fstab
-    regexp: '\sswap\s'
+    regexp: "\\sswap\\s"
     state: absent
   tags: [common, swap]
 

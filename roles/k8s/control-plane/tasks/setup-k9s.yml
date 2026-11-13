@@ -1,6 +1,6 @@
 ---
 # k9s Setup
-- name: k8s cp - k9s | Install k9s
+- name: K8s cp - k9s | Install k9s
   ansible.builtin.unarchive:
     src: >-
       {{

@@ -4,7 +4,7 @@
 ### Node-Exporter ###
 k8s_metrics_install_node_exporter: true
 # Version of the chart to deploy
-k8s_node_exporter_chart_version: '{{ null | default(omit) }}'
+k8s_node_exporter_chart_version: "{{ null | default(omit) }}"
 # Node-Exporter helm values
 # See: https://artifacthub.io/packages/helm/prometheus-community/prometheus-node-exporter
 k8s_node_exporter_helm_values: {}
@@ -12,7 +12,7 @@ k8s_node_exporter_helm_values: {}
 ### Metrics-Server ###
 k8s_metrics_install_metrics_server: true
 # Version of the chart to deploy
-k8s_metrics_server_helm_chart_version: '{{ null | default(omit) }}'
+k8s_metrics_server_helm_chart_version: "{{ null | default(omit) }}"
 # Metrics-Server helm values
 # See: https://artifacthub.io/packages/helm/metrics-server/metrics-server
 k8s_metrics_server_helm_values:
@@ -22,7 +22,7 @@ k8s_metrics_server_helm_values:
 ### Kube-State-Metrics ###
 k8s_metrics_install_ksm: true
 # Version of the chart to deploy
-k8s_ksm_helm_chart_version: '{{ null | default(omit) }}'
+k8s_ksm_helm_chart_version: "{{ null | default(omit) }}"
 # Metrics-Server helm values
 # See: https://artifacthub.io/packages/helm/prometheus-community/kube-state-metrics
 k8s_ksm_helm_values: {}
@@ -30,7 +30,7 @@ k8s_ksm_helm_values: {}
 ### K8s-Dashboard ###
 k8s_metrics_install_dashboard: true
 # Version of the chart to deploy
-k8s_dashboard_chart_version: '{{ null | default(omit) }}'
+k8s_dashboard_chart_version: "{{ null | default(omit) }}"
 # k8s-dashboard helm values
 # See: https://artifacthub.io/packages/helm/k8s-dashboard/kubernetes-dashboard
 k8s_dashboard_helm_values: {}
@@ -38,7 +38,7 @@ k8s_dashboard_helm_values: {}
 ### K8s-cAdvisor ###
 k8s_metrics_install_cadvisor: true
 # Version of the chart to deploy
-k8s_cadvisor_helm_chart_version: '{{ null | default(omit) }}'
+k8s_cadvisor_helm_chart_version: "{{ null | default(omit) }}"
 # k8s-cAdvisor helm values
 # See: https://artifacthub.io/packages/helm/ckotzbauer/cadvisor?modal=values
 k8s_cadvisor_helm_values: {}

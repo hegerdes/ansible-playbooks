@@ -12,6 +12,7 @@
   ansible.builtin.file:
     path: "{{ docker_portainer_dst_stack | dirname }}"
     state: directory
+    mode: "0755"
   tags: [docker, docker-portainer]
 
 - name: Copy portainer stack files
@@ -21,6 +22,7 @@
     dest: "{{ docker_portainer_dst_stack }}"
     owner: root
     group: docker
+    mode: "0640"
   tags: [docker, docker-portainer]
 
 - name: Get info on Docker Swarm
@@ -37,6 +39,7 @@
     dest: "{{ docker_portainer_dst_stack }}"
     owner: root
     group: docker
+    mode: "0640"
   tags: [docker, docker-portainer]
 
 - name: Deploy portainer via docker stack
@@ -54,7 +57,7 @@
   when: docker_install_portainer and (not docker_init_swarm or not docker_swarm_result.docker_swarm_manager) | bool
   ansible.builtin.apt:
     name: python3-pip
-    state: latest
+    state: present
   tags: [docker, docker-portainer]
 
 - name: Install docker-compose pip package

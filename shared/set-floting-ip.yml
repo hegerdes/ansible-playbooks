@@ -2,11 +2,12 @@
 ---
 - name: Add floting ip
   when: ansible_facts.distribution | lower == "debian"
-  blockinfile:
+  ansible.builtin.blockinfile:
     marker_begin: "BEGIN {{ item }}"
     marker_end: "END {{ item }}"
     path: /etc/network/interfaces.d/60-my-floating-ip.cfg
-    create: yes
+    create: true
+    mode: "0644"
     block: |
       auto eth0:1
        iface eth0:{{ item_index + 1 }} inet static
@@ -19,7 +20,7 @@
 
 - name: Add floting ip
   when: ansible_facts.distribution | lower == "ubuntu"
-  copy:
+  ansible.builtin.copy:
     content: |
       network:
         version: 2
@@ -28,4 +29,5 @@
           eth0:
             addresses: {{ floating_ips | product(["/32"]) | map('join') | list }}
     dest: /etc/netplan/60-floating-ip.yaml
+    mode: "0600"
   notify: Restart network ubuntu service

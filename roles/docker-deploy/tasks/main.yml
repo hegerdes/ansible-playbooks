@@ -5,7 +5,7 @@
   become: false
   run_once: true
   ansible.builtin.file:
-    dest: '{{ docker_deploy_artifact_dir }}'
+    dest: "{{ docker_deploy_artifact_dir }}"
     state: directory
   tags: [docker-deploy]
 
@@ -13,66 +13,67 @@
   community.docker.docker_swarm_info:
   ignore_errors: true
   register: swarm_info
-  failed_when: 'not swarm_info.can_talk_to_docker'
+  failed_when: "not swarm_info.can_talk_to_docker"
   tags: [docker-deploy]
 
 - name: Init a new swarm
   when: docker_deploy_use_swarm_mode | bool and not swarm_info.docker_swarm_active and docker_deploy_projects | length > 0
   community.docker.docker_swarm:
-    advertise_addr: '{{ ansible_host }}'
+    advertise_addr: "{{ ansible_host }}"
     state: present
   tags: [docker-deploy]
 
 - name: Log into Docker registries
   community.docker.docker_login:
     registry_url: '{{ item.regestry | default("https://index.docker.io/v1/") }}'
-    username: '{{ item.username }}'
-    password: '{{ item.password }}'
+    username: "{{ item.username }}"
+    password: "{{ item.password }}"
     reauthorize: true
-  loop: '{{ docker_regesties }}'
+  loop: "{{ docker_regesties }}"
   loop_control:
     label: '{{ item.regestry | default("https://index.docker.io/v1/") }}'
   tags: [docker-deploy]
 
 - name: Synchronization of application compose|stack files
   ansible.posix.synchronize:
-    src: '{{ docker_deploy_src_config_files }}'
-    dest: '{{ docker_deploy_dst_config_files }}'
+    src: "{{ docker_deploy_src_config_files }}"
+    dest: "{{ docker_deploy_dst_config_files }}"
     recursive: true
     use_ssh_args: true
     mode: push
     checksum: true
-    rsync_opts: '{{ docker_deploy_rsync_args }}'
+    rsync_opts: "{{ docker_deploy_rsync_args }}"
   tags: [docker-deploy]
 
 - name: Copy backup script
   when: docker_deploy_backup_script | default("none") != "none"
   ansible.builtin.copy:
-    src: '{{ docker_deploy_backup_script }}'
-    dest: '{{ backup_dir }}/run_backup.sh'
+    src: "{{ docker_deploy_backup_script }}"
+    dest: "{{ backup_dir }}/run_backup.sh"
     owner: root
     group: root
-    mode: '0755'
+    mode: "0755"
   tags: [docker-deploy, backup]
 
 - name: Deploy Apps via Docker-Service-CLI
-  when: docker_deploy_services | default([]) | length > 0 or docker_deploy_volumes | default([]) | length > 0 or docker_deploy_networks | default([]) | length > 0
+  when: docker_deploy_services | default([]) | length > 0 or docker_deploy_volumes | default([]) | length > 0 or docker_deploy_networks | default([]) | length >
+    0
   ansible.builtin.include_tasks: doploy-service.yml
   tags: [docker-deploy, docker-deploy-service]
 
 - name: Fix file permissions
   ansible.builtin.file:
-    path: '{{ docker_deploy_dst_config_files + item.name }}'
+    path: "{{ docker_deploy_dst_config_files + item.name }}"
     owner: root
     group: root
     mode: '{{ item.mode | default("0644") }}'
-  loop: '{{ docker_deploy_file_permissions }}'
+  loop: "{{ docker_deploy_file_permissions }}"
   tags: [docker-deploy]
 
 - name: Deploy Apps via Docker-Compose-File
   when: swarm_info.docker_swarm_manager or not docker_deploy_use_swarm_mode
   ansible.builtin.include_tasks: deploy-stack.yml
-  loop: '{{ docker_deploy_projects }}'
+  loop: "{{ docker_deploy_projects }}"
   loop_control:
     loop_var: docker_project
   tags: [docker-deploy, docker-deploy-stack]
@@ -93,7 +94,8 @@
 
 - name: Get Info on Docker Containers
   changed_when: false
-  ansible.builtin.command: 'docker ps --format "table {{ "{{" }}.Status{{ "}}" }}\t{{ "{{" }}.RunningFor{{ "}}" }}\t{{ "{{" }} .Image{{ "}}" }}\t{{ "{{" }}.Names{{ "}}" }}"'
+  ansible.builtin.command: 'docker ps --format "table {{ "{{" }}.Status{{ "}}" }}\t{{ "{{" }}.RunningFor{{ "}}" }}\t{{ "{{" }} .Image{{ "}}" }}\t{{ "{{" }}.Names{{
+    "}}" }}"'
   ignore_errors: true
   register: app_docker_container_info
   tags: [docker-deploy]

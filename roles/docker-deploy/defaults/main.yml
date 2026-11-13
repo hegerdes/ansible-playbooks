@@ -13,7 +13,8 @@ docker_deploy_wait_timeout: '{{ lookup("env", "DEPLOY_WAIT_TIMEOUT") | default(3
 docker_deploy_backup_script: none
 docker_deploy_conf_version: '{{ lookup("env", "CI_COMMIT_SHORT_SHA") | default(ansible_date_time.iso8601_basic_short, true) }}'
 docker_deploy_tag: latest
-docker_deploy_artifact_dir: '{{ playbook_dir + "/ansible-files/" if (lookup("env", "CI_COMMIT_SHA") | default("none", true) != "none") else "/tmp/ansible-files/" }}'
+docker_deploy_artifact_dir: '{{ playbook_dir + "/ansible-files/" if (lookup("env", "CI_COMMIT_SHA") | default("none", true) != "none") else "/tmp/ansible-files/"
+  }}'
 docker_deploy_services: []
 
 # Porjects to deploy

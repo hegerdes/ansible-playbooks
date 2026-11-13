@@ -1,6 +1,6 @@
 ---
 # Setup custom crun
-- name: k8s common - crun | Download crun
+- name: K8s common - crun | Download crun
   ansible.builtin.unarchive:
     src: "{{ k8s_crun_wasm_download_url }}"
     dest: /tmp
@@ -10,7 +10,7 @@
   register: __k8s_crun_extended_archive
   retries: 3
 
-- name: k8s common - crun | Download krun libs
+- name: K8s common - crun | Download krun libs
   when: k8s_crun_krun
   ansible.builtin.unarchive:
     src: "{{ k8s_linkrunfw_download_url }}"
@@ -21,7 +21,7 @@
     creates: /usr/crun/lib/libkrunfw.so
   retries: 3
 
-- name: k8s common - crun | Copy crun files
+- name: K8s common - crun | Copy crun files
   when: __k8s_crun_extended_archive.changed and item.run | default(true)
   ansible.builtin.copy:
     src: "{{ item.src }}"
@@ -41,7 +41,7 @@
     __k8s_crun_wasmlib_path: "{{ __k8s_crun_extended_archive.files | select('match', '^wasmlibs/libwasmedge\\.so\\.\\d+\\.\\d+\\.\\d+$') | list | first }}"
     __k8s_crun_krunlib_path: "{{ __k8s_crun_extended_archive.files | select('match', '^krunlibs/libkrun\\.so\\.\\d+\\.\\d+\\.\\d+$') | list | first }}"
 
-- name: k8s common - crun | Create symlink to shared libs and bins
+- name: K8s common - crun | Create symlink to shared libs and bins
   when: __k8s_crun_extended_archive.changed and item.run | default(true)
   ansible.builtin.file:
     src: "{{ item.src }}"
@@ -64,19 +64,21 @@
       dest: "/usr/local/bin/krun"
       run: "{{ k8s_crun_krun }}"
   vars:
-    __k8s_crun_wasmlib_path: "{{ __k8s_crun_extended_archive.files | select('match', '^wasmlibs/libwasmedge\\.so\\.\\d+\\.\\d+\\.\\d+$') | list | first | basename }}"
+    __k8s_crun_wasmlib_path: "{{ __k8s_crun_extended_archive.files | select('match', '^wasmlibs/libwasmedge\\.so\\.\\d+\\.\\d+\\.\\d+$') | list | first | basename
+      }}"
     __k8s_crun_krunlib_path: "{{ __k8s_crun_extended_archive.files | select('match', '^krunlibs/libkrun\\.so\\.\\d+\\.\\d+\\.\\d+$') | list | first | basename }}"
 
-- name: k8s common - crun | Add libs to server lib store
+- name: K8s common - crun | Add libs to server lib store
   ansible.builtin.lineinfile:
     path: /etc/ld.so.conf
     line: /usr/crun/lib
   register: __k8s_crun_lib_link
 
-- name: k8s common - crun | Reload lib link config
+- name: K8s common - crun | Reload lib link config
   when: __k8s_crun_lib_link.changed
   ansible.builtin.command: ldconfig
+  changed_when: true
 
-- name: k8s common - crun | Test crun
+- name: K8s common - crun | Test crun
   ansible.builtin.command: crun --version
   changed_when: false

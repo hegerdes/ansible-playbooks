@@ -7,10 +7,10 @@ mariadb_docker_version: 10.7
 
 # Init
 mariadb_root_user: root
-mariadb_root_pw: null
-sql_db_socket: "{{'' if (mariadb_use_docker) else '/var/run/mysqld/mysqld.sock'}}"
+mariadb_root_pw:
+sql_db_socket: "{{ '' if (mariadb_use_docker) else '/var/run/mysqld/mysqld.sock' }}"
 
-sql_db_backup_script: "{{'backup_db-docker.sh' if (mariadb_use_docker) else 'backup_db-docker.sh'}}"
+sql_db_backup_script: "{{ 'backup_db-docker.sh' if (mariadb_use_docker) else 'backup_db-docker.sh' }}"
 
 # DB setup
 sql_setups:
@@ -25,11 +25,11 @@ sql_setups:
 backup_dir: /backup_dumps
 mariadb_cron_jobs:
   - name: Dump DB as backup
-    job: 'CUSTOM_BACKUP_DIR={{ backup_dir }} bash {{ backup_dir }}/run_backup.sh'
-    weekday: '*'
-    month: '*'
-    minute: '30'
-    hour: '02'
-    day: '*'
+    job: "CUSTOM_BACKUP_DIR={{ backup_dir }} bash {{ backup_dir }}/run_backup.sh"
+    weekday: "*"
+    month: "*"
+    minute: "30"
+    hour: "02"
+    day: "*"
     state: present
-    user: null
+    user:

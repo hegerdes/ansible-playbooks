@@ -33,23 +33,23 @@
 - name: Install MongoDB
   when: mongodb_use_docker | bool == false
   ansible.builtin.include_role:
-    name: '{{ mytask }}'
+    name: "{{ mytask }}"
   loop:
-    - 'community.mongodb.mongodb_linux'
-    - 'community.mongodb.mongodb_repository'
-    - 'community.mongodb.mongodb_install'
-    - 'community.mongodb.mongodb_mongod'
-    - 'community.mongodb.mongodb_auth'
+    - "community.mongodb.mongodb_linux"
+    - "community.mongodb.mongodb_repository"
+    - "community.mongodb.mongodb_install"
+    - "community.mongodb.mongodb_mongod"
+    - "community.mongodb.mongodb_auth"
   loop_control:
     loop_var: mytask
   tags: [mongodb]
 
 - name: Set init pw
   when: mongodb_use_docker | bool == false
-  mongodb_user:
+  community.mongodb.mongodb_user:
     database: admin
     user: '{{ mongodb_root_user | default("root") }}'
-    password: '{{ mongodb_root_pw }}'
+    password: "{{ mongodb_root_pw }}"
     state: present
     update_password: always
   tags: [mongodb]
@@ -60,24 +60,24 @@
 
 - name: Create backup directory if it does not exist
   ansible.builtin.file:
-    path: '{{ backup_dir }}'
+    path: "{{ backup_dir }}"
     state: directory
-    mode: '0755'
+    mode: "0755"
     owner: root
     group: root
   tags: [mongodb]
 
 - name: Copy backup script
   ansible.builtin.copy:
-    src: '{{ mongodb_db_backup_script }}'
-    dest: '{{ backup_dir }}/run_backup.sh'
+    src: "{{ mongodb_db_backup_script }}"
+    dest: "{{ backup_dir }}/run_backup.sh"
     owner: root
     group: root
-    mode: '0755'
+    mode: "0755"
   tags: [mongodb]
 
 - name: Setup cron jobs
   ansible.builtin.include_tasks: shared/install-cron-jobs.yml
   vars:
-    cron_jobs: '{{ mongodb_cron_jobs }}'
+    cron_jobs: "{{ mongodb_cron_jobs }}"
   tags: [mongodb, cron]

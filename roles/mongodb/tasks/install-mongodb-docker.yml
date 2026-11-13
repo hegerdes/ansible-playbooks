@@ -1,7 +1,9 @@
+---
 - name: Ensue config folder exists
   ansible.builtin.file:
     path: /srv/mongodb
     state: directory
+    mode: "0755"
   tags: [mongodb]
 
 - name: Copy conf files
@@ -10,6 +12,7 @@
     dest: /srv/
     owner: root
     group: root
+    mode: "0640"
   tags: [mongodb]
 
 - name: Copy mongodb compose file

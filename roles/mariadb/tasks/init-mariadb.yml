@@ -1,34 +1,36 @@
-
+---
 
 - name: Collect all possible information of DB
-  mysql_info:
-    login_user: '{{ mariadb_root_user }}'
-    login_password : '{{ mariadb_root_pw }}'
-    login_unix_socket: '{{ sql_db_socket }}'
+  community.mysql.mysql_info:
+    login_user: "{{ mariadb_root_user }}"
+    login_password: "{{ mariadb_root_pw }}"
+    login_unix_socket: "{{ sql_db_socket }}"
   tags: [mariadb]
 
 - name: Create a new databases
-  mysql_db:
-    login_user: '{{ mariadb_root_user }}'
-    login_password : '{{ mariadb_root_pw }}'
-    name: '{{ item.db }}'
+  community.mysql.mysql_db:
+    login_user: "{{ mariadb_root_user }}"
+    login_password: "{{ mariadb_root_pw }}"
+    name: "{{ item.db }}"
     state: present
-    login_unix_socket: '{{ sql_db_socket }}'
+    login_unix_socket: "{{ sql_db_socket }}"
     login_host: localhost
-  loop: '{{ sql_setups }}'
+  loop: "{{ sql_setups }}"
   loop_control:
-    label: '{{ item.db }}'
+    label: "{{ item.db }}"
   tags: [mariadb]
+  no_log: true
 
 - name: Create Users.
-  mysql_user:
-    login_user: '{{ mariadb_root_user }}'
-    login_password : '{{ mariadb_root_pw }}'
-    name: '{{ item.user }}'
-    password: '{{ item.pw }}'
+  community.mysql.mysql_user:
+    login_user: "{{ mariadb_root_user }}"
+    login_password: "{{ mariadb_root_pw }}"
+    name: "{{ item.user }}"
+    password: "{{ item.pw }}"
     state: '{{ item.state | default("present") }}'
-    login_unix_socket: '{{ sql_db_socket }}'
-  loop: '{{ sql_setups }}'
+    login_unix_socket: "{{ sql_db_socket }}"
+  loop: "{{ sql_setups }}"
   loop_control:
-    label: '{{ item.user }}'
+    label: "{{ item.user }}"
   tags: [mariadb]
+  no_log: true

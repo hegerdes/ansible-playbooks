@@ -1,4 +1,9 @@
 ---
 - name: NFS apply
+  # noqa: command-instead-of-module - the NFS server service unit name
+  # (nfs-server / nfs-kernel-server / nfs) differs by distro, and this repo
+  # doesn't pin one; keeping systemctl here instead of guessing the wrong
+  # name for the ansible.builtin.systemd module.
   ansible.builtin.shell: systemctl reload nfs && exportfs -ar
+  changed_when: true
   tags: [nfs]

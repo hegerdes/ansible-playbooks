@@ -1,6 +1,6 @@
 # Install gvisor
 ---
-- name: gVisor repository
+- name: GVisor repository
   ansible.builtin.deb822_repository:
     name: gvisor
     types: [deb]
@@ -9,7 +9,7 @@
     components: [main]
     suites: [release]
     state: present
-    enabled: True
+    enabled: true
   tags: [docker, docker-install]
 
 - name: Install gVisor

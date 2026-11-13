@@ -12,7 +12,7 @@ k8s_hcloud_autoscale_img_amd64: name=k8s-v1.36.0-debian-13-amd64
 k8s_hcloud_autoscale_conf_double_base64_encode: true
 
 k8s_autoscale_user_data:
-  #cloud-config
+  # cloud-config
   write_files:
     - path: /srv/join-cluster.sh
       content: "{{ lookup('template', 'autoscale-join.sh.j2') }}"

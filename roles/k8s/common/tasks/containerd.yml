@@ -1,6 +1,6 @@
 ---
 # Setup upstream containerd
-- name: k8s common - containerd | Install containerd
+- name: K8s common - containerd | Install containerd
   ansible.builtin.unarchive:
     src: "{{ k8s_containerd_download_url }}"
     dest: /usr/local
@@ -11,7 +11,7 @@
   retries: 3
   register: __k8s_containerd_archive
 
-- name: k8s common - containerd | Install cni
+- name: K8s common - containerd | Install cni
   ansible.builtin.unarchive:
     src: "{{ k8s_cni_plugin_download_url }}"
     dest: /opt/cni/bin
@@ -24,14 +24,14 @@
   retries: 3
   register: __k8s_cni_archive
 
-- name: k8s common - containerd | Install containerd service
+- name: K8s common - containerd | Install containerd service
   ansible.builtin.get_url:
     url: https://raw.githubusercontent.com/containerd/containerd/main/containerd.service
     dest: /etc/systemd/system/containerd.service
     mode: "0600"
   retries: 3
 
-- name: k8s common - containerd | Test containerd
+- name: K8s common - containerd | Test containerd
   ansible.builtin.command:
     cmd: containerd --version
   changed_when: false

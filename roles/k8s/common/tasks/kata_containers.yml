@@ -1,6 +1,6 @@
 ---
 # Setup kata containers
-- name: k8s common - kata-containers | Download kata-containers
+- name: K8s common - kata-containers | Download kata-containers
   ansible.builtin.unarchive:
     src: "{{ k8s_kata_containers_download_url }}"
     dest: /opt/kata/
@@ -27,7 +27,7 @@
       - opt/kata/bin/qemu-system-x86_64-tdx-experimental
       - opt/kata/versions.yaml
 
-- name: k8s common - kata-containers | Create symlink to binaries
+- name: K8s common - kata-containers | Create symlink to binaries
   when: item.when | default(true)
   ansible.builtin.file:
     src: "{{ item.binary }}"
@@ -48,7 +48,7 @@
   loop_control:
     label: "{{ item.binary }}"
 
-- name: k8s common - kata-containers | Add manager and shim alias
+- name: K8s common - kata-containers | Add manager and shim alias
   ansible.builtin.copy:
     content: "{{ item.content }}"
     dest: "{{ item.dst }}"
@@ -79,42 +79,42 @@
     - content: |
         #!/bin/bash
         # Specify the configuration file and pass all arguments to the shim binary
-        KATA_CONF_FILE={{ __kata_runtime_conf.fc | regex_replace("\s","") }} /usr/local/bin/containerd-shim-kata-v2 $@
+        KATA_CONF_FILE={{ __kata_runtime_conf.fc | regex_replace("\s", "") }} /usr/local/bin/containerd-shim-kata-v2 $@
       dst: /usr/local/bin/containerd-shim-kata-fc-v2
       mode: "0744"
     - content: |
         #!/bin/bash
         # Specify the configuration file and pass all arguments to the shim binary
-        KATA_CONF_FILE={{ __kata_runtime_conf.clh | regex_replace("\s","") }} /usr/local/bin/containerd-shim-kata-v2 $@
+        KATA_CONF_FILE={{ __kata_runtime_conf.clh | regex_replace("\s", "") }} /usr/local/bin/containerd-shim-kata-v2 $@
       dst: /usr/local/bin/containerd-shim-kata-clh-v2
       mode: "0744"
     - content: |
         #!/bin/bash
         # Specify the configuration file and pass all arguments to the shim binary
-        KATA_CONF_FILE={{ __kata_runtime_conf.qemu | regex_replace("\s","") }} /usr/local/bin/containerd-shim-kata-v2 $@
+        KATA_CONF_FILE={{ __kata_runtime_conf.qemu | regex_replace("\s", "") }} /usr/local/bin/containerd-shim-kata-v2 $@
       dst: /usr/local/bin/containerd-shim-kata-qemu-v2
       mode: "0744"
     - content: |
         #!/bin/bash
         # Specify the configuration file and pass all arguments to the shim binary
-        KATA_CONF_FILE={{ __kata_runtime_conf.db | regex_replace("\s","") }} /usr/local/bin/containerd-shim-kata-v2 $@
+        KATA_CONF_FILE={{ __kata_runtime_conf.db | regex_replace("\s", "") }} /usr/local/bin/containerd-shim-kata-v2 $@
       dst: /usr/local/bin/containerd-shim-kata-db-v2
       mode: "0744"
 
-- name: k8s common - kata-containers | Fix configs
+- name: K8s common - kata-containers | Fix configs
   ansible.builtin.lineinfile:
     path: /opt/kata/share/defaults/kata-containers/runtime-rs/configuration-rs-fc.toml
     state: absent
     regexp: "^cdh_api_timeout"
 
-- name: k8s common - kata-containers | Ensure kata runtime conf's exist
+- name: K8s common - kata-containers | Ensure kata runtime conf's exist
   ansible.builtin.command:
     cmd: "kata-manager -S {{ item }}"
     creates: /etc/kata-containers/configuration-{{ item }}.toml
   changed_when: false
   loop: [clh, fc, qemu]
 
-- name: k8s common - kata-containers | Test kata-containers
+- name: K8s common - kata-containers | Test kata-containers
   ansible.builtin.command:
     cmd: kata-runtime check
   changed_when: false

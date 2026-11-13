@@ -1,11 +1,12 @@
-- name: k8s common - devmapper | Create devmapper data dir
+---
+- name: K8s common - devmapper | Create devmapper data dir
   ansible.builtin.script:
     cmd: devmapper-pool.sh
     creates: "{{ k8s_devmapper_data_dir }}/data"
   environment:
     DATA_DIR: "{{ k8s_devmapper_data_dir }}"
 
-- name: k8s common - devmapper | Copy devmapper service setup
+- name: K8s common - devmapper | Copy devmapper service setup
   ansible.builtin.copy:
     content: "{{ item.content }}"
     dest: "{{ item.dst }}"
@@ -32,7 +33,7 @@
       mode: "0644"
   register: __k8s_devmepper_conf
 
-- name: k8s common - devmapper | Enable devmapper service
+- name: K8s common - devmapper | Enable devmapper service
   when: __k8s_devmepper_conf.changed
   ansible.builtin.systemd:
     name: devmapper-reload.service
@@ -40,7 +41,7 @@
     daemon_reload: true
     enabled: true
 
-- name: k8s common - devmapper | Verify devmapper service status
+- name: K8s common - devmapper | Verify devmapper service status
   when: __k8s_devmepper_conf.changed
   ansible.builtin.service:
     name: devmapper-reload.service

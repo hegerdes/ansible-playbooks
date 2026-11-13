@@ -2,11 +2,12 @@
 ---
 - name: Generate-Basic-Auth labels
   ansible.builtin.set_fact:
-    mgmt_traefik_auth_labels: "{{ mgmt_traefik_auth_labels | default({}) | combine({item.key: mgmt_traefik_default_auth_labels | replace('__SERVICE__', item.key) | regex_replace(',\"','\"') }) }}"
-  with_dict: '{{ mgmt_proxy_users_auth | default({}) }}'
+    mgmt_traefik_auth_labels: "{{ mgmt_traefik_auth_labels | default({}) | combine({item.key: mgmt_traefik_default_auth_labels | replace('__SERVICE__', item.key)
+      | regex_replace(',\"', '\"')}) }}"
+  with_dict: "{{ mgmt_proxy_users_auth | default({}) }}"
   tags: [mgmt, ssh, mgmt-stack]
   loop_control:
-    label: '{{ item.key }}'
+    label: "{{ item.key }}"
 
 - name: Setup sshd
   ansible.builtin.include_tasks: setup-sshd.yml

@@ -2,14 +2,15 @@
 ---
 - name: Create directory for backups
   ansible.builtin.file:
-    path: '{{ backup_dir }}'
+    path: "{{ backup_dir }}"
     state: directory
+    mode: "0750"
   tags: [mgmt, backup]
 
 - name: Check for backup ssl key
   become: false
   ansible.builtin.stat:
-    path: '{{ inventory_dir }}/secrets/db-backup.key'
+    path: "{{ inventory_dir }}/secrets/db-backup.key"
   register: mgmt_backup_key
   delegate_to: localhost
   tags: [mgmt, backup]
@@ -17,13 +18,13 @@
 - name: Check for backup ssl key passphrase
   become: false
   ansible.builtin.stat:
-    path: '{{ inventory_dir }}/secrets/db-backup.key.pass'
+    path: "{{ inventory_dir }}/secrets/db-backup.key.pass"
   register: mgmt_backup_key_pass
   delegate_to: localhost
   tags: [mgmt, backup]
 
 - name: SSL key passphrase not found
-  fail:
+  ansible.builtin.fail:
     msg: |
       No passphrase for SSL backup key found.
       Please create it under {{ inventory_dir }}/secrets/db-backup.key.pass
@@ -36,26 +37,29 @@
   become: false
   run_once: true
   environment:
-    KEY_FILE: '{{ inventory_dir }}/secrets/db-backup.key'
+    KEY_FILE: "{{ inventory_dir }}/secrets/db-backup.key"
     KEY_PASS: '{{ lookup("file", inventory_dir + "/secrets/db-backup.key.pass") }}'
   ansible.builtin.shell: |
+    set -o pipefail
     openssl genrsa -aes256 -out $KEY_FILE -passout pass:$KEY_PASS 2048
     openssl rsa -in $KEY_FILE -passin pass:$KEY_PASS -pubout > $KEY_FILE.pub
+  changed_when: true
   tags: [mgmt, backup]
 
 - name: Copy public key
   ansible.builtin.copy:
-    src: '{{ inventory_dir }}/secrets/db-backup.key.pub'
-    dest: '{{ backup_dir }}'
+    src: "{{ inventory_dir }}/secrets/db-backup.key.pub"
+    dest: "{{ backup_dir }}"
     owner: root
+    mode: "0644"
     group: root
   tags: [mgmt, backup]
 
 - name: Copy script for backup archival
   ansible.builtin.template:
     src: archive-backups.sh.j2
-    dest: '{{ backup_dir }}/archive-backups.sh'
+    dest: "{{ backup_dir }}/archive-backups.sh"
     owner: root
     group: root
-    mode: '0655'
+    mode: "0655"
   tags: [mgmt, backup]

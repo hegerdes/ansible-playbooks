@@ -1,14 +1,15 @@
+---
 # Install cron jobs
 
 - name: Verify cron is installed
-  apt:
+  ansible.builtin.apt:
     name: cron
-    state: latest
+    state: present
   tags: [shared, cron]
 
 - name: Create cron jobs
-  cron:
-    name: '{{ item.name }}'
+  ansible.builtin.cron:
+    name: "{{ item.name }}"
     weekday: '{{ item.weekday | default("*") }}'
     minute: '{{ item.minute | default("*") }}'
     month: '{{ item.month | default("*") }}'
@@ -16,8 +17,8 @@
     day: '{{ item.day | default("*") }}'
     job: '{{ item.job | default("*") }}'
     state: '{{ item.state | default("present") }}'
-    user: '{{ item.user | default(ansible_user) }}'
-  loop: '{{ cron_jobs }}'
+    user: "{{ item.user | default(ansible_user) }}"
+  loop: "{{ cron_jobs }}"
   loop_control:
-    label: '{{ item.name }}'
+    label: "{{ item.name }}"
   tags: [shared, cron]

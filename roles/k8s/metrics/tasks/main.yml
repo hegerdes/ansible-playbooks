@@ -1,3 +1,4 @@
+---
 # Main k8s Metrics
 
 - name: Create a monitoring namespace
@@ -22,16 +23,7 @@
       url: https://kubernetes.github.io/dashboard/
     - name: ckotzbauer
       url: https://ckotzbauer.github.io/helm-charts
-  tags:
-    [
-      k8s,
-      k8s-init,
-      k8s-metrics,
-      k8s-metrics-node-exporter,
-      k8s-metrics-ksm,
-      k8s-metrics-dashboard,
-      k8s-metrics-cadvisor,
-    ]
+  tags: [k8s, k8s-init, k8s-metrics, k8s-metrics-node-exporter, k8s-metrics-ksm, k8s-metrics-dashboard, k8s-metrics-cadvisor]
 
 - name: Deploy metrics-server
   kubernetes.core.helm:

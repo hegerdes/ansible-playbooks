@@ -1,0 +1,22 @@
+---
+# Documents the role's public variable interface for `ansible-doc -t role firewalld`
+# and for ansible's runtime argument validation. This is an example of the
+# pattern recommended repo-wide in the modernization report; it has only been
+# added to this one role as a demonstration, not applied to all roles.
+argument_specs:
+  main:
+    short_description: Install firewalld and apply zone/interface/service/source/port rules.
+    options:
+      firwalld_rules:
+        type: list
+        elements: dict
+        required: false
+        default: []
+        description: >-
+          List of firewalld rules to apply. Each entry is a dict that may set
+          name (label used for loop_control), zone, interface, service,
+          sourceips, port and state (enabled/disabled, default enabled).
+          NOTE: the variable name reproduces a pre-existing typo in this role
+          ("firwalld" instead of "firewalld") kept as-is here since it is not
+          renamed by this pass — see the var-naming section of the
+          modernization report.

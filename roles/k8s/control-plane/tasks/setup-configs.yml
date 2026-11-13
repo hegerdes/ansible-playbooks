@@ -1,52 +1,46 @@
 ---
 # Main k8s config setup
-- name: k8s cp - configs | Copy config file
+- name: K8s cp - configs | Copy config file
   ansible.builtin.copy:
     src: /etc/kubernetes/admin.conf
     dest: "{{ ansible_facts.env.HOME }}/.kube/config"
     remote_src: true
     mode: "0600"
 
-- name: k8s cp - configs | Get kubeconfig - remote
+- name: K8s cp - configs | Get kubeconfig - remote
   run_once: true
   no_log: true
   ansible.builtin.slurp:
     src: /etc/kubernetes/admin.conf
   register: __remote_k8s_kubeconf
 
-- name: k8s cp - configs | Configure kubeconfig
+- name: K8s cp - configs | Configure kubeconfig
   run_once: true
   no_log: true
   ansible.builtin.set_fact:
     internal_k8s_kubeconfig: >-
-      {{
-      __remote_k8s_kubeconf.content | b64decode | from_yaml |
-      combine(
-      {'clusters': [(__remote_k8s_kubeconf.content | b64decode | from_yaml).clusters[0] |
-      combine(
-      {'cluster': {'server': 'https://' + k8s_external_cp_host + ':' + k8s_external_cp_port | default('6443')}}, recursive=true)]})
-      if (k8s_external_cp_host | default('') != '')
-      else __remote_k8s_kubeconf.content | b64decode | from_yaml
-      }}
+      {{ __remote_k8s_kubeconf.content | b64decode | from_yaml | combine({'clusters': [(__remote_k8s_kubeconf.content | b64decode | from_yaml).clusters[0] | combine({'cluster':
+      {'server': 'https://' + k8s_external_cp_host + ':' + k8s_external_cp_port | default('6443')}}, recursive=true)]}) if (k8s_external_cp_host | default('') !=
+      '') else __remote_k8s_kubeconf.content | b64decode | from_yaml }}
 
-- name: k8s cp - configs | Creating a file with kubeconf
+- name: K8s cp - configs | Creating a file with kubeconf
   become: false
   no_log: true
   run_once: true
-  ignore_errors: true
+  failed_when: false
   delegate_to: localhost
-  when: lookup("env", "CI") | default("false", true) | bool == false
+  when: not (lookup("env", "CI") | default("false", true) | bool)
   ansible.builtin.copy:
     dest: "{{ lookup('env', 'HOME') }}/.kube/{{ (inventory_dir | basename) + '-kubeconfig.yml' }}"
     content: "{{ internal_k8s_kubeconfig | to_nice_yaml(indent=2, sort_keys=true) }}"
     mode: "0600"
 
-- name: k8s cp - configs | Save kubeconf in keyvault
+- name: K8s cp - configs | Save kubeconf in keyvault
   become: false
   no_log: true
   run_once: true
   delegate_to: localhost
-  ignore_errors: true
+  failed_when: false
   when: k8s_save_admin_kubeconf_to_azure
   azure.azcollection.azure_rm_keyvaultsecret:
     secret_name: "{{ item.name }}"

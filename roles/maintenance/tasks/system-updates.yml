@@ -20,7 +20,7 @@
 - name: Format update string I
   when: main_updates.stdout_lines | length > 1
   ansible.builtin.set_fact:
-    updates: '{{ [item | replace("[","") | replace("]","") | replace(","," ") ] + updates | default([]) }}'
+    updates: '{{ [item | replace("[", "") | replace("]", "") | replace(",", " ")] + updates | default([]) }}'
   loop: "{{ main_updates.stdout_lines[1:] }}"
   tags: [maintenance, os-updates]
 
@@ -36,7 +36,8 @@
   when: hostvars[item].updates is defined
   run_once: true
   ansible.builtin.set_fact:
-    all_updates: '{{ all_updates | default({}) | combine({"failed_hosts": ansible_play_hosts_all | difference(ansible_play_batch) | default([]), "project_info": {"project_url": lookup("env", "CI_PROJECT_URL") | default("none", true), "project_id": lookup("env", "CI_PROJECT_ID") | default("none", true)} }, recursive=true ) }}'
+    all_updates: '{{ all_updates | default({}) | combine({"failed_hosts": ansible_play_hosts_all | difference(ansible_play_batch) | default([]), "project_info": {"project_url":
+      lookup("env", "CI_PROJECT_URL") | default("none", true), "project_id": lookup("env", "CI_PROJECT_ID") | default("none", true)}}, recursive=true) }}'
   with_items: "{{ groups.all }}"
   tags: [maintenance, os-updates]
 
@@ -55,6 +56,7 @@
   ansible.builtin.copy:
     content: "{{ all_updates }}"
     dest: '/tmp/{{ inventory_dir | basename + ''-updates'' + lookup(''pipe'', ''date +"-%Y-%m-%d"'') }}.json'
+    mode: "0644"
   delegate_to: localhost
   tags: [maintenance, os-updates]
 
@@ -68,7 +70,7 @@
       content: '{{ {ansible_date_time.date: "Performed update check on: " + ansible_play_hosts_all | join(",")} }}'
       email: "{{ maintenance_git_mail }}"
       name: "{{ maintenance_git_name }}"
-      commit_message: "Searched for updates on {{ansible_date_time.date}}"
+      commit_message: "Searched for updates on {{ ansible_date_time.date }}"
       url: "{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/{{ inventory_dir | basename }}-host-updates%2Fsearched-update-log.json"
   tags: [maintenance, os-updates]
 
@@ -82,8 +84,9 @@
       content: "{{ all_updates }}"
       email: "{{ maintenance_git_mail }}"
       name: "{{ maintenance_git_name }}"
-      commit_message: "Added pending updates on {{ansible_date_time.date}}"
-      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/{{ inventory_dir | basename }}-host-updates%2F{{ ansible_date_time.date + "-" + ansible_date_time.hour + "-" + ansible_date_time.minute }}-updates.json'
+      commit_message: "Added pending updates on {{ ansible_date_time.date }}"
+      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/{{ inventory_dir | basename }}-host-updates%2F{{ ansible_date_time.date
+        + "-" + ansible_date_time.hour + "-" + ansible_date_time.minute }}-updates.json'
   tags: [maintenance, os-updates]
 
 - name: Get issue on GitLab
@@ -101,8 +104,9 @@
   ansible.builtin.include_tasks: shared/gitlab-post-issue.yml
   vars:
     gitlab_conf:
-      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/issues/{{ main_reop_get_issue_res.json | json_query("[0].iid") if (main_reop_get_issue_res.json is defined and main_reop_get_issue_res.json | length > 0) else ""}}'
-      method: '{{"PUT" if (main_reop_get_issue_res.json is defined and main_reop_get_issue_res.json | length > 0) else "POST"}}'
+      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/issues/{{ main_reop_get_issue_res.json | json_query("[0].iid") if (main_reop_get_issue_res.json
+        is defined and main_reop_get_issue_res.json | length > 0) else "" }}'
+      method: '{{ "PUT" if (main_reop_get_issue_res.json is defined and main_reop_get_issue_res.json | length > 0) else "POST" }}'
       token: "{{ maintenance_git_token }}"
       response_status: "{{ 200 if (main_reop_get_issue_res.json is defined and main_reop_get_issue_res.json | length > 0) else 201 }}"
       body:
@@ -117,7 +121,8 @@
   tags: [maintenance, os-updates]
 
 - name: Notify via Mattermost
-  when: ansible_play_hosts_all | last == inventory_hostname and maintenance_post_to_git and not maintenance_run_upgrades and all_updates is defined and main_reop_issue_res.json is defined and maintenance_mattermost_hook is defined
+  when: ansible_play_hosts_all | last == inventory_hostname and maintenance_post_to_git and not maintenance_run_upgrades and all_updates is defined and
+    main_reop_issue_res.json is defined and maintenance_mattermost_hook is defined
   ansible.builtin.uri:
     url: "{{ maintenance_mattermost_hook }}"
     method: POST
@@ -125,7 +130,8 @@
     headers:
       Content-Type: application/json
     body:
-      text: ':mailbox: Found new System-Updates for {{ lookup("env", "CI_PROJECT_NAME") | default(inventory_dir | basename, true) }}. [Take a look here!]({{ main_reop_issue_res.json.web_url }})'
+      text: ':mailbox: Found new System-Updates for {{ lookup("env", "CI_PROJECT_NAME") | default(inventory_dir | basename, true) }}. [Take a look here!]({{ main_reop_issue_res.json.web_url
+        }})'
       username: GitLab-CI-Maintenance
       icon_url: "https://about.gitlab.com/images/press/logo/png/gitlab-logo-500.png"
       props:
@@ -142,10 +148,13 @@
 
           {% endfor %}
     status_code: 200
-  ignore_errors: true
+  failed_when: false
   tags: [maintenance, os-updates]
 
 - name: Upgrade packages
+  # noqa: package-latest - this task's entire purpose is to apply available
+  # package upgrades (gated by maintenance_run_upgrades and the hold-back list
+  # below), so state: latest here is intentional, not an oversight.
   when: maintenance_run_upgrades | bool and item.split("/")[0] not in maintenance_hold_back_updates
   ansible.builtin.apt:
     name: '{{ item.split("/")[0] }}'
@@ -168,7 +177,7 @@
 - name: Format update result string I
   when: maintenance_run_upgrades | bool
   ansible.builtin.set_fact:
-    performed_updates: '{{ performed_updates | default({}) | combine({item.item.split("/")[0]: item.stdout_lines[3:] | default("") })}}'
+    performed_updates: '{{ performed_updates | default({}) | combine({item.item.split("/")[0]: item.stdout_lines[3:] | default("")}) }}'
   loop: "{{ main_updated_packages.results }}"
   loop_control:
     label: '{{ item.item.split("/")[0] }}'
@@ -178,7 +187,8 @@
   when: hostvars[item].performed_updates is defined
   run_once: true
   ansible.builtin.set_fact:
-    all_performed_updates: '{{ all_performed_updates | default({}) | combine({item: hostvars[item].performed_updates, "reboots": {item: hostvars[item].main_reboot_needed.stat.exists}}, recursive=true) }}'
+    all_performed_updates: '{{ all_performed_updates | default({}) | combine({item: hostvars[item].performed_updates, "reboots": {item: hostvars[item].main_reboot_needed.stat.exists}},
+      recursive=true) }}'
   with_items: "{{ groups.all }}"
   tags: [maintenance, os-updates]
 
@@ -192,8 +202,9 @@
       content: "{{ all_performed_updates }}"
       email: "{{ maintenance_git_mail }}"
       name: "{{ maintenance_git_name }}"
-      commit_message: "Installed the following updates on {{ansible_date_time.date}}"
-      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/{{ inventory_dir | basename }}-host-updates%2F{{ ansible_date_time.date + "-" + ansible_date_time.hour + "-" + ansible_date_time.minute }}-performed-updates.json'
+      commit_message: "Installed the following updates on {{ ansible_date_time.date }}"
+      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/repository/files/{{ inventory_dir | basename }}-host-updates%2F{{ ansible_date_time.date
+        + "-" + ansible_date_time.hour + "-" + ansible_date_time.minute }}-performed-updates.json'
   tags: [maintenance, os-updates]
 
 - name: Comment on issue on GitLab
@@ -202,7 +213,8 @@
   vars:
     gitlab_conf:
       token: "{{ maintenance_git_token }}"
-      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/issues/{{ main_reop_get_issue_res.json | json_query("[0].iid") if (main_reop_get_issue_res.json is defined and main_reop_get_issue_res.json | length > 0) else ""}}/discussions'
+      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/issues/{{ main_reop_get_issue_res.json | json_query("[0].iid") if (main_reop_get_issue_res.json
+        is defined and main_reop_get_issue_res.json | length > 0) else "" }}/discussions'
       method: POST
       response_status: 201
       body:
@@ -217,7 +229,8 @@
   ansible.builtin.include_tasks: shared/gitlab-post-issue.yml
   vars:
     gitlab_conf:
-      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/issues/{{ main_reop_get_issue_res.json | json_query("[0].iid") if (main_reop_get_issue_res.json is defined and main_reop_get_issue_res.json | length > 0) else ""}}?state_event=close'
+      url: '{{ maintenance_git_host }}/api/v4/projects/{{ maintenance_git_repo }}/issues/{{ main_reop_get_issue_res.json | json_query("[0].iid") if (main_reop_get_issue_res.json
+        is defined and main_reop_get_issue_res.json | length > 0) else "" }}?state_event=close'
       token: "{{ maintenance_git_token }}"
       format: json
       method: PUT

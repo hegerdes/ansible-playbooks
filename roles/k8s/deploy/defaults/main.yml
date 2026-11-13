@@ -1,3 +1,4 @@
+---
 # vars for your helm and k8s apps
 
 k8s_app_helm_apps: []
@@ -14,7 +15,6 @@ k8s_app_helm_apps: []
 #     # repo_pw: null
 #     chart_values:
 #       my_key: my_val
-
 
 k8s_app_manifests: []
 # # Example

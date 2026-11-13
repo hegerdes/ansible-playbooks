@@ -8,7 +8,7 @@
 
 - name: Add Hashicorp repository
   ansible.builtin.apt_repository:
-    repo: 'deb https://apt.releases.hashicorp.com {{ ansible_facts.lsb.codename | lower }} main'
+    repo: "deb https://apt.releases.hashicorp.com {{ ansible_facts.lsb.codename | lower }} main"
     update_cache: true
     state: present
     filename: hashicorp
@@ -19,9 +19,9 @@
     name: packer
     state: present
     update_cache: true
-    cache_valid_time: 86400     # equal to 24h
+    cache_valid_time: 86400 # equal to 24h
     install_recommends: false
     allow_downgrade: true
     autoremove: true
-  ignore_errors: '{{ ansible_check_mode }}'
+  ignore_errors: "{{ ansible_check_mode }}"
   tags: [hashicorp, packer]

@@ -1,11 +1,12 @@
+---
 - name: Create GitLab issue
-  uri:
-    url: '{{ gitlab_conf.url }}'
+  ansible.builtin.uri:
+    url: "{{ gitlab_conf.url }}"
     method: '{{ gitlab_conf.method | default("POST") }}'
     body_format: '{{ gitlab_conf.format | default("form-multipart") }}'
     headers:
-      PRIVATE-TOKEN: '{{ gitlab_conf.token }}'
+      PRIVATE-TOKEN: "{{ gitlab_conf.token }}"
     body: '{{ gitlab_conf.body | default("{}") }}'
-    status_code: '{{ gitlab_conf.response_status | default(201) }}'
-  ignore_errors: true
+    status_code: "{{ gitlab_conf.response_status | default(201) }}"
+  failed_when: false
   register: main_reop_issue_res

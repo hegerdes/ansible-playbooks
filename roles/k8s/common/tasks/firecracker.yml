@@ -1,6 +1,6 @@
 ---
 # Setup firecracker containers
-- name: k8s common - firecracker | Download firecracker
+- name: K8s common - firecracker | Download firecracker
   ansible.builtin.unarchive:
     src: "{{ k8s_firecracker_download_url }}"
     dest: /opt/firecracker/
@@ -18,7 +18,7 @@
   register: __k8s_firecracker_res
   retries: 3
 
-- name: k8s common - firecracker | Create symlink to binaries
+- name: K8s common - firecracker | Create symlink to binaries
   ansible.builtin.file:
     src: "/opt/firecracker/{{ item.src }}"
     dest: "/usr/local/bin/{{ item.dst }}"
@@ -31,7 +31,7 @@
   vars:
     __firecracker_version: "{{ k8s_firecracker_download_url | regex_search('v([0-9.]+)') | regex_replace('^v', '') }}"
 
-- name: k8s common - firecracker | Test firecracker
+- name: K8s common - firecracker | Test firecracker
   ansible.builtin.command:
     cmd: firecracker --version
   changed_when: false

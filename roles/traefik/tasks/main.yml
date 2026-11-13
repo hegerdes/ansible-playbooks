@@ -7,54 +7,65 @@
 - name: Creating http router config
   when: item.traefik.protocol | default("http") == "http"
   ansible.builtin.set_fact:
-    traefik_http_routers_tmp: '{{ traefik_http_routers_tmp | default({}) | combine({item.host.split(".")[0]: {"entryPoints": ["web_" + item.ip | default(ansible_default_ipv4.address) | hash("md5"), "websecure_" + item.ip | default(ansible_default_ipv4.address) | hash("md5")], "service": item.host.split(".")[0], "rule": "Host(`" + item.host +"`)", "tls": {"certresolver": "traefik_ssl_resolver"} if(item.tls | default(true) | bool) else omit, "middlewares": [item.traefik.middlewares | default([])] | flatten }}) | combine(traefik_dashboard_conf) }}'
-  loop: '{{ ingress_hosts.sites | default(traefik_default_hosts.sites) }}'
+    traefik_http_routers_tmp: '{{ traefik_http_routers_tmp | default({}) | combine({item.host.split(".")[0]: {"entryPoints": ["web_" + item.ip | default(ansible_default_ipv4.address)
+      | hash("md5"), "websecure_" + item.ip | default(ansible_default_ipv4.address) | hash("md5")], "service": item.host.split(".")[0], "rule": "Host(`" + item.host
+      + "`)", "tls": {"certresolver": "traefik_ssl_resolver"} if (item.tls | default(true) | bool) else omit, "middlewares": [item.traefik.middlewares | default([])]
+      | flatten}}) | combine(traefik_dashboard_conf) }}'
+  loop: "{{ ingress_hosts.sites | default(traefik_default_hosts.sites) }}"
   loop_control:
-    label: '{{ item.host }}'
+    label: "{{ item.host }}"
   tags: [ingress, traefik]
 
 - name: Creating tcp router config
   when: item.traefik.protocol | default("http") == "tcp"
   ansible.builtin.set_fact:
-    traefik_tcp_routers_tmp: '{{ traefik_tcp_routers_tmp | default({}) | combine({item.host.split(".")[0]: {"entryPoints": ["web_" + item.ip | default(ansible_default_ipv4.address) | hash("md5"), "websecure_" + item.ip | default(ansible_default_ipv4.address) | hash("md5")], "service": item.host.split(".")[0], "rule": "HostSNI(`" + item.host +"`)", "tls": {"certresolver": "traefik_ssl_resolver"} if(item.tls | default(true) | bool) else omit }}) }}'
-  loop: '{{ ingress_hosts.sites | default(traefik_default_hosts.sites) }}'
+    traefik_tcp_routers_tmp: '{{ traefik_tcp_routers_tmp | default({}) | combine({item.host.split(".")[0]: {"entryPoints": ["web_" + item.ip | default(ansible_default_ipv4.address)
+      | hash("md5"), "websecure_" + item.ip | default(ansible_default_ipv4.address) | hash("md5")], "service": item.host.split(".")[0], "rule": "HostSNI(`" + item.host
+      + "`)", "tls": {"certresolver": "traefik_ssl_resolver"} if (item.tls | default(true) | bool) else omit}}) }}'
+  loop: "{{ ingress_hosts.sites | default(traefik_default_hosts.sites) }}"
   loop_control:
-    label: '{{ item.host }}'
+    label: "{{ item.host }}"
   tags: [ingress, traefik]
 
 - name: Creating http service config
   ansible.builtin.set_fact:
-    traefik_http_services_tmp: '{ {% for item in ingress_hosts.sites if(item.traefik.protocol | default("http") == "http") %}{{ item.host.split(".")[0] }}: [{%for up in item.upstreams %}{ {{ "url: http://" + up}} }{{ ", " if not loop.last }}{% endfor %}]{{", " if not loop.last}}{% endfor %} }'
+    traefik_http_services_tmp: '{ {% for item in ingress_hosts.sites if(item.traefik.protocol | default("http") == "http") %}{{ item.host.split(".")[0] }}: [{%for
+      up in item.upstreams %}{ {{ "url: http://" + up}} }{{ ", " if not loop.last }}{% endfor %}]{{", " if not loop.last}}{% endfor %} }'
   tags: [ingress, traefik]
 
 - name: Creating tcp service config
   ansible.builtin.set_fact:
-    traefik_tcp_services_tmp: '{ {% for item in ingress_hosts.sites if(item.traefik.protocol | default("http") == "tcp") %}{{ item.host.split(".")[0] }}: [{%for up in item.upstreams %}{ {{ "address: " + up }} }{{ ", " if not loop.last }}{% endfor %}]{{", " if not loop.last}}{% endfor %} }'
+    traefik_tcp_services_tmp: '{ {% for item in ingress_hosts.sites if(item.traefik.protocol | default("http") == "tcp") %}{{ item.host.split(".")[0] }}: [{%for up
+      in item.upstreams %}{ {{ "address: " + up }} }{{ ", " if not loop.last }}{% endfor %}]{{", " if not loop.last}}{% endfor %} }'
   tags: [ingress, traefik]
 
 - name: Formatting service config I
   ansible.builtin.set_fact:
     traefik_services_tmp:
-      http: '{{ traefik_http_services_tmp | default({}) | from_yaml }}'
-      tcp: '{{ traefik_tcp_services_tmp | default({}) | from_yaml }}'
+      http: "{{ traefik_http_services_tmp | default({}) | from_yaml }}"
+      tcp: "{{ traefik_tcp_services_tmp | default({}) | from_yaml }}"
   tags: [ingress, traefik]
 
 - name: Formatting service config II
   ansible.builtin.set_fact:
     traefik_services_tmp:
-      http: '{{ traefik_services_tmp.http | default({}) | combine({item.host.split(".")[0]: {"loadBalancer": {"servers": traefik_services_tmp.http[item.host.split(".")[0]] | default([]) }} }, recursive=true) }}'
-      tcp: '{{ traefik_services_tmp.tcp | default({}) | combine({item.host.split(".")[0]: {"loadBalancer": {"servers": traefik_services_tmp.tcp[item.host.split(".")[0]] | default([]) }} }, recursive=true) }}'
-  loop: '{{ ingress_hosts.sites | default(traefik_default_hosts.sites) }}'
+      http: '{{ traefik_services_tmp.http | default({}) | combine({item.host.split(".")[0]: {"loadBalancer": {"servers": traefik_services_tmp.http[item.host.split(".")[0]]
+        | default([])}}}, recursive=true) }}'
+      tcp: '{{ traefik_services_tmp.tcp | default({}) | combine({item.host.split(".")[0]: {"loadBalancer": {"servers": traefik_services_tmp.tcp[item.host.split(".")[0]]
+        | default([])}}}, recursive=true) }}'
+  loop: "{{ ingress_hosts.sites | default(traefik_default_hosts.sites) }}"
   loop_control:
-    label: '{{ item.host }}'
+    label: "{{ item.host }}"
   tags: [ingress, traefik]
 
 - name: Creating entrypoints
   ansible.builtin.set_fact:
-    traefik_entrypoints: '{{ traefik_entrypoints | default({}) | combine({"web_" + item.ip | default(ansible_default_ipv4.address) | hash("md5"): {"address": item.ip | default(ansible_default_ipv4.address) + ":80"}, "websecure_" + item.ip | default(ansible_default_ipv4.address) | hash("md5"): {"address": item.ip | default(ansible_default_ipv4.address) + ":443"} }, recursive=true) }}'
-  loop: '{{ ingress_hosts.sites | default(traefik_default_hosts.sites) }}'
+    traefik_entrypoints: '{{ traefik_entrypoints | default({}) | combine({"web_" + item.ip | default(ansible_default_ipv4.address) | hash("md5"): {"address": item.ip
+      | default(ansible_default_ipv4.address) + ":80"}, "websecure_" + item.ip | default(ansible_default_ipv4.address) | hash("md5"): {"address": item.ip | default(ansible_default_ipv4.address)
+      + ":443"}}, recursive=true) }}'
+  loop: "{{ ingress_hosts.sites | default(traefik_default_hosts.sites) }}"
   loop_control:
-    label: '{{ item.host }}'
+    label: "{{ item.host }}"
   tags: [ingress, traefik]
 
 - name: Creating cert resolver
@@ -62,7 +73,7 @@
     traefik_cert_resolver:
       traefik_ssl_resolver:
         acme:
-          email: '{{ traefik_certbot_mail }}'
+          email: "{{ traefik_certbot_mail }}"
           storage: /srv/traefik/tls
           httpChallenge:
             entryPoint: '{{ "web_" + ingress_hosts.sites[0].ip | default(ansible_default_ipv4.address) | hash("md5") }}'
@@ -72,15 +83,15 @@
   ansible.builtin.set_fact:
     traefik_sites:
       http:
-        routers: '{{ traefik_http_routers_tmp }}'
-        services: '{{ traefik_services_tmp.http }}'
-        middlewares: '{{ ingress_hosts.conf.traefik.middlewares | default({}) }}'
+        routers: "{{ traefik_http_routers_tmp }}"
+        services: "{{ traefik_services_tmp.http }}"
+        middlewares: "{{ ingress_hosts.conf.traefik.middlewares | default({}) }}"
       tcp:
-        routers: '{{ traefik_tcp_routers_tmp | default({}) }}'
-        services: '{{ traefik_services_tmp.tcp | default({}) }}'
+        routers: "{{ traefik_tcp_routers_tmp | default({}) }}"
+        services: "{{ traefik_services_tmp.tcp | default({}) }}"
   tags: [ingress, traefik]
 
-- name: debug
+- name: Debug
   ansible.builtin.debug:
     var: traefik_sites
   tags: [ingress, traefik]
@@ -89,13 +100,15 @@
   ansible.builtin.template:
     src: traefik-conf.yml.j2
     dest: /srv/traefik/traefik-conf.yml
+    mode: "0644"
   tags: [ingress, traefik]
   notify: Restart traefik
 
 - name: Copy traefik host config
   ansible.builtin.copy:
-    content: '{{ traefik_sites | to_nice_yaml(indent=2) }}'
+    content: "{{ traefik_sites | to_nice_yaml(indent=2) }}"
     dest: /srv/traefik/hosts/traefik-hosts.yml
+    mode: "0644"
   tags: [ingress, traefik]
 
 - name: Enable Traefik service
