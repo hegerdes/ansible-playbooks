@@ -54,6 +54,10 @@ enable_list:
 
 exclude_paths:
   # This file contains ignores rule violations for ansible-lint
-  - roles/k8s/ingress-nginx/files
-  - roles/k8s/deploy/files
-  - roles/k8s/monitoring/files
+  # Static deployment artifacts (K8s manifests, app configs, docker-compose
+  # files) copied verbatim to hosts - not Ansible task/play YAML, so don't
+  # lint or reformat them.
+  - roles/*/files/
+  - roles/*/*/files/
+  - roles/*/data/
+  - roles/*/*/data/
