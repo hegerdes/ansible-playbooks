@@ -7,7 +7,7 @@ ingress_hosts: '{{lookup("file", ingress_hosts_file) | from_yaml if(ingress_host
 traefik_enable_dashboard: true
 traefik_force_reinstall: false
 traefik_install_hosts: true
-traefik_hosts_default_listen_addr: '{{ ansible_default_ipv4.address }}'
+traefik_hosts_default_listen_addr: "{{ ansible_default_ipv4.address }}"
 traefik_run_certbot: true
 traefik_certbot_mail: info@xyz.com
 traefik_default_tld: work.example.com
@@ -18,8 +18,8 @@ traefik_firewall_rules: []
 
 traefik_dashboard_conf:
   traefik-dashboard:
-    entryPoints: '{{["web_" + ansible_default_ipv4.address | hash("md5")]}}'
-    rule: 'Host(`traefik.{{ traefik_default_tld }}`)'
+    entryPoints: '{{ ["web_" + ansible_default_ipv4.address | hash("md5")] }}'
+    rule: "Host(`traefik.{{ traefik_default_tld }}`)"
     service: api@internal
 
 # Example site conf
@@ -37,14 +37,14 @@ traefik_default_hosts:
               X-Custom-Response-Header: "value"
   sites:
     - host: default.example.123preview.com
-      ip: '{{ ansible_default_ipv4.address }}'
+      ip: "{{ ansible_default_ipv4.address }}"
       upstreams:
         - 127.0.0.1:3000
       traefik:
         protocol: http
         middlewares: [auth, testHeader]
     - host: custom.example.123preview.com
-      ip: '{{ ansible_default_ipv4.address }}'
+      ip: "{{ ansible_default_ipv4.address }}"
       upstreams:
         - 127.0.0.1:3000
 

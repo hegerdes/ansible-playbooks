@@ -1,3 +1,4 @@
+---
 # Install Mongodb
 - name: Add MongoDB apt Key
   ansible.builtin.apt_key:
@@ -15,7 +16,7 @@
 - name: Install MongoDB
   ansible.builtin.apt:
     name: mongodb-org
-    state: latest
+    state: present
     update_cache: true
     force_apt_get: true
   tags: [mongodb]

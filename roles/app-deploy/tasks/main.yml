@@ -2,7 +2,7 @@
 ---
 - name: Stop App
   when: app_deploy_shutdown_command != "none"
-  ansible.builtin.shell: '{{ app_deploy_shutdown_command }}'
+  ansible.builtin.shell: "{{ app_deploy_shutdown_command }}"
   tags: [app-deploy]
 
 - name: Debug
@@ -12,30 +12,30 @@
 - name: Synchronization of application compose|stack files
   become: false
   ansible.posix.synchronize:
-    src: '{{ item.src_config_files }}'
-    dest: '{{ item.dst_config_files }}'
+    src: "{{ item.src_config_files }}"
+    dest: "{{ item.dst_config_files }}"
     recursive: true
     use_ssh_args: true
     mode: push
     checksum: true
-    rsync_opts: '{{ item.rsync_args | default([]) }}'
-  loop: '{{ app_deploy_copy }}'
+    rsync_opts: "{{ item.rsync_args | default([]) }}"
+  loop: "{{ app_deploy_copy }}"
   loop_control:
     label: "Copy {{ item.src_config_files }} to {{ item.dst_config_files }}"
   tags: [app-deploy]
 
 - name: Fix file permissions
   ansible.builtin.file:
-    path: '{{ dst_config_files + item.name }}'
+    path: "{{ dst_config_files + item.name }}"
     owner: root
     group: root
     mode: '{{ item.mode | default("0644") }}'
-  loop: '{{ app_deploy_file_permissions }}'
+  loop: "{{ app_deploy_file_permissions }}"
   tags: [app-deploy]
 
 - name: Test Config
   when: app_deploy_test_command != "none"
-  ansible.builtin.shell: '{{ app_deploy_test_command }}'
+  ansible.builtin.shell: "{{ app_deploy_test_command }}"
   register: app_deploy_test_res
   tags: [app-deploy]
 
@@ -45,6 +45,6 @@
 
 - name: Start App
   when: app_deploy_start_command != "none" and ((app_deploy_test_res.skipped is defined and app_deploy_test_res.skipped) or app_deploy_test_res.rc == 0)
-  ansible.builtin.shell: '{{ app_deploy_start_command }}'
+  ansible.builtin.shell: "{{ app_deploy_start_command }}"
   register: app_deploy_test_res
   tags: [app-deploy]

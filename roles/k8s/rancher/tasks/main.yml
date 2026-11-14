@@ -1,3 +1,4 @@
+---
 # Main k8s Rancher setup
 
 - name: Add Rancher Helm-chart repo

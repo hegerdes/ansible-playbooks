@@ -8,7 +8,7 @@
     remote_src: true
     owner: root
     group: root
-    mode: 0755
+    mode: "0755"
     exclude:
       - README.md
       - LICENSE

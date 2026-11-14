@@ -1,4 +1,5 @@
-version: '3.7'
+---
+version: "3.7"
 
 services:
   ara:
@@ -16,7 +17,7 @@ services:
     ports:
       - "8000:8000"
 
-####### Database services #######
+  ####### Database services #######
   db:
     image: mariadb
     restart: unless-stopped

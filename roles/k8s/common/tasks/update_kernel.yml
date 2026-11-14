@@ -1,4 +1,5 @@
-- name: k8s common | Install latest kernel
+---
+- name: k8s common - Install latest kernel
   ansible.builtin.apt:
     name: "linux-image-cloud-{{ system_arch_map[ansible_facts.architecture] }}={{ k8s_ensure_min_kernel_version }}"
     default_release: "{{ ansible_facts['distribution_release'] }}-backports"
@@ -9,7 +10,7 @@
   tags: [k8s, k8s-prepare, k8s-base, apt]
   register: __k8s_kernel_update
 
-- name: k8s common | Reboot
+- name: k8s common - Reboot
   when:
     - k8s_ensure_min_kernel_version != "none"
     - __k8s_kernel_update.changed
@@ -17,16 +18,17 @@
   ansible.builtin.reboot:
   tags: [k8s, k8s-prepare, k8s-base]
 
-- name: k8s common | Create reboot-required file if kernel updated
+- name: k8s common - Create reboot-required file if kernel updated
   ansible.builtin.file:
     path: /var/run/reboot-required
     state: touch
+    mode: "0644"
   when:
     - __k8s_kernel_update.changed
     - ansible_connection | default("ssh") == "local"
   tags: [k8s, k8s-prepare, k8s-base]
 
-- name: k8s common | End the play on local connection
+- name: k8s common - End the play on local connection
   ansible.builtin.meta: end_host
   when:
     - __k8s_kernel_update.changed

@@ -66,5 +66,5 @@
       tags: [k8s, k8s-upgrade, k8s-upgrade-kubelet]
 
     - name: Exit with error code!
-      fail:
+      ansible.builtin.fail:
       tags: [k8s, k8s-upgrade, k8s-upgrade-kubelet]

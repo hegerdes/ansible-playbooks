@@ -13,7 +13,7 @@ mongodb_root_user: root
 mongodb_root_pw: MySuperSecurePW
 
 # Backup
-mongodb_db_backup_script: "{{'backup_db-docker.sh' if (mongodb_use_docker) else 'backup_db-docker.sh'}}"
+mongodb_db_backup_script: "{{ 'backup_db-docker.sh' if (mongodb_use_docker) else 'backup_db-docker.sh' }}"
 
 # DB setup
 mongodb_user_setups: []
@@ -28,11 +28,11 @@ mongodb_user_setups: []
 backup_dir: /backup_dumps
 mongodb_cron_jobs:
   - name: Dump DB as backup
-    job: 'CUSTOM_BACKUP_DIR={{ backup_dir }} bash {{ backup_dir }}/run_backup.sh'
-    weekday: '*'
-    month: '*'
-    minute: '30'
-    hour: '02'
-    day: '*'
+    job: "CUSTOM_BACKUP_DIR={{ backup_dir }} bash {{ backup_dir }}/run_backup.sh"
+    weekday: "*"
+    month: "*"
+    minute: "30"
+    hour: "02"
+    day: "*"
     state: present
-    user: null
+    user:

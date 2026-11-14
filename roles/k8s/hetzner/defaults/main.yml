@@ -1,12 +1,13 @@
+---
 k8s_hetzner_api_key: none
 k8s_hetzner_network_name: k8s-network
 k8s_hetzner_csi_driver_install: true
-k8s_hetzner_csi_helm_chart_version : '{{ null | default(omit) }}'
+k8s_hetzner_csi_helm_chart_version: "{{ null | default(omit) }}"
 k8s_hetzner_csi_helm_values: {}
 
 k8s_hetzner_ccm_install: true
 k8s_hetzner_helm_repo: https://charts.hetzner.cloud
-k8s_hetzner_ccm_helm_chart_version: '{{ null | default(omit) }}'
+k8s_hetzner_ccm_helm_chart_version: "{{ null | default(omit) }}"
 k8s_hetzner_ccm_helm_values: {}
 # Example
 # https://github.com/hetznercloud/hcloud-cloud-controller-manager/blob/main/chart/values.yaml
@@ -19,7 +20,7 @@ k8s_hetzner_ccm_helm_values: {}
 
 k8s_hetzner_lb_exporter_install: true
 k8s_hetzner_lb_exporter_helm_repo: https://wacken89.github.io/hetzner-load-balancer-prometheus-exporter
-k8s_hetzner_lb_exporter_helm_chart_version: '{{ null | default(omit) }}'
+k8s_hetzner_lb_exporter_helm_chart_version: "{{ null | default(omit) }}"
 k8s_hetzner_lb_exporter_helm_values: {}
 # Example
 # https://github.com/wacken89/hetzner-load-balancer-prometheus-exporter/blob/master/deploy/helm-chart/values.yaml

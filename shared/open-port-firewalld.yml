@@ -1,15 +1,15 @@
-# Install Node-Exporter
+# Open a port via firewalld
 ---
 - name: Set firewall rules
-  firewalld:
+  ansible.posix.firewalld:
     state: enabled
     zone: '{{ firewalld_zone | default("internal")}}'
-    port: '{{ firewalld_open_port | default(omit) }}'
-    permanent: yes
+    port: "{{ firewalld_open_port | default(omit) }}"
+    permanent: true
   tags: [node-exporter, monitoring, firewall]
 
 - name: Restart firewalld
-  service:
+  ansible.builtin.service:
     name: firewalld
     state: restarted
   tags: [node-exporter, monitoring, firewall]

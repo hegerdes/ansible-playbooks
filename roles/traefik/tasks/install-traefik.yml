@@ -1,11 +1,11 @@
 # Main Traefik Setup
 ---
 - name: Add traefik user
-  user:
+  ansible.builtin.user:
     name: traefik
     comment: User for traefik server
     group: adm
-    ansible.builtin.shell: /usr/sbin/nologin
+    shell: /usr/sbin/nologin
     create_home: false
     system: true
     state: present
@@ -18,23 +18,19 @@
   failed_when: false
   tags: [ingress, traefik]
 
-- name: Get traefik URL
-  ansible.builtin.shell: |
-    curl --silent https://api.github.com/repos/traefik/traefik/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep linux_amd64.tar.gz
-  changed_when: false
-  register: traefik_url
-  tags: [ingress, traefik]
-
 - name: Download and unzip traefik
-  when: traefik_check_result.stdout == "" or traefik_force_reinstall
+  when: not traefik_check_result.stdout or traefik_force_reinstall
   ansible.builtin.unarchive:
-    src: "{{ traefik_url.stdout }}"
+    src: '{{ lookup("url", "https://api.github.com/repos/traefik/traefik/releases/latest") | from_json | json_query(__traefik_version_query) | select("search", "linux_amd64")
+      | list | first }}'
     dest: /tmp
     remote_src: true
+  vars:
+    __traefik_version_query: assets[?contains(name, 'linux')].browser_download_url
   tags: [ingress, traefik]
 
 - name: Give insecure permissions to an existing file
-  when: traefik_check_result.stdout == "" or traefik_force_reinstall
+  when: not traefik_check_result.stdout or traefik_force_reinstall
   ansible.builtin.file:
     path: /tmp/traefik
     owner: traefik
@@ -42,9 +38,10 @@
     mode: "0750"
 
 - name: Install traefik
-  when: traefik_check_result.stdout == "" or traefik_force_reinstall
+  when: not traefik_check_result.stdout or traefik_force_reinstall
   ansible.builtin.shell: |
     mv /tmp/traefik /usr/local/bin/traefik
+  changed_when: true
   notify: Restart traefik
   tags: [ingress, traefik]
 
@@ -67,6 +64,7 @@
   ansible.builtin.file:
     path: /srv/traefik
     state: directory
+    mode: "0755"
   tags: [ingress, traefik]
 
 - name: Ensue log folder exists

@@ -8,7 +8,7 @@
   tags: [promtail, monitoring]
 
 - name: Download and unzip promtail
-  unarchive:
+  ansible.builtin.unarchive:
     src: '{{ lookup("url", "https://api.github.com/repos/grafana/loki/releases/tags/v3.6.8") | from_json | json_query(__promtail_query) | select("search", promtail_arch_map[ansible_facts.architecture]) | list | first }}'
     dest: /usr/local/bin/
     remote_src: true
@@ -23,7 +23,7 @@
   ansible.builtin.file:
     src: "/usr/local/bin/promtail-linux-{{ promtail_arch_map[ansible_facts.architecture] }}"
     dest: /usr/local/bin/promtail
-    mode: 0755
+    mode: "0755"
     state: link
   notify: Restart promtail
   tags: [promtail, monitoring]
@@ -34,7 +34,7 @@
   tags: [promtail, monitoring]
 
 - name: Add Promtail user
-  user:
+  ansible.builtin.user:
     name: promtail
     comment: User for Promtail log-shipper
     group: adm
@@ -58,6 +58,7 @@
   ansible.builtin.file:
     path: "{{ promtail_config_dst_path | dirname }}"
     state: directory
+    mode: "0755"
   tags: [promtail, monitoring]
 
 - name: Copy Promtail config

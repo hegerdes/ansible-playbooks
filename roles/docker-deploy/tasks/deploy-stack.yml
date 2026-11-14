@@ -29,7 +29,7 @@
 
 - name: Create absolut paths for stack files
   ansible.builtin.set_fact:
-    compose_files_stack: '{{ compose_files_stack | default([]) + ["".join((docker_deploy_dst_config_files, item if(item[-3:] == "yml") else item[:-3]))] }}'
+    compose_files_stack: '{{ compose_files_stack | default([]) + ["".join((docker_deploy_dst_config_files, item if (item[-3:] == "yml") else item[:-3]))] }}'
   loop: "{{ docker_project.compose_files | list }}"
   tags: [docker-deploy]
 
@@ -51,7 +51,8 @@
 - name: Extracting Docker images
   when: item.content is defined
   ansible.builtin.set_fact:
-    deploy_compose_content_img: '{{ deploy_compose_content_img | default([]) + item.content | b64decode | from_yaml | json_query("services") | default({}) | dict2items | map(attribute="value.image") }}'
+    deploy_compose_content_img: '{{ deploy_compose_content_img | default([]) + item.content | b64decode | from_yaml | json_query("services") | default({}) | dict2items
+      | map(attribute="value.image") }}'
   loop: "{{ deploy_compose_conetent.results | default([]) }}"
   loop_control:
     label: "{{ item.source }}"
@@ -59,8 +60,8 @@
 
 - name: Check Docker images
   community.docker.docker_image:
-    name: '{{ item.split(":")[0] if(item | regex_findall(":") | length <= 1) else item.split(":")[0] + ":" + item.split(":")[1] }}'
-    tag: '{{ item.split(":")[1] | default("latest") if(item | regex_findall(":") | length <= 1) else item.split(":")[2] }}'
+    name: '{{ item.split(":")[0] if (item | regex_findall(":") | length <= 1) else item.split(":")[0] + ":" + item.split(":")[1] }}'
+    tag: '{{ item.split(":")[1] | default("latest") if (item | regex_findall(":") | length <= 1) else item.split(":")[2] }}'
     source: pull
     force_source: true
   loop: "{{ deploy_compose_content_img | default([]) | unique }}"
@@ -70,7 +71,7 @@
 - name: Format Docker Image-Facts
   when: not ansible_check_mode
   ansible.builtin.set_fact:
-    image_info_data: '{{ image_info_data | default([]) + [ {(item.item | string | replace(":","-") ): item.image.Config.Labels | default({}) }] }}'
+    image_info_data: '{{ image_info_data | default([]) + [{(item.item | string | replace(":", "-")): item.image.Config.Labels | default({})}] }}'
   loop: "{{ docker_image_pull_res.results }}"
   # loop: '{{ docker_image_pulled_res.results }}'
   loop_control:

@@ -1,7 +1,9 @@
+---
 - name: Ensue config folder exists
   ansible.builtin.file:
     path: /srv/mariadb
     state: directory
+    mode: "0755"
   tags: [mariadb]
 
 - name: Copy mariadb compose file
@@ -29,7 +31,7 @@
   tags: [mariadb]
 
 - name: Collect all possible DB information
-  mysql_info:
+  community.mysql.mysql_info:
     login_user: "{{ mariadb_root_user }}"
     login_password: "{{ mariadb_root_pw }}"
     login_host: localhost

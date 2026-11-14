@@ -2,8 +2,8 @@
 ---
 - name: Install php packages
   ansible.builtin.apt:
-    name: ['php-fpm', php-mysql]
-    state: latest
+    name: ["php-fpm", php-mysql]
+    state: present
     update_cache: true
   tags: [php]
 
@@ -11,24 +11,24 @@
   ansible.builtin.file:
     path: /var/log/php
     state: directory
-    mode: '0755'
+    mode: "0755"
     owner: root
     group: adm
   tags: [php]
 
 - name: Set log settings in php-fpm
   ansible.builtin.lineinfile:
-    path: '/etc/php/{{ php_version }}/fpm/pool.d/www.conf'
-    line: '{{ item }}'
+    path: "/etc/php/{{ php_version }}/fpm/pool.d/www.conf"
+    line: "{{ item }}"
   loop:
-    - 'access.log = /var/log/php/$pool.access.log'
+    - "access.log = /var/log/php/$pool.access.log"
     - 'access.format = "%R - %u %t \"%m %r%Q%q\" %s %f %{mili}d %{kilo}M %C%%"'
-    - 'slowlog = /var/log/php/$pool.slow.log'
+    - "slowlog = /var/log/php/$pool.slow.log"
   tags: [php]
 
 - name: Copy logrotate conf file
   ansible.builtin.template:
-    src: '{{ php_src_logrotate }}'
+    src: "{{ php_src_logrotate }}"
     dest: /etc/logrotate.d/php
-    mode: '0644'
+    mode: "0644"
   tags: [php]

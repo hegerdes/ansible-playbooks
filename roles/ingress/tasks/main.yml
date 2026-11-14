@@ -3,7 +3,7 @@
 - name: Set floating IPs
   ansible.builtin.include_tasks: shared/set-floting-ip.yml
   vars:
-    floating_ips: '{{ common_floating_ips | default([]) + ingress_floating_ips | default([]) }}'
+    floating_ips: "{{ common_floating_ips | default([]) + ingress_floating_ips | default([]) }}"
   tags: [ingress, nginx, ingress-ip, traefik]
 
 - name: Install nginx ingress

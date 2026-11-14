@@ -1,3 +1,4 @@
+---
 # Setup stargz
 - name: k8s common - stargz | Install stargz
   ansible.builtin.unarchive:
@@ -5,7 +6,7 @@
     dest: /usr/local/bin
     list_files: true
     remote_src: true
-    mode: 0755
+    mode: "0755"
     exclude:
       - stargz-store
       - stargz-store-helper

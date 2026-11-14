@@ -1,6 +1,7 @@
 ---
 - name: Update grub
   ansible.builtin.command: update-grub2
+  changed_when: true
   tags: [common, sys]
 
 - name: Restart network service
@@ -10,6 +11,7 @@
 
 - name: Restart network ubuntu service
   ansible.builtin.command: netplan apply
+  changed_when: true
 
 - name: Restart SSHD
   ansible.builtin.service:

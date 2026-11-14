@@ -2,9 +2,9 @@
 ---
 - name: Ensue users are created and added to the Docker group
   ansible.builtin.user:
-    name: '{{ item }}'
+    name: "{{ item }}"
     groups: [docker]
     append: true
     state: present
-  with_items: '{{ docker_users }}'
+  with_items: "{{ docker_users }}"
   tags: [docker, docker-user]

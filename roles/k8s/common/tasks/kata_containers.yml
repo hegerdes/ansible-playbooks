@@ -79,25 +79,25 @@
     - content: |
         #!/bin/bash
         # Specify the configuration file and pass all arguments to the shim binary
-        KATA_CONF_FILE={{ __kata_runtime_conf.fc | regex_replace("\s","") }} /usr/local/bin/containerd-shim-kata-v2 $@
+        KATA_CONF_FILE={{ __kata_runtime_conf.fc | regex_replace("\s", "") }} /usr/local/bin/containerd-shim-kata-v2 $@
       dst: /usr/local/bin/containerd-shim-kata-fc-v2
       mode: "0744"
     - content: |
         #!/bin/bash
         # Specify the configuration file and pass all arguments to the shim binary
-        KATA_CONF_FILE={{ __kata_runtime_conf.clh | regex_replace("\s","") }} /usr/local/bin/containerd-shim-kata-v2 $@
+        KATA_CONF_FILE={{ __kata_runtime_conf.clh | regex_replace("\s", "") }} /usr/local/bin/containerd-shim-kata-v2 $@
       dst: /usr/local/bin/containerd-shim-kata-clh-v2
       mode: "0744"
     - content: |
         #!/bin/bash
         # Specify the configuration file and pass all arguments to the shim binary
-        KATA_CONF_FILE={{ __kata_runtime_conf.qemu | regex_replace("\s","") }} /usr/local/bin/containerd-shim-kata-v2 $@
+        KATA_CONF_FILE={{ __kata_runtime_conf.qemu | regex_replace("\s", "") }} /usr/local/bin/containerd-shim-kata-v2 $@
       dst: /usr/local/bin/containerd-shim-kata-qemu-v2
       mode: "0744"
     - content: |
         #!/bin/bash
         # Specify the configuration file and pass all arguments to the shim binary
-        KATA_CONF_FILE={{ __kata_runtime_conf.db | regex_replace("\s","") }} /usr/local/bin/containerd-shim-kata-v2 $@
+        KATA_CONF_FILE={{ __kata_runtime_conf.db | regex_replace("\s", "") }} /usr/local/bin/containerd-shim-kata-v2 $@
       dst: /usr/local/bin/containerd-shim-kata-db-v2
       mode: "0744"
 

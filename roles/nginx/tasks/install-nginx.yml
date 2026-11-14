@@ -17,15 +17,15 @@
 - name: Install nginx
   ansible.builtin.apt:
     name: nginx
-    state: latest
+    state: present
   tags: [ingress, nginx]
 
 - name: Ensue nginx user
-  user:
+  ansible.builtin.user:
     name: nginx
     group: nginx
     groups: [nginx, www-data]
-    ansible.builtin.shell: /bin/false
+    shell: /bin/false
     create_home: false
     append: true
     system: true
