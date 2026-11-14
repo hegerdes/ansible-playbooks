@@ -12,7 +12,7 @@
   ansible.builtin.template:
     src: smb.conf.j2
     dest: /etc/samba/smb.conf
-    mode: '0644'
+    mode: "0644"
   notify: Restart Samba
   tags: [samba]
 
@@ -21,30 +21,32 @@
   tags: [samba]
 
 - name: Adding UNIX users for Samba
-  user:
-    name: '{{ item.user }}'
+  ansible.builtin.user:
+    name: "{{ item.user }}"
     password: '{{ item.password | password_hash("sha512") }}'
-    comment: '{{ item.comment | default("SMB USER")}}'
-    ansible.builtin.shell: /usr/bin/bash
+    comment: '{{ item.comment | default("SMB USER") }}'
+    shell: /usr/bin/bash
     create_home: false
     state: present
-  loop: '{{ samba_users }}'
+  loop: "{{ samba_users }}"
   loop_control:
-    label: '{{ item.user }}'
+    label: "{{ item.user }}"
   tags: [samba]
+  no_log: true
 
 - name: Create Samba users
   ansible.builtin.shell: |
+    set -o pipefail
     (echo {{ item.password }}; echo {{ item.password }}) | smbpasswd -s -a {{ item.user }}
+  changed_when: true
   loop: "{{ samba_users }}"
   loop_control:
-    label: '{{ item.user }}'
+    label: "{{ item.user }}"
   tags: [samba]
 
 
 # ToDO
 # Create dirs and set ownership
 # Firewall
-
 
 # docker volume create --driver local --opt type=cifs --opt o=addr=127.0.0.1,rw --opt device=//127.0.0.1/syslogs --opt o=uid=0,username=smb-test,password=mySuperSecurePW,nounix,file_mode=0770,dir_mode=0770 myvolume

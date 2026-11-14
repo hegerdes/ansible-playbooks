@@ -1,32 +1,32 @@
 # Main Hetzner Setup
 ---
 - name: Gather hcloud sshkey infos
-  hcloud_ssh_key_info:
-    api_token: '{{ hetzner_api_key }}'
+  hetzner.hcloud.hcloud_ssh_key_info:
+    api_token: "{{ hetzner_api_key }}"
   register: hetzner_ssh_keys
   tags: [hetzner]
 
 - name: Create a firewall with labels
   hetzner.hcloud.hcloud_firewall:
-    api_token: '{{ hetzner_api_key }}'
-    name: '{{ item.name }}'
+    api_token: "{{ hetzner_api_key }}"
+    name: "{{ item.name }}"
     state: present
-    rules: '{{ item.rules | default([]) }}'
-  loop: '{{ hetzner_firewalls }}'
+    rules: "{{ item.rules | default([]) }}"
+  loop: "{{ hetzner_firewalls }}"
   loop_control:
     label: "{{ item.name }}"
   tags: [hetzner]
 
 - name: Gather hcloud server infos
   hcloud_server_info:
-    api_token: '{{ hetzner_api_key }}'
+    api_token: "{{ hetzner_api_key }}"
     label_selector: ansible
   register: hetzner_server_info
 
 - name: Print info
   ansible.builtin.debug:
-    msg: 'Performing on: {{ item.name }} with ip {{ item.ipv4_address }}'
-  loop: '{{ hetzner_server_info.hcloud_server_info }}'
+    msg: "Performing on: {{ item.name }} with ip {{ item.ipv4_address }}"
+  loop: "{{ hetzner_server_info.hcloud_server_info }}"
   loop_control:
     label: "{{ item.name }}"
 
@@ -34,39 +34,39 @@
   no_log: true
   when: item[0].server_type != item[1].size | default(hetzner_default_server_size)
   ansible.builtin.set_fact:
-    rescale: '{{ rescale | default({}) | combine({item[0].name: item[1].size | default(hetzner_default_server_size)}) }}'
+    rescale: "{{ rescale | default({}) | combine({item[0].name: item[1].size | default(hetzner_default_server_size)}) }}"
   loop: '{{ hetzner_server_info.hcloud_server_info | sort(attribute="name") | zip(hetzner_vms | sort(attribute="name")) }}'
   tags: [hetzner]
 
 - name: Rescale VMs - shutdown
   hcloud_server:
-    api_token: '{{ hetzner_api_key }}'
-    name: '{{ item.key }}'
-    state: 'stopped'
-  with_dict: '{{ rescale | default({}) }}'
+    api_token: "{{ hetzner_api_key }}"
+    name: "{{ item.key }}"
+    state: "stopped"
+  with_dict: "{{ rescale | default({}) }}"
   tags: [hetzner]
 
 - name: Rescale VMs - rescale
   hcloud_server:
-    api_token: '{{ hetzner_api_key }}'
-    name: '{{ item.key }}'
-    state: 'stopped'
-    server_type: '{{ item.value }}'
-  with_dict: '{{ rescale | default({}) }}'
+    api_token: "{{ hetzner_api_key }}"
+    name: "{{ item.key }}"
+    state: "stopped"
+    server_type: "{{ item.value }}"
+  with_dict: "{{ rescale | default({}) }}"
   tags: [hetzner]
 
 - name: Create a basic network
   hcloud_network:
-    api_token: '{{ hetzner_api_key }}'
-    name: '{{ hetzner_default_vnet_name }}'
+    api_token: "{{ hetzner_api_key }}"
+    name: "{{ hetzner_default_vnet_name }}"
     ip_range: 10.10.0.0/16
     state: present
   tags: [hetzner]
 
 - name: Create a basic subnetwork
   hcloud_subnetwork:
-    api_token: '{{ hetzner_api_key }}'
-    network: '{{ hetzner_default_vnet_name }}'
+    api_token: "{{ hetzner_api_key }}"
+    network: "{{ hetzner_default_vnet_name }}"
     ip_range: 10.10.0.0/24
     network_zone: eu-central
     type: cloud
@@ -75,15 +75,15 @@
 
 - name: Creating/Deleting VMs
   hcloud_server:
-    api_token: '{{ hetzner_api_key }}'
-    name: '{{ item.name }}'
+    api_token: "{{ hetzner_api_key }}"
+    name: "{{ item.name }}"
     labels: '{{ item.labels | default({}) | combine({"ansible": "true", "all": "true"}) }}'
-    server_type: '{{ item.size | default(hetzner_default_server_size) }}'
-    location: '{{ item.location | default(hetzner_default_server_location) }}'
-    image: '{{ item.image | default(hetzner_default_server_image) }}'
+    server_type: "{{ item.size | default(hetzner_default_server_size) }}"
+    location: "{{ item.location | default(hetzner_default_server_location) }}"
+    image: "{{ item.image | default(hetzner_default_server_image) }}"
     ssh_keys: '{{ item.ssh_keys | default(hetzner_ssh_keys.hcloud_ssh_key_info | map(attribute="name")) }}'
-    state: '{{ item.state | default(hetzner_default_server_state) }}'
-  loop: '{{ hetzner_vms }}'
+    state: "{{ item.state | default(hetzner_default_server_state) }}"
+  loop: "{{ hetzner_vms }}"
   loop_control:
     label: "{{ item.name }}"
   register: hetzner_servers
@@ -92,12 +92,12 @@
 - name: Attatching VMs to vnet
   when: item.state | default("present") == "present"
   hcloud_server_network:
-    api_token: '{{ hetzner_api_key }}'
-    network: '{{ hetzner_default_vnet_name }}'
-    server: '{{ item.name }}'
+    api_token: "{{ hetzner_api_key }}"
+    network: "{{ hetzner_default_vnet_name }}"
+    server: "{{ item.name }}"
     ip: '{{ item.intern_ipintern_ip | default("10.10.0." + (ansible_loop.index + 1) | string )}}'
     state: present
-  loop: '{{ hetzner_vms }}'
+  loop: "{{ hetzner_vms }}"
   loop_control:
     label: "{{ item.name }}"
     extended: true
@@ -106,18 +106,18 @@
 
 - name: Gather hcloud server infos
   hcloud_server_info:
-    api_token: '{{ hetzner_api_key }}'
+    api_token: "{{ hetzner_api_key }}"
   register: hetzner_server_info
   tags: [hetzner]
 
 - name: Assign a Floating IPs to a server
   when: hetzner_server_info.hcloud_server_info | length > 0
   hcloud_floating_ip:
-    api_token: '{{ hetzner_api_key }}'
-    name: '{{ item.floting_ip_name }}'
-    server: '{{ item.server_name }}'
+    api_token: "{{ hetzner_api_key }}"
+    name: "{{ item.floting_ip_name }}"
+    server: "{{ item.server_name }}"
     state: present
-  loop: '{{ hetzner_floating_ip_mapping }}'
+  loop: "{{ hetzner_floating_ip_mapping }}"
   tags: [hetzner]
 
 - name: Creating inventory[I]...
@@ -125,15 +125,15 @@
   no_log: true
   ansible.builtin.set_fact:
     hetzner_inventory: '{{ hetzner_inventory | combine({"all": {"hosts":{item.hcloud_server_network.server if (hetzner_use_internal_ip) else item.hcloud_server.name : {"ansible_host": item.hcloud_server_network.ip if (hetzner_use_internal_ip) else item.hcloud_server.ipv4_address, "ansible_port": ansible_default_port, "ansible_user": ansible_default_user }}}},recursive=true) }}'
-  loop: '{{ hetzner_vnet_res.results if (hetzner_use_internal_ip) else hetzner_servers.results }}'
+  loop: "{{ hetzner_vnet_res.results if (hetzner_use_internal_ip) else hetzner_servers.results }}"
   tags: [hetzner]
 
 - name: Creating inventory[II]...
   when: hetzner_server_info.hcloud_server_info | length > 0
   no_log: true
   ansible.builtin.set_fact:
-    servers: '{{ servers | default({}) | combine({item.hcloud_server.name: item.hcloud_server}) }}'
-  loop: '{{ hetzner_servers.results }}'
+    servers: "{{ servers | default({}) | combine({item.hcloud_server.name: item.hcloud_server}) }}"
+  loop: "{{ hetzner_servers.results }}"
   tags: [hetzner]
 
 - name: Creating inventory[III] ...
@@ -150,14 +150,16 @@
   when: hetzner_server_info.hcloud_server_info | length > 0 and hetzner_inventory_tmp is defined
   no_log: true
   ansible.builtin.set_fact:
-    hetzner_inventory: '{{ hetzner_inventory | combine(hetzner_inventory_tmp, recursive=true) }}'
+    hetzner_inventory: "{{ hetzner_inventory | combine(hetzner_inventory_tmp, recursive=true) }}"
   tags: [hetzner]
 
 - name: Creating inventory[V]...
   when: hetzner_server_info.hcloud_server_info | length > 0
   no_log: true
   ansible.builtin.set_fact:
-    hetzner_inventory: '{{ hetzner_inventory | combine({"all": {"children": {item[1]: hetzner_inventory.all.children[item[1]] | combine({"hosts": {item[0].name: {} }})} }}, recursive=true) }}'
+    hetzner_inventory:
+      '{{ hetzner_inventory | combine({"all": {"children": {item[1]: hetzner_inventory.all.children[item[1]] | combine({"hosts": {item[0].name: {}
+      }})} }}, recursive=true) }}'
   loop: '{{ hetzner_vms | subelements("groups", skip_missing=true) }}'
   tags: [hetzner]
 
@@ -168,8 +170,8 @@
 
 - name: Save inventory
   ansible.builtin.copy:
-    content: '{{ hetzner_inventory | to_nice_yaml(indent=2) }}'
-    dest: '{{ hetzner_inventroy_dst }}'
+    content: "{{ hetzner_inventory | to_nice_yaml(indent=2) }}"
+    dest: "{{ hetzner_inventroy_dst }}"
   tags: [hetzner]
 
 - ansible.builtin.meta: refresh_inventory

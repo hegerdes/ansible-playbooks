@@ -3,12 +3,12 @@
 
 k8s_grafana_helm_repo: https://grafana.github.io/helm-charts
 k8s_grafana_install: true
-k8s_grafana_helm_chart_version: '{{ null | default(omit) }}'
+k8s_grafana_helm_chart_version: "{{ null | default(omit) }}"
 
 # https://github.com/grafana/k8s-monitoring-helm/blob/main/charts/k8s-monitoring/values.yaml
 k8s_grafana_helm_values:
   cluster:
-    name: '{{ k8s_cluster_name | default(inventory_dir | basename) }}'
+    name: "{{ k8s_cluster_name | default(inventory_dir | basename) }}"
 
   externalServices:
     prometheus:

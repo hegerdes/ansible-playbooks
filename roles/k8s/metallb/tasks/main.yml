@@ -1,3 +1,4 @@
+---
 # Main k8s MetalLB setup
 
 - name: Add MetalLB Helm-chart repo

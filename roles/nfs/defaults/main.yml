@@ -5,4 +5,4 @@ nfs_exports_file_path: /etc/exports
 
 nfs_exports:
   - directory: /nfs_data/share1
-    host: '*(rw,sync,no_subtree_check)'
+    host: "*(rw,sync,no_subtree_check)"

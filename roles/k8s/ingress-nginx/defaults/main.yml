@@ -1,16 +1,14 @@
 ---
 # Version of the chart to deploy
-k8s_nginx_helm_chart_version: '{{ null | default(omit) }}'
+k8s_nginx_helm_chart_version: "{{ null | default(omit) }}"
 k8s_nginx_install: true
 
 # See: https://github.com/kubernetes/ingress-nginx/blob/main/charts/ingress-nginx/values.yaml
 k8s_nginx_helm_values:
   controller:
     name: controller
-    # -- Use a `DaemonSet` or `Deployment`
-    kind: DaemonSet
+    kind: DaemonSet # `DaemonSet` or `Deployment`
 
-# Service
     service:
       enabled: true
       # type: LoadBalancer
@@ -21,7 +19,6 @@ k8s_nginx_helm_values:
       tcp:
         8080: 32808
 
-# Metrics
     metrics:
       enabled: true
       service:

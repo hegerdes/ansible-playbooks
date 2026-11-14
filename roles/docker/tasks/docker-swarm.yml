@@ -1,7 +1,7 @@
 # Init Docker swarm
 ---
 - name: Init swarm master
-  when: 'ansible_facts.hostname in docker_swarm_manager_and_advertise_addr or inventory_hostname in docker_swarm_manager_and_advertise_addr'
+  when: "ansible_facts.hostname in docker_swarm_manager_and_advertise_addr or inventory_hostname in docker_swarm_manager_and_advertise_addr"
   community.docker.docker_swarm:
     advertise_addr: '{{ docker_swarm_manager_and_advertise_addr[ansible_facts.hostname] | default("eth0:2377") }}'
     state: present
@@ -9,19 +9,19 @@
   tags: [docker, docker-swarm]
 
 - name: Join master node
-  when: 'item.key == ansible_facts.hostname or item.key == inventory_hostname'
+  when: "item.key == ansible_facts.hostname or item.key == inventory_hostname"
   community.docker.docker_swarm:
     state: join
     join_token: '{{ hostvars[item.value.leader].swarm_init_res.swarm_facts.JoinTokens[item.value.role | default("Worker")] }}'
-    remote_addrs: '{{ [item.value.ips] | flatten }}'
-  loop: '{{ docker_swarm_worker_mapping | dict2items }}'
+    remote_addrs: "{{ [item.value.ips] | flatten }}"
+  loop: "{{ docker_swarm_worker_mapping | dict2items }}"
   tags: [docker, docker-swarm]
 
 - name: Set Docker node labels
-  when: 'inventory_hostname in docker_swarm_manager_and_advertise_addr'
+  when: "inventory_hostname in docker_swarm_manager_and_advertise_addr"
   community.docker.docker_node:
-    hostname: '{{ item.key }}'
-    labels: '{{ item.value }}'
+    hostname: "{{ item.key }}"
+    labels: "{{ item.value }}"
     labels_state: replace
-  loop: '{{ docker_swarm_node_labels | dict2items }}'
+  loop: "{{ docker_swarm_node_labels | dict2items }}"
   tags: [docker, docker-swarm, docker-tags]

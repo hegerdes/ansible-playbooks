@@ -12,14 +12,8 @@
 - name: k8s common - wasi | Get download urls
   ansible.builtin.set_fact:
     wasi_download_urls: >-
-      {{
-      wasi_download_urls
-      | default({})
-      | combine({(item.item | split("/") | first): item.json
-      | json_query("assets[*].browser_download_url")
-      | select("search", ansible_facts.architecture)
-      })
-      }}
+      {{ wasi_download_urls | default({}) | combine({(item.item | split("/") | first): item.json | json_query("assets[*].browser_download_url") | select("search",
+      ansible_facts.architecture)}) }}
   loop: "{{ __k8s_wasi_download_urls.results }}"
   loop_control:
     label: "{{ item.item }}"

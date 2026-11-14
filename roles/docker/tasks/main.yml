@@ -25,5 +25,5 @@
 - name: Setup cron jobs
   ansible.builtin.include_tasks: shared/install-cron-jobs.yml
   vars:
-    cron_jobs: '{{ docker_cron_jobs }}'
+    cron_jobs: "{{ docker_cron_jobs }}"
   tags: [docker, cron]

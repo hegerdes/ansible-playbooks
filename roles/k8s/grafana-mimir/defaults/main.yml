@@ -1,9 +1,8 @@
 ---
 # Version of the chart to deploy
-k8s_mimir_helm_chart_version: '{{ null | default(omit) }}'
-k8s_mimir_install: True
-grafana_mimir_azure_storage_key: null
-
+k8s_mimir_helm_chart_version: "{{ null | default(omit) }}"
+k8s_mimir_install: true
+grafana_mimir_azure_storage_key:
 # Values for Grafana Mimir Chart
 # See: https://github.com/grafana/mimir/blob/main/operations/helm/charts/mimir-distributed/values.yaml
 # k8s_mimir_helm_values: {}
@@ -32,7 +31,7 @@ k8s_mimir_helm_values:
       annotations:
         # cert-manager.io/cluster-issuer: letsencrypt-staging-nginx
         cert-manager.io/cluster-issuer: letsencrypt-prod-nginx
-        nginx.ingress.kubernetes.io/add-base-url : "true"
+        nginx.ingress.kubernetes.io/add-base-url: "true"
       hosts:
         - host: mimir.k8s.example.com
           paths:
@@ -55,7 +54,7 @@ k8s_mimir_helm_values:
         backend: azure
         azure:
           container_name: mimir-blocks
-          account_key: '{{ grafana_mimir_azure_storage_key | mandatory }}'
+          account_key: "{{ grafana_mimir_azure_storage_key | mandatory }}"
           account_name: hegerdesdevblobs
           endpoint_suffix: blob.core.windows.net
 
@@ -63,7 +62,7 @@ k8s_mimir_helm_values:
         backend: azure
         azure:
           container_name: mimir-alertmanager
-          account_key: '{{ grafana_mimir_azure_storage_key | mandatory }}'
+          account_key: "{{ grafana_mimir_azure_storage_key | mandatory }}"
           account_name: hegerdesdevblobs
           endpoint_suffix: blob.core.windows.net
 
@@ -71,7 +70,7 @@ k8s_mimir_helm_values:
         backend: azure
         azure:
           container_name: mimir-ruler
-          account_key: '{{ grafana_mimir_azure_storage_key | mandatory }}'
+          account_key: "{{ grafana_mimir_azure_storage_key | mandatory }}"
           account_name: hegerdesdevblobs
           endpoint_suffix: blob.core.windows.net
 

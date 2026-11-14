@@ -25,6 +25,7 @@
     path: /etc/environment
     line: INFLUXD_CONFIG_PATH=/etc/influxdb2
     create: true
+    mode: "0644"
   notify: Reboot
   tags: [influxdb]
 
@@ -43,7 +44,7 @@
 - name: Install Influxdb
   ansible.builtin.apt:
     name: "{{ item }}"
-    state: latest
+    state: present
   loop: ["influxdb2", "influxdb2-cli"]
   tags: [influxdb]
 
@@ -62,5 +63,6 @@
 - name: Run Influx init
   ansible.builtin.command: "influx setup --org {{ influx_organization }} --bucket {{ influx_root_bucket }} --username {{ influx_root_user }} --password {{ influx_root_pw }} --host http://{{ influx_listen_addr }} --force"
   register: influx_setup_res
-  ignore_errors: true
+  changed_when: influx_setup_res.rc == 0
+  failed_when: false
   tags: [influxdb]

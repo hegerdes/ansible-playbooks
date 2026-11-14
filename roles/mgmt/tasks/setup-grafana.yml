@@ -9,36 +9,36 @@
 
 - name: Get Grafana remote pw
   ansible.builtin.slurp:
-    src: '{{ mgmt_dst_config_files }}mgmt-grafana/grafana_admin_pw.txt'
+    src: "{{ mgmt_dst_config_files }}mgmt-grafana/grafana_admin_pw.txt"
   register: grafana_remote_pw
   tags: [mgmt, grafana]
 
 - name: Create loki datasource
-  grafana_datasource:
+  community.grafana.grafana_datasource:
     name: Loki
-    grafana_url: 'http://{{ mgmt_grafana_host }}'
+    grafana_url: "http://{{ mgmt_grafana_host }}"
     grafana_user: admin
-    grafana_password: '{{ grafana_remote_pw.content  | b64decode }}'
+    grafana_password: "{{ grafana_remote_pw.content | b64decode }}"
     ds_type: loki
     ds_url: http://loki:3100
   tags: [mgmt, grafana]
 
 - name: Create prometheus datasource
-  grafana_datasource:
+  community.grafana.grafana_datasource:
     name: Prometheus
-    grafana_url: 'http://{{ mgmt_grafana_host }}'
+    grafana_url: "http://{{ mgmt_grafana_host }}"
     grafana_user: admin
-    grafana_password: '{{ grafana_remote_pw.content | b64decode }}'
+    grafana_password: "{{ grafana_remote_pw.content | b64decode }}"
     ds_type: prometheus
     ds_url: http://prometheus:9090
   tags: [mgmt, grafana]
 
 - name: Import Grafana dashboards
-  grafana_dashboard:
-    grafana_url: 'http://{{ mgmt_grafana_host }}'
+  community.grafana.grafana_dashboard:
+    grafana_url: "http://{{ mgmt_grafana_host }}"
     grafana_user: admin
-    grafana_password: '{{ grafana_remote_pw.content | b64decode }}'
-    dashboard_id: '{{ item }}'
-  ignore_errors: true
-  loop: '{{ mgmt_grafana_dashbord_ids }}'
+    grafana_password: "{{ grafana_remote_pw.content | b64decode }}"
+    dashboard_id: "{{ item }}"
+  loop: "{{ mgmt_grafana_dashbord_ids }}"
   tags: [mgmt, grafana]
+  no_log: true

@@ -9,7 +9,7 @@
     components: [main]
     suites: [release]
     state: present
-    enabled: True
+    enabled: true
   tags: [docker, docker-install]
 
 - name: Install gVisor

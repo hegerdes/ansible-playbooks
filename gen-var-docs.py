@@ -1,0 +1,154 @@
+#!/usr/bin/env python3
+"""Generate a markdown table of Ansible role default variables.
+
+Walks a roles/ tree, reads every ``<role>/defaults/main.yml`` (or ``.yaml``),
+and emits one markdown table with the columns:
+
+    | role-name | key | value |
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+
+try:
+    import yaml
+except ImportError:
+    sys.exit('PyYAML is required. Install it with: pip install pyyaml')
+
+
+def find_defaults(root: Path) -> list[Path]:
+    """Return every defaults/main.yml|yaml file under *root*, sorted by role."""
+    files: list[Path] = []
+    for name in ('main.yml', 'main.yaml'):
+        files.extend(root.rglob(f"defaults/{name}"))
+    # De-dup and sort for stable output.
+    return sorted(set(files), key=lambda p: str(p).lower())
+
+
+def role_name(defaults_file: Path, root: Path) -> str:
+    """Derive the role name from a .../defaults/main.yml path.
+
+    e.g. roles/aws/ssh/defaults/main.yml  ->  aws/ssh
+    """
+    role_dir = defaults_file.parent.parent
+    try:
+        rel = role_dir.relative_to(root)
+    except ValueError:
+        rel = role_dir
+    return rel.as_posix()
+
+
+def stringify(value) -> str:
+    """Render a YAML value as a single, faithful string.
+
+    Scalars are shown as-is; dicts and lists are compacted to JSON so they
+    fit in one table cell.
+    """
+    if value is None:
+        return ''
+    if isinstance(value, bool):
+        return 'true' if value else 'false'
+    if isinstance(value, (int, float, str)):
+        return str(value)
+    return json.dumps(value, ensure_ascii=False, default=str)
+
+
+def md_cell(text: str, as_code: bool = False) -> str:
+    """Escape a string so it is safe inside a single markdown table cell."""
+    text = text.replace('\r\n', '\n').replace('\r', '\n').strip()
+    # Newlines would break the table row -> use <br>.
+    multiline = '\n' in text
+    text = text.replace('|', '\\|').replace('\n', '<br>')
+    if as_code and not multiline and text:
+        # Inline code improves readability; skip it for multiline cells since
+        # <br> is not honoured inside a code span.
+        text = f"`{text.replace('`', '``')}`"
+    return text or '&nbsp;'
+
+
+def load_yaml(path: Path):
+    with path.open('r', encoding='utf-8') as fh:
+        return yaml.safe_load(fh)
+
+
+def build_rows(files: list[Path], root: Path) -> list[tuple[str, str, str]]:
+    rows: list[tuple[str, str, str]] = []
+    for f in files:
+        role = role_name(f, root)
+        try:
+            data = load_yaml(f)
+        except yaml.YAMLError as exc:
+            print(f"WARNING: could not parse {f}: {exc}", file=sys.stderr)
+            continue
+
+        if data is None:
+            continue  # empty defaults file
+        if not isinstance(data, dict):
+            print(
+                f"WARNING: {f} top-level is {type(data).__name__}, not a mapping; skipping",
+                file=sys.stderr,
+            )
+            continue
+
+        for key, value in data.items():
+            rows.append((role, str(key), stringify(value)))
+    return rows
+
+
+def render_table(rows: list[tuple[str, str, str]], as_code: bool) -> str:
+    lines = ['| role-name | key | value |', '| --- | --- | --- |']
+    for role, key, value in rows:
+        lines.append(
+            f"| {md_cell(role)} | {md_cell(key, as_code)} | {md_cell(value, as_code)} |"
+        )
+    return '\n'.join(lines) + '\n'
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        'root',
+        nargs='?',
+        default='roles',
+        help='Path to the roles directory (default: ./roles)',
+    )
+    parser.add_argument(
+        '-o', '--output', help='Write markdown to this file instead of stdout'
+    )
+    parser.add_argument(
+        '--code',
+        action='store_true',
+        help='Wrap single-line keys/values in inline `code` spans',
+    )
+    args = parser.parse_args(argv)
+
+    root = Path(args.root)
+    if not root.is_dir():
+        print(f"ERROR: {root} is not a directory", file=sys.stderr)
+        return 1
+
+    files = find_defaults(root)
+    if not files:
+        print(f"No defaults/main.yml files found under {root}", file=sys.stderr)
+        return 1
+
+    rows = build_rows(files, root)
+    table = render_table(rows, args.code)
+
+    if args.output:
+        Path(args.output).write_text(table, encoding='utf-8')
+        print(
+            f"Wrote {len(rows)} rows from {len(files)} roles to {args.output}",
+            file=sys.stderr,
+        )
+    else:
+        sys.stdout.write(table)
+    return 0
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

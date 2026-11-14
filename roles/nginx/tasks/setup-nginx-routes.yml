@@ -3,12 +3,12 @@
 - name: List sites/host that will be installed
   ansible.builtin.debug:
     msg:
-      - 'Using host: {{ item.host }} with ip: {{ item.ip }}'
-      - 'Using locations {{ item.locations | default("#Auto generateded proxypass locations. Passing to: " + item.upstreams | join("\n") ) }}'
+      - "Using host: {{ item.host }} with ip: {{ item.ip }}"
+      - 'Using locations {{ item.locations | default("#Auto generateded proxypass locations. Passing to: " + item.upstreams | join("\n")) }}'
       - 'With upstream: { {{ item.upstreams | default([]) | join("\n") }} }'
-  loop: '{{ ingress_hosts.sites | default(nginx_default_hosts.sites) }}'
+  loop: "{{ ingress_hosts.sites | default(nginx_default_hosts.sites) }}"
   loop_control:
-    label: '{{ item.host }}'
+    label: "{{ item.host }}"
   tags: [ingress, nginx, ingress-hosts]
 
 - name: Copy NGINX conf files
@@ -17,17 +17,17 @@
     dest: /etc/nginx/
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
   tags: [ingress, nginx, ingress-hosts]
 
 - name: Copy NGINX extra conf files
   when: nginx_host_extra_files.stat.exists
   ansible.builtin.copy:
-    src: '{{ inventory_dir }}/{{ inventory_hostname }}/srv/nginx/'
+    src: "{{ inventory_dir }}/{{ inventory_hostname }}/srv/nginx/"
     dest: /etc/nginx/
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
   tags: [ingress, nginx, ingress-hosts]
 
 - name: Check for dhparam.pem
@@ -39,29 +39,31 @@
 - name: Creating dhparam.pem
   when: not nginx_dhparam_result.stat.exists
   ansible.builtin.command: openssl dhparam -out /etc/nginx/dhparam.pem 2048
+  changed_when: true
   tags: [ingress, nginx, ingress-hosts]
 
 - name: Create nginx metrics status page
   ansible.builtin.template:
     src: internal-status.conf.j2
     dest: /etc/nginx/conf.d/internal-status.conf
-    mode: '0644'
+    mode: "0644"
   tags: [ingress, nginx, ingress-hosts]
 
 - name: Create directory for dummy certs
   ansible.builtin.file:
     path: /etc/nginx/ssl/dummy
     state: directory
+    mode: "0755"
   tags: [ingress, nginx, ingress-hosts]
 
 - name: Copy dummy certs
   ansible.builtin.copy:
-    src: '{{ item }}.dummy'
-    dest: '/etc/nginx/ssl/dummy/{{ item }}'
+    src: "{{ item }}.dummy"
+    dest: "/etc/nginx/ssl/dummy/{{ item }}"
     owner: root
     group: root
-    mode: '0777'
-  loop: ['fullchain.pem', 'privkey.pem']
+    mode: "0777"
+  loop: ["fullchain.pem", "privkey.pem"]
   tags: [ingress, nginx, ingress-hosts]
 
 - name: Find all nginx hosts
@@ -75,15 +77,15 @@
 - name: Creating hosts for nginx
   when: nginx_vhost.host + ".conf" not in nginx_deployed_hosts.stdout_lines or nginx_force_reinstall_hosts
   ansible.builtin.template:
-    src: '{{ "nginx-site.conf.j2" if(nginx_vhost.tls | default({}) | string != "false") else "nginx-site-http-only.conf.j2" }}'
-    dest: '/etc/nginx/conf.d/{{ nginx_vhost.host }}.conf'
-    mode: '0644'
-  loop: '{{ ingress_hosts.sites  }}'
+    src: '{{ "nginx-site.conf.j2" if (nginx_vhost.tls | default({}) | string != "false") else "nginx-site-http-only.conf.j2" }}'
+    dest: "/etc/nginx/conf.d/{{ nginx_vhost.host }}.conf"
+    mode: "0644"
+  loop: "{{ ingress_hosts.sites }}"
   loop_control:
     loop_var: nginx_vhost
-    label: '{{ nginx_vhost.host }}'
+    label: "{{ nginx_vhost.host }}"
   vars:
-    nginx_settings: '{{ ingress_hosts.conf.nginx | default(nginx_default_hosts.conf.nginx) }}'
+    nginx_settings: "{{ ingress_hosts.conf.nginx | default(nginx_default_hosts.conf.nginx) }}"
   register: nginx_created_hosts
   tags: [ingress, nginx, ingress-hosts]
 
@@ -92,15 +94,15 @@
   ansible.builtin.template:
     src: nginx-default-site.conf.j2
     dest: /etc/nginx/conf.d/default.conf
-    mode: '0644'
+    mode: "0644"
   tags: [ingress, nginx, ingress-hosts]
 
 - name: Copy ssl-nginx.conf|ssl-dhparams.pem
   ansible.builtin.copy:
-    src: '{{ item }}'
-    dest: '/etc/letsencrypt/{{ item }}'
+    src: "{{ item }}"
+    dest: "/etc/letsencrypt/{{ item }}"
     owner: root
     group: root
-    mode: '0644'
-  loop: ['options-ssl-nginx.conf', 'ssl-dhparams.pem']
+    mode: "0644"
+  loop: ["options-ssl-nginx.conf", "ssl-dhparams.pem"]
   tags: [ingress, nginx, ingress-hosts]

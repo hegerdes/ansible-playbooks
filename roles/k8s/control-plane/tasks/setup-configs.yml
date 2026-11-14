@@ -35,7 +35,7 @@
   run_once: true
   ignore_errors: true
   delegate_to: localhost
-  when: lookup("env", "CI") | default("false", true) | bool == false
+  when: not (lookup("env", "CI") | default("false", true) | bool)
   ansible.builtin.copy:
     dest: "{{ lookup('env', 'HOME') }}/.kube/{{ (inventory_dir | basename) + '-kubeconfig.yml' }}"
     content: "{{ internal_k8s_kubeconfig | to_nice_yaml(indent=2, sort_keys=true) }}"

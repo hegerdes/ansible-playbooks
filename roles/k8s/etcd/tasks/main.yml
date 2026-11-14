@@ -2,7 +2,7 @@
 ---
 - name: Look for etcd-certs
   ansible.builtin.stat:
-    path: '{{ etcd_ca_cert }}'
+    path: "{{ etcd_ca_cert }}"
   register: __etcd_certs_stat
   tags: [k8s, etcd, etcd-backup]
 
@@ -14,8 +14,8 @@
         --cert={{ etcd_cert }}
         --key={{ etcd_key }}
         snapshot save {{ etcd_backup_remote_destination }}
-    creates: '{{ etcd_backup_remote_destination }}'
-        # --endpoints={{ etcd_endpoint }}
+    creates: "{{ etcd_backup_remote_destination }}"
+  # --endpoints={{ etcd_endpoint }}
   environment:
     ETCDCTL_API: "3"
   tags: [k8s, etcd, etcd-backup]
@@ -23,7 +23,7 @@
 - name: Copy backup to localhost
   when: __etcd_certs_stat.stat.exists
   ansible.builtin.fetch:
-    src: '{{ etcd_backup_remote_destination }}'
-    dest: '{{ etcd_backup_local_destination }}'
-    flat: yes
+    src: "{{ etcd_backup_remote_destination }}"
+    dest: "{{ etcd_backup_local_destination }}"
+    flat: true
   tags: [k8s, etcd, etcd-backup]

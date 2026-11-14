@@ -1,4 +1,4 @@
 ---
 # mino defaults
 
-minio_src_filres: '{{ playbook_dir }}/roles/minio/files/srv/'
+minio_src_files: "{{ playbook_dir }}/roles/minio/files/srv/"

@@ -1,3 +1,4 @@
+---
 # K8s install certmanager
 
 - name: Add Certmanager Helm-chart repo

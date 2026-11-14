@@ -16,37 +16,37 @@
   tags: [firewall, firewalld]
 
 - name: Set firewall zones
-  firewalld:
-    interface: '{{ item.interface | default(omit) }}'
-    zone: '{{ item.zone | default(omit) }}'
+  ansible.posix.firewalld:
+    interface: "{{ item.interface | default(omit) }}"
+    zone: "{{ item.zone | default(omit) }}"
     state: '{{ item.state | default("enabled") }}'
     permanent: true
-  loop: '{{ firwalld_rules | default([]) }}'
+  loop: "{{ firwalld_rules | default([]) }}"
   loop_control:
-    label: '{{ item.name }}'
+    label: "{{ item.name }}"
   tags: [firewall, firewalld]
   notify: Restart firewalld
 
 - name: Set firewall sources
-  firewalld:
-    zone: '{{ item.zone | default(omit) }}'
-    source: '{{ item.sourceips | default(omit) }}'
+  ansible.posix.firewalld:
+    zone: "{{ item.zone | default(omit) }}"
+    source: "{{ item.sourceips | default(omit) }}"
     state: '{{ item.state | default("enabled") }}'
     permanent: true
-  loop: '{{ firwalld_rules | default([]) }}'
+  loop: "{{ firwalld_rules | default([]) }}"
   loop_control:
-    label: '{{ item.name }}'
+    label: "{{ item.name }}"
   tags: [firewall, firewalld]
   notify: Restart firewalld
 
 - name: Set firewall rules
-  firewalld:
-    ansible.builtin.service: '{{ item.service | default(omit) }}'
+  ansible.posix.firewalld:
+    service: "{{ item.service | default(omit) }}"
     state: '{{ item.state | default("enabled") }}'
-    zone: '{{ item.zone | default(omit) }}'
-    port: '{{ item.port | default(omit) }}'
+    zone: "{{ item.zone | default(omit) }}"
+    port: "{{ item.port | default(omit) }}"
     permanent: true
-  loop: '{{ firwalld_rules | default([]) }}'
+  loop: "{{ firwalld_rules | default([]) }}"
   tags: [firewall, firewalld]
   notify: Restart firewalld
 

@@ -1,10 +1,10 @@
-
+---
 - name: Install MariaDB
   ansible.builtin.apt:
-    name: '{{ item }}'
-    state: latest
+    name: "{{ item }}"
+    state: present
     update_cache: true
-  loop: ['mariadb-server', 'python3-pymysql']
+  loop: ["mariadb-server", "python3-pymysql"]
   tags: [mariadb]
 
 - name: Ensure service is started
@@ -28,10 +28,10 @@
   tags: [mariadb]
 
 - name: Set MariaDB root password for the first time
-  mysql_user:
-    name: '{{ mariadb_root_user }}'
+  community.mysql.mysql_user:
+    name: "{{ mariadb_root_user }}"
     password: "{{ mariadb_root_pw }}"
     state: present
-    login_unix_socket: '{{ sql_db_socket }}'
+    login_unix_socket: "{{ sql_db_socket }}"
   when: root_pwd_check.rc == 0
   tags: [mariadb]

@@ -2,7 +2,7 @@
 ---
 - name: Check for host specific files
   ansible.builtin.stat:
-    path: '{{ inventory_dir }}/{{ inventory_hostname }}/srv/'
+    path: "{{ inventory_dir }}/{{ inventory_hostname }}/srv/"
   register: nginx_host_extra_files
   delegate_to: localhost
   become: false
@@ -11,11 +11,11 @@
 - name: Copy from inventory_dir/host/srv to remote host/srv
   when: nginx_host_extra_files.stat.exists
   ansible.builtin.copy:
-    src: '{{ inventory_dir }}/{{ inventory_hostname }}/srv/'
+    src: "{{ inventory_dir }}/{{ inventory_hostname }}/srv/"
     dest: /srv
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
   tags: [ingress, nginx]
 
 - name: Install nginx
@@ -39,7 +39,7 @@
   ansible.builtin.include_role:
     name: firewalld
   vars:
-    firwalld_rules: '{{ nginx_default_firewall_rules + nginx_firewall_rules }}'
+    firwalld_rules: "{{ nginx_default_firewall_rules + nginx_firewall_rules }}"
   tags: [ingress, nginx, firewall]
 
 - name: Ensure handlers are notified now
@@ -51,7 +51,7 @@
   ansible.builtin.include_tasks: shared/install-cron-jobs.yml
   tags: [ingress, nginx, cron]
   vars:
-    cron_jobs: '{{ nginx_cron_jobs }}'
+    cron_jobs: "{{ nginx_cron_jobs }}"
 
 - name: Ensure handlers are notified now
   ansible.builtin.meta: flush_handlers
