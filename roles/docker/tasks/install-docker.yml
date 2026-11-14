@@ -49,21 +49,6 @@
   register: docker_facts
   tags: [docker, docker-install]
 
-- name: Install Loki log driver
-  when: docker_install_loki_log_plugin
-  community.docker.docker_plugin:
-    plugin_name: grafana/loki-docker-driver:latest
-    state: present
-    alias: loki
-  tags: [docker, docker-install]
-
-- name: Enable Loki log driver
-  when: docker_install_loki_log_plugin
-  community.docker.docker_plugin:
-    plugin_name: loki
-    state: enable
-  tags: [docker, docker-install]
-
 - name: Ensure /etc/docker/ directory exists
   ansible.builtin.file:
     path: /etc/docker

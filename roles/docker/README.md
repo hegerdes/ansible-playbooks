@@ -29,9 +29,6 @@ docker_regesties: []
 #     username: MyUser
 #     password: MySuperSecurPW
 
-# Plugins
-docker_install_loki_log_plugin: true
-
 # SWARM
 docker_init_swarm: true
 
